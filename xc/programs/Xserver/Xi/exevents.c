@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.9 90/05/18 10:58:38 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.10 90/05/18 11:00:00 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -317,15 +317,15 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 	    }
 	if ((b=dev->button) != NULL)
 	    {
-	    classmask |= (1 << ButtonClass);
 	    if (b->numButtons > 32)
+		evcount++;
+	    if (k != NULL)
 		evcount++;
 	    }
 	if ((v=dev->valuator) != NULL)
 	    {
-	    classmask |= (1 << ValuatorClass);
-	    if (v->numAxes > 4)
-		evcount += (v->numAxes - 4) / 7;
+	    if (v->numAxes > 3)
+		evcount += ((v->numAxes-4) / 6) + 1;
 	    }
 
 	ev = (deviceStateNotify *) xalloc(evcount * sizeof(xEvent));
@@ -333,23 +333,16 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 	ev->type = DeviceStateNotify;
 	ev->deviceid = dev->id;
         ev->time = currentTime.milliseconds;
-	ev->classes_reported = classmask;
+	ev->classes_reported = 0;
+	ev->num_keys = 0;
+	ev->num_buttons = 0;
+	ev->num_valuators = 0;
 	sev = ev;
 
-	if (k != NULL)
-	    {
-	    bcopy((char *) k->down, (char *) &sev->keys[0], 4);
-	    if (k->curKeySyms.maxKeyCode > 32)
-		{
-		ev->deviceid |= MORE_EVENTS;
-		kev = (deviceKeyStateNotify *) ++ev; 
-		kev->type = DeviceKeyStateNotify;
-		kev->deviceid = dev->id;
-		bcopy((char *) &k->down[4], (char *) &kev->keys[0], 28);
-		}
-	    }
 	if (b != NULL)
 	    {
+	    sev->classes_reported |= (1 << ButtonClass);
+	    sev->num_buttons = b->numButtons;
 	    bcopy((char *) b->down, (char *) &sev->buttons[0], 4);
 	    if (b->numButtons > 32)
 		{
@@ -360,28 +353,64 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 		bcopy((char *) &b->down[4], (char *) &bev->buttons[0], 28);
 		}
 	    }
+
 	if (v != NULL)
 	    {
-	    for (i=0; i<3 && i<v->numAxes; i++)
-		sev->valuators[i] = v->axisVal[i]; 
-	    if (v->numAxes > 3)
+	    deviceStateNotify 	*tev = sev;
+
+	    tev->classes_reported |= (1 << ValuatorClass);
+	    for (i=0; i<v->numAxes; i+=6)
 		{
-		for (i=4; i<=v->numAxes; i+=7)
+		for (j=0; j<3 && i+j<v->numAxes; j++)
+		   tev->valuators[j] = v->axisVal[i+j]; 
+	        tev->num_valuators = j;
+		if (i+3 < v->numAxes)
 		    {
 		    ev->deviceid |= MORE_EVENTS;
 		    vev = (deviceValuator *) ++ev; 
 		    vev->type = DeviceValuator;
 		    vev->deviceid = dev->id;
-		    vev->num_valuators = v->numAxes;
-		    vev->first_valuator = v->numAxes;
-		    for (j=0; j<7; j++)
-		        vev->valuators[j] = v->axisVal[i*7+j+3]; 
+		    vev->num_valuators = v->numAxes < i+6 ? v->numAxes-(i+3) : 3;
+		    vev->first_valuator = i+3;
+		    for (j=0; j<3 && i+j < v->numAxes; j++)
+		        vev->valuators[j] = v->axisVal[i+3+j]; 
 		    }
+		if (i+6 < v->numAxes)
+		    {
+		    tev = (deviceStateNotify *) ++ev;
+		    tev->type = DeviceStateNotify;
+		    tev->deviceid = dev->id;
+        	    tev->time = currentTime.milliseconds;
+		    tev->classes_reported = (1 << ValuatorClass);
+		    }
+		}
+	    }
+	if (k != NULL)
+	    {
+	    deviceStateNotify 	*tev;
+
+	    for (tev=sev; 
+		 tev->type!=DeviceStateNotify || 
+		 (tev->classes_reported & (1<<ButtonClass)); 
+		 tev++)
+		;
+	    tev->classes_reported |= (1 << KeyClass);
+	    tev->num_keys = k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode;
+
+	    bcopy((char *) k->down, (char *) &tev->keys[0], 4);
+	    if (k->curKeySyms.maxKeyCode - k->curKeySyms.minKeyCode > 32)
+		{
+		ev->deviceid |= MORE_EVENTS;
+		kev = (deviceKeyStateNotify *) ++ev; 
+		kev->type = DeviceKeyStateNotify;
+		kev->deviceid = dev->id;
+		bcopy((char *) &k->down[4], (char *) &kev->keys[0], 28);
 		}
 	    }
 
 	(void) DeliverEventsToWindow(pWin, sev, evcount, DeviceStateNotifyMask, 
 	    NullGrab, dev->id);
+	xfree (sev);
         }
     }
 
@@ -949,7 +978,6 @@ DeleteWindowFromAnyExtEvents(pWin, freeResources)
     WindowPtr		pWin;
     Bool		freeResources;
     {
-    WindowPtr		parent;
     DeviceIntPtr	dev;
     InputClientsPtr	ic;
 
