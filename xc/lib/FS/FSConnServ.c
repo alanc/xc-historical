@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.19 93/08/22 12:04:13 rws Exp $ */
+/* $XConsortium: FSConnServ.c,v 1.20 93/08/22 12:07:20 rws Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -257,7 +257,14 @@ _FSConnectServer(server_name, expanded_name)
 
 	{
 	    char	*sp = serverbuf;
+#ifdef WIN32
+	    static WSADATA wsadata;
+#endif
 
+#ifdef WIN32
+	    if (!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
+		return -1;
+#endif
 	    /* ignore a leading "tcp/" */
 	    if (strncmp(sp, "tcp/", 4) == 0)
 	    	sp += 4;
