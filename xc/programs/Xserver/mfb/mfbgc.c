@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.23 91/05/04 23:11:08 keith Exp $ */
+/* $XConsortium: mfbgc.c,v 5.24 91/05/24 17:22:33 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -361,9 +361,9 @@ matchCommon (pGC)
     priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
     for (i = 0; i < numberCommonOps; i++) {
 	cop = &mfbCommonOps[i];
-	if (pGC->fgPixel != cop->fg)
+	if ((pGC->fgPixel & 1) != cop->fg)
 	    continue;
-	if (pGC->bgPixel != cop->bg)
+	if ((pGC->bgPixel & 1) != cop->bg)
 	    continue;
 	if (priv->rop != cop->rrop)
 	    continue;
@@ -813,9 +813,9 @@ mfbValidateGC(pGC, changes, pDrawable)
 	*/
         if (pGC->fillStyle == FillOpaqueStippled)
         {
-	    if (pGC->fgPixel != pGC->bgPixel)
+	    if ((pGC->fgPixel & 1) != (pGC->bgPixel & 1))
 	    {
-	        if (pGC->fgPixel)
+	        if (pGC->fgPixel & 1)
 		    devPriv->ropOpStip = pGC->alu;
 	        else
 		    devPriv->ropOpStip = InverseAlu[pGC->alu];
@@ -912,29 +912,29 @@ mfbValidateGC(pGC, changes, pDrawable)
 	    /* special case ImageGlyphBlt for terminal emulator fonts */
 	    if ((pGC->font) &&
 		TERMINALFONT(pGC->font) &&
-		(pGC->fgPixel != pGC->bgPixel))
+		((pGC->fgPixel & 1) != (pGC->bgPixel & 1)))
 	    {
 		/* pcc bug makes this not compile...
-		pGC->ops->ImageGlyphBlt = (pGC->fgPixel) ? mfbTEGlyphBltWhite :
+		pGC->ops->ImageGlyphBlt = (pGC->fgPixel & 1) ? mfbTEGlyphBltWhite :
 						      mfbTEGlyphBltBlack;
 		*/
-		if (pGC->fgPixel)
+		if (pGC->fgPixel & 1)
 		    pGC->ops->ImageGlyphBlt = mfbTEGlyphBltWhite;
 		else
 		    pGC->ops->ImageGlyphBlt = mfbTEGlyphBltBlack;
 	    }
 	    else
 	    {
-	        if (pGC->fgPixel == 0)
-		    pGC->ops->ImageGlyphBlt = mfbImageGlyphBltBlack;
-	        else
+	        if (pGC->fgPixel & 1)
 		    pGC->ops->ImageGlyphBlt = mfbImageGlyphBltWhite;
+	        else
+		    pGC->ops->ImageGlyphBlt = mfbImageGlyphBltBlack;
 	    }
 
 	    /* now do PolyGlyphBlt */
 	    if (pGC->fillStyle == FillSolid ||
 		(pGC->fillStyle == FillOpaqueStippled &&
-		 pGC->fgPixel == pGC->bgPixel
+		 (pGC->fgPixel & 1) == (pGC->bgPixel & 1)
 		)
 	       )
 	    {
@@ -960,7 +960,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	pGC->ops->PushPixels = mfbPushPixels;
 	if ((pGC->fillStyle == FillSolid) ||
 	    ((pGC->fillStyle == FillOpaqueStippled) &&
-	     (pGC->fgPixel == pGC->bgPixel)))
+	     ((pGC->fgPixel & 1) == (pGC->bgPixel & 1))))
 	{
 	    pGC->ops->PushPixels = mfbSolidPP;
 	    switch(devPriv->rop)
@@ -1023,7 +1023,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	      (pGC->fillStyle == FillStippled)) &&
 	     !devPriv->pRotatedPixmap) ||
 	    ((pGC->fillStyle == FillOpaqueStippled) &&
-	     (pGC->fgPixel != pGC->bgPixel))
+	     ((pGC->fgPixel & 1) != (pGC->bgPixel & 1)))
 	   )
 	{
 	    pGC->ops->PolyFillRect = miPolyFillRect;
@@ -1034,7 +1034,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 
 	    if ((pGC->fillStyle == FillSolid) ||
 		((pGC->fillStyle == FillOpaqueStippled) &&
-		 (pGC->fgPixel == pGC->bgPixel)))
+		 ((pGC->fgPixel & 1) == (pGC->bgPixel & 1))))
 	    {
 		switch(devPriv->rop)
 		{
