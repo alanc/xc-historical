@@ -28,7 +28,8 @@ static char *sccsid = "@(#)Geometry.c	1.7	2/25/87";
 
 /* File: Geometry.c */
 
-#include "Intrinsic.h"
+#include "IntrinsicI.h"
+#include "Shell.h"
 
 /* Public routines */
 
@@ -77,6 +78,48 @@ void XtResizeWidget(w, width, height, borderWidth)
     }
 } /* XtResizeWidget */
 
+void XtConfigureWidget(w, x, y, width, height, borderWidth)
+    Widget w;
+    Position x, y;
+    Dimension height, width, borderWidth;
+{
+    XWindowChanges changes;
+    Cardinal mask = 0;
+
+    if (w->core.x != x) {
+	changes.x = w->core.x = x;
+	mask |= CWX;
+    }
+
+    if (w->core.y != y) {
+	changes.y = w->core.y = y;
+	mask |= CWY;
+    }
+
+    if (w->core.width != width) {
+	changes.width = w->core.width = width;
+	mask |= CWWidth;
+    }
+
+    if (w->core.height != height) {
+	changes.height = w->core.height = height;
+	mask |= CWHeight;
+    }
+
+    if (w->core.border_width != borderWidth) {
+	changes.border_width = w->core.border_width = borderWidth;
+	mask |= CWBorderWidth;
+    }
+
+    if (mask != 0) {
+	if (XtIsRealized(w))
+	    XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
+    if ((mask & (CWWidth | CWHeight)) &&
+	XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
+	    (*(w->core.widget_class->core_class.resize))(w);
+    }
+} /* XtConfigureWidget */
+
 XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     Widget         widget;
     XtWidgetGeometry *request, *reply;
@@ -84,47 +127,93 @@ XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     XtWidgetGeometry    junk;
     XtGeometryHandler manager;
     XtGeometryResult returnCode;
+    Widget parent = widget->core.parent;
+    XtGeometryMask	changeMask;
+    Boolean managed, parentRealized;
 
-    if (widget->core.being_destroyed) {
-        return XtGeometryNo;
+    if (parent == NULL) {
+	XtError("XtMakeGeometryRequest - NULL parent.  Use SetValues instead");
     }
-    if ( ! widget->core.managed || ! XtIsComposite(widget->core.parent) ) {
-    /* if widget not managed, copy values from request to widget
-       and resize window */
-         if ((request->request_mode & CWX) != 0)
-         widget->core.x = request->x;
-        if ((request->request_mode & CWY) != 0)
-         widget->core.y = request->y;
-        if ((request->request_mode & CWWidth) != 0)
-	 widget->core.width = request->width;
-        if ((request->request_mode & CWHeight) != 0)
-         widget->core.height = request->height;
-        if ((request->request_mode & CWBorderWidth) != 0)
-         widget->core.border_width = request->border_width;
-	returnCode = XtGeometryYes; 
+
+    if (widget->core.being_destroyed) return XtGeometryNo;
+
+    managed = XtIsManaged(widget);
+    parentRealized = XtIsRealized(parent);
+
+    /* see if requesting anything to change */
+    changeMask = 0;
+    if (request->request_mode & CWStackMode
+	&& request->stack_mode != XtSMDontChange) {
+	    changeMask |= CWStackMode;
+	    if (request->request_mode & CWSibling) changeMask |= CWSibling;
     }
-    else {
-     if (! XtIsComposite(widget->core.parent)) {
-	 /* Should never happen - XtCreateWidget should have checked */
-	 XtError("XtMakeGeometryRequest - parent not composite");
-     }
-     manager = ((CompositeWidgetClass)(widget->core.parent->core.widget_class))
-		 ->composite_class.geometry_manager;
-     if (manager == (XtGeometryHandler) NULL) {
-	 XtError("XtMakeGeometryRequest - parent has no geometry manger");
-     }
-     if (reply == (XtWidgetGeometry *) NULL) {
-        returnCode = (*manager)(widget, request, &junk);
-     } else {
-	returnCode = (*manager)(widget, request, reply);
-     }
-    }    
-    /* ||| Right now this is automatic.  However, we may want it to be
-    explicitely called by geometry manager in order to effect the window resize
-    (especially to smaller size) before the windows are layed out. */
-    if (returnCode == XtGeometryYes) {
-	XtResizeWindow(widget);
+    if (request->request_mode & CWX
+	&& widget->core.x != request->x) changeMask |= CWX;
+    if (request->request_mode & CWY
+	&& widget->core.y != request->y) changeMask |= CWY;
+    if (request->request_mode & CWWidth
+	&& widget->core.width != request->width) changeMask |= CWWidth;
+    if (request->request_mode & CWHeight
+	&& widget->core.height != request->height) changeMask |= CWHeight;
+    if (request->request_mode & CWBorderWidth
+	&& widget->core.border_width != request->border_width)
+	changeMask |= CWBorderWidth;
+    if (changeMask == NULL) return XtGeometryYes;
+
+    if (!managed || !parentRealized) {
+    /* if widget not managed or parent not realized, copy values from
+       request to widget */
+	if (request->request_mode & CWX)
+	    widget->core.x = request->x;
+	if (request->request_mode & CWY)
+	    widget->core.y = request->y;
+	if (request->request_mode & CWWidth)
+	    widget->core.width = request->width;
+	if (request->request_mode & CWHeight)
+	    widget->core.height = request->height;
+	if (request->request_mode & CWBorderWidth)
+	    widget->core.border_width = request->border_width;
+	if (!parentRealized) return XtGeometryYes;
+	else returnCode = XtGeometryYes;
+    } else {
+	/* go ask the widget's geometry manager */
+	if (!XtIsComposite(parent)) {
+	    /* Should never happen - XtManageChildren should have checked */
+	    XtError("XtMakeGeometryRequest - parent not composite");
+	}
+	manager = ((CompositeWidgetClass) (parent->core.widget_class))
+		    ->composite_class.geometry_manager;
+	if (manager == (XtGeometryHandler) NULL) {
+	    XtError("XtMakeGeometryRequest - parent has no geometry manger");
+	}
+	if (reply == (XtWidgetGeometry *) NULL) {
+	    returnCode = (*manager)(widget, request, &junk);
+	} else {
+	    returnCode = (*manager)(widget, request, reply);
+	}
     }
+
+    if (returnCode == XtGeometryYes && XtIsRealized(widget)) {
+	/* reconfigure the window (if needed) */
+
+	XWindowChanges changes;
+
+	if (changeMask & CWX) changes.x = widget->core.x;
+	if (changeMask & CWY) changes.y = widget->core.y;
+	if (changeMask & CWWidth) changes.width = widget->core.width;
+	if (changeMask & CWHeight) changes.height = widget->core.height;
+	if (changeMask & CWBorderWidth)
+	    changes.border_width = widget->core.border_width;
+	if (changeMask & CWStackMode) {
+	    changes.stack_mode = request->stack_mode;
+	    if (changeMask & CWSibling) 
+		changes.sibling = XtWindow(request->sibling);
+	}
+
+	XConfigureWindow(XtDisplay(widget), XtWindow(widget),
+		changeMask, &changes);
+    } else if (returnCode == XtGeometryDone) returnCode = XtGeometryYes;
+
     return returnCode;
 } /* XtMakeGeometryRequest */
 
@@ -167,38 +256,27 @@ void XtMoveWidget(w, x, y)
     }
 } /* XtMoveWidget */
 
-XtGeometryResult XtSetValuesGeometryRequest(current, new, reply)
-    Widget current,		/* widget as it is */
-           new;			/* widget as it wants to be */
-    XtWidgetGeometry *reply;	/* allowed geometry if XtGeometryAlmost */
+void XtTranslateCoords(w, x, y, rootx, rooty)
+    register Widget w;
+    Position x, y;
+    register Position *rootx, *rooty;	/* return */
 {
-    XtWidgetGeometry req;
+    Position garbagex, garbagey;
 
-    req.request_mode = NULL;
+    if (rootx == NULL) rootx = &garbagex;
+    if (rooty == NULL) rooty = &garbagey;
 
-    if (current->core.x != new->core.x) {
-	req.request_mode |= CWX;
-	req.x = new->core.x;
-    }
-    if (current->core.y != new->core.y) {
-	req.request_mode |= CWY;
-	req.y = new->core.y;
-    }
-    if (current->core.width != new->core.width) {
-	req.request_mode |= CWWidth;
-	req.width = new->core.width;
-    }
-    if (current->core.height != new->core.height) {
-	req.request_mode |= CWHeight;
-	req.height = new->core.height;
-    }
-    if (current->core.border_width != new->core.border_width) {
-	req.request_mode |= CWBorderWidth;
-	req.border_width = new->core.border_width;
+    *rootx = x;
+    *rooty = y;
+
+    for (; w != NULL && XtClass(w) != shellWidgetClass; w = w->core.parent) {
+	*rootx += w->core.x + w->core.border_width;
+	*rooty += w->core.y + w->core.border_width;
     }
 
-    if (req.request_mode == NULL)
-        return XtGeometryNo;
-    else
-        return XtMakeGeometryRequest( current, &req, reply );
+    if (w == NULL) XtWarning("Widget has no shell ancestor!");
+    else {
+	*rootx += w->core.x + w->core.border_width;
+	*rooty += w->core.y + w->core.border_width;
+    }
 }
