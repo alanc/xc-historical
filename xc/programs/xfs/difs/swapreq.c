@@ -1,4 +1,4 @@
-/* $XConsortium: swapreq.c,v 1.2 91/05/13 16:56:19 gildea Exp $ */
+/* $XConsortium: swapreq.c,v 1.3 91/07/16 20:23:43 keith Exp $ */
 /*
  * swapped requests
  */
@@ -23,9 +23,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * $NCDId: @(#)swapreq.c,v 4.2 1991/06/27 16:34:49 lemke Exp $
- *
  */
 
 #include	"misc.h"
@@ -258,6 +255,7 @@ SProcQueryXExtents8(client)
     REQUEST(fsQueryXExtents8Req);
     swaps(&stuff->length, n);
     swapl(&stuff->fid, n);
+    swapl(&stuff->num_ranges, n);
 
     return ((*ProcVector[FS_QueryXExtents8]) (client));
 }
@@ -272,6 +270,7 @@ SProcQueryXBitmaps8(client)
     swaps(&stuff->length, n);
     swapl(&stuff->fid, n);
     swapl(&stuff->format, n);
+    swapl(&stuff->num_ranges, n);
 
     return ((*ProcVector[FS_QueryXBitmaps8]) (client));
 }
