@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.50 88/09/13 15:06:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.51 88/09/13 16:23:29 swick Exp $";
 #endif
 
 
@@ -1083,6 +1083,8 @@ static CheckResizeOrOverflow(ctx)
 		reply = XtMakeGeometryRequest(ctx, &rbox, &rbox);
 		if (reply == XtGeometryAlmost)
 		    reply = XtMakeGeometryRequest((Widget)ctx, &rbox, NULL);
+		if (reply == XtGeometryYes)
+		    BuildLineTable(ctx, ctx->text.lt.top);
 	    }
     }
 }
