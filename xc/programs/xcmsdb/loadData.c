@@ -1,4 +1,4 @@
-/* $XConsortium: LoadSCCData.c,v 1.1 91/02/06 16:13:00 dave Exp $ */
+/* $XConsortium: LoadSCCData.c,v 1.2 91/02/17 14:21:02 dave Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -33,9 +33,7 @@
  */
 
 /*
- *      EXTERNAL INCLUDES
- *              Include files that must be exported to any package or
- *              program using this package.
+ *      INCLUDES
  */
 
 #include <X11/Xos.h>
@@ -45,14 +43,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include "Xcmsint.h"
-#include <X11/Xcms.h>
 #include "SCCDFile.h"
-
-/*
- *      INTERNAL INCLUDES
- *              Include files for local use only, therefore, NOT exported
- *		to any package or program using this package.
- */
 
 
 /*
