@@ -1,4 +1,4 @@
-/* $XConsortium: fontfcn.c,v 1.8 92/03/27 18:15:45 eswu Exp $ */
+/* $XConsortium: fontfcn.c,v 1.9 93/08/24 18:48:54 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -89,8 +89,8 @@ int cnt;
   return(TRUE);
 }
 /***================================================================***/
-int resetFont(env)
-char *env;
+static void resetFont(env)
+    char *env;
 {
  
   vm_next =  FontP->vm_start;
