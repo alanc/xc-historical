@@ -1,3 +1,4 @@
+INCLUDES = -I$(TOP) -I$(INCLUDESRC)
 LOCAL_LIBRARIES = $(XTOOLLIB) $(XLIB)
         DEFINES = -DX11 -DLIBDIR=\"${LIBDIR}\"
            SRCS = EDiskSrc.c alloc.c bbox.c button.c command.c compfuncs.c \
