@@ -1,4 +1,4 @@
-/* $XConsortium: xchgptr.c,v 1.11 90/05/18 15:26:28 rws Exp $ */
+/* $Header: xchgptr.c,v 1.2 90/12/27 15:41:10 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -77,7 +77,7 @@ SProcXChangePointerDevice(client)
 ProcXChangePointerDevice (client)
     register ClientPtr client;
     {
-    extern		ChangePointerDevice();
+    DeviceIntPtr 	xptr = inputInfo.pointer;
     DeviceIntPtr 	dev;
     ValuatorClassPtr 	v;
     xChangePointerDeviceReply	rep;
@@ -110,31 +110,27 @@ ProcXChangePointerDevice (client)
 	return Success;
 	}
 
-    if ((dev->grab) && !SameClient(dev->grab, client))
+    if (((dev->grab) && !SameClient(dev->grab, client)) ||
+        ((xptr->grab) && !SameClient(xptr->grab, client)))
 	rep.status = AlreadyGrabbed;
-    else if (dev->sync.frozen &&
-	     ((dev->sync.other &&
-	       !SameClient(dev->sync.other, client)) ||
-	     ((dev->sync.state >= FROZEN) &&
-	      !SameClient(dev->grab, client))))
+    else if ((dev->sync.frozen &&
+	     dev->sync.other && !SameClient(dev->sync.other, client)) ||
+	     (xptr->sync.frozen &&
+	      xptr->sync.other && !SameClient(xptr->sync.other, client)))
 	rep.status = GrabFrozen;
-    else if (!dev->focus)
-	{
-	SendErrorToClient(client, IReqCode, X_ChangePointerDevice, 0, 
-		BadDevice);
-	}
     else
 	{
+	if (dev->focus)
+	    DeleteFocusClassDeviceStruct(dev);
 	if (ChangePointerDevice (
-	    inputInfo.pointer, dev, stuff->xaxis, stuff->yaxis) != Success)
+	    xptr, dev, stuff->xaxis, stuff->yaxis) != Success)
 	    {
 	    SendErrorToClient(client, IReqCode, X_ChangePointerDevice, 0, 
 		BadDevice);
 	    return Success;
 	    }
-	RegisterOtherDevice (inputInfo.pointer);
+	RegisterOtherDevice (xptr);
 	RegisterPointerDevice (dev);
-	inputInfo.pointer->focus->win = NULL;
 
 	ev.type = ChangeDeviceNotify;
 	ev.deviceid = stuff->deviceid;
@@ -150,6 +146,14 @@ ProcXChangePointerDevice (client)
     WriteReplyToClient (client, sizeof (xChangePointerDeviceReply), 
 	&rep);
     return Success;
+    }
+
+DeleteFocusClassDeviceStruct(dev)
+    DeviceIntPtr dev;
+    {
+    xfree(dev->focus->trace);
+    xfree(dev->focus);
+    dev->focus = NULL;
     }
 
 /***********************************************************************

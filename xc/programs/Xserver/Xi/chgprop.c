@@ -1,4 +1,4 @@
-/* $XConsortium: xchgprop.c,v 1.7 90/05/18 11:44:52 rws Exp $ */
+/* $Header: xchgprop.c,v 1.2 90/10/22 16:51:35 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -117,24 +117,26 @@ ProcXChangeDeviceDontPropagateList (client)
 	stuff->count, tmp, NULL, X_ChangeDeviceDontPropagateList) != Success)
 	    return Success;
 
-    if (others = wOtherInputMasks(pWin))
-	for (i=0; i<EMASKSIZE; i++)
-	    {
-	    if (tmp[i].mask == 0)
-		continue;
-	    if (stuff->mode == AddToList)
-		tmp[i].mask |= others->dontPropagateMask[i];
-	    else
-		tmp[i].mask = (others->dontPropagateMask[i] & ~tmp[i].mask);
+    others = wOtherInputMasks(pWin);
+    if (!others && stuff->mode == DeleteFromList)
+	return Success;
+    for (i=0; i<EMASKSIZE; i++)
+	{
+	if (tmp[i].mask == 0)
+	    continue;
 
-	    if (DeviceEventSuppressForWindow (pWin,client,tmp[i].mask,i) != 
-			Success)
-		{
-		SendErrorToClient ( client, 
-			IReqCode, X_ChangeDeviceDontPropagateList, 0, BadClass);
-		return Success;
-		}
+	if (stuff->mode == DeleteFromList)
+	    tmp[i].mask = (others->dontPropagateMask[i] & ~tmp[i].mask);
+	else if (others)
+	    tmp[i].mask |= others->dontPropagateMask[i];
+
+	if (DeviceEventSuppressForWindow (pWin,client,tmp[i].mask,i) != Success)
+	    {
+	    SendErrorToClient ( client, IReqCode, X_ChangeDeviceDontPropagateList, 0, 
+		BadClass);
+	    return Success;
 	    }
+	}
 
     return Success;
     }

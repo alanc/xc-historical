@@ -1,4 +1,3 @@
-/* $XConsortium: xexevents.c,v 1.19 90/05/18 15:40:27 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -57,8 +56,6 @@ void 			RecalculateDeviceDeliverableEvents();
 extern int		DeviceKeyPress;
 extern int		DeviceButtonPress;
 extern int		DeviceValuator;
-extern int		DeviceMotionNotify;
-extern Mask		DevicePointerMotionHintMask;
 extern Mask 		DevicePointerMotionMask;
 extern Mask 		DeviceMappingNotifyMask;
 extern Mask 		DeviceButton1Mask;
@@ -84,6 +81,8 @@ RegisterOtherDevice (device)
     ((DeviceIntPtr)device)->ActivateGrab = ActivateKeyboardGrab;
     ((DeviceIntPtr)device)->DeactivateGrab = DeactivateKeyboardGrab;
     }
+
+extern	int	DeviceMotionNotify;
 
 /*ARGSUSED*/
 void
@@ -234,10 +233,7 @@ ProcessOtherEvent (xE, other, count)
 			    other, count);
 
     if (deactivateDeviceGrab == TRUE)
-	{
         (*other->DeactivateGrab)(other);
-        deactivateDeviceGrab = FALSE;
-	}
     }
 
 InitProximityClassDeviceStruct(dev)
@@ -327,7 +323,7 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 	if ((v=dev->valuator) != NULL)
 	    {
 	    if (v->numAxes > 3)
-		evcount += ((v->numAxes-4) / 6) + 1;
+		evcount += ((v->numAxes-4) / 3) + 1;
 	    }
 
 	ev = (deviceStateNotify *) xalloc(evcount * sizeof(xEvent));
@@ -358,8 +354,7 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 
 	if (v != NULL)
 	    {
-	    CARD32 *ip B32;
-	    INT32 *ip2 B32;
+	    INT32 *ip B32;
 	    deviceStateNotify 	*tev = sev;
 
 	    tev->classes_reported |= (1 << ValuatorClass);
@@ -377,9 +372,9 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 		    vev->deviceid = dev->id;
 		    vev->num_valuators = v->numAxes < i+6 ? v->numAxes-(i+3) : 3;
 		    vev->first_valuator = i+3;
-		    ip2 = &vev->valuator0;
+		    ip = &vev->valuator0;
 		    for (j=0; j<3 && i+j < v->numAxes; j++)
-		        *(ip2+j) = v->axisVal[i+3+j]; 
+		        *(ip+j) = v->axisVal[i+3+j]; 
 		    }
 		if (i+6 < v->numAxes)
 		    {
@@ -558,6 +553,8 @@ GrabKey(client, dev, this_device_mode, other_devices_mode, modifiers,
     return AddPassiveGrabToList(grab);
     }
 
+extern Mask DevicePointerMotionHintMask;
+
 int
 SelectForWindow(dev, pWin, client, mask, exclusivemasks, validmasks)
 	DeviceIntPtr dev;
@@ -622,11 +619,12 @@ SelectForWindow(dev, pWin, client, mask, exclusivemasks, validmasks)
     if ((ret = AddExtensionClient (pWin, client, mask, mskidx)) != Success)
 	return ret;
 maskSet: 
-    if ((dev->valuator->motionHintWindow == pWin) &&
-	(mask & DevicePointerMotionHintMask) &&
-	!(check & DevicePointerMotionHintMask) &&
-	!dev->grab)
-	dev->valuator->motionHintWindow = NullWindow;
+    if (dev->valuator)
+	if ((dev->valuator->motionHintWindow == pWin) &&
+	    (mask & DevicePointerMotionHintMask) &&
+	    !(check & DevicePointerMotionHintMask) &&
+	    !dev->grab)
+	    dev->valuator->motionHintWindow = NullWindow;
     RecalculateDeviceDeliverableEvents(pWin);
     return Success;
 }
@@ -805,7 +803,7 @@ SendEvent (client, d, dest, propagate, ev, mask, count)
 	return BadValue;
     }
     ev->u.u.type |= 0x80;
-    if (propagate && wOtherInputMasks(pWin))
+    if (propagate)
     {
 	for (;pWin; pWin = pWin->parent)
 	{
@@ -813,7 +811,8 @@ SendEvent (client, d, dest, propagate, ev, mask, count)
 		return Success;
 	    if (pWin == effectiveFocus)
 		return Success;
-	    mask &= ~wOtherInputMasks(pWin)->dontPropagateMask[d->id];
+	    if (wOtherInputMasks(pWin))
+		mask &= ~wOtherInputMasks(pWin)->dontPropagateMask[d->id];
 	}
     }
     else

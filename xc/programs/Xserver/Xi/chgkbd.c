@@ -1,4 +1,4 @@
-/* $XConsortium: xchgkbd.c,v 1.10 90/05/18 15:23:06 rws Exp $ */
+/* $Header: xchgkbd.c,v 1.2 90/12/27 15:43:43 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -73,10 +73,8 @@ SProcXChangeKeyboardDevice(client)
 ProcXChangeKeyboardDevice (client)
     register ClientPtr client;
     {
-    extern			ChangeKeyboardDevice();
-    int				i;
+    DeviceIntPtr 		xkbd = inputInfo.keyboard;
     DeviceIntPtr 		dev;
-    GrabPtr 			grab;
     KeyClassPtr 		k;
     xChangeKeyboardDeviceReply	rep;
     changeDeviceNotify		ev;
@@ -107,31 +105,26 @@ ProcXChangeKeyboardDevice (client)
 	return Success;
 	}
 
-    grab =  dev->grab;
-
-    if ((grab) && !SameClient(grab, client))
+    if (((dev->grab) && !SameClient(dev->grab, client)) ||
+        ((xkbd->grab) && !SameClient(xkbd->grab, client)))
 	rep.status = AlreadyGrabbed;
-    else if (dev->sync.frozen &&
-	     ((dev->sync.other &&
-	       !SameClient(dev->sync.other, client)) ||
-	     ((dev->sync.state >= FROZEN) &&
-	      !SameClient(dev->grab, client))))
+    else if ((dev->sync.frozen &&
+	     dev->sync.other && !SameClient(dev->sync.other, client)) ||
+	     (xkbd->sync.frozen &&
+	      xkbd->sync.other && !SameClient(xkbd->sync.other, client)))
 	rep.status = GrabFrozen;
-    else if (!dev->focus)
-	{
-	SendErrorToClient(client, IReqCode, X_ChangeKeyboardDevice, 0, 
-		BadDevice);
-	}
     else
 	{
-	if (ChangeKeyboardDevice (inputInfo.keyboard, dev) != Success)
+	if (!dev->focus)
+	    InitFocusClassDeviceStruct (dev);
+	if (ChangeKeyboardDevice (xkbd, dev) != Success)
 	    {
 	    SendErrorToClient(client, IReqCode, X_ChangeKeyboardDevice, 0, 
 		BadDevice);
 	    return Success;
 	    }
-	dev->focus->win = inputInfo.keyboard->focus->win;
-	RegisterOtherDevice (inputInfo.keyboard);
+	dev->focus->win = xkbd->focus->win;
+	RegisterOtherDevice (xkbd);
 	RegisterKeyboardDevice (dev);
 
 	ev.type = ChangeDeviceNotify;
@@ -169,4 +162,3 @@ SRepXChangeKeyboardDevice (client, size, rep)
     swapl(&rep->length, n);
     WriteToClient(client, size, rep);
     }
-

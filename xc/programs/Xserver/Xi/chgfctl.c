@@ -1,4 +1,4 @@
-/* $XConsortium: xchgfctl.c,v 1.8 90/05/18 15:20:04 rws Exp $ */
+/* $Header: xchgfctl.c,v 1.3 90/11/26 09:30:48 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -165,7 +165,6 @@ ChangeKbdFeedback (client, dev, mask, k, f)
     register char n;
     KeybdCtrl kctrl;
     int t;
-    int led = DO_ALL;
     int key = DO_ALL;
 
     if (client->swapped)
@@ -567,14 +566,15 @@ ChangeLedFeedback (client, dev, mask, l, f)
 	swapl(&f->led_mask,n);
 	}
 
-    lctrl = l->ctrl;
+    f->led_mask &= l->ctrl.led_mask;	/* set only supported leds */
+    f->led_values &= l->ctrl.led_mask;	/* set only supported leds */
     if (mask & DvLed)
         {
-	lctrl.led_values &= ~(f->led_mask);
-	lctrl.led_values |= (f->led_mask & f->led_values);
+	lctrl.led_mask = f->led_mask;
+	lctrl.led_values = f->led_values;
+	(*l->CtrlProc)(dev, &lctrl);
+	l->ctrl.led_values = f->led_values;
         }
 
-    l->ctrl = lctrl;
-    (*l->CtrlProc)(dev, &l->ctrl);
     return Success;
     }

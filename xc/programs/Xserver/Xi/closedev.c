@@ -1,4 +1,4 @@
-/* $XConsortium: xclosedev.c,v 1.7 89/12/02 15:20:41 rws Exp $ */
+/* $Header: xclosedev.c,v 1.2 90/11/27 16:34:45 gms Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -74,7 +74,6 @@ int
 ProcXCloseDevice(client)
     register ClientPtr client;
     {
-    extern		CloseInputDevice();
     int			i;
     WindowPtr 		pWin, p1;
     DeviceIntPtr 	d;
@@ -145,7 +144,7 @@ DeleteDeviceEvents (dev, pWin, client)
     {
     InputClientsPtr	others;
     OtherInputMasks	*pOthers;
-    GrabPtr		grab;
+    GrabPtr		grab, next;
 
     if (pOthers=wOtherInputMasks(pWin))
 	for (others=pOthers->inputClients; others; 
@@ -153,9 +152,11 @@ DeleteDeviceEvents (dev, pWin, client)
 	    if (SameClient(others,client))
 		others->mask[dev->id] = NoEventMask;
 
-    for (grab = wPassiveGrabs(pWin); grab; grab=grab->next)
+    for (grab = wPassiveGrabs(pWin); grab; grab=next)
+	{
+	next = grab->next;
 	if ((grab->device == dev) &&
 	    (client->clientAsMask == CLIENT_BITS(grab->resource)))
 		FreeResource (grab->resource, RT_NONE);
+	}
     }
-
