@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.46 92/02/13 15:57:26 keith Exp $ */
+/* $XConsortium: os.h,v 1.47 92/08/21 19:27:08 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -117,7 +117,7 @@ char *alloca();
 #endif
 
 int		ReadRequestFromClient();
-Bool		CloseDownConnection();
+void		CloseDownConnection();
 FontPathPtr	ExpandFontNamePattern();
 FID		FiOpenForRead();
 void		CreateWellKnownSockets();

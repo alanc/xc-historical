@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.147 92/08/10 17:46:55 eswu Exp $ */
+/* $XConsortium: connection.c,v 1.148 92/09/15 19:25:50 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -893,6 +893,7 @@ CheckConnections()
  *    Delete client from AllClients and free resources 
  *****************/
 
+void
 CloseDownConnection(client)
     ClientPtr client;
 {
