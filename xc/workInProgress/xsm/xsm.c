@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.66 94/09/14 16:24:59 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.67 94/11/14 15:33:52 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -45,20 +45,63 @@ in this Software without prior written authorization from the X Consortium.
 #include "auth.h"
 #include "restart.h"
 #include "saveutil.h"
+#include "lock.h"
 
+#ifdef X_POSIX_C_SOURCE
+#define _POSIX_C_SOURCE X_POSIX_C_SOURCE
 #include <signal.h>
+#undef _POSIX_C_SOURCE
+#else
+#if defined(X_NOT_POSIX) || defined(_POSIX_SOURCE)
+#include <signal.h>
+#else
+#define _POSIX_SOURCE
+#include <signal.h>
+#undef _POSIX_SOURCE
+#endif
+#endif
+
+#if defined(X_NOT_POSIX) && defined(SIGNALRETURNSINT)
+#define SIGVAL int
+#else
+#define SIGVAL void
+#endif
+
+#if defined(X_NOT_POSIX) && defined(SYSV)
+#define SIGNALS_RESET_WHEN_CAUGHT
+#endif
+
+#include <sys/wait.h>
 
 Atom wmStateAtom;
+
+static char *cmd_line_display = NULL;
 
 
 /*
  * Forward declarations
  */
 
-void StartSession ();
+Status StartSession ();
 void NewConnectionXtProc ();
 Status NewClientProc ();
 void IoErrorHandler ();
+
+SIGVAL (*Signal ())();
+void sig_child_handler ();
+
+/*
+ * Extern declarations
+ */
+
+extern Widget clientInfoPopup;
+extern Widget clientPropPopup;
+extern Widget clientInfoButton;
+extern Widget nameSessionButton;
+extern Widget checkPointButton;
+extern Widget shutdownButton;
+extern Widget clientListWidget;
+extern Widget savePopup;
 
 
 
@@ -73,7 +116,6 @@ char **argv;
 
 {
     IceListenObj *listenObjs;
-    char 	*networkIds;
     char	*p;
     char	*progName;
     char 	errormsg[256];
@@ -86,6 +128,11 @@ char **argv;
 	{
 	    switch (argv[i][1])
 	    {
+	    case 'd':					/* -display */
+		if (++i >= argc) goto usage;
+		cmd_line_display = (char *) XtNewString (argv[i]);
+		continue;
+
 	    case 'n':					/* -name */
 		if (++i >= argc) goto usage;
 		session_name = XtNewString (argv[i]);
@@ -98,7 +145,8 @@ char **argv;
 	}
 
     usage:
-	fprintf (stderr, "usage: %s [-name session_name][-verbose]\n",
+	fprintf (stderr,
+	    "usage: %s [-display display] [-name session_name] [-verbose]\n",
 	    argv[0]);
 	exit (1);
     }
@@ -124,7 +172,14 @@ char **argv;
      * Ignore SIGPIPE
      */
 
-    signal (SIGPIPE, SIG_IGN);
+    Signal (SIGPIPE, SIG_IGN);
+
+
+    /*
+     * If child process dies, call our handler
+     */
+
+    Signal (SIGCHLD, sig_child_handler);
 
 
     /*
@@ -169,10 +224,21 @@ char **argv;
     sprintf(p, "%s=%s", environment_name, networkIds);
     putenv(p);
 
+    if (cmd_line_display)
+    {
+	/*
+	 * If a display was passed on the command line, set the DISPLAY
+	 * environment in this process so all applications started by
+	 * the session manager will run on the specified display.
+	 */
+
+	p = (char *) XtMalloc(8 + strlen(cmd_line_display) + 1);
+	sprintf(p, "DISPLAY=%s", cmd_line_display);
+	putenv(p);
+    }
+
     if (verbose)
 	printf ("setenv %s %s\n", environment_name, networkIds);
-
-    free (networkIds);
 
     create_choose_session_popup ();
     create_main_window ();
@@ -199,6 +265,9 @@ char **argv;
     WaitForSaveDoneList = ListInit();
     if (!WaitForSaveDoneList) nomem();
 
+    FailedSaveList = ListInit();
+    if (!FailedSaveList) nomem();
+
     WaitForInteractList = ListInit();
     if (!WaitForInteractList) nomem();
 
@@ -214,7 +283,8 @@ char **argv;
      * names for the user to choose from.
      */
 
-    success = GetSessionNames (&sessionNameCount, &sessionNames);
+    success = GetSessionNames (&sessionNameCount,
+	&sessionNames, &sessionLocked);
 
     found_command_line_name = 0;
     if (success && session_name)
@@ -232,7 +302,8 @@ char **argv;
 	if (!found_command_line_name)
 	    session_name = XtNewString (DEFAULT_SESSION_NAME);
 
-    	StartSession (session_name, !found_command_line_name);
+    	if (!StartSession (session_name, !found_command_line_name))
+	    UnableToLockSession (session_name);
     }
     else
     {
@@ -246,6 +317,37 @@ char **argv;
 
     setjmp (JumpHere);
     XtAppMainLoop (appContext);
+}
+
+
+
+SIGVAL (*Signal (sig, handler))()
+    int sig;
+    SIGVAL (*handler)();
+{
+#ifndef X_NOT_POSIX
+    struct sigaction sigact, osigact;
+    sigact.sa_handler = handler;
+    sigemptyset(&sigact.sa_mask);
+    sigact.sa_flags = 0;
+    sigaction(sig, &sigact, &osigact);
+    return osigact.sa_handler;
+#else
+    return signal(sig, handler);
+#endif
+}
+
+
+void
+sig_child_handler ()
+
+{
+#ifdef SIGNALS_RESET_WHEN_CAUGHT
+    Signal (SIGCHLD, sig_child_handler);
+#endif
+
+    while (waitpid (-1, NULL, WNOHANG) > 0)
+	;
 }
 
 
@@ -295,7 +397,7 @@ GetEnvironment ()
     remote_allowed = 1;
 
     display_env = NULL;
-    if(p = (char *) getenv(envDISPLAY)) {
+    if((p = cmd_line_display) || (p = (char *) getenv(envDISPLAY))) {
 	display_env = (char *) XtMalloc(strlen(envDISPLAY)+1+strlen(p)+1);
 	if(!display_env) nomem();
 	sprintf(display_env, "%s=%s", envDISPLAY, p);
@@ -383,7 +485,7 @@ GetEnvironment ()
 
 
 
-void
+Status
 StartSession (name, use_default)
 
 char *name;
@@ -393,6 +495,16 @@ Bool use_default;
     int database_read = 0;
     Dimension width;
     char title[256];
+
+
+    /*
+     * If we're not using the default session, lock it.
+     * If using the default session, it will be locked as
+     * soon as the user assigns the session a name.
+     */
+
+    if (!use_default && !LockSession (name, True))
+	return (0);
 
 
     /*
@@ -502,11 +614,15 @@ Bool use_default;
 	    StartNonSessionAwareApps ();
 	}
     }
+
+    return (1);
 }
 
 
 
-EndSession ()
+EndSession (status)
+
+int status;
 
 {
     if (verbose)
@@ -514,18 +630,28 @@ EndSession ()
 
     FreeAuthenticationData (numTransports, authDataEntries);
 
+    if (session_name)
+    {
+	UnlockSession (session_name);
+	XtFree (session_name);
+    }
+
     if (display_env)
 	XtFree (display_env);
     if (session_env)
 	XtFree (session_env);
+    if (cmd_line_display)
+	XtFree (cmd_line_display);
     if (non_local_display_env)
 	XtFree (non_local_display_env);
     if (non_local_session_env)
 	XtFree (non_local_session_env);
     if (audio_env)
 	XtFree (audio_env);
+    if (networkIds)
+	free (networkIds);
 
-    exit (0);
+    exit (status);
 }
 
 
@@ -900,9 +1026,17 @@ SaveYourselfDoneProc (smsConn, managerData, success)
     if (!ListSearchAndFreeOne (WaitForSaveDoneList, client))
 	return;
 
+    if (!success)
+    {
+	ListAddLast (FailedSaveList, client);
+    }
+
     if (ListCount (WaitForSaveDoneList) == 0)
     {
-	FinishUpSave ();
+	if (ListCount (FailedSaveList) > 0)
+	    PopupBadSave ();
+	else
+	    FinishUpSave ();
     }
     else if (ListCount (WaitForInteractList) > 0 && OkToEnterInteractPhase ())
     {
@@ -975,7 +1109,7 @@ ClientRec *client;
     if (shutdownInProgress)
     {
 	if (ListCount (RunningList) == 0)
-	    EndSession ();
+	    EndSession (0);
     }
     else if (client_info_visible)
     {
@@ -983,7 +1117,7 @@ ClientRec *client;
 
 	if (current_client_selected == index_deleted)
 	{
-	    if (current_client_selected == ListCount (RunningList))
+	    if (current_client_selected == numClientListNames)
 		current_client_selected--;
 
 	    if (current_client_selected >= 0)
