@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.60 92/09/11 19:30:49 rws Exp $
+ * $XConsortium: xrdb.c,v 11.61 92/09/14 09:39:13 rws Exp $
  */
 
 /*
@@ -54,15 +54,24 @@
 #define CPP "/usr/lib/cpp"
 #endif /* CPP */
 
-char *ProgramName;
-static Bool quiet = False;
+#define INIT_BUFFER_SIZE 10000
+#define INIT_ENTRY_SIZE 500
+
+#define RALL 0
+#define RGLOBAL 1
+#define RSCREEN 2
+#define RSCREENS 3
+
+#define OPSYMBOLS 0
+#define OPQUERY 1
+#define OPREMOVE 2
+#define OPEDIT 3
+#define OPLOAD 4
+#define OPMERGE 5
+#define OPOVERRIDE 6
 
 #define RESOURCE_PROPERTY_NAME "RESOURCE_MANAGER"
 #define BACKUP_SUFFIX ".bak"		/* for editting */
-
-#ifndef sgi
-extern FILE *popen();
-#endif
 
 typedef struct _Entry {
     char *tag, *value;
@@ -78,8 +87,28 @@ typedef struct _Entries {
     int   room, used;
 } Entries;
 
-#define INIT_BUFFER_SIZE 10000
-#define INIT_ENTRY_SIZE 500
+char *ProgramName;
+Bool quiet = False;
+char tmpname[32];
+char *filename = NULL;
+#ifdef PATHETICCPP
+Bool need_real_defines = False;
+char tmpname2[32];
+#endif
+int oper = OPLOAD;
+char *editFile = NULL;
+char *cpp_program = CPP;
+char *backup_suffix = BACKUP_SUFFIX;
+Bool dont_execute = False;
+char defines[4096];
+int defines_base;
+Display *dpy;
+Buffer buffer;
+Entries newDB;
+
+#ifndef sgi
+extern FILE *popen();
+#endif
 
 #if defined(USG) && !defined(CRAY) && !defined(MOTOROLA)
 int rename (from, to)
@@ -318,6 +347,17 @@ void ReadFile(buffer, input)
 AddDef(buff, title, value)
     char *buff, *title, *value;
 {
+#ifdef PATHETICCPP
+    if (need_real_defines) {
+	strcat(buff, "\n#define ");
+	strcat(buff, title);
+	if (value && (value[0] != '\0')) {
+	    strcat(buff, " ");
+	    strcat(buff, value);
+	}
+	return;
+    }
+#endif
     strcat(buff, " -D");
     strcat(buff, title);
     if (value && (value[0] != '\0')) {
@@ -329,6 +369,18 @@ AddDef(buff, title, value)
 AddDefQ(buff, title, value)
     char *buff, *title, *value;
 {
+#ifdef PATHETICCPP
+    if (need_real_defines) {
+	strcat(buff, "\n#define ");
+	strcat(buff, title);
+	if (value && (value[0] != '\0')) {
+	    strcat(buff, " \"");
+	    strcat(buff, value);
+	    strcat(buff, "\"");
+	}
+	return;
+    }
+#endif
     strcat(buff, " -D");
     strcat(buff, title);
     if (value && (value[0] != '\0')) {
@@ -594,7 +646,7 @@ void Syntax ()
  * whether or not the given string is an abbreviation of the arg.
  */
 
-static Bool isabbreviation (arg, s, minslen)
+Bool isabbreviation (arg, s, minslen)
     char *arg;
     char *s;
     int minslen;
@@ -617,32 +669,6 @@ static Bool isabbreviation (arg, s, minslen)
     /* bad */
     return (False);
 }
-
-#define RALL 0
-#define RGLOBAL 1
-#define RSCREEN 2
-#define RSCREENS 3
-
-#define OPSYMBOLS 0
-#define OPQUERY 1
-#define OPREMOVE 2
-#define OPEDIT 3
-#define OPLOAD 4
-#define OPMERGE 5
-#define OPOVERRIDE 6
-
-char tmpname[32];
-char *filename = NULL;
-int oper = OPLOAD;
-char *editFile = NULL;
-char *cpp_program = CPP;
-char *backup_suffix = BACKUP_SUFFIX;
-Bool dont_execute = False;
-char defines[4096];
-int defines_base;
-Display *dpy;
-Buffer buffer;
-Entries newDB;
 
 main (argc, argv)
     int argc;
@@ -757,12 +783,24 @@ main (argc, argv)
 
     if (whichResources == RALL && ScreenCount(dpy) == 1)
 	whichResources = RGLOBAL;
-    DoDisplayDefines(dpy, defines, displayname);
-    defines_base = strlen(defines);
+
+#ifdef PATHETICCPP
+    if (cpp_program &&
+	(oper == OPLOAD || oper == OPMERGE || oper == OPOVERRIDE)) {
+	need_real_defines = True;
+	strcpy(tmpname2, "/tmp/xrdbD_XXXXXX");
+	(void) mktemp(tmpname);
+    }
+#endif
 
     if (!filename &&
+#ifdef PATHETICCPP
+	need_real_defines
+#else
 	(oper == OPLOAD || oper == OPMERGE || oper == OPOVERRIDE) &&
-	(whichResources == RALL || whichResources == RSCREENS)) {
+	(whichResources == RALL || whichResources == RSCREENS)
+#endif
+	) {
 	strcpy(tmpname, "/tmp/xrdb_XXXXXX");
 	(void) mktemp(tmpname);
 	filename = tmpname;
@@ -775,6 +813,8 @@ main (argc, argv)
 	fclose(fp);
     }
 	
+    DoDisplayDefines(dpy, defines, displayname);
+    defines_base = strlen(defines);
     need_newline = (oper == OPQUERY || oper == OPSYMBOLS ||
 		    (dont_execute && oper != OPREMOVE));
     InitBuffer(&buffer);
@@ -972,6 +1012,19 @@ Process(scrno, doScreen, execute)
     } else {
 	if (oper == OPMERGE || oper == OPOVERRIDE)
 	    GetEntriesString(&newDB, xdefs);
+#ifdef PATHETICCPP
+	if (need_real_defines) {
+	    if (!freopen(tmpname2, "w+", stdin))
+		fatal("%s: can't open file '%s'\n", ProgramName, tmpname2);
+	    fputs(defines, stdin);
+	    fprintf(stdin, "\n#include \"%s\"\n", filename);
+	    fflush(stdin);
+	    fseek(stdin, 0, 0);
+	    sprintf(cmd, "%s", cpp_program);
+	    if (!(input = popen(cmd, "r")))
+		fatal("%s: cannot run '%s'\n", ProgramName, cmd);
+	} else {
+#endif
 	if (filename) {
 	    if (!freopen (filename, "r", stdin))
 		fatal("%s: can't open file '%s'\n", ProgramName, filename);
@@ -983,9 +1036,16 @@ Process(scrno, doScreen, execute)
 	} else {
 	    input = stdin;
 	}
+#ifdef PATHETICCPP
+	}
+#endif
 	ReadFile(&buffer, input);
 	if (cpp_program)
 	    pclose(input);
+#ifdef PATHETICCPP
+	if (need_real_defines)
+	    unlink(tmpname2);
+#endif
 	GetEntries(&newDB, &buffer, 0);
 	if (execute) {
 	    FormatEntries(&buffer, &newDB);
