@@ -161,7 +161,7 @@ or
 .EE
 When a variable containing a list of strings representing windows is searched 
 (e.g. to determine whether or not to enable autoraise as shown above), a string
-is considered to match a window if it is a case-sensitive prefix for
+must be an exact, case-sensitive match to
 the window's name name (given by the WM_NAME window property), resource name 
 or class name (both given by the WM_CLASS window property).  The preceding
 example would enable autoraise on windows named ``emacs'' as well as any

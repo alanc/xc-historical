@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: list.h,v 1.10 89/07/18 17:16:02 jim Exp $
+ * $XConsortium: list.h,v 1.11 89/10/27 14:01:23 jim Exp $
  *
  * TWM list handling external definitions
  *
@@ -39,20 +39,13 @@
 #ifndef _LIST_
 #define _LIST_
 
-typedef struct name_list name_list;
+typedef struct name_list_struct name_list;
 
-struct name_list
-{
-    name_list *next;		/* pointer to the next name */
-    char *name;			/* the name of the window */
-    int namelen;		/* strlen(name) */
-    char *ptr;			/* list dependent data */
-};
-
-
-extern void AddToList();
-extern char* LookInList();
-extern char* LookInNameList();
+extern void	AddToList();
+extern char*	LookInList();
+extern char*	LookInNameList();
+extern int 	GetColorFromList();
+extern void	FreeList();
 
 #endif /* _LIST_ */
 
