@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: fsmasks.h,v 1.2 91/05/13 16:46:16 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -32,6 +32,8 @@
 #ifndef _FSMASKS_H_
 #define _FSMASKS_H_
 
+#include <X11/Xmd.h>
+
 /* font format macros */
 #define BitmapFormatByteOrderMask       (1L << 0)
 #define BitmapFormatBitOrderMask        (1L << 1)
@@ -64,7 +66,7 @@
 #define BitmapFormatMaskScanLinePad     (1L << 3)
 #define BitmapFormatMaskScanLineUnit    (1L << 4)
 
-typedef unsigned long  fsBitmapFormat;
-typedef unsigned long  fsBitmapFormatMask;
+typedef CARD32 fsBitmapFormat;
+typedef CARD32 fsBitmapFormatMask;
 
 #endif	/* _FSMASKS_H_ */
