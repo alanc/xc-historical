@@ -10,7 +10,16 @@ typedef struct _XExtDisplayInfo {
     caddr_t data;			/* extra data for extension to use */
 } XExtDisplayInfo;
 
-extern XExtDisplayInfo *XextInitDisplay();
-extern XExtDisplayInfo *XextFindDisplay();
-extern int XextCloseDisplay();
+typedef struct _XExtensionInfo {
+    XExtDisplayInfo *head;		/* start of list */
+    XExtDisplayInfo *cur;		/* most recently used */
+    int ndisplays;			/* number of displays */
+} XExtensionInfo;
 
+extern XExtensionInfo *XextCreateExtension();
+extern void XextDestroyExtension();
+extern XExtDisplayInfo *XextAddDisplay();
+extern int XextRemoveDisplay();
+extern XExtDisplayInfo *XextFindDisplay();
+
+#define XextHasExtension(i) ((i) && ((i)->codes))
