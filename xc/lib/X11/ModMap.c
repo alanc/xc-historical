@@ -1,64 +1,84 @@
 #include "copyright.h"
 
-/* $Header: XModMap.c,v 11.1 87/05/30 14:35:56 jg Exp $ */
+/* $Header: XModMap.c,v 11.1 87/05/30 14:35:56 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
-XGetModifierMapping(dpy, modifier_keys)
+XModifierKeymap *
+XGetModifierMapping(dpy)
      register Display *dpy;
-     register XModifierKeys *modifier_keys;
 {       
     xGetModifierMappingReply rep;
     register xReq *req;
+    unsigned int nbytes;
+    XModifierKeymap *res;
+
     LockDisplay(dpy);
     GetEmptyReq(GetModifierMapping, req);
-    (void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
-    modifier_keys->lock = rep.lock;
-    modifier_keys->shift_a= rep.shiftA;
-    modifier_keys->shift_b = rep.shiftB;
-    modifier_keys->control_a = rep.controlA;
-    modifier_keys->control_b = rep.controlB;
-    modifier_keys->mod1_a = rep.mod1A;
-    modifier_keys->mod1_b = rep.mod1B;
-    modifier_keys->mod2_a = rep.mod2A;
-    modifier_keys->mod2_b = rep.mod2B;
-    modifier_keys->mod3_a = rep.mod3A;
-    modifier_keys->mod3_b = rep.mod3B;
-    modifier_keys->mod4_a = rep.mod4A;
-    modifier_keys->mod4_b = rep.mod4B;
-    modifier_keys->mod5_a = rep.mod5A;
-    modifier_keys->mod5_b = rep.mod5B;
+    (void) _XReply (dpy, (xReply *)&rep, 0, xFalse);
+
+    nbytes = (long)rep.length << 2;
+    res = (XModifierKeymap *) Xmalloc(sizeof (XModifierKeymap));
+    res->modifiermap = (KeyCode *) Xmalloc (nbytes);
+    _XReadPad(dpy, res->modifiermap, nbytes);
+    res->max_keypermod = rep.numKeyPerModifier;
+
     UnlockDisplay(dpy);
     SyncHandle();
+    return (res);
 }
 
-
-XSetModifierMapping(dpy, modifier_keys)
+/*
+ *	Returns:
+ *	0	Success
+ *	1	Busy - one or more old or new modifiers are down
+ *	2	Failed - one or more new modifiers unacceptable
+ */
+int
+XSetModifierMapping(dpy, modifier_map)
     register Display *dpy;
-    register XModifierKeys *modifier_keys;
-{       
+    register XModifierKeymap *modifier_map;
+{
     register xSetModifierMappingReq *req;
+    xSetModifierMappingReply rep;
+    int         mapSize = modifier_map->max_keypermod << 3;	/* 8 modifiers */
 
     LockDisplay(dpy);
-    GetReq(SetModifierMapping, req);
-    req->lock = modifier_keys->lock;
-    req->shiftA = modifier_keys->shift_a;
-    req->shiftB = modifier_keys->shift_b;
-    req->controlA = modifier_keys->control_a;
-    req->controlB = modifier_keys->control_b;
-    req->mod1A = modifier_keys->mod1_a;
-    req->mod1B = modifier_keys->mod1_b;
-    req->mod2A = modifier_keys->mod2_a;
-    req->mod2B = modifier_keys->mod2_b;
-    req->mod3A = modifier_keys->mod3_a;
-    req->mod3B = modifier_keys->mod3_b;
-    req->mod4A = modifier_keys->mod4_a;
-    req->mod4B = modifier_keys->mod4_b;
-    req->mod5A = modifier_keys->mod5_a;
-    req->mod5B = modifier_keys->mod5_b;
+    GetReqExtra(SetModifierMapping, mapSize, req);
+
+    req->numKeyPerModifier = modifier_map->max_keypermod;
+
+    bcopy(modifier_map->modifiermap, (char *)&req[1], mapSize);
+
+    (void) _XReply(dpy, (xReply *) & rep,
+	(sizeof(xSetModifierMappingReply) - sizeof(xReply)) >> 2, xTrue);
     UnlockDisplay(dpy);
     SyncHandle();
+    return (rep.success);
 }
 
+XModifierKeymap *
+XNewModifiermap(keyspermodifier)
+    int keyspermodifier;
+{
+    XModifierKeymap *res = (XModifierKeymap *) Xmalloc((sizeof (XModifierKeymap)));
+
+    res->max_keypermod = keyspermodifier;
+    res->modifiermap = (keyspermodifier > 0 ?
+			(KeyCode *) Xmalloc(8 * keyspermodifier)
+			: (KeyCode *) NULL);
+    return (res);
+}
+
+void
+XFreeModifiermap(map)
+    XModifierKeymap *map;
+{
+    if (map) {
+	if (map->modifiermap)
+	    Xfree((char *) map->modifiermap);
+	Xfree((char *) map);
+    }
+}
