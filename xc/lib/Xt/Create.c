@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Create.c,v 6.26 88/01/29 16:37:51 asente Exp $";
+static char rcsid[] = "$Header: Create.c,v 6.26 88/01/29 16:37:51 swick Locked $";
 #endif lint
 
 /*
@@ -115,8 +115,10 @@ Widget _XtCreate1(name, widgetClass, parent)
 	ClassInit(widgetClass);
     widget = (Widget) XtMalloc((unsigned)widgetClass->core_class.widget_size);
     widget->core.self = widget;
-    if (name != NULL)
+    if (name != NULL && *name != '\0')
 	widget->core.name = strcpy(XtMalloc((unsigned)strlen(name)+1), name);
+    else			/* all widgets should have a name entry */
+	widget->core.name = "";	/* ...but save space by not duplicating this */
     widget->core.parent = parent;
     widget->core.widget_class = widgetClass;
     widget->core.tm.translations = NULL;
