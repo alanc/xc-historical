@@ -22,19 +22,19 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.0 89/06/09 14:59:21 keith Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.1 89/07/03 13:27:00 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
-#include "dixfontstr.h"
+#include "misc.h"
 #include "fontstruct.h"
+#include "dixfontstr.h"
 #include "scrnintstr.h"
 #include "gcstruct.h"
 #include "resource.h"
 #include "dix.h"
 #include "cursorstr.h"
-#include "misc.h"
 #include "opaque.h"
 #include "servermd.h"
 
@@ -126,8 +126,8 @@ CursorMetricsFromGlyph( pfont, ch, cm)
 {
     register CharInfoPtr 	pci;
 
-    if (   ch < pfont->pFI->chFirst
-	|| ch >= pfont->pFI->chFirst + n1dChars(pfont->pFI))
+    if (   ch < FONTFIRSTCOL(pfont)
+	|| ch >= FONTFIRSTCOL(pfont) + N1dChars(pfont))
 	return FALSE;
     pci = ADDRXTHISCHARINFO(pfont, ch);
     cm->width = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
@@ -156,6 +156,3 @@ CursorMetricsFromGlyph( pfont, ch, cm)
     }
     return TRUE;
 }
-
-
-

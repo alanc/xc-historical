@@ -26,7 +26,7 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtileC.o mfbtileG.o \
          mfbtewhite.o mfbteblack.o mfbmisc.o mfbbstore.o
 
-INCLUDES = -I. -I../mi -I../../include -I$(INCLUDESRC)
+INCLUDES = -I. -I../mi -I../../include -I$(INCLUDESRC) -I$(FONTSRC)/include
 LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \
 	   -DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite \
 	   -DEQWHOLEWORD=\=\~0 -DOPEQ=\|=

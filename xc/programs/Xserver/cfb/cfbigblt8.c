@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: cfbigblt8.c,v 1.1 90/11/29 19:33:10 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -26,6 +26,7 @@
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
+#include	"cfb.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
 #include	"gcstruct.h"
@@ -33,7 +34,6 @@
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
-#include	"cfb.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 
@@ -69,9 +69,8 @@ cfbImageGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	backrect.x = x + info.overallWidth;
 	backrect.width = -info.overallWidth;
     }
-    backrect.y = y - pGC->font->pFI->fontAscent;
-    backrect.height = pGC->font->pFI->fontAscent + 
-		      pGC->font->pFI->fontDescent;
+    backrect.y = y - FONTASCENT(pGC->font);
+    backrect.height = FONTASCENT(pGC->font) + FONTDESCENT(pGC->font);
 
     priv = (cfbPrivGC *) pGC->devPrivates[cfbGCPrivateIndex].ptr;
     rop = priv->rop;

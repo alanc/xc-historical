@@ -46,7 +46,8 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
  	 cfbbitblt.o cfbbltC.o cfbbltX.o cfbbltO.o cfbbltG.o \
 	 cfbpush8.o $(STIPPLEOBJ)
 
-   INCLUDES = -I. -I../mfb -I../mi -I../../include -I$(INCLUDESRC)
+   INCLUDES = -I. -I../mfb -I../mi -I../../include -I$(INCLUDESRC) \
+   	      -I$(FONTSRC)/include
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
 	     ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln
 

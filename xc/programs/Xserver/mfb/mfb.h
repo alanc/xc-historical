@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.12 89/11/05 15:12:25 rws Exp $ */
+/* $XConsortium: mfb.h,v 5.13 89/11/13 09:46:37 rws Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -211,11 +211,6 @@ typedef struct _pos{
 /* major axis for bresenham's line */
 #define X_AXIS	0
 #define Y_AXIS	1
-
-/* optimization codes for FONT's devPrivate field */
-#define FT_VARPITCH	0
-#define FT_SMALLPITCH	1
-#define FT_FIXPITCH	2
 
 /* macros for mfbbitblt.c, mfbfillsp.c
    these let the code do one switch on the rop per call, rather

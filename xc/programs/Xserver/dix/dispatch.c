@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.21 90/06/10 14:44:55 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.22 90/07/03 12:07:20 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1079,21 +1079,21 @@ ProcQueryFont(client)
     }
 
     {
-	CharInfoPtr	pmax = pFont->pInkMax;
-	CharInfoPtr	pmin = pFont->pInkMin;
+	xCharInfo	*pmax = FONTINKMAX(pFont);
+	xCharInfo	*pmin = FONTINKMIN(pFont);
 	int		nprotoxcistructs;
 	int		rlength;
 
 	nprotoxcistructs = (
-	   pmax->metrics.rightSideBearing == pmin->metrics.rightSideBearing &&
-	   pmax->metrics.leftSideBearing == pmin->metrics.leftSideBearing &&
-	   pmax->metrics.descent == pmin->metrics.descent &&
-	   pmax->metrics.ascent == pmin->metrics.ascent &&
-	   pmax->metrics.characterWidth == pmin->metrics.characterWidth) ?
-		0 : n2dChars(pFont->pFI);
+	   pmax->rightSideBearing == pmin->rightSideBearing &&
+	   pmax->leftSideBearing == pmin->leftSideBearing &&
+	   pmax->descent == pmin->descent &&
+	   pmax->ascent == pmin->ascent &&
+	   pmax->characterWidth == pmin->characterWidth) ?
+		0 : N2dChars(pFont);
 
 	rlength = sizeof(xQueryFontReply) +
-	             pFont->pFI->nProps * sizeof(xFontProp)  +
+	             FONTINFONPROPS(FONTCHARSET(pFont)) * sizeof(xFontProp)  +
 		     nprotoxcistructs * sizeof(xCharInfo);
 	reply = (xQueryFontReply *)ALLOCATE_LOCAL(rlength);
 	if(!reply)
@@ -1213,61 +1213,29 @@ int
 ProcListFontsWithInfo(client)
     register ClientPtr client;
 {
-    register xListFontsWithInfoReply *reply, *nreply;
+    pointer		    closure;
+    xListFontsWithInfoReply *reply;
     xListFontsWithInfoReply last_reply;
-    FontRec font;
-    FontInfoRec finfo;
-    register FontPathPtr fpaths;
-    register char **path;
-    register int n, *length;
-    int curlength, rlength;
+    int			    rlength;
+    char		    *name;
+    int			    nlength;
     REQUEST(xListFontsWithInfoReq);
+
+    extern pointer StartListFontsWithInfo ();
 
     REQUEST_FIXED_SIZE(xListFontsWithInfoReq, stuff->nbytes);
 
-    fpaths = ExpandFontNamePattern( stuff->nbytes,
+    closure = StartListFontsWithInfo ( client, stuff->nbytes,
 				    (char *) &stuff[1], stuff->maxNames);
-    if (!fpaths)
-	return(BadAlloc);
-    font.pFI = &finfo;
-    font.pInkMin = &finfo.minbounds;
-    font.pInkMax = &finfo.maxbounds;
-    reply = (xListFontsWithInfoReply *)NULL;
-    curlength = 0;
-    for (n = fpaths->npaths, path = fpaths->paths, length = fpaths->length;
-	 --n >= 0;
-	 path++, length++)
+    if (!closure)
+	return BadAlloc;
+
+    while (NextListFontsWithInfo (closure, &reply, &rlength, &name, &nlength))
     {
-	if (!(DescribeFont(*path, *length, &finfo, &font.pFP)))
-	   continue;
-	rlength = sizeof(xListFontsWithInfoReply)
-		    + finfo.nProps * sizeof(xFontProp);
-	if (rlength > curlength)
-	{
-	    nreply = (xListFontsWithInfoReply *) xalloc(rlength);
-	    if (nreply)
-	    {
-		xfree (reply);
-		reply = nreply;
-		curlength = rlength;
-	    }
-	}
-	if (rlength <= curlength)
-	{
-		reply->type = X_Reply;
-		reply->sequenceNumber = client->sequence;
-		reply->length = (rlength - sizeof(xGenericReply)
-				 + *length + 3) >> 2;
-		QueryFont(&font, (xQueryFontReply *) reply, 0);
-		reply->nameLength = *length;
-		reply->nReplies = n;
-		WriteReplyToClient(client, rlength, reply);
-		(void)WriteToClient(client, *length, *path);
-	}
-	xfree(font.pFP);
+	WriteReplyToClient(client, rlength, reply);
+	(void)WriteToClient(client, nlength, name);
     }
-    xfree(reply);
-    FreeFontRecord(fpaths);
+    FinishListFontsWithInfo (closure);
     bzero((char *)&last_reply, sizeof(xListFontsWithInfoReply));
     last_reply.type = X_Reply;
     last_reply.sequenceNumber = client->sequence;
@@ -3038,6 +3006,7 @@ ProcSetFontPath(client)
     unsigned long nbytes, total;
     long nfonts;
     int n, result;
+    int error;
     REQUEST(xSetFontPathReq);
     
     REQUEST_AT_LEAST_SIZE(xSetFontPathReq);
@@ -3055,7 +3024,9 @@ ProcSetFontPath(client)
     }
     if (total >= 4)
 	return(BadLength);
-    result = SetFontPath(client, stuff->nFonts, (char *)&stuff[1]);
+    result = SetFontPath(stuff->nFonts, (char *)&stuff[1], &error);
+    if (error != -1)
+	client->errorValue = error;
     if (!result)
 	result = client->noClientException;
     return (result);

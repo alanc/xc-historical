@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 5.4 89/11/18 17:12:18 rws Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.5 89/11/21 15:19:41 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -26,6 +26,7 @@ SOFTWARE.
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
+#include	"mfb.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
 #include	"gcstruct.h"
@@ -33,7 +34,6 @@ SOFTWARE.
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
-#include	"mfb.h"
 #include	"maskbits.h"
 
 /*
@@ -119,8 +119,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     unsigned char *pglyphBase;	/* start of array of glyphs */
 {
-    CharInfoPtr pci;
-    FontInfoPtr pfi = pGC->font->pFI;
+    FontPtr	pfont = pGC->font;
     int widthDst;
     unsigned int *pdstBase;	/* pointer to longword with top row 
 				   of current glyph */
@@ -162,12 +161,11 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     xpos = x + pDrawable->x;
     ypos = y + pDrawable->y;
 
-    pci = &pfi->maxbounds;
-    widthGlyph = pci->metrics.characterWidth;
-    h = pfi->fontAscent + pfi->fontDescent;
+    widthGlyph = FONTMAXBOUNDS(pfont,characterWidth);
+    h = FONTASCENT(pfont) + FONTDESCENT(pfont);
 
-    xpos += pci->metrics.leftSideBearing;
-    ypos -= pfi->fontAscent;
+    xpos += FONTMAXBOUNDS(pfont,leftSideBearing);
+    ypos -= FONTASCENT(pfont);
 
     bbox.x1 = xpos;
     bbox.x2 = xpos + (widthGlyph * nglyph);
@@ -207,7 +205,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
 #ifdef USE_LEFTBITS
     glyphMask = endtab[widthGlyph];
-    glyphBytes = GLYPHWIDTHBYTESPADDED(pci);
+    glyphBytes = GLYPHWIDTHBYTESPADDED(*ppci);
 #endif
 
     if (nglyph >= 4 && widthGlyphs <= 32)
@@ -219,10 +217,10 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    xoff2 = widthGlyph;
 	    xoff3 = xoff2 + widthGlyph;
 	    xoff4 = xoff3 + widthGlyph;
-	    char1 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
-	    char2 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
-	    char3 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
-	    char4 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	    char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
+	    char2 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
+	    char3 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
+	    char4 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
 
 	    hTmp = h;
 	    dst = pdstBase + (xpos >> 5);
@@ -269,7 +267,7 @@ MFBTEGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     while(nglyph--)
     {
 	xoff1 = xpos & 0x1f;
-	char1 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase,(*ppci++));
 	hTmp = h;
 	dst = pdstBase + (xpos >> 5);
 

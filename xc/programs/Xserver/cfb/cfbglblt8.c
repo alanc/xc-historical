@@ -21,6 +21,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
+#include	"cfb.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
 #include	"gcstruct.h"
@@ -28,7 +29,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
-#include	"cfb.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 
@@ -97,8 +97,8 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register int	    xoff;
     register int	    ewTmp;
 
+    FontPtr		pfont = pGC->font;
     CharInfoPtr		pci;
-    FontInfoPtr		pfi = pGC->font->pFI;
     unsigned long	*dstLine;
     unsigned long	*pdstBase;
     int			hTmp;
@@ -120,7 +120,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     extern void		stipplestack (), stipplestackte ();
 
     stipple = stipplestack;
-    if (pfi->inkMetrics)
+    if (FONTCONSTMETRICS(pfont))
 	stipple = stipplestackte;
 #endif
     
@@ -134,8 +134,8 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	w += ppci[h]->metrics.characterWidth;
     bbox.x2 = w - ppci[nglyph-1]->metrics.characterWidth;
     bbox.x2 += ppci[nglyph-1]->metrics.rightSideBearing;
-    bbox.y1 = -pfi->maxbounds.metrics.ascent;
-    bbox.y2 = pfi->maxbounds.metrics.descent;
+    bbox.y1 = -FONTMAXBOUNDS(pfont,ascent);
+    bbox.y2 = FONTMAXBOUNDS(pfont,descent);
 
     clip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
     extents = &clip->extents;
@@ -182,7 +182,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     while (nglyph--)
     {
 	pci = *ppci++;
-	glyphBits = (glyphPointer) (pglyphBase + pci->byteOffset);
+	glyphBits = (glyphPointer) FONTGLYPHBITS(pglyphBase,pci);
 	xoff = x + pci->metrics.leftSideBearing;
 	dstLine = pdstBase +
 	          (y - pci->metrics.ascent) * widthDst + (xoff >> 2);
@@ -239,11 +239,12 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     unsigned long	    c1;
 
     CharInfoPtr		pci;
-    FontInfoPtr		pfi = pGC->font->pFI;
+    FontPtr		pfont = pGC->font;
     unsigned long	*dstLine;
     unsigned long	*pdstBase;
     unsigned long	*cTmp, *clips;
     int			maxAscent, maxDescent;
+    int			minLeftBearing;
     int			hTmp;
     int			widthDst;
     int			bwidthDst;
@@ -279,8 +280,9 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	bwidthDst = (int)(((PixmapPtr)pDrawable)->devKind);
     }
     widthDst = bwidthDst >> 2;
-    maxAscent = pfi->maxbounds.metrics.ascent;
-    maxDescent = pfi->maxbounds.metrics.descent;
+    maxAscent = FONTMAXBOUNDS(pfont,ascent);
+    maxDescent = FONTMAXBOUNDS(pfont,descent);
+    minLeftBearing = FONTMINBOUNDS(pfont,leftSideBearing);
 
     pRegion = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
 
@@ -294,7 +296,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     if (!numRects || pBox->y1 >= y + maxDescent)
 	return;
     yBand = pBox->y1;
-    while (numRects && pBox->y1 == yBand && pBox->x2 <= x + pfi->minbounds.metrics.leftSideBearing)
+    while (numRects && pBox->y1 == yBand && pBox->x2 <= x + minLeftBearing)
     {
 	++pBox;
 	--numRects;
@@ -306,7 +308,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     while (nglyph--)
     {
 	pci = *ppci++;
-	glyphBits = (glyphPointer) (pglyphBase + pci->byteOffset);
+	glyphBits = (glyphPointer) FONTGLYPHBITS(pglyphBase,pci);
 	w = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
 	xG = x + pci->metrics.leftSideBearing;
 	yG = y - pci->metrics.ascent;

@@ -23,10 +23,11 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.37 89/07/10 15:32:12 rws Exp $ */
+/* $XConsortium: cursor.c,v 1.38 89/07/16 17:24:22 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
+#include "servermd.h"
 #include "scrnintstr.h"
 #include "dixstruct.h"
 #include "cursorstr.h"

@@ -21,10 +21,11 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.19 90/03/20 14:48:59 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.20 90/05/15 18:38:25 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
+#include "mfb.h"
 #include "dixfontstr.h"
 #include "fontstruct.h"
 #include "gcstruct.h"
@@ -33,7 +34,6 @@ SOFTWARE.
 #include "scrnintstr.h"
 #include "region.h"
 
-#include "mfb.h"
 #include "mistruct.h"
 
 #include "maskbits.h"
@@ -354,8 +354,8 @@ matchCommon (pGC)
     if (pGC->fillStyle != FillSolid)
 	return 0;
     if (!pGC->font ||
-        pGC->font->pFI->maxbounds.metrics.rightSideBearing -
-	pGC->font->pFI->minbounds.metrics.leftSideBearing > 32)
+        FONTMAXBOUNDS(pGC->font,rightSideBearing) -
+	FONTMINBOUNDS(pGC->font,leftSideBearing) > 32)
 	return 0;
     priv = (mfbPrivGC *) pGC->devPrivates[mfbGCPrivateIndex].ptr;
     for (i = 0; i < numberCommonOps; i++) {
@@ -366,7 +366,7 @@ matchCommon (pGC)
 	    continue;
 	if (priv->rop != cop->rrop)
 	    continue;
-	if (cop->terminalFont && !pGC->font->pFI->terminalFont)
+	if (cop->terminalFont && !TERMINALFONT(pGC->font))
 	    continue;
 	priv->FillArea = cop->fillArea;
 	return cop->ops;
@@ -899,8 +899,8 @@ mfbValidateGC(pGC, changes, pDrawable)
     if (new_text || new_fill)
     {
 	if ((pGC->font) &&
-	    (pGC->font->pFI->maxbounds.metrics.rightSideBearing -
-	     pGC->font->pFI->minbounds.metrics.leftSideBearing) > 32)
+	    (FONTMAXBOUNDS(pGC->font,rightSideBearing) -
+	     FONTMINBOUNDS(pGC->font,leftSideBearing)) > 32)
 	{
 	    pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
 	    pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
@@ -909,7 +909,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	{
 	    /* special case ImageGlyphBlt for terminal emulator fonts */
 	    if ((pGC->font) &&
-		(pGC->font->pFI->terminalFont) &&
+		TERMINALFONT(pGC->font) &&
 		(pGC->fgPixel != pGC->bgPixel))
 	    {
 		/* pcc bug makes this not compile...

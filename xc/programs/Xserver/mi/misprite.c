@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.29 90/02/02 19:07:38 keith Exp $ */
+/* $XConsortium: misprite.c,v 5.30 90/05/15 18:36:30 keith Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -1472,7 +1472,7 @@ miSpriteTextOverlap (pDraw, font, x, y, n, charinfo, imageblt, w, cursorBox)
     x += pDraw->x;
     y += pDraw->y;
 
-    if (font->pFI->minbounds.metrics.characterWidth >= 0)
+    if (FONTMINBOUNDS(font,characterWidth) >= 0)
     {
 	/* compute an approximate (but covering) bounding box */
 	if (!imageblt || (charinfo[0]->metrics.leftSideBearing < 0))
@@ -1482,23 +1482,21 @@ miSpriteTextOverlap (pDraw, font, x, y, n, charinfo, imageblt, w, cursorBox)
 	if (w)
 	    extents.overallRight = w - charinfo[n-1]->metrics.characterWidth;
 	else
-	    extents.overallRight = font->pFI->maxbounds.metrics.characterWidth
+	    extents.overallRight = FONTMAXBOUNDS(font,characterWidth)
 				    * (n - 1);
 	if (imageblt && (charinfo[n-1]->metrics.characterWidth >
 			 charinfo[n-1]->metrics.rightSideBearing))
 	    extents.overallRight += charinfo[n-1]->metrics.characterWidth;
 	else
 	    extents.overallRight += charinfo[n-1]->metrics.rightSideBearing;
-	if (imageblt &&
-	    (font->pFI->fontAscent > font->pFI->maxbounds.metrics.ascent))
-	    extents.overallAscent = font->pFI->fontAscent;
+	if (imageblt && FONTASCENT(font) > FONTMAXBOUNDS(font,ascent))
+	    extents.overallAscent = FONTASCENT(font);
 	else
-	    extents.overallAscent = font->pFI->maxbounds.metrics.ascent;
-	if (imageblt &&
-	    (font->pFI->fontDescent > font->pFI->maxbounds.metrics.descent))
-	    extents.overallDescent = font->pFI->fontDescent;
+	    extents.overallAscent = FONTMAXBOUNDS(font, ascent);
+	if (imageblt && FONTDESCENT(font) > FONTMAXBOUNDS(font,descent))
+	    extents.overallDescent = FONTDESCENT(font);
 	else
-	    extents.overallDescent = font->pFI->maxbounds.metrics.descent;
+	    extents.overallDescent = FONTMAXBOUNDS(font,descent);
 	if (!BOX_OVERLAP(cursorBox,
 			 x + extents.overallLeft,
 			 y - extents.overallAscent,
@@ -1606,7 +1604,7 @@ miSpriteText (pDraw, pGC, x, y, count, chars, fontEncoding, textType, cursorBox)
 	 * GetGlyphs all over again, so we go directly to the GlyphBlt functions here.
 	 */
 	drawFunc = imageblt ? pGC->ops->ImageGlyphBlt : pGC->ops->PolyGlyphBlt;
-	(*drawFunc) (pDraw, pGC, x, y, n, charinfo, pGC->font->pGlyphs);
+	(*drawFunc) (pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(pGC->font));
 #endif /* AVOID_GLYPHBLT */
     }
     DEALLOCATE_LOCAL(charinfo);
@@ -1654,7 +1652,7 @@ miSpritePolyText16(pDrawable, pGC, x, y, count, chars)
     if (GC_CHECK((WindowPtr) pDrawable))
 	ret = miSpriteText (pDrawable, pGC, x, y, (unsigned long)count,
 			    (char *)chars,
-			    pGC->font->pFI->lastRow == 0 ?
+			    FONTLASTROW(pGC->font) == 0 ?
 			    Linear16Bit : TwoD16Bit, TT_POLY16, &pScreenPriv->saved);
     else
 	ret = (*pGC->ops->PolyText16) (pDrawable, pGC, x, y, count, chars);
@@ -1699,7 +1697,7 @@ miSpriteImageText16(pDrawable, pGC, x, y, count, chars)
     if (GC_CHECK((WindowPtr) pDrawable))
 	(void) miSpriteText (pDrawable, pGC, x, y, (unsigned long)count,
 			     (char *)chars,
-			    pGC->font->pFI->lastRow == 0 ?
+			    FONTLASTROW(pGC->font) == 0 ?
 			    Linear16Bit : TwoD16Bit, TT_IMAGE16, &pScreenPriv->saved);
     else
 	(*pGC->ops->ImageText16) (pDrawable, pGC, x, y, count, chars);

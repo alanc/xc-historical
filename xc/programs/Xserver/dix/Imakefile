@@ -9,7 +9,7 @@ OBJS = atom.o colormap.o cursor.o devices.o dispatch.o dixutils.o events.o \
 	main.o property.o resource.o swaprep.o swapreq.o \
 	tables.o window.o initatoms.o dixfonts.o
 
-    INCLUDES = -I. -I../include -I$(INCLUDESRC)
+    INCLUDES = -I. -I../include -I$(INCLUDESRC) -I$(FONTSRC)/include
     LINTLIBS = ../ddx/snf/llib-lsnf.ln ../os/4.2bsd/llib-los.ln
 
 /*

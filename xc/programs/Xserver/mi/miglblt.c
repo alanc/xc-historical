@@ -22,11 +22,12 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 5.2 89/08/25 14:57:38 rws Exp $ */
+/* $XConsortium: miglblt.c,v 5.3 90/02/02 18:04:21 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
+#include	"misc.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
 #include	"gcstruct.h"
@@ -67,7 +68,7 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int width, height;
     PixmapPtr pPixmap;
     int nbyLine;			/* bytes per line of padded pixmap */
-    FontRec *pfont;
+    FontPtr pfont;
     GCPtr pGCtmp;
     register int i;
     register int j;
@@ -88,10 +89,9 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     }
 
     pfont = pGC->font;
-    width = pfont->pFI->maxbounds.metrics.rightSideBearing - 
-	pfont->pFI->minbounds.metrics.leftSideBearing;
-    height = pfont->pFI->maxbounds.metrics.ascent + 
-	pfont->pFI->maxbounds.metrics.descent;
+    width = FONTMAXBOUNDS(pfont,rightSideBearing) - 
+	    FONTMINBOUNDS(pfont,leftSideBearing);
+    height = FONTASCENT(pfont) + FONTDESCENT(pfont);
 
     pPixmap = (*pDrawable->pScreen->CreatePixmap)(pDrawable->pScreen,
 						  width, height, 1);
@@ -122,7 +122,7 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     while(nglyph--)
     {
 	pci = *ppci++;
-	pglyph = pglyphBase + pci->byteOffset;
+	pglyph = FONTGLYPHBITS(pglyphBase, pci);
 	gWidth = GLYPHWIDTHPIXELS(pci);
 	gHeight = GLYPHHEIGHTPIXELS(pci);
 	if (gWidth && gHeight)
@@ -194,9 +194,8 @@ miImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	backrect.x = x + info.overallWidth;
 	backrect.width = -info.overallWidth;
     }
-    backrect.y = y - pGC->font->pFI->fontAscent;
-    backrect.height = pGC->font->pFI->fontAscent + 
-		      pGC->font->pFI->fontDescent;
+    backrect.y = y - FONTASCENT(pGC->font);
+    backrect.height = FONTASCENT(pGC->font) + FONTDESCENT(pGC->font);
 
     oldAlu = pGC->alu;
     oldFG = pGC->fgPixel;

@@ -22,24 +22,26 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.8 89/04/28 10:26:21 rws Exp $ */
+/* $XConsortium: dixfonts.c,v 1.9 89/07/16 17:24:57 rws Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
-#include "dixfontstr.h"
-#include "fontstruct.h"
 #include "scrnintstr.h"
 #include "resource.h"
-#include "dix.h"
+#include "dixstruct.h"
 #include "cursorstr.h"
 #include "misc.h"
 #include "opaque.h"
+#include "dixfontstr.h"
+#include "osstruct.h"
 
 #define QUERYCHARINFO(pci, pr)  *(pr) = (pci)->metrics
 
-extern FontPtr 	defaultFont;
+extern pointer fosNaturalParams;
+
+extern EncodedFontPtr 	defaultFont;
 
 /*
  * adding RT_FONT prevents conflict with default cursor font
@@ -48,10 +50,12 @@ Bool
 SetDefaultFont( defaultfontname)
     char *	defaultfontname;
 {
-    FontPtr	pf;
+extern	EncodedFontPtr	OpenFont();
+	EncodedFontPtr	pf;
 
-   pf = OpenFont( (unsigned)strlen( defaultfontname), defaultfontname);
-    if (!pf || !AddResource(FakeClientID(0), RT_FONT, (pointer)pf))
+    pf = OpenFont( (unsigned)strlen( defaultfontname), defaultfontname);
+    if ((pf==NullEncodedFont) || 
+	 (!AddResource(FakeClientID(0), RT_FONT, (pointer)pf)))
 	return FALSE;
     defaultFont = pf;
     return TRUE;
@@ -60,24 +64,25 @@ SetDefaultFont( defaultfontname)
 /*
  * Check reference count first, load font only if necessary.
  */
-FontPtr 
+EncodedFontPtr 
 OpenFont(lenfname, pfontname)
     unsigned	lenfname;
     char *	pfontname;
 {
-    FontPtr 	pfont;
-    int		nscr;
+    EncodedFontPtr 	pfont= NullEncodedFont;
+    int		i;
     ScreenPtr	pscr;
+    Mask	unread;
 
-    pfont = FontFileLoad(pfontname, lenfname);
-
-    if (pfont == NullFont)
-    {
+    unread = fpLookupFont(pfontname,lenfname,&pfont,FONT_STANDARD_TABLES,
+							 fosNaturalParams);
+    if (unread!=0) {
 #ifdef notdef
 	ErrorF(  "OpenFont: read failed on file %s\n", ppathname);
 #endif
-	return NullFont;
+	return NullEncodedFont;
     }
+
 
     if (pfont->refcnt != 0) {
 	pfont->refcnt += 1;
@@ -85,13 +90,32 @@ OpenFont(lenfname, pfontname)
     }
 
     /*
+     * this is a new font, set up pfont->pCS->ppCI[*].pPriv to point
+     * to the character bitmaps.
+     * Once we've copied the pictures, we can free pBitOffsets to save
+     * memory but we have to be careful to free the bitmaps (if necessary)
+     * in CloseFont (XXX! Not implemented yet)
+     */
+     for (i=0;i<pfont->pCS->nChars;i++) {
+	pfont->pCS->ci.pCI[i].pPriv=	(pointer)pfont->pCS->pBitOffsets[i];
+     }
+
+    /*
      * since this font has been newly read off disk, ask each screen to
      * realize it.
      */
     pfont->refcnt = 1;
-    for (nscr = 0; nscr < screenInfo.numScreens; nscr++)
-    {
-	pscr = screenInfo.screens[nscr];
+#ifdef totallybogusifdef
+    pfont->devPriv= (pointer *)Xalloc(sizeof(pointer)*MAXSCREENS);
+    if (pfont->devPriv==NULL) {
+	fpUnloadFont(pfont,TRUE);
+	return(NullEncodedFont);
+    }
+    bzero(pfont->devPriv,sizeof(pointer)*MAXSCREENS);
+#endif
+
+    for (i = 0; i < screenInfo.numScreens; i++) {
+	pscr = screenInfo.screens[i];
         if ( pscr->RealizeFont)
 	    ( *pscr->RealizeFont)( pscr, pfont);
     }
@@ -104,13 +128,13 @@ OpenFont(lenfname, pfontname)
 /*ARGSUSED*/
 int
 CloseFont(pfont, fid)
-    FontPtr 	pfont;
+    EncodedFontPtr 	pfont;
     Font	fid;
 {
     int		nscr;
     ScreenPtr	pscr;
 
-    if (pfont == NullFont)
+    if (pfont == NullEncodedFont)
         return(Success);
     if (--pfont->refcnt == 0)
     {
@@ -126,304 +150,187 @@ CloseFont(pfont, fid)
 	}
 	if (pfont == defaultFont)
 	    defaultFont = NULL;
-	FontUnload(pfont);
+#ifdef totallybogusifdef
+	if (pfont->devPriv) {
+	    Xfree(pfont->devPriv);
+	    pfont->devPriv=	NULL;
+	}
+#endif
+	fpUnloadFont(pfont,TRUE);
     }
-   return(Success);
+    return(Success);
 }
 
-Bool
-DescribeFont(pfontname, lenfname, pfi, ppfp)
-    char *pfontname;
-    int lenfname;
-    FontInfoPtr pfi;
-    DIXFontPropPtr *ppfp;	/* return */
-{
-    FontPtr pfont;
-    Bool found;
 
-    found = FontFilePropLoad(pfontname, (unsigned int)lenfname,
-			     &pfont, pfi, ppfp);
+/***====================================================================***/
 
-    if (!found)
-	return FALSE;
-    if (pfont != NullFont) {	/* need to get it myself */
-	*pfi = *pfont->pFI;
-	if (pfi->inkMetrics) {
-	    pfi->minbounds = *pfont->pInkMin;
-	    pfi->maxbounds = *pfont->pInkMax;
-	}
-	if (pfi->nProps != 0) {
-	    *ppfp = (DIXFontPropPtr)xalloc(sizeof(DIXFontProp)*pfi->nProps);
-	    if (*ppfp == NullDIXFontProp)
-		return FALSE;
-	    bcopy((char *)pfont->pFP, (char *)*ppfp,
-		  (int)(sizeof(DIXFontProp) * pfi->nProps));
-	}
-    }
+	/*\
+	 * Sets up pReply as the correct QueryFontReply for
+	 * pFont with the first nProtoCCIStructs char infos.
+	\*/
 
-    return TRUE;
-}
+/* 5/23/89 (ef) -- XXX! Does this already exist somewhere? */
+static xCharInfo xciNoSuchChar = { 0,0,0,0,0,0};
 
 void
-QueryFont( pf, pr, nprotoxcistructs)
-    FontPtr 		pf;
-    xQueryFontReply *	pr;	/* caller must allocate this storage */
-    int		nprotoxcistructs;
+QueryFont( pFont, pReply, nProtoCCIStructs)
+    EncodedFontPtr 	 pFont;
+    xQueryFontReply	*pReply;	/* caller must allocate this storage */
+    int			 nProtoCCIStructs;
 {
-    FontInfoPtr 	pfi = pf->pFI;
-    CharInfoPtr 	pci;
-    DIXFontProp *	pfp;
-    int		ct;
-    xFontProp *	prfp;
-    xCharInfo *	prci;
+    CharSetPtr 		 pCS = pFont->pCS;
+    CharInfoPtr 	 *ppCI;
+    FontPropPtr		 pFP;
+    int			 i;
+    xFontProp 		*prFP;
+    xCharInfo 		*prCI;
 
     /* pr->length set in dispatch */
-    pr->minCharOrByte2 = pfi->firstCol;
-    pr->defaultChar = pfi->chDefault;
-    pr->maxCharOrByte2 = pfi->lastCol;
-    pr->drawDirection = pfi->drawDirection;
-    pr->allCharsExist = pfi->allExist;
-    pr->minByte1 = pfi->firstRow;
-    pr->maxByte1 = pfi->lastRow;
-    pr->fontAscent = pfi->fontAscent;
-    pr->fontDescent = pfi->fontDescent;
+    pReply->minCharOrByte2=	pFont->firstCol;
+    pReply->defaultChar=	pFont->defaultCh;
+    pReply->maxCharOrByte2=	pFont->lastCol;
+    pReply->drawDirection=	pCS->drawDirection;
+    pReply->allCharsExist=	pFont->allExist;
+    pReply->minByte1=		pFont->firstRow;
+    pReply->maxByte1=		pFont->lastRow;
+    pReply->fontAscent=		pCS->fontAscent;
+    pReply->fontDescent=	pCS->fontDescent;
 
-    QUERYCHARINFO( pf->pInkMin, &pr->minBounds); 
-    QUERYCHARINFO( pf->pInkMax, &pr->maxBounds); 
+    pReply->minBounds=	pFont->inkMin;
+    pReply->maxBounds=	pFont->inkMax;
 
-    pr->nFontProps = pfi->nProps; 
-    pr->nCharInfos = nprotoxcistructs; 
+    pReply->nFontProps= pCS->nProps; 
+    pReply->nCharInfos=	nProtoCCIStructs; 
 
 
-    for ( ct=0,
-	    pfp=pf->pFP,
-	    prfp=(xFontProp *)(&pr[1]);
-	  ct < pfi->nProps;
-	  ct++, pfp++, prfp++)
+    for ( i=0, pFP=pCS->props, prFP=(xFontProp *)(&pReply[1]);
+	  i < pCS->nProps;
+	  i++, pFP++, prFP++)
     {
-	prfp->name = pfp->name;
-	prfp->value = pfp->value;
+	prFP->name=	pFP->name;
+	prFP->value=	pFP->value;
     }
 
-    for ( ct=0,
-	    pci = &pf->pInkCI[0],
-	    prci=(xCharInfo *)(prfp);
-	  ct<nprotoxcistructs;
-	  ct++, pci++, prci++)
-	QUERYCHARINFO( pci, prci);
-}
-
-void
-queryCharInfo( pci, pr)
-    CharInfoPtr 		pci;
-    xCharInfo *		pr;	/* protocol packet to fill in */
-{
-    QUERYCHARINFO(pci, pr);
-}
-
-/* text support routines. A charinfo array builder, and a bounding */
-/* box calculator */
-
-void
-GetGlyphs(font, count, chars, fontEncoding, glyphcount, glyphs)
-    FontPtr font;
-    unsigned long count;
-    register unsigned char *chars;
-    FontEncoding fontEncoding;
-    unsigned long *glyphcount;	/* RETURN */
-    CharInfoPtr glyphs[];	/* RETURN */
-{
-    CharInfoPtr		pCI = font->pCI;
-    FontInfoPtr		pFI = font->pFI;
-    unsigned int	firstCol = pFI->firstCol;
-    unsigned int	numCols = pFI->lastCol - firstCol + 1;
-    unsigned int	firstRow = pFI->firstRow;
-    unsigned int	numRows = pFI->lastRow - firstRow + 1;
-    unsigned int	chDefault = pFI->chDefault;
-    unsigned int	cDef = chDefault - firstCol;
-    register unsigned long	i;
-    unsigned long		n;
-    register unsigned int	c;
-    register CharInfoPtr	ci;
-
-    n = 0;
-    switch (fontEncoding) {
-
-	case Linear8Bit:
-	case TwoD8Bit:
-	    if (pFI->allExist && (cDef < numCols)) {
-		for (i=0; i < count; i++) {
-
-		    c = (*chars++) - firstCol;
-		    if (c >= numCols) {
-			c = cDef;
-		    }
-		    ci = &pCI[c];
-		    glyphs[i] = ci;
-		}
-		n = count;
-	    } else {
-		for (i=0; i < count; i++) {
-    
-		    c = (*chars++) - firstCol;
-		    if (c < numCols) {
-			ci = &pCI[c];
-			if (ci->exists) {glyphs[n++] = ci; continue;}
-		    }
-    
-		    if (cDef < numCols) {
-			ci = &pCI[cDef];
-			if (ci->exists) glyphs[n++] = ci;
-		    }
-		}
-	    }
-	    break;
-
-	case Linear16Bit:
-	    if (pFI->allExist && (cDef < numCols)) {
-		for (i=0; i < count; i++) {
-
-		    c = *chars++ << 8;
-		    c = (c | *chars++) - firstCol;
-		    if (c >= numCols) {
-			c = cDef;
-		    }
-		    ci = &pCI[c];
-		    glyphs[i] = ci;
-		}
-		n = count;
-	    } else {
-		for (i=0; i < count; i++) {
-    
-		    c = *chars++ << 8;
-		    c = (c | *chars++) - firstCol;
-		    if (c < numCols) {
-			ci = &pCI[c];
-			if (ci->exists) {glyphs[n++] = ci; continue;}
-		    }
-    
-		    if (cDef < numCols) {
-			ci = &pCI[cDef];
-			if (ci->exists) glyphs[n++] = ci;
-		    }
-		}
-	    }
-	    break;
-
-	case TwoD16Bit:
-	    for (i=0; i < count; i++) {
-		register unsigned int row;
-		register unsigned int col;
-
-		row = (*chars++) - firstRow;
-		col = (*chars++) - firstCol;
-		if ((row < numRows) && (col < numCols)) {
-		    c = row*numCols + col;
-		    ci = &pCI[c];
-		    if (ci->exists) {glyphs[n++] = ci; continue;}
-		}
-
-		row = (chDefault >> 8)-firstRow;
-		col = (chDefault & 0xff)-firstCol;
-		if ((row < numRows) && (col < numCols)) {
-		    c = row*numCols + col;
-		    ci = &pCI[c];
-		    if (ci->exists) glyphs[n++] = ci;
-		}
-	    }
-	    break;
+    for ( i=0, ppCI = pFont->ppInkCI, prCI=(xCharInfo *)(prFP);
+	  i<nProtoCCIStructs;
+	  i++, ppCI++, prCI++) {
+	if (*ppCI)	*prCI=	(*ppCI)->metrics;
+	else		*prCI=	xciNoSuchChar;
     }
-    *glyphcount = n;
+    return;
 }
 
+typedef struct _LFWIclosure {
+    ClientPtr		    client;
+    FontPathPtr		    fpaths;
+    int			    current;
+    xListFontsWithInfoReply *reply;
+    int			    length;
+} LFWIclosureRec, *LFWIclosurePtr;
 
-void
-QueryGlyphExtents(font, charinfo, count, info)
-    FontPtr font;
-    CharInfoPtr *charinfo;
-    unsigned long count;
-    register ExtentInfoRec *info;
+pointer
+StartListFontsWithInfo (client, length, pattern, maxNames)
+    ClientPtr	client;
+    int		length;
+    char	*pattern;
+    int		maxNames;
 {
-    register CharInfoPtr *ci = charinfo;
-    register unsigned long i;
+    LFWIclosurePtr  c;
 
-    info->drawDirection = font->pFI->drawDirection;
-
-    info->fontAscent = font->pFI->fontAscent;
-    info->fontDescent = font->pFI->fontDescent;
-
-    if (count != 0) {
-
-	info->overallAscent  = (*ci)->metrics.ascent;
-	info->overallDescent = (*ci)->metrics.descent;
-	info->overallLeft    = (*ci)->metrics.leftSideBearing;
-	info->overallRight   = (*ci)->metrics.rightSideBearing;
-	info->overallWidth   = (*ci)->metrics.characterWidth;
-
-	if (font->pFI->constantMetrics && font->pFI->noOverlap) {
-	    info->overallWidth *= count;
-	    info->overallRight += (info->overallWidth -
-				   (*ci)->metrics.characterWidth);
-	    return;
-	}
-	for (i = count, ci++; --i != 0; ci++) {
-	    info->overallAscent = max(
-	        info->overallAscent,
-		(*ci)->metrics.ascent);
-	    info->overallDescent = max(
-	        info->overallDescent,
-		(*ci)->metrics.descent);
-	    info->overallLeft = min(
-		info->overallLeft,
-		info->overallWidth+(*ci)->metrics.leftSideBearing);
-	    info->overallRight = max(
-		info->overallRight,
-		info->overallWidth+(*ci)->metrics.rightSideBearing);
-	    /* yes, this order is correct; overallWidth IS incremented last */
-	    info->overallWidth += (*ci)->metrics.characterWidth;
-	}
-
-    } else {
-
-	info->overallAscent  = 0;
-	info->overallDescent = 0;
-	info->overallWidth   = 0;
-	info->overallLeft    = 0;
-	info->overallRight   = 0;
-
+    c = (LFWIclosurePtr) xalloc (sizeof (*c));
+    if (!c)
+	return NULL;
+    c->client = client;
+    c->fpaths = ExpandFontNamePattern (length, pattern, maxNames);
+    if (!c->fpaths)
+    {
+	xfree (c);
+	return NULL;
     }
+    c->current = 0;
+    c->reply = 0;
+    c->length = 0;
+    return (pointer) c;
 }
 
-Bool
-QueryTextExtents(font, count, chars, info)
-    FontPtr font;
-    unsigned long count;
-    unsigned char *chars;
-    ExtentInfoRec *info;
+int
+NextListFontsWithInfo (closure, replyP, replyLengthP, nameP, nameLengthP)
+    pointer		    closure;
+    xListFontsWithInfoReply **replyP;
+    int			    *replyLengthP;
+    char		    **nameP;
+    int			    *nameLengthP;
 {
-    CharInfoPtr *charinfo;
-    unsigned long n;
-    CharInfoPtr	oldCI;
-    Bool oldCM;
+    LFWIclosurePtr	    c;
+    char		    *name;
+    int			    nameLength;
+    int			    replyLength;
+    xListFontsWithInfoReply *reply, *nreply;
+    EncodedFontPtr	    pRtrnFont;
+    Mask		    unread;
+    CharSetRec		    charset;
+    EncodedFontRec	    font;
 
-    charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr));
-    if(!charinfo)
-	return FALSE;
-    oldCI = font->pCI;
-    /* kludge, temporarily stuff in Ink metrics */
-    font->pCI = font->pInkCI;
-    if (font->pFI->lastRow == 0)
-	GetGlyphs(font, count, chars, Linear16Bit, &n, charinfo);
-    else
-	GetGlyphs(font, count, chars, TwoD16Bit, &n, charinfo);
-    /* restore real glyph metrics */
-    font->pCI = oldCI;
-    oldCM = font->pFI->constantMetrics;
-    /* kludge, ignore bitmap metric flag */
-    font->pFI->constantMetrics = FALSE;
-    QueryGlyphExtents(font, charinfo, n, info);
-    /* restore bitmap metric flag */
-    font->pFI->constantMetrics = oldCM;
-    DEALLOCATE_LOCAL(charinfo);
-    return TRUE;
+    c = (LFWIclosurePtr) closure;
+    for (;;)
+    {
+	if (c->current == c->fpaths->npaths)
+	    return 0;
+    	bzero (&font, sizeof (font));
+    	bzero (&charset, sizeof (charset));
+    	pRtrnFont = &font;
+    	FONTCHARSET(&font) = &charset;
+    	name = c->fpaths->paths[c->current];
+    	nameLength = c->fpaths->length[c->current];
+    	c->current++;
+    	unread = fpLookupFont (name, nameLength, &pRtrnFont,
+			       FONT_BDF_ENCODINGS|FONT_METRICS|FONT_INK_METRICS|
+			       FONT_ACCELERATORS|FONT_PROPERTIES,fosNaturalParams);
+    	if (pRtrnFont != NULL && unread == 0)
+    	{
+    	    replyLength = sizeof (xListFontsWithInfoReply) +
+		      	  pRtrnFont->pCS->nProps * sizeof (xFontProp);
+    	    if (replyLength > c->length)
+    	    {
+	    	nreply = (xListFontsWithInfoReply *) xalloc (replyLength);
+	    	if (nreply)
+	    	{
+	    	    xfree (c->reply);
+	    	    c->reply = nreply;
+	    	    c->length = replyLength;
+	    	}
+    	    }
+	    /* loop termination -
+ 	     * found a real font and enough space for reply
+	     */
+    	    if (replyLength <= c->length)
+	    	break;
+    	}
+    }
+    reply = c->reply;
+    reply->type = X_Reply;
+    reply->length = (replyLength - sizeof(xGenericReply)
+		     + nameLength + 3) >> 2;
+    QueryFont(pRtrnFont, (xQueryFontReply *) reply, 0);
+    reply->sequenceNumber = c->client->sequence;
+    reply->nameLength = nameLength;
+    reply->nReplies = c->fpaths->npaths - c->current;
+    *replyP = reply;
+    *replyLengthP = replyLength;
+    *nameP = name;
+    *nameLengthP = nameLength;
+    if (pRtrnFont == &font)
+	fpUnloadFont (pRtrnFont, FALSE);
+    return 1;
+}
+
+FinishListFontsWithInfo (closure)
+    pointer closure;
+{
+    LFWIclosurePtr  c;
+
+    c = (LFWIclosurePtr) closure;
+    FreeFontRecord (c->fpaths);
+    xfree (c->reply);
+    xfree (c);
 }

@@ -21,11 +21,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 5.2 89/11/24 18:03:09 rws Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.3 89/12/06 20:24:31 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
+#include "mfb.h"
 #include "fontstruct.h"
 #include "dixfontstr.h"
 #include "gcstruct.h"
@@ -33,7 +34,6 @@ SOFTWARE.
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 #include "regionstr.h"
-#include "mfb.h"
 #include "maskbits.h"
 #include "miscstruct.h"
 
@@ -85,7 +85,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    unsigned char *pglyphBase;	/* start of array of glyphs */
+    unsigned char *pglyphBase;	/* start of array of glyphs (unused in R5) */
 {
     ExtentInfoRec info;	/* used by QueryGlyphExtents() */
     BoxRec bbox;		/* string's bounding box */
@@ -156,7 +156,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
         while(nglyph--)
         {
 	    pci = *ppci;
-	    pglyph = pglyphBase + pci->byteOffset;
+	    pglyph = FONTGLYPHBITS(pglyphBase, pci);
 	    w = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
 	    h = pci->metrics.ascent + pci->metrics.descent;
 	    widthGlyph = GLYPHWIDTHBYTESPADDED(pci);
@@ -322,7 +322,7 @@ MFBPOLYGLYPHBLT(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 
 		glyphRow = (topEdge - y) + pci->metrics.ascent;
 		widthGlyph = ppos[i].widthGlyph;
-		pglyph = pglyphBase + pci->byteOffset;
+		pglyph = FONTGLYPHBITS(pglyphBase, pci);
 		pglyph += (glyphRow * widthGlyph);
 
 		pdst = ppos[i].pdstBase - ((y-topEdge) * widthDst);

@@ -20,7 +20,7 @@ OBJS =	mivaltree.o mipolyseg.o mipolyrect.o \
 	midash.o mibstore.o miinitext.o \
 	mipointer.o misprite.o midispcur.o miscrinit.o miclipn.o
 
-INCLUDES = -I. -I../../include -I$(INCLUDESRC)
+INCLUDES = -I. -I../../include -I$(INCLUDESRC) -I$(FONTSRC)/include
 LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln
 
 NormalLibraryObjectRule()

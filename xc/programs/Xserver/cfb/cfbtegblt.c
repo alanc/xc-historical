@@ -1,4 +1,4 @@
-/* $XConsortium: cfbtegblt.c,v 5.0 89/06/09 15:01:44 keith Exp $ */
+/* $XConsortium: cfbtegblt.c,v 5.1 89/07/26 10:41:20 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -25,6 +25,7 @@ SOFTWARE.
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
+#include	"cfb.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
 #include	"gcstruct.h"
@@ -32,7 +33,6 @@ SOFTWARE.
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
-#include	"cfb.h"
 #include	"cfbmskbits.h"
 
 extern void miImageGlyphBlt();
@@ -65,8 +65,7 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     CharInfoPtr *ppci;		/* array of character info */
     unsigned char *pglyphBase;	/* start of array of glyphs */
 {
-    CharInfoPtr pci;
-    FontInfoPtr pfi = pGC->font->pFI;
+    FontPtr	pfont = pGC->font;
     int widthDst;
     unsigned int *pdstBase;	/* pointer to longword with top row 
 				   of current glyph */
@@ -101,13 +100,12 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
-    pci = &pfi->maxbounds;
-    wtmp = pci->metrics.characterWidth;
-    h = pfi->fontAscent + pfi->fontDescent;
-    widthGlyph = GLYPHWIDTHBYTESPADDED(pci);
+    wtmp = FONTMAXBOUNDS(pfont,characterWidth);
+    h = FONTASCENT(pfont) + FONTDESCENT(pfont);
+    widthGlyph = GLYPHWIDTHBYTESPADDED(*ppci);
 
-    xpos += pci->metrics.leftSideBearing;
-    ypos -= pfi->fontAscent;
+    xpos += FONTMAXBOUNDS(pfont,leftSideBearing);
+    ypos -= FONTASCENT(pfont);
 
     bbox.x1 = xpos;
     bbox.x2 = xpos + (wtmp * nglyph);
@@ -151,7 +149,7 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
         while(nglyph--)
         {
 
-	    pglyph = pglyphBase + (*ppci++)->byteOffset;
+	    pglyph = FONTGLYPHBITS(pglyphBase, *ppci++);
             pdst = pdtmp;
 	    hTmp = h;
 
@@ -183,7 +181,7 @@ cfbTEGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		pglyph += widthGlyph;
                 pdst += widthDst;
 	    }
-	    xpos += pci->metrics.characterWidth; 
+	    xpos += wtmp;
         }     
 	break;
     }

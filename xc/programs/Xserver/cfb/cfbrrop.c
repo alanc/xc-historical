@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.c,v 1.2 90/02/22 18:44:06 keith Exp $
+ * $XConsortium: cfbrrop.c,v 1.3 90/03/10 15:51:30 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,14 +28,6 @@
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
-#include "dixfontstr.h"
-#include "fontstruct.h"
-#include "gcstruct.h"
-#include "windowstr.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "region.h"
-
 #include "cfb.h"
 #include "cfbmskbits.h"
 

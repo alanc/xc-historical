@@ -22,20 +22,20 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.43 90/11/19 17:27:57 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.44 90/11/29 19:32:50 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
-#include "dixfontstr.h"
+#include "cfb.h"
 #include "fontstruct.h"
+#include "dixfontstr.h"
 #include "gcstruct.h"
 #include "windowstr.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
 #include "region.h"
 
-#include "cfb.h"
 #include "mistruct.h"
 #include "mibstore.h"
 
@@ -199,12 +199,12 @@ matchCommon (pGC, devPriv)
     if (devPriv->rop != GXcopy)
 	return 0;
     if (pGC->font &&
-	(pGC->font->pFI->maxbounds.metrics.rightSideBearing -
-         pGC->font->pFI->minbounds.metrics.leftSideBearing) <= 32)
+	FONTMAXBOUNDS(pGC->font,rightSideBearing) -
+        FONTMINBOUNDS(pGC->font,leftSideBearing) <= 32)
     {
-	if (pGC->font->pFI->terminalFont
+	if (TERMINALFONT(pGC->font)
 #if PPW == 4
-	    && pGC->font->pFI->maxbounds.metrics.characterWidth >= 4
+	    && FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
 #endif
 	)
 #if PPW == 4
@@ -734,8 +734,8 @@ cfbValidateGC(pGC, changes, pDrawable)
 
     if (new_text && (pGC->font))
     {
-        if ((pGC->font->pFI->maxbounds.metrics.rightSideBearing -
-             pGC->font->pFI->minbounds.metrics.leftSideBearing) > 32)
+        if (FONTMAXBOUNDS(pGC->font,rightSideBearing) -
+            FONTMINBOUNDS(pGC->font,leftSideBearing) > 32)
         {
             pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
             pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
@@ -754,10 +754,10 @@ cfbValidateGC(pGC, changes, pDrawable)
 #endif
 		pGC->ops->PolyGlyphBlt = miPolyGlyphBlt;
             /* special case ImageGlyphBlt for terminal emulator fonts */
-            if (pGC->font->pFI->terminalFont &&
+            if (TERMINALFONT(pGC->font) &&
 		(pGC->planemask & PMSK) == PMSK
 #if PPW == 4
-		&& pGC->font->pFI->maxbounds.metrics.characterWidth >= 4
+		&& FONTMAXBOUNDS(pGC->font,characterWidth) >= 4
 #endif
 		)
 	    {

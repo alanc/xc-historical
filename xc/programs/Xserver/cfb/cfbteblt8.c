@@ -17,11 +17,12 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.11 90/04/02 18:33:29 rws Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.12 90/11/29 19:33:41 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
+#include	"cfb.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
 #include	"gcstruct.h"
@@ -29,7 +30,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
-#include	"cfb.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 
@@ -328,8 +328,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     register glyphPointer   char5;
 #endif
 
-    CharInfoPtr		pci;
-    FontInfoPtr		pfi = pGC->font->pFI;
+    FontPtr		pfont = pGC->font;
     unsigned long	*dstLine;
     glyphPointer	oldRightChar;
     unsigned long	*pdstBase;
@@ -348,13 +347,12 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     register int	    glyphBytes;
 #endif
 
-    pci = &pfi->maxbounds;
-    widthGlyph = pci->metrics.characterWidth;
-    h = pfi->fontAscent + pfi->fontDescent;
+    widthGlyph = FONTMAXBOUNDS(pfont,characterWidth);
+    h = FONTASCENT(pfont) + FONTDESCENT(pfont);
     if (!h)
 	return;
-    x = xInit + pci->metrics.leftSideBearing + pDrawable->x;
-    y = yInit - pfi->fontAscent + pDrawable->y;
+    x = xInit + FONTMAXBOUNDS(pfont,leftSideBearing) + pDrawable->x;
+    y = yInit - FONTASCENT(pfont) + pDrawable->y;
     bbox.x1 = x;
     bbox.x2 = x + (widthGlyph * nglyph);
     bbox.y1 = y;
@@ -398,7 +396,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 
 #ifdef USE_LEFTBITS
     glyphMask = endtab[widthGlyph];
-    glyphBytes = GLYPHWIDTHBYTESPADDED(pci);
+    glyphBytes = GLYPHWIDTHBYTESPADDED(*ppci);
 #endif
 
     pdstBase += y * widthDst;
@@ -421,16 +419,16 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 #if NGLYPHS >= 5
 	    xoff5 = xoff4 + widthGlyph;
 #endif
-	    char1 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
-	    char2 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	    char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
+	    char2 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
 #if NGLYPHS >= 3
-	    char3 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	    char3 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
 #endif
 #if NGLYPHS >= 4
-	    char4 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	    char4 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
 #endif
 #if NGLYPHS >= 5
-	    char5 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	    char5 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
 #endif
 	    oldRightChar = LastChar;
 	    dst = dstLine;
@@ -495,7 +493,7 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     while (nglyph--)
     {
 	xoff1 = x & 0x3;
-	char1 = (glyphPointer) (pglyphBase + (*ppci++)->byteOffset);
+	char1 = (glyphPointer) FONTGLYPHBITS(pglyphBase, *ppci++);
 	hTmp = h;
 	dstLine = pdstBase + (x >> 2);
 	oldRightChar = char1;

@@ -15,13 +15,11 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbpush8.c,v 5.6 90/02/09 12:02:11 rws Exp $ */
+/* $XConsortium: cfbpush8.c,v 5.7 90/02/09 12:02:46 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
-#include	"fontstruct.h"
-#include	"dixfontstr.h"
 #include	"gcstruct.h"
 #include	"windowstr.h"
 #include	"scrnintstr.h"

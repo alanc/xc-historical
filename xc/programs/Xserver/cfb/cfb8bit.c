@@ -4,13 +4,11 @@
  * 8 bit color frame buffer utility routines
  */
 
-/* $XConsortium: cfb8bit.c,v 1.3 89/09/19 15:36:32 keith Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.4 90/01/31 12:31:08 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
-#include	"fontstruct.h"
-#include	"dixfontstr.h"
 #include	"gcstruct.h"
 #include	"windowstr.h"
 #include	"scrnintstr.h"

@@ -18,19 +18,17 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: mfbblt.c,v 1.3 90/03/10 15:47:56 keith Exp $ */
+/* $XConsortium: mfbblt.c,v 1.4 90/04/06 10:05:41 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
-#include	"fontstruct.h"
-#include	"dixfontstr.h"
+#include	"mfb.h"
 #include	"gcstruct.h"
 #include	"windowstr.h"
 #include	"scrnintstr.h"
 #include	"pixmapstr.h"
 #include	"regionstr.h"
-#include	"mfb.h"
 #include	"maskbits.h"
 #include	"fastblt.h"
 #include	"mergerop.h"

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $XConsortium: mipolytext.c,v 5.0 89/06/09 15:08:40 keith Exp $ */
+/* $XConsortium: mipolytext.c,v 5.1 90/02/09 14:26:09 keith Exp $ */
 /*
  * mipolytext.c - text routines
  *
@@ -34,9 +34,10 @@ SOFTWARE.
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
+#include	"misc.h"
+#include	"gcstruct.h"
 #include	"fontstruct.h"
 #include	"dixfontstr.h"
-#include	"gcstruct.h"
 
 int
 miPolyText(pDraw, pGC, x, y, count, chars, fontEncoding)
@@ -59,7 +60,7 @@ miPolyText(pDraw, pGC, x, y, count, chars, fontEncoding)
     for (i=0; i < n; i++) w += charinfo[i]->metrics.characterWidth;
     if (n != 0)
         (*pGC->ops->PolyGlyphBlt)(
-	    pDraw, pGC, x, y, n, charinfo, pGC->font->pGlyphs);
+	    pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(pGC->font));
 
     DEALLOCATE_LOCAL(charinfo);
     return x+w;
@@ -86,7 +87,7 @@ miPolyText8(pDraw, pGC, x, y, count, chars)
     for (i=0; i < n; i++) w += charinfo[i]->metrics.characterWidth;
     if (n != 0)
         (*pGC->ops->PolyGlyphBlt)(
-	    pDraw, pGC, x, y, n, charinfo, pGC->font->pGlyphs);
+	    pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(pGC->font));
 
     DEALLOCATE_LOCAL(charinfo);
     return x+w;
@@ -108,13 +109,13 @@ miPolyText16(pDraw, pGC, x, y, count, chars)
     if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr ))))
 	return x ;
     GetGlyphs(pGC->font, (unsigned long)count, (unsigned char *)chars,
-	      (pGC->font->pFI->lastRow == 0) ? Linear16Bit : TwoD16Bit,
+	      (FONTLASTROW(pGC->font) == 0) ? Linear16Bit : TwoD16Bit,
 	      &n, charinfo);
     w = 0;
     for (i=0; i < n; i++) w += charinfo[i]->metrics.characterWidth;
     if (n != 0)
         (*pGC->ops->PolyGlyphBlt)(
-	    pDraw, pGC, x, y, n, charinfo, pGC->font->pGlyphs);
+	    pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(pGC->font));
 
     DEALLOCATE_LOCAL(charinfo);
     return x+w;
@@ -142,7 +143,7 @@ miImageText(pDraw, pGC, x, y, count, chars, fontEncoding)
     w = 0;
     for (i=0; i < n; i++) w += charinfo[i]->metrics.characterWidth;
     if (n !=0 )
-        (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, x, y, n, charinfo, font->pGlyphs);
+        (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(font));
     DEALLOCATE_LOCAL(charinfo);
     return x+w;
 }
@@ -165,7 +166,7 @@ miImageText8(pDraw, pGC, x, y, count, chars)
     GetGlyphs(font, (unsigned long)count, (unsigned char *)chars,
 	      Linear8Bit, &n, charinfo);
     if (n !=0 )
-        (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, x, y, n, charinfo, font->pGlyphs);
+        (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(font));
     DEALLOCATE_LOCAL(charinfo);
 }
 
@@ -185,9 +186,9 @@ miImageText16(pDraw, pGC, x, y, count, chars)
     if(!(charinfo = (CharInfoPtr *)ALLOCATE_LOCAL(count*sizeof(CharInfoPtr))))
 	return;
     GetGlyphs(font, (unsigned long)count, (unsigned char *)chars,
-	      (pGC->font->pFI->lastRow == 0) ? Linear16Bit : TwoD16Bit,
+	      (FONTLASTROW(pGC->font) == 0) ? Linear16Bit : TwoD16Bit,
 	      &n, charinfo);
     if (n !=0 )
-        (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, x, y, n, charinfo, font->pGlyphs);
+        (*pGC->ops->ImageGlyphBlt)(pDraw, pGC, x, y, n, charinfo, FONTGLYPHS(font));
     DEALLOCATE_LOCAL(charinfo);
 }

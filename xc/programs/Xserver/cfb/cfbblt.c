@@ -18,13 +18,11 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbblt.c,v 1.3 90/03/05 11:40:24 keith Exp $ */
+/* $XConsortium: cfbblt.c,v 1.4 90/04/06 10:06:57 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"
-#include	"fontstruct.h"
-#include	"dixfontstr.h"
 #include	"gcstruct.h"
 #include	"windowstr.h"
 #include	"scrnintstr.h"
