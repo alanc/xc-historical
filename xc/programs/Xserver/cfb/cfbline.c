@@ -93,7 +93,6 @@ actual clipping.
    j = _t; \
 }
 
-#if PPW != 4
 void
 #ifdef POLYSEGMENT
 cfbSegmentSS (pDrawable, pGC, nseg, pSeg)
@@ -488,7 +487,6 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     }
 #endif
 }
-#endif /* PPW != 4 */
 
 /*
  * Draw dashed 1-pixel lines.

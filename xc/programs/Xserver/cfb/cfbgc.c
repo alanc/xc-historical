@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.41 90/08/14 19:43:50 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.40 90/06/12 17:04:25 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -49,7 +49,7 @@ static cfbDestroyOps();
 extern void cfbTile32FS();
 #if PPW == 4
 extern void cfb8Stipple32FS(), cfb8OpaqueStipple32FS();
-extern void cfb8LineSS(), cfb8SegmentSS ();
+extern void cfb8LineSS1Rect(), cfb8SegmentSS1Rect ();
 #endif
 
 extern void cfbSolidSpansCopy(), cfbSolidSpansXor (), cfbSolidSpansGeneral();
@@ -65,15 +65,15 @@ static GCFuncs cfbFuncs = {
 };
 
 #if PPW == 4
-static GCOps	cfbTEOps = {
+static GCOps	cfbTEOps1Rect = {
     cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
     cfbCopyArea,
     cfbCopyPlane,
     cfbPolyPoint,
-    cfb8LineSS,
-    cfb8SegmentSS,
+    cfb8LineSS1Rect,
+    cfb8SegmentSS1Rect,
     miPolyRectangle,
     cfbZeroPolyArcSS8Copy,
     miFillPolygon,
@@ -88,7 +88,7 @@ static GCOps	cfbTEOps = {
     cfbPushPixels8,
     NULL,
 };
-#else
+#endif
 
 static GCOps	cfbTEOps = {
     cfbSolidSpansCopy,
@@ -100,7 +100,11 @@ static GCOps	cfbTEOps = {
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
+#if PPW == 4
+    cfbZeroPolyArcSS8Copy,
+#else
     miZeroPolyArc,
+#endif
     miFillPolygon,
     cfbPolyFillRect,
     cfbPolyFillArcSolidCopy,
@@ -108,23 +112,28 @@ static GCOps	cfbTEOps = {
     miPolyText16,
     miImageText8,
     miImageText16,
+#if PPW == 4
+    cfbTEGlyphBlt8,
+    cfbPolyGlyphBlt8,
+    cfbPushPixels8,
+#else
     cfbTEGlyphBlt,
     miPolyGlyphBlt,
     mfbPushPixels,
+#endif
     NULL,
 };
-#endif
 
 #if PPW == 4
-static GCOps	cfbNonTEOps = {
+static GCOps	cfbNonTEOps1Rect = {
     cfbSolidSpansCopy,
     cfbSetSpans,
     cfbPutImage,
     cfbCopyArea,
     cfbCopyPlane,
     cfbPolyPoint,
-    cfb8LineSS,
-    cfb8SegmentSS,
+    cfb8LineSS1Rect,
+    cfb8SegmentSS1Rect,
     miPolyRectangle,
     cfbZeroPolyArcSS8Copy,
     miFillPolygon,
@@ -139,7 +148,7 @@ static GCOps	cfbNonTEOps = {
     cfbPushPixels8,
     NULL,
 };
-#else
+#endif
 
 static GCOps	cfbNonTEOps = {
     cfbSolidSpansCopy,
@@ -151,7 +160,11 @@ static GCOps	cfbNonTEOps = {
     cfbLineSS,
     cfbSegmentSS,
     miPolyRectangle,
+#if PPW == 4
+    cfbZeroPolyArcSS8Copy,
+#else
     miZeroPolyArc,
+#endif
     miFillPolygon,
     cfbPolyFillRect,
     cfbPolyFillArcSolidCopy,
@@ -160,11 +173,15 @@ static GCOps	cfbNonTEOps = {
     miImageText8,
     miImageText16,
     miImageGlyphBlt,
+#if PPW == 4
+    cfbPolyGlyphBlt8,
+    cfbPushPixels8,
+#else
     miPolyGlyphBlt,
     mfbPushPixels,
+#endif
     NULL,
 };
-#endif
 
 static GCOps *
 matchCommon (pGC, devPriv)
@@ -188,9 +205,19 @@ matchCommon (pGC, devPriv)
 	    && pGC->font->pFI->maxbounds.metrics.characterWidth >= 4
 #endif
 	)
-	    return &cfbTEOps;
+#if PPW == 4
+	    if (REGION_NUM_RECTS (devPriv->pCompositeClip) == 1)
+		return &cfbTEOps1Rect;
+	    else
+#endif
+		return &cfbTEOps;
 	else
-	    return &cfbNonTEOps;
+#if PPW == 4
+	    if (REGION_NUM_RECTS (devPriv->pCompositeClip) == 1)
+		return &cfbNonTEOps1Rect;
+	    else
+#endif
+		return &cfbNonTEOps;
     }
     return 0;
 }
@@ -674,12 +701,16 @@ cfbValidateGC(pGC, changes, pDrawable)
 		if (pGC->fillStyle == FillSolid)
 		{
 #if PPW == 4
-		    pGC->ops->Polylines = cfb8LineSS;
-		    pGC->ops->PolySegment = cfb8SegmentSS;
-#else
-		    pGC->ops->Polylines = cfbLineSS;
-		    pGC->ops->PolySegment = cfbSegmentSS;
+		    if (REGION_NUM_RECTS (devPriv->pCompositeClip) == 1)
+		    {
+			pGC->ops->Polylines = cfb8LineSS1Rect;
+			pGC->ops->PolySegment = cfb8SegmentSS1Rect;
+		    } else
 #endif
+		    {
+		    	pGC->ops->Polylines = cfbLineSS;
+		    	pGC->ops->PolySegment = cfbSegmentSS;
+		    }
 		}
  		else
 		    pGC->ops->Polylines = miZeroLine;
