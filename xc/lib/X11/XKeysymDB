@@ -1,4 +1,4 @@
-! $XConsortium: XKeysymDB,v 1.5 92/03/03 17:44:37 rws Exp $
+! $XConsortium: XKeysymDB,v 1.6 92/07/10 11:18:01 rws Exp $
 
 hpmute_acute		:100000A8
 hpmute_grave		:100000A9
@@ -75,7 +75,7 @@ IB6			:10004206
 IB7			:10004207
 IB8			:10004208
 IB9			:10004209
-IB10			:1000420B
+IB10			:1000420A
 IB11			:1000420B
 IB12			:1000420C
 IB13			:1000420D
