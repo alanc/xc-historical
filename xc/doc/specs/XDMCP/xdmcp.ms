@@ -28,30 +28,17 @@ use portions of the format for different things:
 
 The integer values are always sent most significant byte first.
 
-CMD is an ISO Latin-1 string (case ignored) from the set:
+CMD is an ISO Latin-1 string (case ignored, no spaces) from the set:
 
 	VALUE			MEANING
 	-----			-------
 	Query			poll for availible managers
 	Willing			positive response to poll
-	Unwilling		negative response to poll
 	Request			service request
 	Acknowledge		service acknowledgement
-	Negative		service refusal
+	Negative		poll or service refusal
 	Manage			service directive
-	Unmanage		request for discontinuation of service
-	Unmanged		positive acknowledgement of Unmanage
 	Error			negative acknowledgement of any message
-
-
-The Manage command is followed by an optional list of display-type
-parameters seperated from "Manage" and each other by spaces:
-
-	transient		request for single session (default)
-	permanent		request for multiple sessions
-
-	secure			Unmanage must have correct auth data
-	insecure		Unmanage always suceeds
 
 
 Here are some scenarios illustrating how the protocol works:
@@ -272,15 +259,17 @@ Willing: Manager -> Terminal
 		Solution:  The terminal should continue to
 		send Query messages until a response is received.
 
-Unwilling: Manager -> Terminal
+Negative: Manager -> Terminal
 
-	Sent in response to the Query message.  This message indicates
-	the unwillingness to manage the terminal.  No state change is
-	required in the Display Manager.  The session ID and
-	authorization fields in this message must match those in the
+	Sent when the manager refuses to manage the terminal.
+	This message indicates the unwillingness to manage the terminal.
+	No state change is required in the Display Manager.  The session ID
+	and authorization fields in this message must match those in the
 	Query.  This message should not be sent in response to a
 	broadcast Query, only in response to a Query sent specifically
 	to the manager.
+
+	Negative can also be used in response to Request.
 
 	Possible troubles:
 
@@ -347,7 +336,7 @@ Acknowledge: Manager -> Terminal
 
 	Possible troubles:
 
-		Acknowledge not received by terminal.
+		Acknowledge/Negative not received by terminal.
 
 		Indication: Terminal timeout waiting for response to Request.
 
@@ -368,9 +357,11 @@ Negative: Manager -> Terminal
 	The authorization fields should be sent just as for the
 	Acknowledge message.
 
+	Negative can also be used in response to Query.
+
 	Possible troubles:
 
-		Negative not received by terminal.
+		Acknowledge/Negative not received by terminal.
 
 		Indication:  Terminal timeout waiting for response to Request.
 
@@ -417,8 +408,7 @@ XOpenDisplay: Manager -> Terminal
 	GrabServer on behalf of the manager.  This will allow the
 	manager (in case there is no real connection authorization
 	protocol being used) a secure environment for initial user
-	login.  When this connection is closed, the current session
-	is over; the terminal should close all X connections and restart.
+	login.
 
 	Possible troubles:
 
@@ -429,13 +419,28 @@ XOpenDisplay: Manager -> Terminal
 		Solution:  Discontinue session and wait for another
 		Request message.
 
-Unmanage: Terminal -> Manager
+XCloseDisplay: Manager -> Terminal
 
-	TBD
+	When the "magic" manager's connection is closed, the current session
+	is over; the terminal should close all X connections.  If the
+	terminal has requested permanent management, then it should act as
+	if a Manage request has been (reliably) sent, and wait for a new
+	XOpenDisplay
 
-Unmanaged: Manager -> Terminal
+Error: Manager -> Terminal
 
-	TBD
+	This message should be sent by the manager in response to
+	a Manage message containing an invalid session ID.  The
+	session ID and authorization fields in the Error message
+	should match those given in the Manage message.
+
+	Possible troubles:
+
+		Error message is lost.
+
+		Indication: terminal times out waiting for OpenDisplay/Error.
+
+		Solution: terminal resends Manage message.
 
 This protocol is designed to satisfy the following constraints:
 
