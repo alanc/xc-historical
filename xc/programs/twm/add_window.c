@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.45 89/05/31 16:09:10 jim Exp $
+ * $XConsortium: add_window.c,v 1.46 89/06/08 17:42:56 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.45 89/05/31 16:09:10 jim Exp $";
+"$XConsortium: add_window.c,v 1.46 89/06/08 17:42:56 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -342,6 +342,11 @@ IconMgr *iconp;
 		{
 		    int lastx, lasty;
 
+		    /*
+		     * XXX - if we are going to do a loop, we ought to consider
+		     * using multiple GXxor lines so that we don't need to 
+		     * grab the server.
+		     */
 		    XQueryPointer(dpy, Scr->Root, &JunkRoot, &JunkChild,
 			&JunkX, &JunkY, &AddingX, &AddingY, &JunkMask);
 
@@ -365,12 +370,16 @@ IconMgr *iconp;
 		int maxw = Scr->MyDisplayWidth - AddingX;
 		int maxh = Scr->MyDisplayHeight - AddingY;
 
+		/*
+		 * Make window go to bottom of screen, and clip to right edge.
+		 * This is useful when popping up large windows and fixed
+		 * column text windows.
+		 */
 		if (AddingW > maxw) AddingW = maxw;
-		if (AddingH > maxh) AddingH = maxh;
+		AddingH = maxh;
 
 		/* includes any border */
-		FixSize (tmp_win, &AddingW, &AddingH);
-
+		ConstrainSize (tmp_win, &AddingW, &AddingH);
 	    }
 
 	    MoveOutline(Scr->Root, 0, 0, 0, 0);
