@@ -1,4 +1,4 @@
-.\" $XConsortium: xmh.man,v 1.27 91/08/01 00:07:30 converse Exp $
+.\" $XConsortium: xmh.man,v 1.28 91/08/01 01:20:41 converse Exp $
 .TH XMH 1 "Release 5" "X Version 11"
 .SH NAME
 \fIxmh\fR \- send and read mail with an X interface to MH
@@ -321,7 +321,7 @@ The corresponding action is \fBXmhViewPrevious()\fP.
 Mark the selected messages for deletion.  If no messages are highlighted,
 mark the current message for deletion and automatically display the 
 next unmarked message.
-The corresponding action is \fBXmhMarkDeleted()\fP.
+The corresponding action is \fBXmhMarkDelete()\fP.
 .PP
 .TP 18
 .B Move
