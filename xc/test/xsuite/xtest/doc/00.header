@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .de TP
 .sp 1
 .tl \\*(}t
