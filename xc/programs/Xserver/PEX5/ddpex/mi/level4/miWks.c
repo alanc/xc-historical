@@ -1,5 +1,4 @@
-/* $XConsortium$ */
-
+/* $XConsortium: miWks.c,v 5.1 91/02/16 09:56:07 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1337,7 +1336,7 @@ SetDisplayUpdateMode(pWKS, mode)
 	 * make sure this mode is supported by the drawable in this
 	 * implementation
 	 */
-	for (i = 1; i <= SI_UPDATE_NUM; i++) {
+	for (i = 0; i < SI_UPDATE_NUM; i++) {
 		if (mode == miDisplayUpdateModeET[type][i].index) {
 			pwks->displayUpdate = mode;
 			if (mode == PEXVisualizeEach)
@@ -1798,7 +1797,7 @@ SetHlhsrMode(pWKS, mode)
 	 * make sure this mode is supported by the drawable in this
 	 * implementation
 	 */
-	for (i = 1; i <= SI_HLHSR_NUM; i++) {
+	for (i = 0; i < SI_HLHSR_NUM; i++) {
 		if (mode == miHlhsrModeET[type][i].index) {
 			pwks->reqhlhsrMode = mode;
 			if (WKSIMMEDIATE(pwks, HLHSR_MODE_DYNAMIC))
