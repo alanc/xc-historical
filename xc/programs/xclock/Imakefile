@@ -1,6 +1,6 @@
-       INCLUDES = -I$(OLDXRMSRC) -I$(TOP) -I$(TOP)/X11
+       INCLUDES = -I$(XRMSRC) -I$(TOP) -I$(TOP)/X11
            OBJS = xclock.o
            SRCS = xclock.c
 
-SingleProgramTarget(xclock,$(OBJS),$(XTOOLLIB) $(OLDXRMLIB) $(XLIB),-lm)
+SingleProgramTarget(xclock,$(OBJS),$(XTOOLLIB) $(XRMLIB) $(XLIB),-lm)
 DependTarget()
