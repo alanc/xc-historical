@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XimThai.h,v 1.1 93/09/17 13:28:01 rws Exp $ */
 /***********************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -87,49 +87,49 @@ SOFTWARE.
 
 /* Function prototypes (thaisub.c) */
 
-extern
+Private
 int THAI_chtype (  		/* returns classification of a char */
 #if NeedFunctionPrototypes
 	unsigned char ch
 #endif
 );
 
-extern
+Private
 int THAI_chlevel (		/* returns the display level */
 #if NeedFunctionPrototypes
 	unsigned char ch
 #endif
 );
 
-extern
+Private
 Bool THAI_isdead ( 		/* return True if char is non-spacing */
 #if NeedFunctionPrototypes
 	unsigned char ch
 #endif
 );
 
-extern
+Private
 Bool THAI_iscons (		/* return True if char is consonant */
 #if NeedFunctionPrototypes
 	unsigned char ch
 #endif
 ); 
 
-extern
+Private
 Bool THAI_isvowel ( 		/* return True if char is vowel */
 #if NeedFunctionPrototypes
 	unsigned char ch
 #endif
 );
 
-extern
+Private
 Bool THAI_istone ( 		/* return True if char is tonemark */
 #if NeedFunctionPrototypes
 	unsigned char ch
 #endif
 );
 
-extern
+Private
 Bool THAI_iscomposible (
 #if NeedFunctionPrototypes
 	unsigned char follow_ch, 
@@ -137,7 +137,7 @@ Bool THAI_iscomposible (
 #endif
 );
 
-extern
+Private
 Bool THAI_isaccepted (
 #if NeedFunctionPrototypes
 	unsigned char follow_ch, 
@@ -146,7 +146,7 @@ Bool THAI_isaccepted (
 #endif
 );
 
-extern
+Private
 void THAI_apply_write_rules (
 #if NeedFunctionPrototypes
 	unsigned char  *instr, 
@@ -156,7 +156,7 @@ void THAI_apply_write_rules (
 #endif
 );
 
-extern
+Private
 int THAI_find_chtype (
 #if NeedFunctionPrototypes
 	unsigned char  *instr, 
@@ -164,7 +164,7 @@ int THAI_find_chtype (
 #endif
 );
 
-extern
+Private
 int THAI_apply_scm (
 #if NeedFunctionPrototypes
 	unsigned char  	*instr, 
