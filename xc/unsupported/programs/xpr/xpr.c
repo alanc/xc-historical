@@ -33,7 +33,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xpr_c = "$Header: xpr.c,v 1.16 87/08/17 12:48:22 dkk Locked $";
+static char *rcsid_xpr_c = "$Header: xpr.c,v 1.17 87/09/05 23:10:53 toddb Locked $";
 #endif
 
 #include <sys/types.h>
@@ -42,6 +42,7 @@ static char *rcsid_xpr_c = "$Header: xpr.c,v 1.16 87/08/17 12:48:22 dkk Locked $
 #include <stdio.h>
 #include <pwd.h>
 #include "lncmd.h"
+#include <X11/Xlib.h>
 #include "X11/XWDFile.h"
 
 int debug = 0;
@@ -74,6 +75,7 @@ char *infilename = "stdin";
 main(argc, argv)
 char **argv;
 {
+    unsigned long swaptest = 1;
     XWDFileHeader win;
     register unsigned char (*sixmap)[];
     register int i;
@@ -86,7 +88,7 @@ char **argv;
     int scale, width, height, flags, split;
     int left, top;
     int top_margin, left_margin;
-    int wpad, hpad;
+    int hpad;
     char *header, *trailer;
     enum orientation orientation;
     enum device device;
@@ -96,9 +98,34 @@ char **argv;
 
     /* read in window header */
     read(0, &win, sizeof win);
+    if (*(char *) &swaptest)
+	_swaplong((char *) &win, sizeof(win));
+
+    if (win.file_version != XWD_FILE_VERSION) {
+	fprintf(stderr,"xpr: file format version missmatch.\n");
+	exit(1);
+    }
+    if (win.header_size < sizeof(win)) {
+	fprintf(stderr,"xpr: header size is too small.\n");
+	exit(1);
+    }
+
+    if (win.pixmap_depth != 1 && win.pixmap_format != XYPixmap) {
+        fprintf(stderr,"xpr: image is not in XY format");
+	exit(1);
+    }
+
+    if (win.byte_order != win.bitmap_bit_order)
+        fprintf(stderr,"xpr: image will be incorrect, byte swapping required but not performed.\n");
+
     w_name = (char *)malloc(win.header_size - sizeof win);
     read(0, w_name, win.header_size - sizeof win);
     
+    if(win.ncolors)
+	read(0,
+	     malloc(win.ncolors * sizeof(XColor)),
+	     win.ncolors * sizeof(XColor));
+
     /* calculate orientation and scale */
     setup_layout(device, win.pixmap_width, win.pixmap_height, flags, width, 
 		 height, header, trailer, &scale, &orientation);
@@ -108,7 +135,6 @@ char **argv;
 	ih = win.pixmap_height;
     } else {
 	/* calculate w and h cell count */
-	wpad = (32 - (win.pixmap_width & 31)) & 31;
 	iw = win.pixmap_width;
 	ih = (win.pixmap_height + 5) / 6;
 	hpad = (ih * 6) - win.pixmap_height;
@@ -116,7 +142,7 @@ char **argv;
 	/* build pixcells from input file */
 	sixel_count = iw * ih;
 	sixmap = (unsigned char (*)[])malloc(sixel_count);
-	build_sixmap(iw, ih, sixmap, wpad, hpad);
+	build_sixmap(iw, ih, sixmap, hpad, &win);
     }
 
     /* output commands and sixel graphics */
@@ -134,10 +160,10 @@ char **argv;
     } else if (device == PS) {
 	ps_setup(iw, ih, orientation, scale, left, top,
 		   flags, header, trailer, w_name);
-	ps_output_bits(iw, ih, flags, orientation);
+	ps_output_bits(iw, ih, flags, orientation, &win);
 	ps_finish();
     } else {
-	fprintf(stderr, "xwd2: device not supported\n");
+	fprintf(stderr, "xpr: device not supported\n");
     }
     
     /* print some statistics */
@@ -200,7 +226,7 @@ char **trailer;
 
 	case 'd':		/* -device {ln03 | la100 | ps | lw} | -dump */
 	    if (len <= 2) {
-		fprintf(stderr, "xwd2: ambiguous option: \"%s\"\n", *argv);
+		fprintf(stderr, "xpr: ambiguous option: \"%s\"\n", *argv);
 		exit(1);
 	    }
 	    if (!bcmp(*argv, "-device", len)) {
@@ -216,7 +242,7 @@ char **trailer;
 		    *device = PS;
 		} else {
 		    fprintf(stderr, 
-			    "xwd2: device \"%s\" not supported\n", *argv);
+			    "xpr: device \"%s\" not supported\n", *argv);
 		    exit(1);
 		}
 	    } else if (!bcmp(*argv, "-dump", len)) {
@@ -226,7 +252,7 @@ char **trailer;
 
 	case 'h':		/* -height <inches> */
 	    if (len <= 3) {
-		fprintf(stderr, "xwd2: ambiguous option: \"%s\"\n", *argv);
+		fprintf(stderr, "xpr: ambiguous option: \"%s\"\n", *argv);
 		exit(1);
 	    }
 	    if (!bcmp(*argv, "-height", len)) {
@@ -249,7 +275,7 @@ char **trailer;
 
 	case 'n':		/* -nosixopt | -noff */
 	    if (len <= 3) {
-		fprintf(stderr, "xwd2: ambiguous option: \"%s\"\n", *argv);
+		fprintf(stderr, "xpr: ambiguous option: \"%s\"\n", *argv);
 		exit(1);
 	    }
 	    if (!bcmp(*argv, "-nosixopt", len)) {
@@ -296,7 +322,7 @@ char **trailer;
 
 	case 't':		/* -top <inches> */
 	    if (len <= 2) {
-		fprintf(stderr, "xwd2: ambigous option: \"%s\"\n", *argv);
+		fprintf(stderr, "xpr: ambigous option: \"%s\"\n", *argv);
 		exit(1);
 	    }
 	    if (!bcmp(*argv, "-top", len)) {
@@ -322,7 +348,7 @@ char **trailer;
     if (argc > 0) {
 	f = open(*argv, O_RDONLY, 0);
 	if (f < 0) {
-	    fprintf(stderr, "xwd2: error opening \"%s\" for input\n", *argv);
+	    fprintf(stderr, "xpr: error opening \"%s\" for input\n", *argv);
 	    perror("");
 	    exit(1);
 	}
@@ -342,9 +368,9 @@ char **trailer;
 	    f = open(output_filename, O_WRONLY, 0);
 	}
 	if (f < 0) {
-	    fprintf(stderr, "xwd2: error opening \"%s\" for output\n", 
+	    fprintf(stderr, "xpr: error opening \"%s\" for output\n", 
 		    output_filename);
-	    perror("xwd2");
+	    perror("xpr");
 	    exit(1);
 	}
 	if (*flags & F_APPEND) {
@@ -425,25 +451,25 @@ int ih;
     }
 }
 
-build_sixmap(iw, ih, sixmap, wpad, hpad)
+build_sixmap(iw, ih, sixmap, hpad, win)
 int ih;
 int iw;
 unsigned char (*sixmap)[];
-int wpad;
 int hpad;
+XWDFileHeader *win;
 {
-    int iwb, iww;
+    int iwb = win->bytes_per_line;
+    int iww;
     int rsize, cc;
     int w, maxw;
     struct iovec linevec[6];
-    unsigned char line[6][150];
+    unsigned char line[6][500];
     register unsigned char *c;
     register int i, j, k, m;
     register int sixel;
     static int mask[] = {~1, ~2, ~4, ~8, ~16, ~32, ~64, ~128};
 
     c = (unsigned char *)sixmap;
-    iwb = (iw + wpad) / 8;
 
     for (i = 0; i <= 5; i++) {
 	linevec[i].iov_base = (caddr_t)line[i];
@@ -469,6 +495,10 @@ int hpad;
 	    for (; i < 6; i++)
 		for (j = 0; j < iwb; j++) line[i][j] = 0xFF;
 	}
+
+	if (win->bitmap_bit_order == MSBFirst)
+	    for (i = 0; i <= 5; i++)
+	        _swapbits((char *)&line[i][0], iwb);
 
 #ifndef NOINLINE
 	for (i = 0; i < iw; i++) {
@@ -1068,21 +1098,22 @@ int ih;
 #define LINELEN 72 /* number of CHARS (bytes*2) per line of bitmap output */
 char *obuf; /* buffer to contain entire rotated bit map */
 
-ps_output_bits(iw, ih, flags, orientation)
+ps_output_bits(iw, ih, flags, orientation, win)
 int iw;
 int ih;
 int flags;
+XWDFileHeader *win;
 enum orientation orientation;
 {
+    int iwb = win->bytes_per_line;
     register int i;
-    int n,words,bytes;
+    int n,bytes;
     unsigned char *buffer;
     register int ocount=0;
     extern char hex1[],hex2[];
     static char hex[] = "0123456789abcdef";
 
-    words = (iw+15)/16;
-    buffer = (unsigned char *)malloc((unsigned)words*2);
+    buffer = (unsigned char *)malloc((unsigned)(iwb + 3));
     if (orientation == LANDSCAPE) {
 	/* read in and rotate the entire image */
 	/* The Postscript language has a rotate operator, but using it
@@ -1103,21 +1134,23 @@ enum orientation orientation;
 	 */
 	obuf = (char *)malloc((unsigned)(owidth*oheight));
 	if (obuf==0) {
-	    fprintf(stderr,"Cannot allocate %d bytes\n",owidth*oheight);
+	    fprintf(stderr,"xpr: cannot allocate %d bytes\n",owidth*oheight);
 	    exit(1);
 	}
 	bzero(obuf,owidth*oheight);
 
 	for (i=0;i<ih;i++) {
-	    n = read(0,(char *)buffer,words*2);
+	    n = read(0,(char *)buffer,iwb);
 	    if (n<0) {
 		perror("read");
 		exit(1);
 	    }
 	    if (n==0) {
-		fprintf(stderr,"premature end of file\n");
+		fprintf(stderr,"xpr: premature end of file\n");
 		exit(1);
 	    }
+	    if (win->bitmap_bit_order == MSBFirst)
+		_swapbits((char *)buffer, iwb);
 	    ps_bitrot(buffer,iw,--ocol,owidth);
 	}
 	q = &obuf[iw*owidth];
@@ -1126,18 +1159,19 @@ enum orientation orientation;
 	    ocount = ps_putbuf((unsigned char *)p,bytes,ocount,flags&F_COMPACT);
     }
     else {
-	bytes = (iw+7)/8;
 	for (i=0;i<ih;i++) {
-	    n = read(0,(char *)buffer,words*2);
+	    n = read(0,(char *)buffer,iwb);
 	    if (n<0) {
 		perror("read");
 		exit(1);
 	    }
 	    if (n==0) {
-		fprintf(stderr,"premature end of file\n");
+		fprintf(stderr,"xpr: premature end of file\n");
 		exit(1);
 	    }
-	    ocount = ps_putbuf(buffer,bytes,ocount,flags&F_COMPACT);
+	    if (win->bitmap_bit_order == MSBFirst)
+		_swapbits((char *)buffer, iwb);
+	    ocount = ps_putbuf(buffer,iwb,ocount,flags&F_COMPACT);
 	}
     }
     if (flags & F_COMPACT) {
