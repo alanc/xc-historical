@@ -1,6 +1,5 @@
 
 #include <stdio.h>
-#include <sys/file.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
 
