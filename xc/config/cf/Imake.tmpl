@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.126 91/05/14 11:37:06 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.127 91/05/31 11:57:09 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate .cf
 XCOMM configuration files.  Site-wide parameters may be set in the file
@@ -222,6 +222,14 @@ XCOMM
 #define DguxArchitecture
 #endif
 
+#ifdef __convex__
+# define MacroIncludeFile <convex.cf>
+# define MacroFile convex.cf
+# ifdef convex
+#  undef convex
+# endif
+# define ConvexArchitecture
+#endif
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.tmpl not configured; guessing at definitions!!!
