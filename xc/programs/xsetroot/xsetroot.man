@@ -64,7 +64,8 @@ Use ``color'' as the background color.
 This exchanges the foreground and background colors.  Normally the foreground
 color is black and the background color is white.
 .IP "\fB-solid\fP \fIcolor\fP"
-Set the window color to ``color''.
+This sets the background of the root window to the specified color.  This
+option is only useful on color servers.
 .IP "\fB-name\fP \fIstring\fP"
 Set the name of the root window to ``string''.  There is no default value.
 Usually a name is assigned to a window so that the
