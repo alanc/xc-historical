@@ -781,8 +781,8 @@ main(argc, argv)
 		    int k = j;
 		    do {
 			doit[k] = True;
-		    } while (strcmp(cp2, (test[k].option + 1)) != 0 &&
-			     (test[k].versions & xparms.version) &&
+		    } while (!(strcmp(cp2, (test[k].option + 1)) == 0 &&
+			       (test[k].versions & xparms.version)) &&
 			     test[++k].option != NULL);
 		    if (*cp2 != '-' && test[k].option == NULL)
 			usage();
