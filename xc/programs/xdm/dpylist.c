@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: displaylist.c,v 1.3 88/09/23 14:21:18 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -38,6 +38,17 @@ StartDisplays ()
 AnyDisplaysLeft ()
 {
 	return displays != (struct display *) 0;
+}
+
+ForEachDisplay (f)
+	void	(*f)();
+{
+	struct display	*d, *next;
+
+	for (d = displays; d; d = next) {
+		next = d->next;
+		(*f) (d);
+	}
 }
 
 struct display *
