@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.129 87/08/30 21:36:19 jg Exp $ */
+/* $Header: Xlib.h,v 11.127 87/09/01 15:09:19 toddb Locked $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -948,7 +948,7 @@ char *XGetAtomName();
 Atom *XListProperties();
 XImage *XGetImage();
 XHostAddress *XListHosts();
-KeySym XLookupKeysym(), *XGetKeyboardMapping();
+KeySym XKeycodeToKeysym(), XLookupKeysym(), *XGetKeyboardMapping();
 XModifierKeymap *XNewModifierMap();
 
 /* these are routines for which there are also macros */
