@@ -70,15 +70,12 @@ extern void mfbTileArea32();
 
 
 extern void mfbPolyFillRect();
-extern void miPolyFillRect();
-extern void miPolyFillArc();
 extern void mfbCopyArea();
 extern void mfbPolyPoint();
 extern void mfbCopyPlane();
 
 extern void mfbDestroyGC();
 extern void mfbValidateGC();
-extern void mfbCopyGCDest();
 
 extern void mfbSetSpans();
 extern unsigned int *mfbGetSpans();
@@ -98,21 +95,12 @@ extern void mfbPutImage();
 extern void mfbLineSS();	/* solid single-pixel wide line */
 				/* calls mfb{Bres|Horz|Vert}S() */
 extern void mfbDashLine();	/* dashed zero-width line */
-extern void miNotMiter();
-extern void miMiter();
-extern void miWideLine();
-extern void miWideDash();
-extern void miChangeClip();
-extern void miDestroyClip();
 extern void mfbImageText8();
 extern void mfbImageText16();
 extern int mfbPolyText16();
 extern int mfbPolyText8();
 extern PixmapPtr mfbCopyPixmap();
 extern RegionPtr mfbPixmapToRegion();
-extern RegionPtr miRectsToRegion();
-extern void  miPolyArc();
-extern void  miFillPolyArc();
 extern void mfbPushPixels();
 
 /* text for glyphs <= 32 bits wide */
@@ -127,9 +115,12 @@ extern void mfbTEGlyphBlt();
 
 extern void mfbChangeClip();
 extern void mfbDestroyClip();
-extern int mfbListInstalledColormaps();
+extern void mfbCopyClip();
 
-extern ColormapPtr mfbGetStaticColormap();
+extern int mfbListInstalledColormaps();
+extern void mfbInstallColormap();
+extern void mfbUninstallColormap();
+
 extern void mfbResolveColor();
 
 /*
