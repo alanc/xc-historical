@@ -10,34 +10,26 @@
 VERSION:
 	X Window System, Version 11, Release 2
 
-
 CLIENT MACHINE and OPERATING SYSTEM:
 	[e.g. Sun 3/280 running SunOS 3.4, Microvax II running Ultrix 2.0, ...]
-
 
 DISPLAY:
 	[e.g. Digital QVSS, Sun CG4, HP Topcat, IBM APA16, Apollo 4 plane, ...]
 
-
 AREA:
 	[e.g. Xlib, xterm, uwm, server, ...]
-
 
 SYNOPSIS:
 	[Brief description of the problem and where it is located.]
 
-
 DESCRIPTION:
 	[Detailed description.]
-
 
 REPEAT-BY:
 	[What you did to get the error; include test program if appropriate.]
 
-
 FILES:
 	[List source files involved, if possible.]
-
 
 FIX:
 	[Preferred, but not necessary.]
