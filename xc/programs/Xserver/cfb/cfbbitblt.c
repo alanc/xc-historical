@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.20 89/11/21 19:03:30 rws Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.21 89/11/22 18:46:36 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -1313,16 +1313,17 @@ cfbCopyImagePlane (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     DDXPointPtr pptSrc;
 {
     copyPlaneBitPlane = planemask;
-    cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, ~0);
+    cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
+		      (unsigned long) ~0L);
 }
 
 cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     DrawablePtr pSrcDrawable;
     DrawablePtr pDstDrawable;
     int	rop;
-    unsigned long planemask;
     RegionPtr prgnDst;
     DDXPointPtr pptSrc;
+    unsigned long planemask;
 {
     int			    srcx, srcy, dstx, dsty, width, height;
     unsigned char	    *psrcBase;
@@ -1343,9 +1344,10 @@ cfbCopyPlane8to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
     int			    nbox;
     BoxPtr		    pbox;
 
-    extern unsigned int	starttab[32], endtab[32], partmasks[32][32];
+    extern int starttab[32], endtab[32];
+    extern unsigned int partmasks[32][32];
 
-    if (!planemask & 1)
+    if (!(planemask & 1))
 	return;
 
     if (pSrcDrawable->type == DRAWABLE_WINDOW)
@@ -1504,7 +1506,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
     {
     	if (bitPlane == 1)
 	{
-	    int	fg, bg;
+	    unsigned long fg, bg;
 
        	    doBitBlt = cfbCopyPlane1to8;
 	    fg = pGC->fgPixel & pGC->planemask;
@@ -1562,8 +1564,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	doBitBlt = cfbCopyPlane8to1;
 	/* no exposures here, scratch GC's don't get graphics expose */
 	(void) cfbCopyArea (pSrcDrawable, (DrawablePtr) pBitmap,
-				       pGC1, srcx, srcy, width, height,
-				       0, 0, bitPlane);
+			    pGC1, srcx, srcy, width, height, 0, 0);
 	fg = pGC->fgPixel & pGC->planemask;
 	bg = pGC->bgPixel & pGC->planemask;
 	if (!cfb8CheckPixels(fg, bg))
@@ -1571,7 +1572,7 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	doBitBlt = cfbCopyPlane1to8;
 	/* no exposures here, copy bits from inside a pixmap */
 	(void) cfbCopyArea ((DrawablePtr) pBitmap, pDstDrawable, pGC,
-				0, 0, width, height, dstx, dsty, 1);
+			    0, 0, width, height, dstx, dsty);
 	doBitBlt = cfbDoBitblt;
 	FreeScratchGC (pGC1);
 	(*pScreen->DestroyPixmap) (pBitmap);

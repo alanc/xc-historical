@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.3 89/09/14 17:04:35 rws Exp $ */
+/* $XConsortium: cfbimage.c,v 1.4 89/11/21 18:02:32 keith Exp $ */
 
 #include "X.h"
 #include "windowstr.h"
@@ -75,7 +75,8 @@ cfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     }
     else
     {
-	miPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage);
+	miPutImage(dst, pGC, depth, x, y, w, h, leftPad, format,
+		   (unsigned char *)pImage);
     }
 }
 

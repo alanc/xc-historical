@@ -17,7 +17,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.22 89/11/05 15:35:21 rws Exp $ */
+/* $XConsortium: mizerarc.c,v 5.23 89/11/21 09:58:07 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -678,7 +678,7 @@ miZeroPolyArc(pDraw, pGC, narcs, parcs)
 	dinfo.dashIndexInit = 0;
 	dinfo.dashOffsetInit = 0;
 	miStepDash((int)pGC->dashOffset, &dinfo.dashIndexInit,
-		   (unsigned char *) pGC->dash, pGC->numInDashList,
+		   (unsigned char *) pGC->dash, (int)pGC->numInDashList,
 		   &dinfo.dashOffsetInit);
     }
     points = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * numPts);

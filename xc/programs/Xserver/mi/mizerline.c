@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mizerline.c,v 5.1 89/07/28 16:23:13 rws Exp $ */
+/* $XConsortium: mizerline.c,v 5.2 89/11/08 17:11:15 keith Exp $ */
 #include "X.h"
 
 #include "misc.h"
@@ -29,6 +29,7 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "windowstr.h"
 #include "pixmap.h"
+#include "mi.h"
 
 void
 miZeroLine(dst, pgc, mode, nptInit, pptInit)

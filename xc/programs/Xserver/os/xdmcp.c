@@ -413,6 +413,7 @@ XdmcpCloseDisplay(sock)
  * dynamically while starting up
  */
 
+/*ARGSUSED*/
 static void
 XdmcpBlockHandler(data, wt, LastSelectMask)
     pointer	    data;   /* unused */
@@ -453,6 +454,7 @@ XdmcpBlockHandler(data, wt, LastSelectMask)
  * process them appropriately
  */
 
+/*ARGSUSED*/
 static void
 XdmcpWakeupHandler(data, i, LastSelectMask)
     pointer data;   /* unused */
@@ -849,9 +851,9 @@ recv_accept_msg(length)
 	     * to be acceptable, enable the local addresses
 	     */
 	    if (!AddAuthorization ((unsigned short)AcceptAuthorizationName.length,
-				   AcceptAuthorizationName.data,
+				   (char *)AcceptAuthorizationName.data,
 				   (unsigned short)AcceptAuthorizationData.length,
-				   AcceptAuthorizationData.data))
+				   (char *)AcceptAuthorizationData.data))
 	    {
 		AddLocalHosts ();
 	    }
