@@ -1,0 +1,41 @@
+One of the tools used to build the UI for the font server,
+/mac/bin/rez, must be executed from the A/UX Macintosh environment.
+For this reason I have *not* arranged to automatically build MacFS.
+Here's how it goes:
+
+(1) build all the other font stuff
+
+(2) Logon to A/UX from the MacII console and enter the A/UX Mac
+environment.
+
+(3) In fonts/server/MacFS do "make".
+
+(4) The successful result of the make is a "hybrid" application:
+MacFS. You can start it up in the usual way from the shell, or
+double-click on it from the A/UX Finder. A primitive user interface
+should appear. The Mac bitmap fonts are now being served :-)
+
+The following steps add the TrueType outline fonts to the A/UX
+System File, and add the TrueType renderer to the System Folder (as
+an "init").
+
+(1) Copy the file named "TrueType" to "/mac/sys/System Folder" and
+to any "personal System Folder" you might have.
+
+(2) Launch (from the shell or by double-clicking) "Font_DA_Mover".
+
+(3) Choose "Open" from the Font_DA_Mover
+
+(4) Choose "Open" from the File Dialog (which should display
+"TrueType Fonts" highlighted).
+
+(5) Shift select all the TrueType fonts.
+
+(6) Click on "<< Copy".
+
+(7) Quit from the Font_DA_Mover.
+
+(8) Logout of the A/UX session and then log back in. Start MacFS
+again, it will now server both bitmap and TrueType fonts.
+
+Hope you have a chance to try this!
