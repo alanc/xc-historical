@@ -83,7 +83,7 @@ MakeDirectories(install, $(DIRS_TO_BUILD))
 
 CONFIG_FILES = $(CONFIGSRC)/Imake.rules $(CONFIGSRC)/Imake.tmpl \
 	$(CONFIGSRC)/Project.tmpl $(CONFIGSRC)/site.def \
-	$(CONFIGSRC)/rt.bac $(CONFIGSRC)//**/*.cf 
+	$(CONFIGSRC)/rtcchack.bac $(CONFIGSRC)//**/*.cf 
 
 InstallMultipleDestFlags(install.conf,$(CONFIG_FILES),$(CONFIGDIR),$(INSTDATFLAGS))
 
