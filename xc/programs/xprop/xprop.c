@@ -934,7 +934,7 @@ usage()
 	outl("\n%s: usage: %s [<select option>] <option>* <mapping>* <spec>*",
 	     program_name, program_name);
 	outl("\n\tselect option ::= -root | -id <id> | -font <font> | -name <name>\
-\n\toption ::= -len <n> | -notype | {-formats|-fs} <format file>\
+\n\toption ::= -len <n> | -notype | -spy | {-formats|-fs} <format file>\
 \n\tmapping ::= {-f|-format} <atom> <format> [<dformat>]\
 \n\tspec ::= [<format> [<dformat>]] <atom>\
 \n\tformat ::= {0|8|16|32}{a|b|c|i|m|s|x}*\
@@ -980,6 +980,7 @@ Parse_Format_Mapping(argc, argv)
 
 Window target_win=0;
 int notype=0;
+int spy=0;
 int max_len=MAXSTR;
 XFontStruct *font;
 
@@ -990,6 +991,7 @@ char **argv;
   int i;
   FILE *stream;
   char *name, *getenv();
+  thunk *props, *Handle_Prop_Requests();
 
   INIT_NAME;
 
@@ -1015,6 +1017,10 @@ char **argv;
     if (!strcmp(argv[0], "-notype")) {
       notype=1;
       continue;
+    }
+    if (!strcmp(argv[0], "-spy")) {
+	    spy=1;
+	    continue;
     }
     if (!strcmp(argv[0], "-len")) {
 	    if (++argv, --argc==0) usage();
@@ -1045,7 +1051,29 @@ char **argv;
   if (target_win==0)
     target_win = Select_Window(dpy);
 
-  Handle_Prop_Requests(argc, argv);
+  props=Handle_Prop_Requests(argc, argv);
+
+  if (spy && target_win != -1) {
+	XEvent event;
+        char *format, *dformat;
+	
+	XSelectInput(dpy, target_win, PropertyChangeMask);
+	for (;;) {
+		XNextEvent(dpy, &event);
+		format = dformat = NULL;
+		if (props) {
+			int i;
+			for (i=0; i<props->thunk_count; i++)
+			  if (props[i].value == event.xproperty.atom)
+			    break;
+			if (i>=props->thunk_count)
+			  continue;
+			format = props[i].format;
+			dformat = props[i].dformat;
+	        }
+		Show_Prop(format, dformat, Format_Atom(event.xproperty.atom));
+        }
+  }
 }
 
 /*
@@ -1054,17 +1082,22 @@ char **argv;
  *
  */
 
-Handle_Prop_Requests(argc, argv)
+thunk *Handle_Prop_Requests(argc, argv)
      int argc;
      char **argv;
 {
   char *format, *dformat, *prop, *value;
   char mode;
+  thunk *thunks, t;
   int thunk_no;
 
+  thunks = Create_Thunk_List();
+
   /* if no prop referenced, by default list all properties for given window */
-  if (!argc)
+  if (!argc) {
     Show_All_Props();
+    return(NULL);
+  }
 
   while (argc>0) {
     format = 0;
@@ -1087,6 +1120,11 @@ Handle_Prop_Requests(argc, argv)
     /* If no '=' present, we display the property */
     if (!rindex(prop, '=')) {
 #endif
+      t.value = Parse_Atom(prop, True);
+      t.format = format;
+      t.dformat = dformat;
+      if (t.value)
+	thunks = Add_Thunk(thunks, t);
       Show_Prop(format, dformat, prop);
 #ifdef SET
       continue;
@@ -1111,6 +1149,7 @@ Handle_Prop_Requests(argc, argv)
     Set_Prop(target_win, format, dformat, prop, mode, value);
 #endif
   }
+  return(thunks);
 }
 
 Show_All_Props()
