@@ -14,6 +14,7 @@ OBJS =	mivaltree.o mipolyseg.o mipolyrect.o \
 	miexpose.o miglblt.o mizerline.o mifpolycon.o \
 	midash.o miwidedash.o
 
+STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
 INCLUDES = -I. -I../../include -I../../../include
 LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln

@@ -19,6 +19,7 @@ OBJS =   mfbgc.o mfbwindow.o mfbfont.o \
 	 mfbpawhite.o mfbpablack.o mfbpainv.o mfbtile.o \
          mfbtewhite.o mfbteblack.o mfbmisc.o
 
+STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
 INCLUDES = -I. -I../../include -I../../../include
 LINTDEFS = -DMFBPOLYGLYPHBLT=mfbPolyGlyphBltWhite \

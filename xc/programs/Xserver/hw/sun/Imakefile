@@ -30,6 +30,7 @@ OBJS = \
 	sunCG4C.o \
 	sunKeyMap.o
 
+STD_DEFINES = ServerDefines
 CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I.  -I../../include -I../mfb -I../../dix -I../../../include
    LINTLIBS = ../../dix/llib-ldix.ln ../../os/4.2bsd/llib-los.ln \
