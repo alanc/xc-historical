@@ -72,7 +72,7 @@ before it saves the changes.  The default value for this resource is
 Specifies a string that is to be prepended to the backup filename.  The
 default is that no string shall be prepended.
 .TP 8
-backupNameSuffix (\fPClass\fB BackupNameSuffix)
+.B backupNameSuffix (\fPClass\fB BackupNameSuffix)
 Specifies a string that is to be appended to the backup filename.  The
 default is to append the string ".BAK".
 .SH WIDGETS
