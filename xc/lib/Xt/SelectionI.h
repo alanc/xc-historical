@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.11 89/11/28 10:28:16 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.12 89/11/28 16:48:49 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,25 +32,29 @@ SOFTWARE.
 #define BYTELENGTH(length, format) ((length)*((format)>>3))
 #define NUMELEM(bytelength, format) ((bytelength) / ((format)>>3))
 
-typedef struct _IncrementalRec *Incremental;
+typedef struct _RequestRec *Request;
+typedef struct _SelectRec *Select;
 
-typedef struct _IncrementalRec {
+typedef struct _RequestRec {
+   Select ctx;		      /* logical owner */
+   Widget widget;	      /* widget actually receiving Selection events */
    Window requestor;
-   Atom type;
    Atom property;
+   Atom target;
+   Atom type;
    int format;
-   Incremental next, prev;
-   Boolean incr_callback;
-   XtConvertSelectionIncrProc convert;
-   XtCancelConvertSelectionProc owner_cancel;
-   XtPointer owner_closure;
+   Request next, prev;
    char *value;
    int bytelength;
    int offset;
-} IncrementalRec;
+   XtIntervalId timeout;
+   XSelectionRequestEvent event; /* for XtGetSelectionRequest */
+   Boolean incr_callback;
+   Boolean allSent;
+   Boolean anySent;
+} RequestRec;
 
-
-typedef struct {
+typedef struct _SelectRec {
     Atom selection; 			/* constant */
     Display *dpy; 			/* constant */
     Widget widget;
@@ -60,19 +64,24 @@ typedef struct {
     XtLoseSelectionProc loses;
     XtSelectionDoneProc notify;
     XtCancelConvertSelectionProc owner_cancel;
-    Incremental incrList;
+    Request requestList;
     Boolean incremental;
     XtPointer owner_closure;
     Atom incremental_atom; 		/* constant */
     Atom indirect_atom; 		/* constant */
-    XSelectionRequestEvent event;	/* for XtGetSelectionRequest */
-} SelectRec, *Select;
+    XSelectionRequestEvent event;	/* used only for LOCAL xfers */
+} SelectRec;
 
 typedef struct {
     XtSelectionCallbackProc callback;
     XtPointer *req_closure;
     Atom property;
     Atom *target;
+    Atom type;
+    int format;
+    char *value;
+    int bytelength;
+    int offset;
     XtIntervalId timeout;
     XtEventHandler proc;
     Widget widget;
@@ -90,18 +99,6 @@ typedef struct {
 #define IndirectPairWordSize 2
 
 typedef struct {
-   Select ctx;
-   XtSelectionDoneProc notify;
-   Atom target;
-   Atom property;
-   Window window;
-   Widget widget;
-   Boolean allSent;
-   Boolean anySent;
-   XtIntervalId timeout;
-} PropGoneRec, *PropGone;
-
- typedef struct {
   Atom prop;
   Boolean avail;
 } SelectionPropRec, *SelectionProp;
