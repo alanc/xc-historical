@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: LoginP.h,v 1.3 88/09/23 14:20:23 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -19,7 +19,7 @@
  */
 
 /*
-* $XConsortium: LoginP.h,v 1.2 88/09/15 19:59:39 keith Exp $
+* $XConsortium: LoginP.h,v 1.3 88/09/23 14:20:23 keith Exp $
 */
 
 #ifndef _LoginP_h
@@ -56,6 +56,7 @@ typedef struct {
 	int		cursor;		/* current cursor position */
 	int		failUp;		/* failure message displayed */
 	LoginData	data;		/* name/passwd */
+	char		*sessionArg;	/* argument passed to session */
 	void		(*notify_done)();/* proc to call when done */
 	int		failTimeout;	/* seconds til drop fail msg */
 	XtIntervalId	interval_id;	/* drop fail message note */

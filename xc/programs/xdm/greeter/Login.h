@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: Login.h,v 1.4 88/09/23 14:20:19 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -19,7 +19,7 @@
  */
 
 /*
-* $XConsortium: Login.h,v 1.3 88/09/16 15:32:36 keith Exp $
+* $XConsortium: Login.h,v 1.4 88/09/23 14:20:19 keith Exp $
 */
 
 #ifndef _XtLogin_h
@@ -59,12 +59,14 @@
 # define XtNgreetFont		"greetFont"
 # define XtNfailFont		"failFont"
 # define XtNfailTimeout		"failTimeout"
+# define XtNsessionArgument	"sessionArgument"
 
 # define XtCGreeting		"Greeting"
 # define XtCNamePrompt		"NamePrompt"
 # define XtCPasswdPrompt	"PasswdPrompt"
 # define XtCFail		"Fail"
 # define XtCFailTimeout		"FailTimeout"
+# define XtCSessionArgument	"SessionArgument"
 
 /* notifyDone interface definition */
 
