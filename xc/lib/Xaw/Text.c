@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.165 90/12/27 10:02:10 rws Exp $ */
+/* $XConsortium: Text.c,v 1.166 91/01/02 11:41:39 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -101,46 +101,46 @@ extern char *_XawDefaultTextTranslations1, *_XawDefaultTextTranslations2,
 static Dimension defWidth = 100;
 static Dimension defHeight = DEFAULT_TEXT_HEIGHT;
 
-#define offset(field) XtOffset(TextWidget, field)
+#define offset(field) XtOffsetOf(TextRec, field)
 static XtResource resources[] = {
   {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
-     offset(core.width), XtRDimension, (caddr_t)&defWidth},
+     offset(core.width), XtRDimension, (XtPointer)&defWidth},
   {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
      offset(simple.cursor), XtRString, "xterm"},
   {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
-     offset(core.height), XtRDimension, (caddr_t)&defHeight},
+     offset(core.height), XtRDimension, (XtPointer)&defHeight},
 
   {XtNdisplayPosition, XtCTextPosition, XtRInt, sizeof(XawTextPosition), 
-     offset(text.lt.top), XtRImmediate, (caddr_t)0},
+     offset(text.lt.top), XtRImmediate, (XtPointer)0},
   {XtNinsertPosition, XtCTextPosition, XtRInt, sizeof(XawTextPosition),
-     offset(text.insertPos), XtRImmediate,(caddr_t)0},
+     offset(text.insertPos), XtRImmediate,(XtPointer)0},
   {XtNleftMargin, XtCMargin, XtRPosition, sizeof (Position),
-     offset(text.r_margin.left), XtRImmediate, (caddr_t)2},
+     offset(text.r_margin.left), XtRImmediate, (XtPointer)2},
   {XtNrightMargin, XtCMargin, XtRPosition, sizeof (Position),
-     offset(text.r_margin.right), XtRImmediate, (caddr_t)4},
+     offset(text.r_margin.right), XtRImmediate, (XtPointer)4},
   {XtNtopMargin, XtCMargin, XtRPosition, sizeof (Position),
-     offset(text.r_margin.top), XtRImmediate, (caddr_t)2},
+     offset(text.r_margin.top), XtRImmediate, (XtPointer)2},
   {XtNbottomMargin, XtCMargin, XtRPosition, sizeof (Position),
-     offset(text.r_margin.bottom), XtRImmediate, (caddr_t)2},
+     offset(text.r_margin.bottom), XtRImmediate, (XtPointer)2},
   {XtNselectTypes, XtCSelectTypes, XtRPointer,
      sizeof(XawTextSelectType*), offset(text.sarray),
-     XtRPointer, (caddr_t)&defaultSelectTypesPtr},
+     XtRPointer, (XtPointer)&defaultSelectTypesPtr},
   {XtNtextSource, XtCTextSource, XtRWidget, sizeof (Widget),
      offset(text.source), XtRImmediate, NULL},
   {XtNtextSink, XtCTextSink, XtRWidget, sizeof (Widget),
      offset(text.sink), XtRImmediate, NULL},
   {XtNdisplayCaret, XtCOutput, XtRBoolean, sizeof(Boolean),
-     offset(text.display_caret), XtRImmediate, (caddr_t)True},
+     offset(text.display_caret), XtRImmediate, (XtPointer)True},
   {XtNscrollVertical, XtCScroll, XtRScrollMode, sizeof(XawTextScrollMode),
-     offset(text.scroll_vert), XtRImmediate, (caddr_t) XawtextScrollNever},
+     offset(text.scroll_vert), XtRImmediate, (XtPointer) XawtextScrollNever},
   {XtNscrollHorizontal, XtCScroll, XtRScrollMode, sizeof(XawTextScrollMode),
-     offset(text.scroll_horiz), XtRImmediate, (caddr_t) XawtextScrollNever},
+     offset(text.scroll_horiz), XtRImmediate, (XtPointer) XawtextScrollNever},
   {XtNwrap, XtCWrap, XtRWrapMode, sizeof(XawTextWrapMode),
-     offset(text.wrap), XtRImmediate, (caddr_t) XawtextWrapNever},
+     offset(text.wrap), XtRImmediate, (XtPointer) XawtextWrapNever},
   {XtNresize, XtCResize, XtRResizeMode, sizeof(XawTextResizeMode),
-     offset(text.resize), XtRImmediate, (caddr_t) XawtextResizeNever},
+     offset(text.resize), XtRImmediate, (XtPointer) XawtextResizeNever},
   {XtNautoFill, XtCAutoFill, XtRBoolean, sizeof(Boolean),
-     offset(text.auto_fill), XtRImmediate, (caddr_t) FALSE},
+     offset(text.auto_fill), XtRImmediate, (XtPointer) FALSE},
 };
 #undef offset
 
@@ -342,8 +342,8 @@ TextWidget ctx;
 
   ctx->text.vbar = vbar =
     XtCreateWidget("vScrollbar", scrollbarWidgetClass, (Widget)ctx, NULL, ZERO);
-  XtAddCallback( vbar, XtNscrollProc, VScroll, (caddr_t)ctx );
-  XtAddCallback( vbar, XtNjumpProc, VJump, (caddr_t)ctx );
+  XtAddCallback( vbar, XtNscrollProc, VScroll, (XtPointer)ctx );
+  XtAddCallback( vbar, XtNjumpProc, VJump, (XtPointer)ctx );
 
   ctx->text.r_margin.left += vbar->core.width + vbar->core.border_width;
   ctx->text.margin.left = ctx->text.r_margin.left;
@@ -390,8 +390,8 @@ TextWidget ctx;
   XtSetArg(args[0], XtNorientation, XtorientHorizontal);
   ctx->text.hbar = hbar =
     XtCreateWidget("hScrollbar", scrollbarWidgetClass, (Widget)ctx, args, ONE);
-  XtAddCallback( hbar, XtNscrollProc, HScroll, (caddr_t)ctx );
-  XtAddCallback( hbar, XtNjumpProc, HJump, (caddr_t)ctx );
+  XtAddCallback( hbar, XtNscrollProc, HScroll, (XtPointer)ctx );
+  XtAddCallback( hbar, XtNjumpProc, HJump, (XtPointer)ctx );
 
   PositionHScrollBar(ctx);
   if (XtIsRealized((Widget)ctx)) {
@@ -1102,8 +1102,8 @@ int n;
 static void 
 HScroll(w, closure, callData)
 Widget w;
-caddr_t closure;		/* TextWidget */
-caddr_t callData;		/* #pixels */
+XtPointer closure;		/* TextWidget */
+XtPointer callData;		/* #pixels */
 {
   TextWidget ctx = (TextWidget) closure;
   Widget tw = (Widget) ctx;
@@ -1184,7 +1184,7 @@ caddr_t callData;		/* #pixels */
 static void 
 HJump(w, closure, callData)
 Widget w;
-caddr_t closure, callData; /* closure = TextWidget, callData = percent. */
+XtPointer closure, callData; /* closure = TextWidget, callData = percent. */
 {
   TextWidget ctx = (TextWidget) closure;
   float * percent = (float *) callData;
@@ -1195,7 +1195,7 @@ caddr_t closure, callData; /* closure = TextWidget, callData = percent. */
   move = old_left - new_left;
 
   if (abs(move) < (int)ctx->core.width) {
-    HScroll(w, (caddr_t) ctx, move);
+    HScroll(w, (XtPointer) ctx, move);
     return;
   }
   _XawTextPrepareToUpdate(ctx);
@@ -1265,8 +1265,8 @@ Position left, right;
 static void 
 VScroll(w, closure, callData)
 Widget w;
-caddr_t closure;		/* TextWidget */
-caddr_t callData;		/* #pixels */
+XtPointer closure;		/* TextWidget */
+XtPointer callData;		/* #pixels */
 {
   TextWidget ctx = (TextWidget)closure;
   int height, lines = (int) callData;
@@ -1296,7 +1296,7 @@ caddr_t callData;		/* #pixels */
 static void 
 VJump(w, closure, callData)
 Widget w;
-caddr_t closure, callData; /* closuer = TextWidget, callData = percent. */
+XtPointer closure, callData; /* closuer = TextWidget, callData = percent. */
 {
   float * percent = (float *) callData;
   TextWidget ctx = (TextWidget)closure;
