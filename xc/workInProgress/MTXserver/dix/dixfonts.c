@@ -40,7 +40,7 @@ OF THIS SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.43 93/09/20 18:03:12 dpw Exp $ */
+/* $XConsortium: dixfonts.c,v 1.4 94/01/19 17:18:19 rob Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -680,7 +680,7 @@ finish:
     SendReplyToClient(client, msg);
 #else
     client->pSwapReplyFunc = ReplySwapVector[X_ListFonts];
-    WriteSwappedDataToClient(client, sizeof(xListFontsReply), &reply);
+    WriteSwappedDataToClient(client, sizeof(xListFontsReply), reply);
     (void) WriteToClient(client, stringLens + nnames, bufferStart);
     DEALLOCATE_LOCAL(bufferStart);
 #endif /* XTHREADS */
@@ -1022,7 +1022,7 @@ doListFontsWithInfo(client, c)
 
 finish:
     length = sizeof(xListFontsWithInfoReply);
-    bzero((char *) &finalReply, sizeof(xListFontsWithInfoReply));
+    bzero((char *) finalReply, sizeof(xListFontsWithInfoReply));
     finalReply->type = X_Reply;
     finalReply->sequenceNumber = client->sequence;
     finalReply->length = (sizeof(xListFontsWithInfoReply)
@@ -1030,7 +1030,7 @@ finish:
 #ifdef XTHREADS
     SendReplyToClient(client, msg);
 #else
-    WriteSwappedDataToClient(client, length, &finalReply);
+    WriteSwappedDataToClient(client, length, finalReply);
 #endif /* XTHREADS */
 bail:
     MTX_MUTEX_LOCK(&FontLockMutex);
@@ -1351,7 +1351,7 @@ bail:
  * XXX:SM client_state==START_SLEEP should never be true during MT operation 
  * but just to be safe.
  */
-#ifdef XTHREADS
+#ifndef XTHREADS
     if (client_state == START_SLEEP)
     {
 	/* Step 4 */
@@ -2192,4 +2192,3 @@ dump_char_ascii(cip)
 }
 
 #endif
-
