@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.6 89/04/13 08:20:14 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.8 89/08/18 14:05:40 rws Exp $ */
 
 #ifdef ZOID
 extern void ZoidExtensionInit();
@@ -34,6 +34,9 @@ extern void XTestExtension1Init();
 #endif
 #ifdef SHAPE
 extern void ShapeExtensionInit();
+#endif
+#ifdef MITSHM
+extern void ShmExtensionInit();
 #endif
 #ifdef PEX
 extern void PexExtensionInit();
@@ -56,6 +59,9 @@ InitExtensions(argc, argv)
 #endif
 #ifdef SHAPE
     ShapeExtensionInit();
+#endif
+#ifdef MITSHM
+    ShmExtensionInit();
 #endif
 #ifdef PEX
     PexExtensionInit();
