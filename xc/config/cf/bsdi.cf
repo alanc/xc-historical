@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: bsdi.cf,v 1.8 94/03/26 17:11:12 rws Exp $
+XCOMM platform:  $XConsortium: bsdi.cf,v 1.9 94/03/29 15:42:15 gildea Exp $
 
 #define OSName            BSD/386 1.1
 #define OSVendor          BSDI
@@ -33,7 +33,6 @@ XCOMM operating system:  OSName
 #define ServerExtraDefines GccGasOption
 #define ServerOSDefines -DDDXTIME
 #define AsmDefines -DUSE_GAS
-#define BuildServer	YES
 
 #undef  InstallCmd
 #define InstallCmd /usr/bin/install
