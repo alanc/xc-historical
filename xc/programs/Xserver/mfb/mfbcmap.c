@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbcmap.c,v 1.13 87/09/04 14:07:10 toddb Exp $ */
+/* $Header: mfbcmap.c,v 1.13 87/09/04 14:19:49 rws Locked $ */
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"
@@ -41,7 +41,8 @@ extern int	TellLostMap(), TellGainedMap();
  * The required list concept is pretty much irrelevant when you can only
  * have one map installed at a time.  
  */
-static ColormapPtr pInstalledMap = (ColormapPtr) None;
+static ColormapPtr InstalledMaps[MAXSCREENS];
+
 int
 mfbListInstalledColormaps(pScreen, pmaps)
     ScreenPtr	pScreen;
@@ -49,7 +50,7 @@ mfbListInstalledColormaps(pScreen, pmaps)
 {
     /* By the time we are processing requests, we can guarantee that there
      * is always a colormap installed */
-    *pmaps = pInstalledMap->mid;
+    *pmaps = InstalledMaps[pScreen->myNum]->mid;
     return (1);
 }
 
@@ -58,30 +59,38 @@ void
 mfbInstallColormap(pmap)
     ColormapPtr	pmap;
 {
-    if(pmap != pInstalledMap)
+    int index = pmap->pScreen->myNum;
+    ColormapPtr oldpmap = InstalledMaps[index];
+
+    if(pmap != oldpmap)
     {
 	/* Uninstall pInstalledMap. No hardware changes required, just
 	 * notify all interested parties. */
-	if(pInstalledMap != (ColormapPtr)None)
-	    WalkTree(pmap->pScreen, TellLostMap, &pInstalledMap->mid);
+	if(oldpmap != (ColormapPtr)None)
+	    WalkTree(pmap->pScreen, TellLostMap, (char *)&oldpmap->mid);
 	/* Install pmap */
-	pInstalledMap = pmap;
-	WalkTree(pmap->pScreen, TellGainedMap, &pmap->mid);
+	InstalledMaps[index] = pmap;
+	WalkTree(pmap->pScreen, TellGainedMap, (char *)&pmap->mid);
 
     }
 }
+
 void
 mfbUninstallColormap(pmap)
     ColormapPtr	pmap;
 {
-    if(pmap == pInstalledMap)
+    int index = pmap->pScreen->myNum;
+    ColormapPtr curpmap = InstalledMaps[index];
+
+    if(pmap == curpmap)
     {
         /* Uninstall pmap */
-	WalkTree(pmap->pScreen, TellLostMap, &pmap->mid);
+	WalkTree(pmap->pScreen, TellLostMap, (char *)&pmap->mid);
+	curpmap = (ColormapPtr) LookupID(pmap->pScreen->defColormap,
+					 RT_COLORMAP, RC_CORE);
 	/* Install default map */
-	pInstalledMap = (ColormapPtr) LookupID(pmap->pScreen->defColormap,
-					       RT_COLORMAP, RC_CORE);
-	WalkTree(pmap->pScreen, TellGainedMap, &pInstalledMap->mid);
+	InstalledMaps[index] = curpmap;
+	WalkTree(pmap->pScreen, TellGainedMap, (char *)&curpmap->mid);
     }
 	
 }
