@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.51 90/06/05 17:48:42 jim Exp $
+ *	$XConsortium: button.c,v 1.51 90/06/06 09:18:28 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.51 90/06/05 17:48:42 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.51 90/06/06 09:18:28 jim Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
@@ -760,7 +760,17 @@ register int row;
 	return(i);
 }	
 
-static int charClass[128] = {
+/*
+** double click table for cut and paste in 8 bits
+**
+** This table is divided in four parts :
+**
+**	- control characters	[0,0x1f] U [0x80,0x9f]
+**	- separators		[0x20,0x3f] U [0xa0,0xb9]
+**	- binding characters	[0x40,0x7f] U [0xc0,0xff]
+**  	- execeptions
+*/
+static int charClass[256] = {
 /* NUL  SOH  STX  ETX  EOT  ENQ  ACK  BEL */
     32,   1,   1,   1,   1,   1,   1,   1,
 /*  BS   HT   NL   VT   NP   CR   SO   SI */
@@ -792,15 +802,46 @@ static int charClass[128] = {
 /*   p    q    r    s    t    u    v    w */
     48,  48,  48,  48,  48,  48,  48,  48,
 /*   x    y    z    {    |    }    ~  DEL */
-    48,  48,  48, 123, 124, 125, 126,   1};
-
+    48,  48,  48, 123, 124, 125, 126,   1,
+/* x80  x81  x82  x83  IND  NEL  SSA  ESA */
+     1,   1,   1,   1,   1,   1,   1,   1,
+/* HTS  HTJ  VTS  PLD  PLU   RI  SS2  SS3 */
+     1,   1,   1,   1,   1,   1,   1,   1,
+/* DCS  PU1  PU2  STS  CCH   MW  SPA  EPA */
+     1,   1,   1,   1,   1,   1,   1,   1,
+/* x98  x99  x9A  CSI   ST  OSC   PM  APC */
+     1,   1,   1,   1,   1,   1,   1,   1,
+/*   -    i   c/    L   ox   Y-    |   So */
+   160, 161, 162, 163, 164, 165, 166, 167,
+/*  ..   c0   ip   <<    _        R0    - */
+   168, 169, 170, 171, 172, 173, 174, 175,
+/*   o   +-    2    3    '    u   q|    . */
+   176, 177, 178, 179, 180, 181, 182, 183,
+/*   ,    1    2   >>  1/4  1/2  3/4    ? */
+   184, 185, 186, 187, 188, 189, 190, 191,
+/*  A`   A'   A^   A~   A:   Ao   AE   C, */
+    48,  48,  48,  48,  48,  48,  48,  48,
+/*  E`   E'   E^   E:   I`   I'   I^   I: */
+    48,  48,  48,  48,  48,  48,  48,  48,
+/*  D-   N~   O`   O'   O^   O~   O:    X */ 
+    48,  48,  48,  48,  48,  48,  48, 216,
+/*  O/   U`   U'   U^   U:   Y'    P    B */
+    48,  48,  48,  48,  48,  48,  48,  48,
+/*  a`   a'   a^   a~   a:   ao   ae   c, */
+    48,  48,  48,  48,  48,  48,  48,  48,
+/*  e`   e'   e^   e:    i`  i'   i^   i: */
+    48,  48,  48,  48,  48,  48,  48,  48,
+/*   d   n~   o`   o'   o^   o~   o:   -: */
+    48,  48,  48,  48,  48,  48,  48,  248,
+/*  o/   u`   u'   u^   u:   y'    P   y: */
+    48,  48,  48,  48,  48,  48,  48,  48};
 
 int SetCharacterClassRange (low, high, value)
-    register int low, high;		/* in range of [0..127] */
+    register int low, high;		/* in range of [0..255] */
     register int value;			/* arbitrary */
 {
 
-    if (low < 0 || high > 127 || high < low) return (-1);
+    if (low < 0 || high > 255 || high < low) return (-1);
 
     for (; low <= high; low++) charClass[low] = value;
 
