@@ -1,4 +1,4 @@
-/* $XConsortium: XKBproto.h,v 1.9 94/02/05 18:13:26 rws Exp $ */
+/* $XConsortium: XKBproto.h,v 1.5 93/09/28 23:36:23 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,22 +28,17 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef _XKBPROTO_H_
 #define	_XKBPROTO_H_
 
-#include <X11/extensions/XKB.h>
 #include <X11/Xmd.h>
-
-#define	XkbIsModAction(a)	(((a)->type>=XkbSASetMods)&&((a)->type<=XkbSALockMods))
-#define	XkbIsGroupAction(a)	(((a)->type>=XkbSASetGroup)&&((a)->type<=XkbSALockGroup))
-#define	XkbIsPtrAction(a)	(((a)->type>=XkbSAMovePtr)&&((a)->type<=XkbSASetPtrDflt))
-
-#define	XkbError2(a,b)		((((unsigned)(a))<<24)|(b))
-#define	XkbError3(a,b,c)	XkbError2(a,(((unsigned)(b))<<16)|(c))
-#define	XkbError4(a,b,c,d)	XkbError3(a,b,((((unsigned)(c))<<8)|(d)))
 
 #define Window CARD32
 #define Atom CARD32
 #define Time CARD32
+#define KeyCode CARD8
+#define KeySym CARD32
 
-typedef struct _UseExtension {
+#define	XkbPaddedSize(n)	((((unsigned)(n)+3) >> 2) << 2)
+
+typedef struct _xkbUseExtension {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBUseExtension */
     CARD16	length B16;
@@ -52,7 +47,7 @@ typedef struct _UseExtension {
 } xkbUseExtensionReq;
 #define	sz_xkbUseExtensionReq	8
 
-typedef struct _UseExtensionReply {
+typedef struct _xkbUseExtensionReply {
     BYTE	type;		/* X_Reply */
     BOOL	supported;
     CARD16	sequenceNumber B16;
@@ -67,45 +62,29 @@ typedef struct _UseExtensionReply {
 } xkbUseExtensionReply;
 #define	sz_xkbUseExtensionReply	32
 
-typedef	struct _SelectEvents {
+typedef	struct _xkbSelectEvents {
     CARD8	reqType;
     CARD8	xkbReqType;	/* X_KBSelectEvents */
     CARD16	length B16;
     CARD16	deviceSpec B16;
-    CARD16	affectState B16;
-    CARD16	state B16;
+    CARD16	affectWhich B16;
+    CARD16	clear B16;
+    CARD16	selectAll B16;
     CARD16	affectMap B16;
     CARD16	map B16;
-    CARD16	pad1 B16;
-    CARD32	affectControls B32;
-    CARD32	controls B32;
-    CARD16	affectNames B16;
-    CARD16	names B16;
-    CARD16	affectCompatMap B16;
-    CARD16	compatMap B16;
-    BOOL	affectBell;
-    BOOL	bell;
-    CARD8	affectSlowKey;
-    CARD8	slowKey;
-    CARD32	affectIndicatorState B32;
-    CARD32	indicatorState B32;
-    CARD32	affectIndicatorMap B32;
-    CARD32	indicatorMap B32;
-    CARD16	affectAlternateSyms B16;
-    CARD16	alternateSyms B16;
 } xkbSelectEventsReq;
-#define	sz_xkbSelectEventsReq	56
+#define	sz_xkbSelectEventsReq	16
 
 #ifdef NEED_EVENTS
 
-typedef struct _SendEvent {
+typedef struct _xkbSendEvent {
     CARD8	reqType;
     CARD8	xkbReqType;	/* X_KBSendEvent */
     CARD16	length B16;
     BOOL	propagate;
     BOOL	synthesizeClick;
     CARD16	pad B16;
-    Window	destination B32;
+    CARD32	destination;	/* Window */
     CARD32	eventMask B32;
     xEvent	event;
 } xkbSendEventReq;
@@ -113,7 +92,7 @@ typedef struct _SendEvent {
 
 #endif /* NEED_EVENTS */
 
-typedef struct _XkbBell {
+typedef struct _xkbBell {
     CARD8	reqType;
     CARD8	xkbReqType;	/* X_KBBell */
     CARD16	length B16;
@@ -121,13 +100,14 @@ typedef struct _XkbBell {
     CARD8	bellClass;
     CARD8	bellID;
     INT8	percent;
-    CARD8	pad1;
+    BOOL	override;
     CARD16	pad2 B16;
     Atom	name B32;
+    Window	window B32;
 } xkbBellReq;
-#define	sz_xkbBellReq		16
+#define	sz_xkbBellReq		20
 
-typedef struct _XkbGetState {
+typedef struct _xkbGetState {
 	CARD8		reqType;
 	CARD8		xkbReqType;	/* always X_KBGetState */
 	CARD16		length B16;
@@ -136,7 +116,7 @@ typedef struct _XkbGetState {
 } xkbGetStateReq;
 #define	sz_xkbGetStateReq	8
 
-typedef	struct _XkbGetStateReply {
+typedef	struct _xkbGetStateReply {
     BYTE	type;
     BYTE	deviceID;
     CARD16	sequenceNumber B16;
@@ -146,20 +126,18 @@ typedef	struct _XkbGetStateReply {
     CARD8	baseMods;
     CARD8	latchedMods;
     CARD8	lockedMods;
-    CARD8	unlockedMods;
     CARD8	group;
     CARD8	baseGroup;
     CARD8	latchedGroup;
     CARD8	lockedGroup;
     CARD8	compatState;
-    CARD8	groupsUnlocked;
     CARD8	pad2;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
+    CARD16	pad3;
+    CARD32	pad4[2] B32;
 } xkbGetStateReply;
 #define	sz_xkbGetStateReply	32
 
-typedef struct _LatchLockState {
+typedef struct _xkbLatchLockState {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBLatchLockState */
     CARD16	length B16;
@@ -176,7 +154,7 @@ typedef struct _LatchLockState {
 } xkbLatchLockStateReq;
 #define	sz_xkbLatchLockStateReq		16
 
-typedef struct _GetControls {
+typedef struct _xkbGetControls {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBGetControls */
     CARD16	length B16;
@@ -185,32 +163,20 @@ typedef struct _GetControls {
 } xkbGetControlsReq;
 #define	sz_xkbGetControlsReq	8
 
-#define	xkb_KTHasPreserve	1
-typedef struct _KeyTypeWireDesc {
-    CARD8	flags;
-    CARD8	mask;
-    CARD8	groupWidth;
-    CARD8	mapWidth;
-} xkbKeyTypeWireDesc;
-#define	sz_xkbKeyTypeWireDesc	4
-
-typedef struct _SymMapWireDesc {
-    CARD8	ktIndex;
-    CARD8	groupInfo;
-    CARD16	nSyms B16;
-} xkbSymMapWireDesc;
-#define	sz_xkbSymMapWireDesc	4
-
-typedef struct _GetControlsReply {
+typedef struct _xkbGetControlsReply {
     BYTE	type;		/* X_Reply */
     CARD8	deviceID;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
     CARD8	mouseKeysDfltBtn;
     CARD8	numGroups;
-    CARD16	internalMods B16;
-    CARD16	ignoreLockMods B16;
-    CARD16	pad1 B16;
+    CARD8	internalMods B16;
+    CARD8	ignoreLockMods B16;
+    CARD8	internalRealMods;
+    CARD8	ignoreLockRealMods;
+    CARD16	internalVirtualMods B16;
+    CARD16	ignoreLockVirtualMods B16;
+    CARD16	pad B16;
     CARD32	enabledControls B32;
     CARD16	repeatDelay B16;
     CARD16	repeatInterval B16;
@@ -224,17 +190,21 @@ typedef struct _GetControlsReply {
     CARD16	accessXTimeout B16;
     CARD32	accessXTimeoutMask B32;
 } xkbGetControlsReply;
-#define	sz_xkbGetControlsReply	44
+#define	sz_xkbGetControlsReply	48
 
-typedef struct _SetControls {
+typedef struct _xkbSetControls {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBSetControls */
     CARD16	length B16;
     CARD16	deviceSpec B16;
-    CARD16	affectInternalMods B16;
-    CARD16	internalMods B16;
-    CARD16	affectIgnoreLockMods B16;
-    CARD16	ignoreLockMods B16;
+    CARD8	affectInternalRealMods B16;
+    CARD8	internalRealMods B16;
+    CARD8	affectIgnoreLockRealMods B16;
+    CARD8	ignoreLockRealMods B16;
+    CARD16	affectInternalVirtualMods B16;
+    CARD16	internalVirtualMods B16;
+    CARD16	affectIgnoreLockVirtualMods B16;
+    CARD16	ignoreLockVirtualMods B16;
     CARD8	mouseKeysDfltBtn;
     CARD8	pad1;
     CARD32	affectEnabledControls B32;
@@ -252,122 +222,196 @@ typedef struct _SetControls {
     CARD16	accessXTimeout B16;
     CARD32	accessXTimeoutMask B32;
 } xkbSetControlsReq;
-#define	sz_xkbSetControlsReq	52
+#define	sz_xkbSetControlsReq	56
 
-typedef struct _GetMap {
+typedef	struct _xkbKTMapEntryWireDesc {
+    BOOL	active;
+    CARD8	mask;
+    CARD8	level;
+    CARD8	realMods;
+    CARD16	virtualMods B16;
+    CARD16	pad B16;
+} xkbKTMapEntryWireDesc;
+#define sz_xkbKTMapEntryWireDesc	8
+
+typedef struct _xkbKTSetMapEntryWireDesc {
+    CARD8	level;
+    CARD8	realMods;
+    CARD16	virtualMods B16;
+} xkbKTSetMapEntryWireDesc;
+#define	sz_xkbKTSetMapEntryWireDesc	4
+
+typedef struct _xkbKTPreserveWireDesc {
+    CARD8	mask;		/* GetMap only */
+    CARD8	realMods;
+    CARD16	virtualMods B16;
+} xkbKTPreserveWireDesc;
+#define	sz_xkbKTPreserveWireDesc	4
+
+typedef struct _xkbKeyTypeWireDesc {
+    CARD8	mask;
+    CARD8	realMods;
+    CARD16	virtualMods B16;
+    CARD8	groupWidth;
+    CARD8	nMapEntries;
+    BOOL	preserve;
+    CARD8	pad;
+} xkbKeyTypeWireDesc;
+#define	sz_xkbKeyTypeWireDesc	8
+
+typedef struct _xkbSymMapWireDesc {
+    CARD8	ktIndex;
+    CARD8	groupInfo;
+    CARD16	nSyms B16;
+} xkbSymMapWireDesc;
+#define	sz_xkbSymMapWireDesc	4
+
+typedef struct _xkbGetMap {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBGetMap */
     CARD16	length B16;
     CARD16	deviceSpec B16;
     CARD16	full B16;
     CARD16	partial B16;
-    CARD8	firstKeyType;
-    CARD8	nKeyTypes;
-    CARD8	firstKeySym;
+    CARD8	firstType;
+    CARD8	nTypes;
+    KeyCode	firstKeySym;
     CARD8	nKeySyms;
-    CARD8	firstKeyAction;
+    KeyCode	firstKeyAction;
     CARD8	nKeyActions;
-    CARD8	firstKeyBehavior;
+    KeyCode	firstKeyBehavior;
     CARD8	nKeyBehaviors;
+    CARD16	virtualMods;
+    KeyCode	firstKeyExplicit;
+    CARD8	nKeyExplicit;
     CARD16	pad B16;
 } xkbGetMapReq;
-#define	sz_xkbGetMapReq	20
+#define	sz_xkbGetMapReq	24
 
-typedef struct _GetMapReply {
+typedef struct _xkbGetMapReply {
     CARD8	type;		/* always X_Reply */
     CARD8	deviceID;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
-    CARD8	minKeyCode;
-    CARD8	maxKeyCode;
+    KeyCode	minKeyCode;
+    KeyCode	maxKeyCode;
     CARD16	present B16;
-    CARD8	firstKeyType;
-    CARD8	nKeyTypes;
-    CARD8	totalKeyTypes;
-    CARD8	pad1;
-    CARD8	firstKeySym;
+    CARD8	firstType;
+    CARD8	nTypes;
+    CARD8	totalTypes;
+    KeyCode	firstKeySym;
     CARD8	nKeySyms;
-    CARD16	totalSyms B16;
-    CARD8	firstKeyAction;
+    KeyCode	firstKeyAction;
     CARD8	nKeyActions;
+    CARD8	totalKeyBehaviors;
+    CARD16	virtualMods B16;
+    CARD16	totalSyms B16;
     CARD16	totalActions B16;
-    CARD8	firstKeyBehavior;
-    CARD8	nKeyBehaviors;
-    CARD16	pad2 B16;
-    CARD32	pad3 B32;
+    CARD8	totalKeyExplicit;
+    CARD8	pad1;
+    CARD32	pad2 B32;
 } xkbGetMapReply;
 #define	sz_xkbGetMapReply		32
 
-typedef struct _XkbSetMap {
+typedef struct _xkbSetMap {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBSetMap */
     CARD16	length B16;
     CARD16	deviceSpec B16;
     CARD16	present B16;
     CARD16	resize B16;
-    CARD8	firstKeyType;
-    CARD8	nKeyTypes;
-    CARD8	firstKeySym;
+    CARD8	firstType;
+    CARD8	nTypes;
+    KeyCode	firstKeySym;
     CARD8	nKeySyms;
-    CARD16	totalSyms B16;
-    CARD8	firstKeyAction;
+    KeyCode	firstKeyAction;
     CARD8	nKeyActions;
+    CARD8	totalKeyBehaviors;
+    CARD16	virtualMods B16;
+    CARD8	totalKeyExplicit;
+    CARD8	pad1;
+    CARD16	totalSyms B16;
     CARD16	totalActions B16;
-    CARD8	firstKeyBehavior;
-    CARD8	nKeyBehaviors;
-    CARD16	pad B16;
+    CARD16	pad2 B16;
 } xkbSetMapReq;
-#define	sz_xkbSetMapReq	24
+#define	sz_xkbSetMapReq	28
 
-#define	XkbModCompatMask	(1<<0)
-#define	XkbSymInterpMask	(1<<1)
-#define	XkbAllCompatMask	(0x3)
+typedef struct _xkbBehaviorWireDesc {
+	CARD8	key;
+	CARD8	type;
+	CARD8	data;
+	CARD8	pad;
+} xkbBehaviorWireDesc;
+#define	sz_xkbBehaviorWireDesc	4
 
-typedef struct _GetCompatMap {
+typedef	struct _xkbActionWireDesc {
+    CARD8	type;
+    CARD8	data[7];
+} xkbActionWireDesc;
+#define	sz_xkbActionWireDesc	8
+
+typedef struct _xkbModCompatWireDesc {
+    CARD8	mods;
+    CARD8	groups;
+} xkbModCompatWireDesc;
+#define	sz_xkbModCompatWireDesc	2
+
+typedef struct _xkbSymInterpretWireDesc {
+    CARD32		sym;
+    CARD8		mods;
+    CARD8		match;
+    CARD8		virtualMod;
+    CARD8		flags;
+    xkbActionWireDesc	act;
+} xkbSymInterpretWireDesc;
+#define	sz_xkbSymInterpretWireDesc	16
+
+typedef struct _xkbGetCompatMap {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBGetCompatMap */
     CARD16	length B16;
     CARD16	deviceSpec B16;
-    BOOL	getAllSyms;
+    CARD16	virtualMods;
     CARD8	mods;
-    CARD16	firstSym B16;
-    CARD16	nSyms B16;
+    BOOL	getAllSI;
+    CARD16	firstSI B16;
+    CARD16	nSI B16;
+    CARD16	pad;
 } xkbGetCompatMapReq;
-#define	sz_xkbGetCompatMapReq	12
+#define	sz_xkbGetCompatMapReq	16
 
-typedef struct _GetCompatMapReply {
+typedef struct _xkbGetCompatMapReply {
     CARD8	type;		/* always X_Reply */
     CARD8	deviceID;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
-    CARD8	pad;
+    CARD8	pad1;
     CARD8	mods;
-    CARD16	firstSym B16;
-    CARD16	nSyms B16;
-    CARD16	nTotalSyms B16;
-    CARD32	pad2 B32;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
-    CARD32	pad5 B32;
+    CARD16	virtualMods B16;
+    CARD16	firstSI B16;
+    CARD16	nSI B16;
+    CARD16	nTotalSI B16;
+    CARD16	pad2 B16;
+    CARD32	pad3[3] B32;
 } xkbGetCompatMapReply;
 #define	sz_xkbGetCompatMapReply		32
 
-typedef struct _XkbSetCompatMap {
+typedef struct _xkbSetCompatMap {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBSetCompatMap */
     CARD16	length B16;
     CARD16	deviceSpec B16;
     BOOL	recomputeActions;
-    BOOL	truncateSyms;
+    BOOL	truncateSI;
     CARD8	pad1;
     CARD8	mods;
-    CARD16	firstSym B16;
-    CARD16	nSyms B16;
-    CARD16	pad2 B16;
+    CARD16	virtualMods B16;
+    CARD16	firstSI B16;
+    CARD16	nSI B16;
 } xkbSetCompatMapReq;
 #define	sz_xkbSetCompatMapReq	16
 
-typedef struct _GetIndicatorState {
+typedef struct _xkbGetIndicatorState {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBGetIndicatorState */
     CARD16	length B16;
@@ -376,21 +420,17 @@ typedef struct _GetIndicatorState {
 } xkbGetIndicatorStateReq;
 #define	sz_xkbGetIndicatorStateReq	8
 
-typedef struct _GetIndicatorStateReply {
+typedef struct _xkbGetIndicatorStateReply {
     CARD8	type;		/* always X_Reply */
     CARD8	deviceID;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
     CARD32	state B32;
-    CARD32	pad1 B32;
-    CARD32	pad2 B32;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
-    CARD32	pad5 B32;
+    CARD32	pad[5] B32;
 } xkbGetIndicatorStateReply;
 #define	sz_xkbGetIndicatorStateReply	32
 
-typedef struct _GetIndicatorMap {
+typedef struct _xkbGetIndicatorMap {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBGetIndicatorMap */
     CARD16	length B16;
@@ -400,7 +440,7 @@ typedef struct _GetIndicatorMap {
 } xkbGetIndicatorMapReq;
 #define	sz_xkbGetIndicatorMapReq	12
 
-typedef struct _GetIndicatorMapReply {
+typedef struct _xkbGetIndicatorMapReply {
     CARD8	type;		/* always X_Reply */
     CARD8	deviceID;
     CARD16	sequenceNumber B16;
@@ -409,23 +449,23 @@ typedef struct _GetIndicatorMapReply {
     CARD8	nRealIndicators;
     CARD8	nIndicators;
     CARD16	pad2 B16;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
-    CARD32	pad5 B32;
-    CARD32	pad6 B32;
+    CARD32	pad3[4] B32;
 } xkbGetIndicatorMapReply;
 #define	sz_xkbGetIndicatorMapReply	32
 
-typedef struct _IndicatorMapWireDesc {
-    CARD8	whichMods;
-    CARD8	mods;
+typedef struct _xkbIndicatorMapWireDesc {
+    CARD8	flags;
     CARD8	whichGroups;
     CARD8	groups;
-    CARD32	controls B32;
+    CARD8	whichMods;
+    CARD8	mods;
+    CARD8	realMods;
+    CARD16	virtualMods B16;
+    CARD32	ctrls B32;
 } xkbIndicatorMapWireDesc;
-#define	sz_xkbIndicatorMapWireDesc	8
+#define	sz_xkbIndicatorMapWireDesc	12
 
-typedef struct _SetIndicatorMap {
+typedef struct _xkbSetIndicatorMap {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBSetIndicatorMap */
     CARD16	length B16;
@@ -435,57 +475,58 @@ typedef struct _SetIndicatorMap {
 } xkbSetIndicatorMapReq;
 #define	sz_xkbSetIndicatorMapReq	12
 
-typedef struct _GetNames {
+typedef struct _xkbGetNames {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBGetNames */
     CARD16	length B16;
     CARD16	deviceSpec B16;
-    CARD16	which B16;
+    CARD16	pad B16;
+    CARD32	which B32;
 } xkbGetNamesReq;
-#define	sz_xkbGetNamesReq		8
+#define	sz_xkbGetNamesReq		12
 
-typedef	struct _XkbGetNamesReply {
+typedef	struct _xkbGetNamesReply {
     BYTE	type;
     BYTE	deviceID;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
-    CARD16	pad1 B16;
-    CARD16	which B16;
-    Atom	keycodes B32;
-    Atom	geometry B32;
-    Atom	symbols B32;
-    CARD8	nKeyTypes;
+    CARD32	which B32;
+    CARD8	nTypes;
+    CARD8	modifiers;
+    CARD16	virtualMods B16;
+    KeyCode	firstKey;
+    CARD8	nKeys;
     CARD8	nRadioGroups;
     CARD8	nCharSets;
-    CARD8	pad2;
-    CARD32	pad3 B32;
+    CARD32	indicators B32;
+    CARD32	pad[2] B32;
 } xkbGetNamesReply;
 #define	sz_xkbGetNamesReply	32
 
-typedef struct _SetNames {
+typedef struct _xkbSetNames {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBSetNames */
     CARD16	length B16;
     CARD16	deviceSpec B16;
-    CARD16	which B16;
-    Atom	keycodes B32;
-    Atom	geometry B32;
-    Atom	symbols B32;
-    CARD8	firstKeyType;
-    CARD8	nKeyTypes;
+    CARD16	pad1 B16;
+    CARD32	which B32;
+    CARD8	firstType;
+    CARD8	nTypes;
     CARD8	firstKTLevel;
     CARD8	nKTLevels;
     CARD32	indicators B32;
     CARD8	modifiers;
+    CARD8	pad2;
+    CARD16	virtualMods B16;
     CARD8	nRadioGroups;
     CARD8	nCharSets;
-    CARD8	pad1;
-    CARD16	resize B16;
-    CARD16	pad2 B16;
+    KeyCode	firstKey;
+    CARD8	nKeys;
+    CARD32	resize B32;
 } xkbSetNamesReq;
-#define	sz_xkbSetNamesReq		36
+#define	sz_xkbSetNamesReq	32
 
-typedef struct _ListAlternateSyms {
+typedef struct _xkbListAlternateSyms {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBListAlternateSyms */
     CARD16	length B16;
@@ -496,7 +537,7 @@ typedef struct _ListAlternateSyms {
 } xkbListAlternateSymsReq;
 #define	sz_xkbListAlternateSymsReq	16
 
-typedef struct _ListAlternateSymsReply {
+typedef struct _xkbListAlternateSymsReply {
     BYTE	type;		/* X_Reply */
     CARD8	deviceID;
     CARD16	sequenceNumber B16;
@@ -508,20 +549,20 @@ typedef struct _ListAlternateSymsReply {
 } xkbListAlternateSymsReply;
 #define sz_xkbListAlternateSymsReply	32
 
-typedef struct _GetAlternateSyms {
+typedef struct _xkbGetAlternateSyms {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBGetAlternateSyms */
     CARD16	length B16;
     CARD16	deviceSpec B16;
     CARD8	index;
-    CARD8	firstKey;
+    KeyCode	firstKey;
     CARD8	nKeys;
     CARD8	pad1;
     CARD16	pad2 B16;
 } xkbGetAlternateSymsReq;
 #define	sz_xkbGetAlternateSymsReq		12
 
-typedef	struct _XkbGetAlternateSymsReply {
+typedef	struct _xkbGetAlternateSymsReply {
     BYTE	type;
     BYTE	deviceID;
     CARD16	sequenceNumber B16;
@@ -529,17 +570,15 @@ typedef	struct _XkbGetAlternateSymsReply {
     Atom	name B32;
     CARD8	index;
     CARD8	nCharSets;
-    CARD8	firstKey;
+    KeyCode	firstKey;
     CARD8	nKeys;
     CARD16	totalSyms B16;
     CARD16	pad2 B16;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
-    CARD32	pad5 B32;
+    CARD32	pad3[3] B32;
 } xkbGetAlternateSymsReply;
 #define	sz_xkbGetAlternateSymsReply	32
 
-typedef struct _SetAlternateSyms {
+typedef struct _xkbSetAlternateSyms {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBSetAlternateSyms */
     CARD16	length B16;
@@ -548,82 +587,112 @@ typedef struct _SetAlternateSyms {
     CARD8	replace;
     CARD16	present B16;
     CARD16	pad1 B16;
-    CARD32	name B32;
+    Atom	name B32;
     CARD8	nCharSets;
-    CARD8	firstKey;
+    KeyCode	firstKey;
     CARD8	nKeys;
     CARD8	pad;
 } xkbSetAlternateSymsReq;
 #define	sz_xkbSetAlternateSymsReq		20
 
-typedef struct _GetGeometry {
+typedef struct _xkbPointWireDesc {
+    CARD16	x B16;
+    CARD16	y B16;
+} xkbPointWireDesc;
+#define	sz_xkbPointWireDesc	4
+
+typedef struct _xkbShapeWireDesc {
+    CARD8	name[4];
+    CARD8	nOutlines;
+    CARD8	approxOutline;
+    CARD8	primaryOutline;
+    CARD8	pad;
+} xkbShapeWireDesc;
+#define	sz_xkbShapeWireDesc	8
+
+typedef struct _xkbDoodadWireDesc {
+    CARD16	top B16;
+    CARD16	left B16;
+    CARD8	shape;
+    CARD8	color;
+    CARD16	angle B16;
+} xkbDoodadWireDesc;
+#define	sz_xkbDoodadWireDesc	8
+
+typedef struct _xkbLabelWireDesc {
+    CARD16	baseline B16;
+    CARD16	left B16;
+    CARD16	angle B16;
+    CARD8	color;
+    CARD8	length;
+} xkbLabelWireDesc;
+#define	sz_xkbLabelWireDesc	8
+
+typedef struct _xkbKeyWireDesc {
+    KeyCode	keycode;
+    CARD8	shape;
+    CARD8	gap;
+    CARD8	color;
+    CARD8	name[4];
+} xkbKeyWireDesc;
+#define	sz_xkbKeyWireDesc	8
+
+typedef struct _xkbRowWireDesc {
+    CARD16	top B16;
+    CARD16	left B16;
+    CARD8	nKeys;
+    BOOL	vertical;
+    CARD16	pad B16;
+} xkbRowWireDesc;
+#define	sz_xkbRowWireDesc	8
+
+typedef struct _xkbSectionWireDesc {
+    Atom	name B32;
+    CARD16	top B16;
+    CARD16	left B16;
+    CARD16	width B16;
+    CARD16	height B16;
+    CARD16	angle B16;
+    CARD8	nRows;
+    CARD8	nDoodads;
+} xkbSectionWireDesc;
+#define	sz_xkbSectionWireDesc	16
+
+typedef struct _xkbGetGeometry {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBGetGeometry */
     CARD16	length B16;
     CARD16	deviceSpec B16;
     CARD16	pad B16;
+    Atom	name B32;
 } xkbGetGeometryReq;
-#define	sz_xkbGetGeometryReq	8
+#define	sz_xkbGetGeometryReq	12
 
-typedef struct _KeyShape {
-    CARD16	width B16;
-    CARD16	height B16;
-} xkbKeyShapeWireDesc;
-
-#define	XkbMaxSectionNameLen	16
-typedef struct _SectionWireDesc {
-    CARD8	name[XkbMaxSectionNameLen];
-    CARD16	angle B16;
-    CARD16	x B16;
-    CARD16	y B16;
-    CARD16	width B16;
-    CARD16	height B16;
-    CARD8	nRows;
-    CARD8	pad;
-} xkbSectionWireDesc;
-#define	sz_xkbSectionWireDesc	28
-
-typedef struct _RowWireDesc {
-    CARD16	x B16;
-    CARD16	y B16;
-    CARD16	width B16;
-    CARD16	height B16;
-    CARD8	rows;
-    CARD8	pad1;
-    CARD16	pad2 B16;
-} xkbRowWireDesc;
-#define sz_xkbRowWireDesc	12
-
-typedef struct _KeyGeomWireDesc {
-    CARD8	keycode;
-    CARD8	shape;
-    CARD16	offset B16;
-} xkbGeomWireDesc;
-#define sz_xkbGeomWireDesc	4
-
-typedef struct _GetGeometryReply {
-    BYTE	type;
-    BYTE	deviceID;
+typedef struct _xkbGetGeometryReply {
+    CARD8	type;		/* always X_Reply */
+    CARD8	deviceID;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
     Atom	name B32;
-    BOOL	supported;
-    CARD8	nSections;
+    CARD16	width B16;
+    CARD16	height B16;
+    CARD8	shape;
+    CARD8	color;
     CARD8	nShapes;
-    CARD8	minKeyCode;
-    CARD8	maxKeyCode;
-    CARD8	pad1;
-    CARD16	widthMM B16;
-    CARD16	heightMM B16;
-    CARD16	pad2 B16;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
+    CARD8	nSections;
+    CARD16	nPoints B16;
+    CARD16	nOutlines B16;
+    CARD8	nColors;
+    CARD8	nDoodads;
+    CARD8	nLabels;
+    CARD8	nFonts;
+    CARD32	pad1 B32;
 } xkbGetGeometryReply;
-#define sz_xkbGetGeometryReply	32
+#define	sz_xkbGetGeometryReply	32
 
 #define	XkbGMByName		1
 #define	XkbGMDescription	2
-typedef struct _SetGeometry {
+typedef struct _xkbSetGeometry {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBSetGeometry */
     CARD16	length B16;
@@ -639,7 +708,7 @@ typedef struct _SetGeometry {
 #define	XkbNormalLocks	0
 #define	XkbDisableLocks	1
 #define	XkbLeaveLocks	2
-typedef struct _SetDebuggingFlags {
+typedef struct _xkbSetDebuggingFlags {
     CARD8	reqType;
     CARD8	xkbReqType;	/* always X_KBSetDebuggingFlags */
     CARD16	length B16;
@@ -651,18 +720,14 @@ typedef struct _SetDebuggingFlags {
 } xkbSetDebuggingFlagsReq;
 #define	sz_xkbSetDebuggingFlagsReq	12
 
-typedef struct _SetDebuggingFlagsReply {
+typedef struct _xkbSetDebuggingFlagsReply {
     BYTE	type;		/* X_Reply */
     CARD8	disableLocks;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
     CARD16	currentFlags B16;
     CARD16	pad1 B16;
-    CARD32	pad2 B32;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
-    CARD32	pad5 B32;
-    CARD32	pad6 B32;
+    CARD32	pad[5] B32;
 } xkbSetDebuggingFlagsReply;
 #define	sz_xkbSetDebuggingFlagsReply	32
 
@@ -678,13 +743,9 @@ typedef struct _xkbAnyEvent {
     CARD8	deviceID;
     CARD8	pad1;
     CARD16	pad2 B16;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
-    CARD32	pad5 B32;
-    CARD32	pad6 B32;
-    CARD32	pad7 B32;
+    CARD32	pad3[4] B32;
 } xkbAnyEvent;
-#define	sz_xkbAnyEvent			32
+#define	sz_xkbAnyEvent;
 
 typedef	struct _xkbStateNotify {
     BYTE	type;
@@ -694,22 +755,19 @@ typedef	struct _xkbStateNotify {
     CARD8	deviceID;
     CARD8	mods;
     CARD8	baseMods;
-    CARD8	lockedMods;
     CARD8	latchedMods;
+    CARD8	lockedMods;
     CARD8	group;
     CARD8	baseGroup;
     CARD8	latchedGroup;
     CARD8	lockedGroup;
     CARD8	compatState;
-    CARD8	unlockedMods;
-    CARD8	groupsUnlocked;
-    CARD8	keycode;
+    KeyCode	keycode;
     CARD8	eventType;
     CARD8	requestMajor;
     CARD8	requestMinor;
     CARD16	changed B16;
-    CARD16	pad1 B16;
-    CARD32	pad2 B32;
+    CARD32	pad[2] B32;
 } xkbStateNotify;
 #define	sz_xkbStateNotify	32
 
@@ -721,17 +779,18 @@ typedef	struct _xkbMapNotify {
     CARD8	pad1;
     CARD8	deviceID;
     CARD16	changed B16;
-    CARD8	firstKeyType;
-    CARD8	nKeyTypes;
-    CARD8	firstKeySym;
+    CARD8	firstType;
+    CARD8	nTypes;
+    KeyCode	firstKeySym;
     CARD8	nKeySyms;
-    CARD8	firstKeyAction;
+    KeyCode	firstKeyAction;
     CARD8	nKeyActions;
-    CARD8	firstKeyBehavior;
+    KeyCode	firstKeyBehavior;
     CARD8	nKeyBehaviors;
-    CARD32	pad2 B32;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
+    CARD16	virtualMods;
+    KeyCode	firstKeyExplicit;
+    CARD8	nKeyExplicit;
+    CARD32	pad[2] B32;
 } xkbMapNotify;
 #define	sz_xkbMapNotify	32
 
@@ -746,7 +805,7 @@ typedef struct _xkbControlsNotify {
     CARD32	changedControls B32;
     CARD32	enabledControls B32;
     CARD32	enabledControlChanges B32;
-    CARD8	keycode;
+    KeyCode	keycode;
     CARD8	eventType;
     CARD8	requestMajor;
     CARD8	requestMinor;
@@ -765,8 +824,7 @@ typedef struct _xkbIndicatorNotify {
     CARD32	stateChanged B32;
     CARD32	state B32;
     CARD32	mapChanged B32;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
+    CARD32	pad3[2] B32;
 } xkbIndicatorNotify;
 #define	sz_xkbIndicatorNotify	32
 
@@ -774,7 +832,7 @@ typedef struct _xkbBellNotify {
     BYTE	type;
     BYTE	xkbType;
     CARD16	sequenceNumber B16;
-    Time	time;
+    Time	time B32;
     CARD8	deviceID;
     CARD8	bellClass;
     CARD8	bellID;
@@ -782,9 +840,8 @@ typedef struct _xkbBellNotify {
     CARD16	pitch B16;
     CARD16	duration B16;
     Atom	name B32;
-    CARD32	pad1 B32;
-    CARD32	pad2 B32;
-    CARD32	pad3 B32;
+    Window	window B32;
+    CARD32	pad[2] B32;
 } xkbBellNotify;
 #define	sz_xkbBellNotify	32
 
@@ -794,15 +851,12 @@ typedef struct _xkbSlowKeyNotify {
     CARD16	sequenceNumber B16;
     Time	time B32;
     CARD8	deviceID;
-    CARD8	slowKeyType;
-    CARD8	keycode;
+    CARD8	slowKeyState;
+    KeyCode	keycode;
     CARD8	pad1;
     CARD16	delay B16;
     CARD16	pad2 B16;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
-    CARD32	pad5 B32;
-    CARD32	pad6 B32;
+    CARD32	pad3[4] B32;
 } xkbSlowKeyNotify;
 #define	sz_xkbSlowKeyNotify	32
 
@@ -814,17 +868,18 @@ typedef struct _xkbNamesNotify {
     CARD8	deviceID;
     CARD8	pad1;
     CARD16	changed B16;
-    CARD8	firstKeyType;
-    CARD8	nKeyTypes;
+    CARD8	firstType;
+    CARD8	nTypes;
     CARD8	firstLevelName;
     CARD8	nLevelNames;
     CARD8	firstRadioGroup;
     CARD8	nRadioGroups;
     CARD8	nCharSets;
     CARD8	changedMods;
+    CARD16	changedVirtualMods B16;
+    CARD16	pad2 B16;
     CARD32	changedIndicators B32;
     CARD32	pad3 B32;
-    CARD32	pad4 B32;
 } xkbNamesNotify;
 #define	sz_xkbNamesNotify	32
 
@@ -835,13 +890,12 @@ typedef struct _xkbCompatMapNotify {
     Time	time B32;
     CARD8	deviceID;
     CARD8	changedMods;
-    CARD16	firstSym B16;
-    CARD16	nSyms B16;
-    CARD16	nTotalSyms B16;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
-    CARD32	pad5 B32;
-    CARD32	pad6 B32;
+    CARD16	changedVirtualMods B16;
+    CARD16	firstSI B16;
+    CARD16	nSI B16;
+    CARD16	nTotalSI B16;
+    CARD16	pad1 B16;
+    CARD32	pad2[3] B32;
 } xkbCompatMapNotify;
 #define sz_xkbCompatMapNotify	32
 
@@ -852,28 +906,40 @@ typedef struct _xkbAlternateSymsNotify {
     Time	time B32;
     CARD8	deviceID;
     CARD8	altSymsID;
-    CARD8	firstKey;
+    KeyCode	firstKey;
     CARD8	nKeys;
-    CARD32	pad2 B32;
-    CARD32	pad3 B32;
-    CARD32	pad4 B32;
-    CARD32	pad5 B32;
-    CARD32	pad6 B32;
+    CARD32	pad2[5] B32;
 } xkbAlternateSymsNotify;
 #define	sz_xkbAlternateSymsNotify	32
+
+typedef struct _xkbActionMessage {
+    BYTE	type;
+    BYTE	xkbType;
+    CARD16	sequenceNumber B16;
+    Time	time B32;
+    CARD8	deviceID;
+    KeyCode	keycode;
+    BOOL	press;
+    BOOL	keyEventFollows;
+    CARD8	message[6];
+    CARD16	pad1 B16;
+    CARD32	pad2[3] B32;
+} xkbActionMessage;
+#define	sz_xkbActionMessage		32
 
 typedef struct _xkbEvent {
     union {
 	xkbAnyEvent		any;
 	xkbStateNotify		state;
 	xkbMapNotify		map;
-	xkbControlsNotify	controls;
+	xkbControlsNotify	ctrls;
 	xkbIndicatorNotify	indicators;
 	xkbBellNotify		bell;
 	xkbSlowKeyNotify	slowkey;
 	xkbNamesNotify		names;
 	xkbCompatMapNotify	compat;
 	xkbAlternateSymsNotify	altSyms;
+	xkbActionMessage	message;
     } u;
 } xkbEvent;
 #define sz_xkbEvent	32
@@ -881,5 +947,7 @@ typedef struct _xkbEvent {
 #undef Window
 #undef Atom
 #undef Time
+#undef KeyCode
+#undef KeySym
 
 #endif /* _XKBPROTO_H_ */

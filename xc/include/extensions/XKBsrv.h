@@ -28,6 +28,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef _XKBSRV_H_
 #define	_XKBSRV_H_
 
+#include <X11/extensions/XKBproto.h>
 #include <X11/extensions/XKBstr.h>
 
 typedef struct _XkbInterestRec {
@@ -35,9 +36,10 @@ typedef struct _XkbInterestRec {
 	ClientRec		*client;
 	CARD16			 stateNotifyMask;
 	CARD16			 namesNotifyMask;
-	CARD32 			 controlsNotifyMask;
+	CARD32 			 ctrlsNotifyMask;
 	CARD8			 compatNotifyMask;
 	BOOL			 bellNotifyWanted;
+	BOOL			 actionMessageWanted;
 	CARD8			 slowKeyNotifyMask;
 	CARD32			 iStateNotifyMask;
 	CARD32			 iMapNotifyMask;
@@ -101,9 +103,6 @@ typedef struct _XkbSrvInfo {
 	OsTimerPtr	 repeatKeyTimer;
 	OsTimerPtr	 krgTimer;
 
-	CARD8		 dfltNumLockMod;
-	CARD8		 compatGroup2Mod;
-
 	CARD8		 compatLookupState;
 	CARD8		 compatGrabState;
 	CARD16		 lookupState;
@@ -119,7 +118,9 @@ typedef struct _XkbSrvInfo {
 	    CARD32		 usedComponents;
 	    CARD32		 haveMap;
 	} iAccel;
-	CARD32		 iState;
+	CARD32		 iStateAuto;
+	CARD32		 iStateExplicit;
+	CARD32		 iStateEffective;
 
 	CARD8		 repeat[32];
 
@@ -128,7 +129,7 @@ typedef struct _XkbSrvInfo {
 
 /************************************************************************
  *
- * Masks for setting/determining the accessx control state.
+ * Masks for setting/determining the accessx ctrl state.
  */
 #define ALLOW_ACCESSX_MASK              (1 << 0)
 #define MOUSE_KEYS_MASK                 (1 << 2)
@@ -185,23 +186,50 @@ typedef struct _XkbSrvInfo {
 #define X_AccessXPressButton            18
 #define X_AccessXReleaseButton          19
 
-extern int XkbEventBase;
+extern int	XkbEventBase;
+extern int	XkbComputeAutoRepeat;
+extern int	XkbDisableLockActions;
+
+#ifdef DEBUG
+extern CARD16	xkbDebugFlags;
+#endif
 
 _XFUNCPROTOBEGIN
+
+extern DeviceIntPtr XkbLookupDevice(
+#if NeedFunctionPrototypes
+    int			/* id */
+#endif
+);
+
+extern Bool XkbApplyVirtualModChanges(
+#if NeedFunctionPrototypes
+    XkbSrvInfoPtr	/* xkb */,
+    unsigned		/* changed */,
+    XkbChangesPtr	/* pChanges */
+#endif
+);
+
+extern	unsigned XkbMaskForVMask(
+#if NeedFunctionPrototypes
+    XkbDescPtr		/* xkb */,
+    unsigned		/* vmask */
+#endif
+);
 
 extern KeySym *_XkbNewSymsForKey(
 #if NeedFunctionPrototypes
     XkbDescRec *	/* xkb */,
-    int 		/* key */,
-    int 		/* needed */
+    unsigned 		/* key */,
+    unsigned 		/* needed */
 #endif
 );
 
 extern XkbAction *_XkbNewActionsForKey(
 #if NeedFunctionPrototypes
     XkbDescRec *	/* xkb */,
-    int 		/* key */,
-    int 		/* needed */
+    unsigned 		/* key */,
+    unsigned 		/* needed */
 #endif
 );
 
@@ -210,7 +238,7 @@ extern void XkbUpdateKeyTypesFromCore(
     DeviceIntPtr	/* pXDev */,
     KeyCode 		/* first */,
     CARD8 		/* num */,
-    xkbMapNotify *	/* pChanges */
+    XkbChangesPtr	/* pChanges */
 #endif
 );
 
@@ -220,7 +248,7 @@ XkbUpdateActions(
     DeviceIntPtr	/* pXDev */,
     KeyCode 		/* first */,
     CARD8 		/* num */,
-    xkbMapNotify *	/* pChanges */
+    XkbChangesPtr  	/* pChanges */
 #endif
 );
 
@@ -230,6 +258,15 @@ extern void XkbApplyMappingChange(
     CARD8 		/* request */,
     KeyCode 		/* firstKey */,
     CARD8 		/* num */
+#endif
+);
+
+extern void XkbSetIndicators(
+#if NeedFunctionPrototypes
+    DeviceIntPtr		/* pXDev */,
+    CARD32			/* affect */,
+    CARD32			/* values */,
+    XkbIndicatorChangesPtr	/* pChanges */
 #endif
 );
 
@@ -293,11 +330,14 @@ extern	void XkbSendIndicatorNotify(
 
 extern	void XkbHandleBell(
 #if NeedFunctionPrototypes
+       BOOL		/* force */,
        DeviceIntPtr	/* kbd */,
        CARD8		/* percent */,
-       pointer 		/* control */,
+       pointer 		/* ctrl */,
        CARD8		/* class */,
-       Atom		/* name */
+       Atom		/* name */,
+       WindowPtr	/* pWin */,
+       ClientPtr	/* pClient */
 #endif
 );
 
@@ -322,10 +362,21 @@ extern	void XkbSendCompatNotify(
 #endif
 );
 
+extern	void XkbSendActionMessage(
+#if NeedFunctionPrototypes
+       DeviceIntPtr		/* kbd */,
+       xkbActionMessage *	/* ev */
+#endif
+);
+
 extern void XkbSendNotification(
 #if NeedFunctionPrototypes
     DeviceIntPtr		/* kbd */,
-    XkbChangesRec *		/* pChanges */
+    XkbChangesRec *		/* pChanges */,
+    unsigned			/* keycode */,
+    unsigned			/* eventType */,
+    unsigned			/* reqMajor */,
+    unsigned			/* reqMinor */
 #endif
 );
 

@@ -55,37 +55,41 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbEventCode			0
 #define	XkbNumberEvents			(XkbEventCode+1)
 
-#define	XkbStateNotify			0
-#define XkbMapNotify			1
+#define XkbMapNotify			0
+#define	XkbStateNotify			1
 #define XkbControlsNotify		2
-#define	XkbIndicatorNotify		3
-#define	XkbBellNotify			4
-#define	XkbSlowKeyNotify		5
-#define	XkbNamesNotify			6
-#define XkbCompatMapNotify		7
-#define	XkbAlternateSymsNotify		8
+#define	XkbIndicatorStateNotify		3
+#define	XkbIndicatorMapNotify		4
+#define	XkbNamesNotify			5
+#define XkbCompatMapNotify		6
+#define	XkbAlternateSymsNotify		7
+#define	XkbBellNotify			8
+#define	XkbActionMessage		9
+#define	XkbSlowKeyNotify		10
 
-#define	XkbStateNotifyMask		(1L << 0)
-#define XkbMapNotifyMask		(1L << 1)
+#define XkbMapNotifyMask		(1L << 0)
+#define	XkbStateNotifyMask		(1L << 1)
 #define XkbControlsNotifyMask		(1L << 2)
-#define	XkbIndicatorNotifyMask		(1L << 3)
-#define	XkbBellNotifyMask		(1L << 4)
-#define	XkbSlowKeyNotifyMask		(1L << 5)
-#define	XkbNamesNotifyMask		(1L << 6)
-#define XkbCompatMapNotifyMask		(1L << 7)
-#define XkbAlternateSymsNotifyMask	(1L << 8)
-#define	XkbAllEventsMask		(0x01FF)
+#define	XkbIndicatorStateNotifyMask	(1L << 3)
+#define	XkbIndicatorMapNotifyMask	(1L << 4)
+#define	XkbNamesNotifyMask		(1L << 5)
+#define XkbCompatMapNotifyMask		(1L << 6)
+#define XkbAlternateSymsNotifyMask	(1L << 7)
+#define	XkbBellNotifyMask		(1L << 8)
+#define	XkbActionMessageMask		(1L << 9)
+#define	XkbSlowKeyNotifyMask		(1L << 10)
+#define	XkbAllEventsMask		(0x07FF)
 
-#define	XkbSKPress			0
-#define	XkbSKAccept			1
-#define	XkbSKReject			2
-#define	XkbSKRelease			3
+#define	XkbSK_Press			0
+#define	XkbSK_Accept			1
+#define	XkbSK_Reject			2
+#define	XkbSK_Release			3
 
-#define	XkbSKPressMask			(1L << 0)
-#define	XkbSKAcceptMask			(1L << 1)
-#define	XkbSKRejectMask			(1L << 2)
-#define	XkbSKReleaseMask		(1L << 3)
-#define	XkbSKAllEventsMask		(0xf)
+#define	XkbSK_PressMask			(1L << 0)
+#define	XkbSK_AcceptMask		(1L << 1)
+#define	XkbSK_RejectMask		(1L << 2)
+#define	XkbSK_ReleaseMask		(1L << 3)
+#define	XkbSK_AllEventsMask		(0xf)
 
 #define	XkbKeyboard			0
 #define	XkbNumberErrors			1
@@ -99,9 +103,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbGroupLatchMask		(1L << 6)
 #define XkbGroupLockMask		(1L << 7)
 #define	XkbCompatStateMask		(1L << 8)
-#define	XkbModifierUnlockMask		(1L << 9)
-#define	XkbGroupUnlockMask		(1L << 10)
-#define	XkbAllStateComponentsMask	(0x7ff)
+#define	XkbAllStateComponentsMask	(0x1ff)
 
 #define	XkbRepeatKeysMask	 (1L << 0)
 #define	XkbSlowKeysMask		 (1L << 1)
@@ -111,87 +113,125 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbMouseKeysAccelMask	 (1L << 5)
 #define	XkbAccessXKeysMask	 (1L << 6)
 #define	XkbAccessXTimeoutMask	 (1L << 7)
-#define	XkbGroupsWrapMask	 (1L << 8)
-#define	XkbAudibleBellMask	 (1L << 9)
-#define	XkbAutoAutorepeatMask	 (1L << 10)
-
+#define	XkbAccessXFeedbackMask	 (1L << 8)
+#define	XkbGroupsWrapMask	 (1L << 9)
+#define	XkbAudibleBellMask	 (1L << 10)
+#define	XkbAutoAutorepeatMask	 (1L << 11)
 #define XkbKeyboardGroupsMask	 (1L << 12)
 #define	XkbInternalModsMask	 (1L << 13)
 #define	XkbIgnoreLockModsMask	 (1L << 14)
 #define	XkbControlsEnabledMask	 (1L << 15)
 
-#define	XkbAllAccessXMask	 (0x00FF)
-#define	XkbAllControlsMask	 (0xF7FF)
+#define	XkbAllAccessXMask	 (0x0FFF)
+#define	XkbAllControlsMask	 (0xFFFF)
 
 #define	XkbUseCoreKbd		0x0100
 #define	XkbPrivate		0x4000
 
-#define	XkbSAClearLocks		(1L << 0)
-#define	XkbSALatchToLock	(1L << 1)
-#define	XkbSAGroupAbsolute	(1L << 2)
-#define	XkbSAUseDfltButton	0
+#define	XkbNoModifier		0xff
+#define	XkbNoModifierMask	0
 
-#define	XkbSAISODfltIsGroup 	(1L << 7)
-#define	XkbSAISONoAffectMods	(1L << 6)
-#define	XkbSAISONoAffectGroup	(1L << 5)
-#define	XkbSAISONoAffectPtr	(1L << 4)
-#define	XkbSAISONoAffectCtrls	(1L << 3)
+#define	XkbSA_ClearLocks	(1L << 0)
+#define	XkbSA_LatchToLock	(1L << 1)
+#define	XkbSA_UseModMapMods	(1L << 2)
 
-	/* flags values for XkbSASetPtrDflt */
-#define	XkbSASetDfltBtn			1
-#define	XkbSAIncrDfltBtn		2
+#define	XkbSA_GroupAbsolute	(1L << 2)
+#define	XkbSA_UseDfltButton	0
 
-#define	XkbSANoAction		0x00
-#define	XkbSASetMods		0x01
-#define	XkbSALatchMods		0x02
-#define	XkbSALockMods		0x03
-#define	XkbSASetGroup		0x04
-#define	XkbSALatchGroup		0x05
-#define	XkbSALockGroup		0x06
-#define	XkbSAMovePtr		0x07
-#define	XkbSAAccelPtr		0x08
-#define	XkbSAPtrBtn		0x09
-#define	XkbSAClickPtrBtn	0x0a
-#define	XkbSALockPtrBtn		0x0b
-#define	XkbSASetPtrDflt		0x0c
-#define	XkbSAISOLock		0x0d
-#define	XkbSATerminate		0x0e
-#define	XkbSASwitchScreen	0x0f
-#define	XkbSASetControls	0x10
-#define	XkbSALockControls	0x11
+#define	XkbSA_ISODfltIsGroup 	 (1L << 7)
+#define	XkbSA_ISONoAffectMods	 (1L << 6)
+#define	XkbSA_ISONoAffectGroup	 (1L << 5)
+#define	XkbSA_ISONoAffectPtr	 (1L << 4)
+#define	XkbSA_ISONoAffectCtrls	 (1L << 3)
+#define	XkbSA_ISOAffectMask	 (0x78)
+#define	XkbSA_MessageOnPress	 (1L << 0)
+#define	XkbSA_MessageOnRelease	 (1L << 1)
+#define	XkbSA_MessageGenKeyEvent (1L << 2)
 
-#define	XkbDefaultKB		0x00
-#define	XkbLockKB		0x01
-#define	XkbRadioGroupKB		0x02
+	/* flags values for XkbSA_SetPtrDflt */
+#define	XkbSA_AffectDfltBtn	1
+#define	XkbSA_DfltBtnAbsolute	(1L << 2)
 
+	/* flags for XkbSA_SwitchScreen */
+#define	XkbSA_SwitchApplication	(1L << 0)
+#define	XkbSA_SwitchAbsolute	(1L << 2)
+
+#define	XkbSA_NoAction		0x00
+#define	XkbSA_SetMods		0x01
+#define	XkbSA_LatchMods		0x02
+#define	XkbSA_LockMods		0x03
+#define	XkbSA_SetGroup		0x04
+#define	XkbSA_LatchGroup	0x05
+#define	XkbSA_LockGroup		0x06
+#define	XkbSA_MovePtr		0x07
+#define	XkbSA_AccelPtr		0x08
+#define	XkbSA_PtrBtn		0x09
+#define	XkbSA_ClickPtrBtn	0x0a
+#define	XkbSA_LockPtrBtn	0x0b
+#define	XkbSA_SetPtrDflt	0x0c
+#define	XkbSA_ISOLock		0x0d
+#define	XkbSA_Terminate		0x0e
+#define	XkbSA_SwitchScreen	0x0f
+#define	XkbSA_SetControls	0x10
+#define	XkbSA_LockControls	0x11
+#define	XkbSA_ActionMessage	0x12
+#define	XkbSA_LastAction	XkbSA_ActionMessage
+#define	XkbSA_NumActions	(XkbSA_LastAction+1)
+
+#define	XkbKB_Permanent		0x80
+#define	XkbKB_OpMask		0x7f
+#define	XkbKB_Default		0x00
+#define	XkbKB_Lock		0x01
+#define	XkbKB_RadioGroup	0x02
+
+#define	XkbMinLegalKeyCode	8
+#define	XkbMaxLegalKeyCode	255
+#define	XkbNumModifiers		8
+#define	XkbNumVirtualMods	16
 #define	XkbNumIndicators	32
-#define	XkbNumKbdGroups	8
-#define	XkbRGMaxMembers	12
+#define	XkbNumKbdGroups		8
+#define	XkbMaxRadioGroups	32
+#define	XkbRGMaxMembers		12
+#define	XkbActionMessageLength	6
+#define	XkbKeyNameLength	4
+
+#define	XkbOneLevelIndex	0
+#define	XkbTwoLevelIndex	1
+#define	XkbKeypadIndex		2
+#define	XkbLastRequiredType	XkbKeypadIndex
+#define	XkbNumRequiredTypes	(XkbLastRequiredType+1)
+
+#define	XkbOneLevelMask		(1<<0)
+#define	XkbTwoLevelMask		(1<<1)
+#define	XkbKeypadMask		(1<<2)
+#define	XkbAllRequiredTypes	(0x7)
 
 #define	XkbName "XKEYBOARD"
 #define	XkbMajorVersion	0
-#define	XkbMinorVersion	23
+#define	XkbMinorVersion	30
+
+#define	XkbExplicitKeyTypeMask	  (1<<0)
+#define	XkbExplicitInterpretMask  (1<<1)
+#define	XkbExplicitAutorepeatMask (1<<2)
+#define	XkbExplicitBehaviorMask	  (1<<3)
+#define	XkbAllExplicitMask	  (0xf)
 
 #define	XkbKeyTypesMask		(1<<0)
 #define	XkbKeySymsMask		(1<<1)
-#define XkbKeyActionsMask	(1<<8)
-#define	XkbKeyBehaviorsMask	(1<<9)
+#define	XkbExplicitComponentsMask (1<<4)
+#define XkbKeyActionsMask	(1<<5)
+#define	XkbKeyBehaviorsMask	(1<<6)
+#define	XkbVirtualModsMask	(1<<7)
 
 #define	XkbFullClientInfoMask	(XkbKeyTypesMask|XkbKeySymsMask)
-#define	XkbFullServerInfoMask	(XkbKeyActionsMask|XkbKeyBehaviorsMask)
+#define	XkbFullServerInfoMask	(XkbKeyActionsMask|XkbKeyBehaviorsMask|XkbVirtualModsMask|XkbExplicitComponentsMask)
 #define	XkbAllMapComponentsMask	(XkbFullClientInfoMask|XkbFullServerInfoMask)
 #define	XkbResizableInfoMask	(XkbKeyTypesMask)
 
-#define	XkbSI_NoIndicator	0xff
 #define	XkbSI_Autorepeat	(1<<0)
-#define	XkbSI_UpdateGroup	(1<<1)
-#define	XkbSI_UpdateKeypad	(1<<2)
-#define	XkbSI_UseModMapMods	(1<<3)
-#define	XkbSI_UpdateInternal	(1<<4)
-#define	XkbSI_UpdateIgnoreLocks (1<<5)
-#define	XkbSI_LockingKey	(1<<6)
+#define	XkbSI_LockingKey	(1<<1)
 
-#define	XkbSI_AnyLevel		(0x80)
+#define	XkbSI_LevelOneOnly	(0x80)
 #define	XkbSI_OpMask		(0x7f)
 #define	XkbSI_NoneOf		(0)
 #define	XkbSI_AnyOfOrNone	(1)
@@ -199,23 +239,42 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define	XkbSI_AllOf		(3)
 #define	XkbSI_Exactly		(4)
 
-#define	XkbIMUseBase		(1L << 0)
-#define	XkbIMUseLatched		(1L << 1)
-#define	XkbIMUseLocked		(1L << 2)
-#define	XkbIMUseEffectiveLocked (1L << 3)
-#define	XkbIMUseEffective	(1L << 4)
-#define	XkbIMUseCompat		(1L << 5)
-#define	XkbIMUseAnyState	(0xF)
+#define	XkbIM_NoExplicit	(1L << 7)
+#define	XkbIM_NoAutomatic	(1L << 6)
+
+#define	XkbIM_UseBase		(1L << 0)
+#define	XkbIM_UseLatched	(1L << 1)
+#define	XkbIM_UseLocked		(1L << 2)
+#define	XkbIM_UseEffective	(1L << 3)
+#define	XkbIM_UseCompat		(1L << 4)
+#define	XkbIM_UseAnyState	(0xF)
+
+#define	XkbModCompatMask	(1<<0)
+#define	XkbVirtualModCompatMask	(1<<1)
+#define	XkbSymInterpMask	(1<<2)
+#define	XkbAllCompatMask	(0x7)
 
 #define	XkbKeycodesNameMask	(1<<0)
 #define	XkbGeometryNameMask	(1<<1)
 #define	XkbSymbolsNameMask	(1<<2)
-#define	XkbKeyTypeNamesMask	(1<<3)
-#define	XkbKTLevelNamesMask	(1<<4)
-#define	XkbRGNamesMask		(1<<5)
+#define	XkbSemanticsNameMask	(1<<3)
+#define	XkbKeyTypeNamesMask	(1<<4)
+#define	XkbKTLevelNamesMask	(1<<5)
 #define	XkbIndicatorNamesMask	(1<<6)
 #define	XkbModifierNamesMask	(1<<7)
-#define	XkbCharSetsMask		(1<<8)
-#define	XkbAllNamesMask		(0x1ff)
+#define	XkbKeyNamesMask		(1<<8)
+#define	XkbRGNamesMask		(1<<9)
+#define	XkbVirtualModNamesMask	(1<<10)
+#define	XkbCharSetsMask		(1<<11)
+#define	XkbPhysicalNamesMask	(1<<12)
+#define	XkbAllNamesMask		(0x1fff)
+
+#define	XkbIsModAction(a)	(((a)->type>=Xkb_SASetMods)&&((a)->type<=XkbSA_LockMods))
+#define	XkbIsGroupAction(a)	(((a)->type>=XkbSA_SetGroup)&&((a)->type<=XkbSA_LockGroup))
+#define	XkbIsPtrAction(a)	(((a)->type>=XkbSA_MovePtr)&&((a)->type<=XkbSA_SetPtrDflt))
+
+#define	XkbError2(a,b)		((((unsigned)(a))<<24)|(b))
+#define	XkbError3(a,b,c)	XkbError2(a,(((unsigned)(b))<<16)|(c))
+#define	XkbError4(a,b,c,d)	XkbError3(a,b,((((unsigned)(c))<<8)|(d)))
 
 #endif /* _XKB_H_ */
