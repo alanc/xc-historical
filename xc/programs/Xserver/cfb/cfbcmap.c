@@ -1,3 +1,4 @@
+/* $XConsortium$ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
