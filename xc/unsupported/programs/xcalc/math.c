@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.4 89/12/15 18:48:51 converse Exp $ 
+/* $XConsortium: math.c,v 1.5 89/12/15 22:00:50 converse Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -877,6 +877,9 @@ signal_t fperr(sig,code,scp)
   struct sigcontext *scp;
 /******************/
 {
+#ifdef SYSV
+    signal(SIGFPE,fperr);
+#endif
     longjmp(env,code);
 }
 #endif
