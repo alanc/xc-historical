@@ -1,4 +1,4 @@
-/* $XConsortium: SM.h,v 1.3 93/12/07 11:05:23 mor Exp $ */
+/* $XConsortium: SM.h,v 1.4 93/12/15 17:31:33 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -55,6 +55,15 @@ Author: Ralph Mor, X Consortium
 
 
 /*
+ * Restart Style Hints
+ */
+
+#define SmRestartIfRunning	0
+#define SmRestartAnyway		1
+#define SmRestartImmediately	2
+
+
+/*
  * Property names
  */
 
@@ -76,9 +85,9 @@ Author: Ralph Mor, X Consortium
  * Property types
  */
 
+#define SmCARD8			"CARD8"
 #define SmARRAY8		"ARRAY8"
 #define SmLISTofARRAY8		"LISTofARRAY8"
-#define SmCARD8			"CARD8"
 
 
 /*
