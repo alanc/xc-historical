@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.131 89/11/30 18:58:07 jim Exp $
+ * $XConsortium: menus.c,v 1.132 89/11/30 20:03:28 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.131 89/11/30 18:58:07 jim Exp $";
+"$XConsortium: menus.c,v 1.132 89/11/30 20:03:28 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1801,6 +1801,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		    }
 		}
 	    }
+	    if (!t) XBell (dpy, 0);
 	}
 	break;
 
@@ -2523,6 +2524,14 @@ void WarpAlongRing (ev, forward)
 	    p->ring.cursor_valid = True;
 	    p->ring.curs_x = ev->x_root - t->frame_x;
 	    p->ring.curs_y = ev->y_root - t->frame_y;
+	    if (p->ring.curs_x < -p->frame_bw || 
+		p->ring.curs_x >= p->frame_width + p->frame_bw ||
+		p->ring.curs_y < -p->frame_bw || 
+		p->ring.curs_y >= p->frame_height + p->frame_bw) {
+		/* somehow out of window */
+		p->ring.curs_x = p->frame_width / 2;
+		p->ring.curs_y = p->frame_height / 2;
+	    }
 	}
     }
 }
@@ -2530,13 +2539,17 @@ void WarpAlongRing (ev, forward)
 void WarpToWindow (t)
     TwmWindow *t;
 {
+    int x, y;
+
     if (t->auto_raise || !Scr->NoRaiseWarp) AutoRaiseWindow (t);
-    if (t->ring.cursor_valid)
-      XWarpPointer (dpy, None, t->frame, 0, 0, 0, 0,
-		    t->ring.curs_x, t->ring.curs_y);
-    else
-      XWarpPointer (dpy, None, t->w, 0, 0, 0, 0,
-		    t->attr.width / 2, t->attr.height / 2);
+    if (t->ring.cursor_valid) {
+	x = t->ring.curs_x;
+	y = t->ring.curs_y;
+    } else {
+	x = t->frame_width / 2;
+	y = t->frame_height / 2;
+    }
+    XWarpPointer (dpy, None, t->frame, 0, 0, 0, 0, x, y);
 }
 
 
