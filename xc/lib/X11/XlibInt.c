@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.225 94/03/30 21:17:15 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.226 94/04/01 17:40:14 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1918,16 +1918,13 @@ _XUnregisterInternalConnection(dpy, fd)
     int fd;
 #endif
 {
-    struct _XConnectionInfo *info_list, *previous=NULL;
+    struct _XConnectionInfo *info_list, **prev;
     struct _XConnWatchInfo *watch;
     XPointer *wd;
 
-    for (info_list=dpy->im_fd_info; info_list; info_list=info_list->next) {
+    for (prev = &dpy->im_fd_info; info_list = *prev; prev = &info_list->next) {
 	if (info_list->fd == fd) {
-	    if (previous)
-		previous->next = info_list->next;
-	    else
-		dpy->im_fd_info = info_list->next;
+	    *prev = info_list->next;
 	    dpy->im_fd_length--;
 	    for (watch=dpy->conn_watchers, wd=info_list->watch_data;
 		 watch;
@@ -1939,7 +1936,6 @@ _XUnregisterInternalConnection(dpy, fd)
 	    Xfree (info_list);
 	    break;
 	}
-	previous = info_list;
     }
     _XPollfdCacheDel(dpy, fd);
 }
@@ -2066,36 +2062,43 @@ XAddConnectionWatch(dpy, callback, client_data)
     XPointer client_data;
 #endif
 {
-    struct _XConnWatchInfo *new_watcher;
+    struct _XConnWatchInfo *new_watcher, **wptr;
     struct _XConnectionInfo *info_list;
     XPointer *wd_array;
 
+    LockDisplay(dpy);
+
+    /* allocate new watch data */
+    for (info_list=dpy->im_fd_info; info_list; info_list=info_list->next) {
+	wd_array = (XPointer *)Xrealloc((char *)info_list->watch_data,
+					(dpy->watcher_count + 1) *
+					sizeof(XPointer));
+	if (!wd_array) {
+	    UnlockDisplay(dpy);
+	    return 0;
+	}
+	wd_array[dpy->watcher_count] = NULL;	/* for cleanliness */
+    }
+
     new_watcher = (struct _XConnWatchInfo*)Xmalloc(sizeof(struct _XConnWatchInfo));
-    if (!new_watcher)
+    if (!new_watcher) {
+	UnlockDisplay(dpy);
 	return 0;
+    }
     new_watcher->fn = callback;
     new_watcher->client_data = client_data;
+    new_watcher->next = NULL;
 
-    /* link new structure into list */
-    LockDisplay(dpy);
-    new_watcher->next = dpy->conn_watchers;
-    dpy->conn_watchers = new_watcher;
+    /* link new structure onto end of list */
+    for (wptr = &dpy->conn_watchers; *wptr; wptr = &(*wptr)->next)
+	;
+    *wptr = new_watcher;
     dpy->watcher_count++;
 
     /* call new watcher on all currently registered fds */
     for (info_list=dpy->im_fd_info; info_list; info_list=info_list->next) {
-	wd_array = (XPointer *)Xmalloc(dpy->watcher_count * sizeof(XPointer));
-	if (!wd_array)
-	    return 0;
-	if (dpy->watcher_count > 1) {
-	    memcpy(wd_array+1, info_list->watch_data, dpy->watcher_count-1);
-	    Xfree(info_list->watch_data);
-	}
-	/* new element is at front of list now */
-	*wd_array = NULL;	/* for cleanliness */
-	info_list->watch_data = wd_array;
-
-	(*callback) (dpy, client_data, info_list->fd, True, wd_array);
+	(*callback) (dpy, client_data, info_list->fd, True,
+		     info_list->watch_data + dpy->watcher_count - 1);
     }
 
     UnlockDisplay(dpy);
