@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.44 91/06/04 13:18:52 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.45 91/06/06 12:31:16 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -184,6 +184,13 @@ SunXK_FA_Circum		0x1005FF01		[58]
 SunXK_FA_Tilde		0x1005FF02		[58]
 SunXK_F36		0x1005FF10		[58]
 SunXK_F37		0x1005FF11		[58]
+SunXK_Sys_Req		0x1005FF60		[58]
+SunXK_Props		0x1005FF70		[58]
+SunXK_Front		0x1005FF71		[58]
+SunXK_Copy		0x1005FF72		[58]
+SunXK_Open		0x1005FF73		[58]
+SunXK_Paste		0x1005FF74		[58]
+SunXK_Cut		0x1005FF75		[58]
 
 WYXK_Setup		0x1006FF00		[68]
 
