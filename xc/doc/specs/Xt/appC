@@ -1,4 +1,4 @@
-.\" $XConsortium: appC,v 1.8 92/11/16 17:46:55 converse Exp $
+.\" $XConsortium: appC,v 1.9 94/01/07 19:37:28 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991, 1994
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -73,6 +73,144 @@ on their child within their insert_child procedure.
 Creators of pop-up children need to call
 .PN XtManageChild
 themselves.
+.sp
+.LP
+.PN XtAppInitialize
+and 
+.PN XtVaAppInitialize 
+have been replaced by 
+.PN XtOpenApplication
+and
+.PN XtVaOpenApplication .
+.LP
+To initialize the \*(xI internals, create an application context,
+open and initialize a display, and create the initial application shell
+instance, an application may use
+.PN XtAppInitialize
+or
+.PN XtVaAppInitialize .
+.IN "XtAppInitialize" "" "@DEF@"
+.FD 0
+Widget XtAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
+\fIoptions\fP, \fInum_options\fP,
+.br
+                       \fIargc_in_out\fP, \fIargv_in_out\fP, \
+\fIfallback_resources\fP, \fIargs\fP, \fInum_args\fP)
+.br
+      XtAppContext *\fIapp_context_return\fP;
+.br
+      String \fIapplication_class\fP;
+.br
+      XrmOptionDescList \fIoptions\fP;
+.br
+      Cardinal \fInum_options\fP;
+.br
+      int *\fIargc_in_out\fP;
+.br
+      String *\fIargv_in_out\fP;
+.br
+      String *\fIfallback_resources\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
+.FN
+.IP \fIapp_context_return\fP 1.5i
+Returns the application context, if non-NULL.
+.IP \fIapplication_class\fP 1.5i
+Specifies the class name of the application.
+.IP \fIoptions\fP 1.5i
+Specifies the command line options table.
+.IP \fInum_options\fP 1.5i
+Specifies the number of entries in \fIoptions\fP.
+.IP \fIargc_in_out\fP 1.5i
+Specifies a pointer to the number of command line arguments.
+.IP \fIargv_in_out\fP 1.5i
+Specifies a pointer to the command line arguments.
+.IP \fIfallback_resources\fP 1.5i
+Specifies resource values to be used if the application class resource
+file cannot be opened or read, or NULL.
+.IP \fIargs\fP 1.5i
+Specifies the argument list to override any
+other resource specifications for the created shell widget.
+.IP \fInum_args\fP 1.5i
+Specifies the number of entries in the argument list.
+.LP
+The
+.PN XtAppInitialize
+function calls
+.PN XtToolkitInitialize
+followed by
+.PN XtCreateApplicationContext ,
+then calls
+.PN XtOpenDisplay
+with \fIdisplay_string\fP NULL and
+\fIapplication_name\fP NULL, and finally calls
+.PN XtAppCreateShell
+with \fIapplication_name\fP NULL, \fIwidget_class\fP
+.PN application\%Shell\%Widget\%Class ,
+and the specified \fIargs\fP and \fInum_args\fP
+and returns the created shell.  The modified \fIargc\fP and \fIargv\fP returned by
+.PN XtDisplayInitialize
+are returned in \fIargc_in_out\fP and \fIargv_in_out\fP.  If
+\fIapp_context_return\fP is not NULL, the created application context is
+also returned.  If the display specified by the command line cannot be
+opened, an error message is issued and
+.PN XtAppInitialize
+terminates the application.  If \fIfallback_resources\fP is non-NULL,
+.PN XtAppSetFallbackResources
+is called with the value prior to calling
+.PN XtOpenDisplay .
+.sp
+.LP
+.IN "XtVaAppInitialize" "" "@DEF@"
+.FD 0
+Widget XtVaAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
+\fIoptions\fP, \fInum_options\fP,
+.br
+                         \fIargc_in_out\fP, \fIargv_in_out\fP, \
+\fIfallback_resources\fP, ...)
+.br
+    XtAppContext *\fIapp_context_return\fP;
+.br
+    String \fIapplication_class\fP;
+.br
+    XrmOptionDescList \fIoptions\fP;
+.br
+    Cardinal \fInum_options\fP;
+.br
+    int *\fIargc_in_out\fP;
+.br
+    String *\fIargv_in_out\fP;
+.br
+    String *\fIfallback_resources\fP;
+.FN
+.IP \fIapp_context_return\fP 1.5i
+Returns the application context, if non-NULL.
+.IP \fIapplication_class\fP 1.5i
+Specifies the class name of the application.
+.IP \fIoptions\fP 1.5i
+Specifies the command line options table.
+.IP \fInum_options\fP 1.5i
+Specifies the number of entries in \fIoptions\fP.
+.IP \fIargc_in_out\fP 1.5i
+Specifies a pointer to the number of command line arguments.
+.IP \fIargv_in_out\fP 1.5i
+Specifies the command line arguments array.
+.IP \fIfallback_resources\fP 1.5i
+Specifies resource values to be used if the application class
+resource file cannot be opened, or NULL.
+.IP ... 1.5i
+Specifies the variable argument list to override any other
+resource specifications for the created shell.
+.LP
+The
+.PN XtVaAppInitialize
+procedure is identical in function to
+.PN XtAppInitialize
+with the \fIargs\fP and \fInum_args\fP parameters replaced by a varargs list,
+as described
+in Section 2.5.1.
 .sp
 .LP
 As a convenience to people converting from earlier versions of the toolkit
