@@ -1,21 +1,20 @@
-XCOMM $XConsortium: Imakefile,v 2.1 94/01/11 18:28:26 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 2.2 94/01/19 17:16:46 rob Exp $
 /*
  * Merged X Server Master Makefile
  */
 
 #include <Server.tmpl>
 
-#define StdLibs $(DIX) $(OS) $(FONT) $(MI) $(EXTENSIONS)
-#define MFBBareLibs $(DIX) $(OS) $(FONT) $(MFB) $(MI) $(MTSERVERLIBS)
-#define MFBLibs MFBBareLibs $(EXTENSIONS)
-#define CFBBareLibs $(DIX) $(OS) $(FONT) $(CFB) $(MFB) $(MI) $(MTSERVERLIBS)
-#define CFBLibs CFBBareLibs $(EXTENSIONS)
-#define CFB8BareLibs $(DIX) $(OS) $(FONT) $(CFB8) $(MFB) $(MI) $(MTSERVERLIBS)
-#define CFB8Libs CFB8BareLibs $(EXTENSIONS)
-#define CFB16BareLibs $(DIX) $(OS) $(FONT) $(CFB16) $(MFB) $(MI) $(MTSERVERLIBS)
-#define CFB16Libs CFB16BareLibs $(EXTENSIONS)
-#define CFB32BareLibs $(DIX) $(OS) $(FONT) $(CFB32) $(MFB) $(MI) $(MTSERVERLIBS)
-#define CFB32Libs CFB32BareLibs $(EXTENSIONS)
+#define PreFbLibs $(DIX) $(OS) $(FONT)
+#define BarePostFbLibs $(MFB) $(MI)
+#define PostFbLibs BarePostFbLibs $(EXTENSIONS)
+
+#define MFBBareLibs PreFbLibs BarePostFbLibs
+#define MFBLibs PreFbLibs PostFbLibs
+#define CFBLibs PreFbLibs $(CFB) PostFbLibs
+#define CFB8Libs PreFbLibs $(CFB8) PostFbLibs
+#define CFB16Libs PreFbLibs $(CFB16) PostFbLibs
+#define CFB32Libs PreFbLibs $(CFB32) PostFbLibs
 
 #if XServerThreaded
    THREADS_LIBS = ThreadsLibraries
@@ -65,7 +64,7 @@ THREADS_LDFLAGS = ThreadsLoadFlags
 #if !XirisServer && !XhpServer && !SystemV4 && !defined(BSD386Architecture) && !HasKrb5
         DBM_LIBRARY = DBMLibrary
 #endif
-        SYSLIBS = MathLibrary Krb5Libraries $(THREADS_LIBS) $(DBM_LIBRARY)
+        SYSLIBS = $(MTSERVERLIBS) MathLibrary Krb5Libraries $(THREADS_LIBS) $(DBM_LIBRARY)
            CBRT = mi/cbrt.o
         STDDIRS = dix os mi $(EXTDIRS) $(MTSERVERDIRS)
 

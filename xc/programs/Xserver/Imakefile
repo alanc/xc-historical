@@ -1,21 +1,20 @@
-XCOMM $XConsortium: Imakefile,v 1.168 93/12/13 17:34:34 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.169 94/01/12 18:50:09 rws Exp $
 /*
  * Server Master Makefile
  */
 
 #include <Server.tmpl>
 
-#define StdLibs $(DIX) $(OS) $(FONT) $(MI) $(EXTENSIONS)
-#define MFBBareLibs $(DIX) $(OS) $(FONT) $(MFB) $(MI)
-#define MFBLibs MFBBareLibs $(EXTENSIONS)
-#define CFBBareLibs $(DIX) $(OS) $(FONT) $(CFB) $(MFB) $(MI)
-#define CFBLibs CFBBareLibs $(EXTENSIONS)
-#define CFB8BareLibs $(DIX) $(OS) $(FONT) $(CFB8) $(MFB) $(MI)
-#define CFB8Libs CFB8BareLibs $(EXTENSIONS)
-#define CFB16BareLibs $(DIX) $(OS) $(FONT) $(CFB16) $(MFB) $(MI)
-#define CFB16Libs CFB16BareLibs $(EXTENSIONS)
-#define CFB32BareLibs $(DIX) $(OS) $(FONT) $(CFB32) $(MFB) $(MI)
-#define CFB32Libs CFB32BareLibs $(EXTENSIONS)
+#define PreFbLibs $(DIX) $(OS) $(FONT)
+#define BarePostFbLibs $(MFB) $(MI)
+#define PostFbLibs BarePostFbLibs $(EXTENSIONS)
+
+#define MFBBareLibs PreFbLibs BarePostFbLibs
+#define MFBLibs PreFbLibs PostFbLibs
+#define CFBLibs PreFbLibs $(CFB) PostFbLibs
+#define CFB8Libs PreFbLibs $(CFB8) PostFbLibs
+#define CFB16Libs PreFbLibs $(CFB16) PostFbLibs
+#define CFB32Libs PreFbLibs $(CFB32) PostFbLibs
 
 #if BuildPexExt
          PEXLIBS = PEX5/dipex/dispatch/libdidipex.a \
