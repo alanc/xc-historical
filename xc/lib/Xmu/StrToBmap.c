@@ -1,4 +1,4 @@
-/* static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.9 89/10/09 16:25:32 jim Exp $"; */
+/* static char rcsid[] = "$XConsortium: StrToBmap.c,v 1.10 90/07/15 16:18:54 rws Exp $"; */
 
 
 /***********************************************************
@@ -66,6 +66,13 @@ void XmuCvtStringToBitmap(args, num_args, fromVal, toVal)
 {
     static Pixmap pixmap;		/* static for cvt magic */
     char *name = (char *)fromVal->addr;
+    Screen *screen;
+    Display *dpy;
+    XrmDatabase db;
+    String fn;
+    unsigned int width, height;
+    int xhot, yhot;
+    unsigned char *data;
 
     if (*num_args != 1)
      XtErrorMsg("wrongParameters","cvtStringToBitmap","XtToolkitError",
@@ -84,8 +91,27 @@ void XmuCvtStringToBitmap(args, num_args, fromVal, toVal)
 	return;
     }
 
-    pixmap = XmuLocateBitmapFile (*((Screen **) args[0].addr), name,
+    screen = *((Screen **) args[0].addr);
+    pixmap = XmuLocateBitmapFile (screen, name,
 				  NULL, 0, NULL, NULL, NULL, NULL);
+    if (pixmap == None) {
+	dpy = DisplayOfScreen(screen);
+	db = XrmGetDatabase(dpy);
+	XrmSetDatabase(dpy, XtScreenDatabase(screen));
+	fn = XtResolvePathname(dpy, "bitmaps", name, "", NULL, NULL, 0, NULL);
+	if (!fn)
+	    fn = XtResolvePathname(dpy, "", name, ".xbm", NULL, NULL, 0, NULL);
+	XrmSetDatabase(dpy, db);
+	if (fn &&
+	    XmuReadBitmapDataFromFile (fn, &width, &height, &data,
+				       &xhot, &yhot) == BitmapSuccess) {
+	    pixmap = XCreatePixmapFromBitmapData (dpy,
+						  RootWindowOfScreen(screen),
+						  (char *) data, width, height,
+						  1, 0, 1);
+	    XFree ((char *)data);
+	}
+    }
 
     if (pixmap != None) {
 	done (&pixmap, Pixmap);
