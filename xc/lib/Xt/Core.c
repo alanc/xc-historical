@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char rcsid[] = "$Header: Core.c,v 1.8 88/02/14 11:56:32 rws Exp $";
+static char rcsid[] = "$Header: Core.c,v 1.9 88/02/14 18:41:10 swick Exp $";
 #endif lint
 
 /*
@@ -315,6 +315,8 @@ static Boolean CoreSetValues(old, reference, new)
 	    XChangeWindowAttributes(
 		XtDisplay(new), XtWindow(new), window_mask, &attributes);
 	}
+	if (old->core.mapped_when_managed != new->core.mapped_when_managed)
+	    XtSetMappedWhenManaged(new, new->core.mapped_when_managed);
 
 	/* Translation table and state */
 	if (old->core.tm.translations != new->core.tm.translations) {
