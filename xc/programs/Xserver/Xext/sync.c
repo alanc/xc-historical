@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sync.c,v 1.3 93/09/05 10:49:25 rws Exp $ */
 /***********************************************************
 Copyright 1991, 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -576,7 +576,7 @@ bail:
 /*  This function should always be used to change a counter's value so that
  *  any triggers depending on the counter will be checked.
  */
-static void
+void
 SyncChangeCounter(pCounter, newval)
     SyncCounter    *pCounter;
     CARD64         newval;
@@ -802,7 +802,7 @@ SyncCreateCounter(client, id, initialvalue)
     return pCounter;
 }
 
-int FreeCounter(
+static int FreeCounter(
 #if NeedFunctionPrototypes
     pointer /*env*/,
     XID     /*id*/
