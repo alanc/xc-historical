@@ -1118,6 +1118,7 @@ char **argv;
 		Show_Prop(format, dformat, Format_Atom(event.xproperty.atom));
         }
   }
+  exit (0);
 }
 
 /*
