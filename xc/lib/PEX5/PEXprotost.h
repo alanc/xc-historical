@@ -1,19 +1,20 @@
-/* $XConsortium: PEXprotost.h,v 1.1 92/05/08 15:12:49 mor Exp $ */
+/* $XConsortium: PEXprotost.h,v 1.2 92/06/12 10:52:12 mor Exp $ */
 
-
-/***********************************************************
-Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
+/******************************************************************************
+Copyright 1989, 1990, 1991 by Sun Microsystems, Inc.
+Copyright 1992 by the Massachusetts Institute of Technology
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
-provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
-supporting documentation, and that the names of Sun Microsystems,
-the X Consortium, and MIT not be used in advertising or publicity 
-pertaining to distribution of the software without specific, written 
-prior permission.  
+Permission to use, copy, modify, distribute, and sell this software and its
+documentation for any purpose is hereby granted without fee, provided that
+the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the name of M.I.T. not be used in advertising or
+publicity pertaining to distribution of the software without specific,
+written prior permission.  M.I.T. makes no representations about the
+suitability of this software for any purpose.  It is provided "as is"
+without express or implied warranty.
 
 SUN MICROSYSTEMS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, 
 INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT 
@@ -22,8 +23,7 @@ DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
 WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
-
-******************************************************************/
+******************************************************************************/
 
 #ifndef PEXPROTOSTR_H
 #define PEXPROTOSTR_H
