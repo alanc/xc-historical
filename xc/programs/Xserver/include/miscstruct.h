@@ -1,4 +1,4 @@
-/* $XConsortium: miscstruct.h,v 1.4 89/06/09 14:52:56 keith Exp $ */
+/* $XConsortium: miscstruct.h,v 5.0 89/06/09 15:00:33 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -41,5 +41,10 @@ typedef union _DevUnion {
     long		val;
     unsigned long	uval;
 } DevUnion;
+
+typedef union _PixUnion {
+    PixmapPtr		pixmap;
+    unsigned long	pixel;
+} PixUnion;
 
 #endif /* MISCSTRUCT_H */

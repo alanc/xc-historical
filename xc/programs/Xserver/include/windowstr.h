@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 1.14 89/06/09 14:53:02 keith Exp $ */
+/* $XConsortium: windowstr.h,v 5.0 89/06/09 15:00:38 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -66,11 +66,6 @@ typedef struct _Validate {
     RegionPtr		borderVisible;
     DDXPointRec		oldAbsCorner;
 } ValidateRec;
-
-typedef union _PixUnion {
-    PixmapPtr		pixmap;
-    unsigned long	pixel;
-} PixUnion;
 
 #define SamePixUnion(a,b,isPixel)\
     ((isPixel) ? (a).pixel == (b).pixel : (a).pixmap == (b).pixmap)
