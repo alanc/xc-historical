@@ -1,4 +1,4 @@
-.\" $XConsortium: CH04,v 1.5 91/07/31 20:23:57 swick Exp $
+.\" $XConsortium: CH04,v 1.6 91/08/26 13:29:49 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -1092,7 +1092,7 @@ current locale and the encoding of the
 property is set to
 .PN XStdICCTextStyle .
 If a language procedure has not been set
-the default value of \fItitle_encoding\fP is
+the default value of \fIicon_name_encoding\fP is
 \fB\s-1XA_STRING\s+1\fP, otherwise the default value is
 .PN None .
 The \fIiconic\fP field may be used by a client to request
