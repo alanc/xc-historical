@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: SM.h,v 1.1 93/09/03 13:24:32 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -49,6 +49,31 @@ purpose.  It is provided "as is" without express or implied warranty.
 #define SmSaveGlobal	0
 #define SmSaveLocal	1
 #define SmSaveBoth	2
+
+
+/*
+ * Property names
+ */
+
+#define SmProgram		"Program"
+#define SmUserID		"UserID"
+#define SmRestartCommand	"RestartCommand"
+#define SmCurrentDirectory	"CurrentDirectory"
+#define SmEnvironment		"Environment"
+#define SmKillCommand		"KillCommand"
+#define SmRestartStyleHint	"RestartStyleHint"
+#define SmDiscardCommand	"DiscardCommand"
+#define SmOperatingSystemName	"OperatingSystemName"
+#define SmCloneCommand		"CloneCommand"
+#define SmProcessID		"ProcessID"
+
+
+/*
+ * Property types
+ */
+
+#define SmARRAY8		"ARRAY8"
+#define SmCard8			"Card8"
 
 
 /*
