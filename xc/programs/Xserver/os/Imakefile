@@ -1,10 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.70 93/09/30 15:49:52 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.72 94/02/04 19:35:14 dpw Exp $
 #include <Server.tmpl>
-
-#if (SystemV || SystemV4) && !HasSockets
-#undef ConnectionFlags
-#define ConnectionFlags -DTCPCONN -DUNIXCONN
-#endif
 
 /*
  * If you have any extra files to be put into the library, define them here.
