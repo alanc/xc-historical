@@ -1,6 +1,6 @@
 /*
- *	$Source: /local/X/clients/xpr/RCS/pmp.h,v $
- *	$Header: pmp.h,v 1.1 87/10/05 16:51:12 swick Locked $
+ *	$Source: /orpheus/u1/X11/clients/xpr/RCS/pmp.h,v $
+ *	$Header: pmp.h,v 1.2 87/10/21 16:38:13 swick Locked $
  */
 
 /* Written by Jose' J. Capo' */
@@ -20,9 +20,7 @@
 #define DEBUG(cond)	if (debug cond)
 #define min(a,b)	((a) < (b)? (a) : (b))
 
-#define PPI	240
 #define pel2inch(pels)		((float) ((pels) / PPI))
-#define inch2pel(inches)	((int) ((inches) * PPI))
 #define ppmask(rounded,thickness)	(0x20 * (rounded) + (thickness))
 
 
