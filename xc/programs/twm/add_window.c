@@ -28,7 +28,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.146 90/09/21 13:16:51 converse Exp $
+ * $XConsortium: add_window.c,v 1.147 90/12/01 13:05:45 rws Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -39,7 +39,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.146 90/09/21 13:16:51 converse Exp $";
+"$XConsortium: add_window.c,v 1.147 90/12/01 13:05:45 rws Exp $";
 #endif
 
 #include <stdio.h>
@@ -894,9 +894,13 @@ TwmWindow *tmp_win;
 	{
 	    if (Scr->Mouse[i][C_WINDOW][j].func != NULL)
 	    {
-		XGrabButton(dpy, i, j, tmp_win->w,
-		    True, ButtonPressMask | ButtonReleaseMask,
-		    GrabModeAsync, GrabModeAsync, None, Scr->FrameCursor);
+	        /* twm used to do this grab on the application main window,
+                 * tmp_win->w . This was not ICCCM complient and was changed.
+		 */
+		XGrabButton(dpy, i, j, tmp_win->frame, 
+			    True, ButtonPressMask | ButtonReleaseMask,
+			    GrabModeAsync, GrabModeAsync, None, 
+			    Scr->FrameCursor);
 	    }
 	}
     }
@@ -1336,8 +1340,8 @@ FetchWmColormapWindows (tmp)
 
     number_cmap_windows = 0;
 
-    if (previously_installed = (Scr->cmapInfo.cmaps == &tmp->cmaps &&
-				tmp->cmaps.number_cwins)) {
+    if (/* SUPPRESS 560 */previously_installed = 
+       (Scr->cmapInfo.cmaps == &tmp->cmaps && tmp->cmaps.number_cwins)) {
 	cwins = tmp->cmaps.cwins;
 	for (i = 0; i < tmp->cmaps.number_cwins; i++)
 	    cwins[i]->colormap->state = 0;

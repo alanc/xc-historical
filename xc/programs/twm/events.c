@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.167 90/12/18 17:20:50 dave Exp $
+ * $XConsortium: events.c,v 1.168 90/12/21 13:15:17 dave Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.167 90/12/18 17:20:50 dave Exp $";
+"$XConsortium: events.c,v 1.168 90/12/21 13:15:17 dave Exp $";
 #endif
 
 #include <stdio.h>
@@ -1751,14 +1751,25 @@ HandleButtonPress()
 	{
 	    Context = C_TITLE;
 	}
-	else if (Event.xany.window == Tmp_win->w)
+	else if (Event.xany.window == Tmp_win->w) 
+	{
+	    printf("ERROR! ERROR! ERROR! YOU SHOULD NOT BE HERE!!!\n");
 	    Context = C_WINDOW;
+	}
 	else if (Event.xany.window == Tmp_win->icon_w)
 	{
 	    Context = C_ICON;
 	}
-	else if (Event.xany.window == Tmp_win->frame)
-	    Context = C_FRAME;
+	else if (Event.xany.window == Tmp_win->frame) 
+	{
+	    /* since button grab for window context is now the frame,
+             * not the window (see GrabButtons() in add_window.c),
+	     * we need to figure out where the pointer exactly is
+	     * before assigning Context.
+	     */
+	    if (Event.xbutton.subwindow == Tmp_win->w) Context = C_WINDOW;
+            else Context = C_FRAME;
+	}
 	else if (Tmp_win->list &&
 	    (Event.xany.window == Tmp_win->list->w ||
 		Event.xany.window == Tmp_win->list->icon))
