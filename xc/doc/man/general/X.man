@@ -1,5 +1,5 @@
-.\" $XConsortium: X.man,v 1.59 91/08/27 15:47:30 gildea Exp $
-.TH X 1 "Release 5" "X Version 11"
+.\" $XConsortium: X.man,v 1.60 91/09/09 17:27:25 rws Exp $
+.TH X 1 "Release 6" "X Version 11"
 .SH NAME
 X \- a portable, network-transparent window system
 .SH SYNOPSIS
@@ -187,8 +187,8 @@ local transport will be chosen.
 .br
 The hostname part of the display name should be the server machine's
 IP address name.  Full Internet names, abbreviated names, and IP addresses
-are all allowed.  For example:  \fIexpo.lcs.mit.edu:0\fP, \fIexpo:0\fP,
-\fI18.30.0.212:0\fP, \fIbigmachine:1\fP, and \fIhydra:0.1\fP.
+are all allowed.  For example:  \fIx.org:0\fP, \fIexpo:0\fP,
+\fI198.112.45.11:0\fP, \fIbigmachine:1\fP, and \fIhydra:0.1\fP.
 .TP 8
 .I DECnet
 .br
@@ -198,7 +198,7 @@ For example:  \fImyws::0\fP, \fIbig::1\fP, and \fIhydra::0.1\fP.
 .PP
 .SH "ACCESS CONTROL"
 An X server can use several types of access control.  Mechanisms provided
-in Release 5 are:
+in Release 6 are:
 .nf
 .br
 .ta 3.4i
@@ -206,6 +206,7 @@ in Release 5 are:
     MIT-MAGIC-COOKIE-1	Shared plain-text "cookies".
     XDM-AUTHORIZATION-1	Secure DES based private-keys.
     SUN-DES-1	Based on Sun's secure rpc system.
+    MIT-KERBEROS-5	Kerberos V5 user-to-user.
 .fi
 .PP
 \fIXdm\fP initializes access control for the server, and also places
@@ -461,7 +462,7 @@ is the decimal TCP port on which the font server is listening for connections.
 The \fIcataloguelist\fP specifies a list of catalogue names,
 with '+' as a separator.
 .PP
-Examples: \fItcp/expo.lcs.mit.edu:7000\fP, \fItcp/18.30.0.212:7001/all\fP.
+Examples: \fItcp/x.org:7100\fP, \fItcp/198.112.45.11:7100/all\fP.
 .PP
 One of the following forms can be used to name a font server that
 accepts DECnet connections:
@@ -1083,16 +1084,10 @@ without express or implied warranty.
 X Window System is a trademark of MIT.
 .SH AUTHORS
 .PP
-A cast of thousands, literally.  The MIT Release 5 distribution is brought to
-you by the MIT X Consortium.  The names of all people who made it a reality
+A cast of thousands, literally.  The MIT Release 6 distribution is brought to
+you by X Consortium, Inc.  The names of all people who made it a reality
 will be found in the individual documents and source files.
-The staff members at MIT responsible
-for this release are:
-Donna Converse (MIT X Consortium),
-Stephen Gildea (MIT X Consortium),
-Susan Hardy (MIT X Consortium),
-Jay Hersh (MIT X Consortium),
-Keith Packard (MIT X Consortium),
-David Sternlicht (MIT X Consortium),
-Bob Scheifler (MIT X Consortium), and
-Ralph Swick (Digital/MIT Project Athena).
+The staff members at the X Consortium responsible for this release are:
+Matt Landau, Donna Converse, Gary Cutbill, Stephen Gildea, Jay Hersh,
+Kaleb Keithley, Ralph Mor, Janet O'Halloran, Bob Scheifler Ralph Swick,
+Dave Wiggins.
