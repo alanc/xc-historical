@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Create.c,v 1.59 89/09/14 10:16:01 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Create.c,v 1.60 89/09/21 09:07:39 swick Exp $";
 /* $oHeader: Create.c,v 1.5 88/09/01 11:26:22 asente Exp $ */
 #endif /*lint*/
 
@@ -207,7 +207,8 @@ static Widget _XtCreate(
 				core_class.callback_private;
 	 offsetList != NULL;
 	 offsetList = offsetList->next) {
-	 pCallbacks = (XtCallbackList *) ((int)widget - offsetList->offset - 1);
+	 pCallbacks = (XtCallbackList *)
+	     ((XtPointer)widget - offsetList->offset - 1);
 	if (*pCallbacks != NULL) {
 	    extern CallbackStruct* _XtCompileCallbackList();
 	    *pCallbacks =
