@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.33 94/03/26 14:37:10 rws Exp $
+ * $XConsortium: locking.c,v 1.34 94/03/26 15:36:16 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -44,6 +44,9 @@
 extern int  (*_XInitDisplayLock_fn)();
 extern void (*_XFreeDisplayLock_fn)();
 
+/* in lcWrap.c */
+extern LockInfoPtr _Xi18n_lock;
+
 #ifdef WIN32
 static DWORD _X_TlsIndex = (DWORD)-1;
 
@@ -74,6 +77,7 @@ static xthread_t _Xthread_self()
 }
 
 static LockInfoRec global_lock;
+static LockInfoRec i18n_lock;
 
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 static void _XLockMutex(lip,file,line)
@@ -591,15 +595,22 @@ Status XInitThreads()
 {
     if (_Xglobal_lock)
 	return 1;
-    _Xglobal_lock = &global_lock;
 #ifdef xthread_init
     xthread_init();		/* return value? */
 #endif
-    _Xglobal_lock->lock = xmutex_malloc();
-    if (!_Xglobal_lock->lock)
+    if (!(global_lock.lock = xmutex_malloc()))
 	return 0;
+    if (!(i18n_lock.lock = xmutex_malloc())) {
+	xmutex_free(global_lock.lock);
+	global_lock.lock = NULL;
+	return 0;
+    }
+    _Xglobal_lock = &global_lock;
     xmutex_init(_Xglobal_lock->lock);
     xmutex_set_name(_Xglobal_lock->lock, "Xlib global");
+    _Xi18n_lock = &i18n_lock;
+    xmutex_init(_Xi18n_lock->lock);
+    xmutex_set_name(_Xi18n_lock->lock, "Xlib i18n");
     _XLockMutex_fn = _XLockMutex;
     _XUnlockMutex_fn = _XUnlockMutex;
     _XCreateMutex_fn = _XCreateMutex;
