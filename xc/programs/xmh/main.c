@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: main.c,v 2.13 89/06/29 16:31:44 swick Exp $";
+    "$XConsortium: main.c,v 2.14 89/07/21 18:56:31 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -27,15 +27,17 @@ static char rcs_id[] =
  * without specific, written prior permission.
  */
 
-/* main.c */
-
 #define MAIN 1			/* Makes global.h actually declare vars */
 #include "xmh.h"
 
-
 static XtIntervalId timerid;
+static unsigned long interval;
 
-/* This gets called every five minutes. */
+/* NeedToCheckScans() gets called every five minutes, by default.
+ * The frequency of its invocations is can be changed by the resource
+ * Xmh*CheckFrequency, whose default is one minute.  NeedToCheckScans()
+ * will be called once for every five check frequency intervals.
+ */
 
 static void NeedToCheckScans()
 {
@@ -51,15 +53,15 @@ static void NeedToCheckScans()
 }
 
 
-
 /*ARGSUSED*/
 static void CheckMail(client_data, id)
     caddr_t client_data;	/* unused */
     XtIntervalId *id;		/* unused */
 {
     static int count = 0;
-    int i;
-    timerid = XtAddTimeOut((int)60000, CheckMail, NULL);
+    register int i;
+    timerid = XtAppAddTimeOut(XtWidgetToApplicationContext( toplevel ),
+			      interval, CheckMail, (caddr_t) NULL);
     if (app_resources.defNewMailCheck) {
 	DEBUG("(Checking for new mail...")
 	TocCheckForNewMail();
@@ -87,7 +89,13 @@ char **argv;
     if (app_resources.defNewMailCheck)
 	TocCheckForNewMail();
     subProcessRunning = False;
-    timerid = XtAddTimeOut((int)60000, CheckMail, NULL);
+
+    if (app_resources.check_frequency > 0) {
+	interval = app_resources.check_frequency * 60000;
+	timerid = XtAppAddTimeOut( XtWidgetToApplicationContext( toplevel ),
+				  interval, CheckMail, (caddr_t) NULL);
+    }
+
     lastInput.win = -1;		/* nothing mapped yet */
     for (;;) {
 	XEvent ev;

@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.19 89/07/07 18:04:24 converse Exp $
+ *  $XConsortium: globals.h,v 2.21 89/07/20 21:15:09 converse Exp $
  */
 
 /*
@@ -65,30 +65,23 @@ ext struct _resources {
     int		defTocPercentage;
     Boolean	defNewMailCheck;	/* Whether to check for new mail. */
     Boolean	defMakeCheckpoints; /* Whether to create checkpoint files. */
+    int		check_frequency;	/* in minutes, of new mail check */
     int		mailWaitingFlag;	/* If true, change icon on new mail */
     Cursor	cursor;			/* application cursor */
 } app_resources;
 
-ext char	*draftFile;		/* Filename of draft. */
-ext char	*xmhDraftFile;		/* Filename for sending. */
-
-
-
+ext char	*draftFile;	/* Filename of draft. */
+ext char	*xmhDraftFile;	/* Filename for sending. */
 ext Toc		*folderList;	/* Array of folders. */
 ext int		numFolders;	/* Number of entries in above array. */
 ext Toc		InitialFolder;	/* Toc containing initial folder. */
 ext Toc		DraftsFolder;	/* Toc containing drafts. */
-
 ext Scrn	*scrnList;	/* Array of scrns in use. */
 ext int		numScrns;	/* Number of scrns in above array. */
-
-ext Widget	NoMenuForButton;	/* Flag menu widget value: no menu */
-
+ext Widget	NoMenuForButton;/* Flag menu widget value: no menu */
 ext XawTextSource NullSource;
-
 ext Dimension	rootwidth;	/* Dimensions of root window.  */
 ext Dimension	rootheight;
-
 ext Pixmap	NoMailPixmap;	/* Icon pixmap if no new mail. */
 ext Pixmap	NewMailPixmap;	/* Icon pixmap if new mail. */
 
