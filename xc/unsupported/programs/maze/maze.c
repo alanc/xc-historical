@@ -35,11 +35,16 @@
  OR PERFORMANCE OF THIS SOFTWARE.
  *****************************************************************************/
 
-/* #include  <sys/types.h> */
 #include  <stdio.h>
 #include  <X11/Xlib.h>
 #include  <X11/Xutil.h>
+#include  <X11/Xos.h>
 #include  <X11/bitmaps/gray1>
+#include  <X11/bitmaps/xlogo64>
+#define logo_width xlogo64_width
+#define logo_height xlogo64_height
+#define logo_bits xlogo64_bits
+
 
 #define LOGOSIZE	7
 #define MIN_MAZE_SIZE	3
@@ -93,18 +98,13 @@ extern long random();
   
 static int logo_x, logo_y;
 
-#include  <X11/bitmaps/xlogo64>
-#define logo_width xlogo64_width
-#define logo_height xlogo64_height
-#define logo_bits xlogo64_bits
-
 static long int randnum[NUM_RANDOM];
-static u_short maze[MAX_MAZE_SIZE_X][MAX_MAZE_SIZE_Y];
+static unsigned short maze[MAX_MAZE_SIZE_X][MAX_MAZE_SIZE_Y];
 
 static struct {
-  u_char x;
-  u_char y;
-  u_char dir;
+  unsigned char x;
+  unsigned char y;
+  unsigned char dir;
 } move_list[MOVE_LIST_SIZE], save_path[MOVE_LIST_SIZE], path[MOVE_LIST_SIZE];
 
 static int maze_size_x, maze_size_y;
