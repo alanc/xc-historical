@@ -21,23 +21,15 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.35 91/07/02 08:58:46 rws Exp $ */
+/* $XConsortium: osinit.c,v 1.36 91/07/02 09:14:57 rws Exp $ */
+#include "X.h"
 #include "os.h"
+#include "osdep.h"
 #undef NULL
 #include <stdio.h>
 #include "Xos.h"
 
-#ifndef X_NOT_POSIX
-#ifdef _POSIX_SOURCE
-#include <limits.h>
-#else
-#define _POSIX_SOURCE
-#include <limits.h>
-#undef _POSIX_SOURCE
-#endif
-#endif
 #ifndef PATH_MAX
-#include <sys/param.h>
 #ifdef MAXPATHLEN
 #define PATH_MAX MAXPATHLEN
 #else
@@ -45,7 +37,7 @@ SOFTWARE.
 #endif
 #endif
 
-#ifndef SYSV
+#if !defined(SYSV) || defined(macII) || defined(sgi) || defined(hpux)
 #include <sys/resource.h>
 #endif
 
@@ -54,9 +46,14 @@ SOFTWARE.
 #endif
 
 extern char *display;
-#ifndef SYSV
+#ifdef RLIMIT_DATA
 int limitDataSpace = -1;
+#endif
+#ifdef RLIMIT_STACK
 int limitStackSpace = -1;
+#endif
+#ifdef RLIMIT_NOFILE
+int limitNoFile = -1;
 #endif
 
 OsInit()
@@ -102,8 +99,7 @@ OsInit()
 	    setpgrp (0, getpid ());
 #endif
 
-#ifndef SYSV
-#if !defined(AIXrt) && !defined(AIX386)
+#ifdef RLIMIT_DATA
 	if (limitDataSpace >= 0)
 	{
 	    struct rlimit	rlim;
@@ -117,6 +113,8 @@ OsInit()
 		(void)setrlimit(RLIMIT_DATA, &rlim);
 	    }
 	}
+#endif
+#ifdef RLIMIT_STACK
 	if (limitStackSpace >= 0)
 	{
 	    struct rlimit	rlim;
@@ -131,6 +129,22 @@ OsInit()
 	    }
 	}
 #endif
+#ifdef RLIMIT_NOFILE
+	if (limitNoFile >= 0)
+	{
+	    struct rlimit	rlim;
+
+	    if (!getrlimit(RLIMIT_NOFILE, &rlim))
+	    {
+		if ((limitNoFile > 0) && (limitNoFile < rlim.rlim_max))
+		    rlim.rlim_cur = limitNoFile;
+		else
+		    rlim.rlim_cur = rlim.rlim_max;
+		if (rlim.rlim_cur > MAXSOCKS)
+		    rlim.rlim_cur = MAXSOCKS;
+		(void)setrlimit(RLIMIT_NOFILE, &rlim);
+	    }
+	}
 #endif
 	been_here = TRUE;
     }
