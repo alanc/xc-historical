@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.25 91/03/29 16:35:42 converse Exp $
+/* $XConsortium: xfontsel.c,v 1.29 91/06/22 15:21:42 rws Exp $
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
 Massachusetts Institute of Technology
@@ -178,6 +178,8 @@ XtAppContext appCtx;
 int numFonts;
 int numBadFonts;
 FontValues *fonts;
+int *scaledFonts;
+int numScaledFonts;
 FieldValueList *fieldValues[FIELD_COUNT];
 FontValues currentFont;
 int matchingFontCount;
@@ -554,10 +556,8 @@ void ParseFontNames( closure )
 }
 
 
-void AddScalables(f, zfonts, zcount)
+void AddScalables(f)
     int f;
-    int *zfonts;
-    int zcount;
 {
     int i;
     int max = fieldValues[f]->count;
@@ -569,8 +569,8 @@ void AddScalables(f, zfonts, zcount)
 
 	if (fval->string && !strcmp(fval->string, "0"))
 	    continue;
-	count = zcount;
-	fonts = zfonts;
+	count = numScaledFonts;
+	fonts = scaledFonts;
 	ocount = fval->count;
 	ncount = ocount + count;
 	nfonts = (int *)XtMalloc( ncount * sizeof(int) );
@@ -606,11 +606,9 @@ void AddScalables(f, zfonts, zcount)
 }
 
 
-void NewScalables(f, slist, zfonts, zcount)
+void NewScalables(f, slist)
     int f;
     char *slist;
-    int *zfonts;
-    int zcount;
 {
     char endc = 1;
     char *str;
@@ -643,9 +641,9 @@ void NewScalables(f, slist, zfonts, zcount)
 	v = &fieldValues[f]->value[count];
 	v->field = f;
 	v->string = str;
-	v->font = zfonts;
+	v->count = numScaledFonts;
+	v->font = scaledFonts;
 	v->allocated = 0;
-	v->count = zcount;
 	v->enable = True;
     }
 }
@@ -660,13 +658,15 @@ void FixScalables( closure )
 
     for (i = fieldValues[6]->count; --i >= 0; fval++) {
 	if (fval->string && !strcmp(fval->string, "0")) {
-	    AddScalables(6, fval->font, fval->count);
-	    NewScalables(6, AppRes.pixelSizeList, fval->font, fval->count);
-	    AddScalables(7, fval->font, fval->count);
-	    NewScalables(7, AppRes.pointSizeList, fval->font, fval->count);
-	    AddScalables(8, fval->font, fval->count);
-	    AddScalables(9, fval->font, fval->count);
-	    AddScalables(11, fval->font, fval->count);
+	    scaledFonts = fval->font;
+	    numScaledFonts = fval->count;
+	    AddScalables(6);
+	    NewScalables(6, AppRes.pixelSizeList);
+	    AddScalables(7);
+	    NewScalables(7, AppRes.pointSizeList);
+	    AddScalables(8);
+	    AddScalables(9);
+	    AddScalables(11);
 	    break;
 	}
     }
@@ -1019,13 +1019,13 @@ MarkInvalidFonts( set, val )
     int *fp = val->font;
     for (vi = val->count; vi; vi--, fp++) {
 	while (fi < *fp) {
-	    if (set[fi]) set[fi] = False;
+	    set[fi] = False;
 	    fi++;
 	}
 	fi++;
     }
     while (fi < numFonts) {
-	if (set[fi]) set[fi] = False;
+	set[fi] = False;
 	fi++;
     }
 }
@@ -1102,6 +1102,30 @@ void SelectField(w, closure, callData)
 }
 
 
+void DisableScaled(f, f1, f2)
+    int f, f1, f2;
+{
+    int i, j;
+    FieldValue *v;
+    int *font;
+    char *str;
+
+    for (i = fieldValues[f]->count, v = fieldValues[f]->value; --i >= 0; v++) {
+	if (!v->enable || !v->string || !strcmp(v->string, "0"))
+	    continue;
+	for (j = v->count, font = v->font; --j >= 0; font++) {
+	    if (fontInSet[*font] &&
+		fonts[*font].value_index[f1] == currentFont.value_index[f1] &&
+		fonts[*font].value_index[f2] == currentFont.value_index[f2])
+		break;
+	}
+	if (j < 0) {
+	    v->enable = False;
+	    XtSetSensitive(v->menu_item, False);
+	}
+    }
+}
+
 /* ARGSUSED */
 void EnableOtherValues(w, closure, callData)
     Widget w;
@@ -1119,6 +1143,30 @@ void EnableOtherValues(w, closure, callData)
 	if (f != field && (i = currentFont.value_index[f]) != -1) {
 	    MarkInvalidFonts( font_in_set, &fieldValues[f]->value[i] );
 	}
+    }
+    if (scaledFonts)
+    {
+	char *str;
+	Bool specificPxl, specificPt, specificY;
+
+	f = currentFont.value_index[6];
+	specificPxl = (f >= 0 &&
+		       (str = fieldValues[6]->value[f].string) &&
+		       strcmp(str, "0"));
+	f = currentFont.value_index[7];
+	specificPt = (f >= 0 &&
+		      (str = fieldValues[7]->value[f].string) &&
+		      strcmp(str, "0"));
+	f = currentFont.value_index[9];
+	specificY = (f >= 0 &&
+		     (str = fieldValues[9]->value[f].string) &&
+		     strcmp(str, "0"));
+	if (specificPt && specificY)
+	    DisableScaled(6, 7, 9);
+	if (specificPxl && specificY)
+	    DisableScaled(7, 6, 9);
+	if (specificPxl && specificPt)
+	    DisableScaled(9, 6, 7);
     }
     count = 0;
     for (f = numFonts, b = font_in_set; f; f--, b++) {
