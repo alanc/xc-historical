@@ -1,10 +1,12 @@
-XCOMM $XConsortium: Imakefile,v 1.20 91/07/21 21:13:44 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.21 91/07/21 21:23:52 rws Exp $
 
 #ifdef XmanSearchPath
-SYSMANPATH = -DSYSMANPATH=\"XmanSearchPath\"
+XMANSYSPATH = XmanSearchPath
+SYSMANPATH = -DSYSMANPATH=\"$(XMANSYSPATH)\"
 #endif
 #ifdef XmanLocalSearchPath
-LOCALMANPATH = -DLOCALMANPATH=\"XmanLocalSearchPath\"
+XMANLOCALPATH = XmanLocalSearchPath
+LOCALMANPATH = -DLOCALMANPATH=\"$(XMANLOCALPATH)\"
 #endif
 MANPATHS = $(SYSMANPATH) $(LOCALMANPATH)
 HELPFILE = -DHELPFILE=\"$(LIBDIR)$(PATHSEP)xman.help\"
