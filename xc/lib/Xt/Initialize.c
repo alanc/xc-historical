@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Initialize.c,v 1.96 88/01/28 19:17:08 swick Locked $";
+static char rcsid[] = "$Header: Initialize.c,v 6.16 88/01/29 12:28:27 asente Exp $";
 #endif lint
 
 /*
@@ -26,26 +26,15 @@ static char rcsid[] = "$Header: Initialize.c,v 1.96 88/01/28 19:17:08 swick Lock
  */
 /* Make sure all wm properties can make it out of the resource manager */
 
-#ifndef VMS
 #include <pwd.h>
 #include <stdio.h>
-#include <X11/Xos.h>
+#include <strings.h>
 #include <sys/param.h>
-#else
-#include stdio
-#include string
-#include <descrip.h>
-#include "VMSutil.h"
-#endif
-
-#ifdef VMS
-#define EVENT_TIMER_FLAG 13
-#define MAXPATHLEN   256
-#endif
 
  /* Xlib definitions  */
  /* things like Window, Display, XEvent are defined herein */
-#include "Intrinsic.h"
+#include "IntrinsicI.h"
+#include "Event.h"
 #include "Atoms.h"
 #include "Shell.h"
 #include "ShellP.h"
@@ -60,139 +49,31 @@ static char rcsid[] = "$Header: Initialize.c,v 1.96 88/01/28 19:17:08 swick Lock
 */
 
 static XrmOptionDescRec opTable[] = {
-{"+rv",		XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "off"},
-{"-background",	XtNbackground,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bd",		XtNborder,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bg",		XtNbackground,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-border",	XtNborderWidth,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bordercolor",XtNborder,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-bw",		XtNborderWidth,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-fg",		XtNforeground,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-fn",		XtNfont,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-font",	XtNfont,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-foreground",	XtNforeground,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-geometry",	XtNgeometry,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-iconic",	XtNiconic,	XrmoptionNoArg,		(caddr_t) "on"},
-{"-name",	XtNname,	XrmoptionSepArg,	(caddr_t) NULL},
-{"-reverse",	XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "on"},
-{"-rv",		XtNreverseVideo, XrmoptionNoArg,	(caddr_t) "on"},
-{"-title",	XtNtitle,	XrmoptionSepArg,	(caddr_t) NULL},
-{"=",		XtNgeometry,	XrmoptionIsArg,		(caddr_t) NULL},
+{"-xrm",	NULL,		XrmoptionResArg,	(caddr_t) NULL},
+#ifndef TRASHEQUALGEOMETRY
+{"=",		".geometry",	XrmoptionIsArg,		(caddr_t) NULL},
+#endif
+{"-g",		".geometry",	XrmoptionIsArg,		(caddr_t) NULL},
+{"-geometry",	".geometry",	XrmoptionIsArg,		(caddr_t) NULL},
+{"-bd",		"*border",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bordercolor","*border",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bg",		"*background",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-background",	"*background",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-bw",		".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-border",	".borderWidth",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-fg",		"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-foreground",	"*foreground",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-fn",		"*font",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-font",	"*font",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
+{"-reverse",	"*reverseVideo", XrmoptionNoArg,	(caddr_t) "on"},
+{"+rv",		"*reverseVideo", XrmoptionNoArg,	(caddr_t) "off"},
+{"-n",		".name",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-name",	".name",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-t",		".title",	XrmoptionSepArg,	(caddr_t) NULL}
 };
 
-#define min(a, b)	(((a) < (b)) ? (a) : (b))
-#define Offset(x)	(XtOffset(ShellWidget, x))
-static XtResource resources[]=
-{
-	{ XtNiconName, XtCIconName, XrmRString, sizeof(caddr_t),
-	    Offset(shell.icon_name), XrmRString, (caddr_t) NULL},
-	{ XtNallowshellresize, XtCAllowshellresize, XrmRBoolean, sizeof(Boolean),
-	    Offset(shell.resizeable), XrmRString, "FALSE"},
-	{ XtNgeometry, XtCGeometry, XrmRString, sizeof(caddr_t), 
-	    Offset(shell.geostr), XrmRString, (caddr_t) NULL},
-	{ XtNiconic, XtCIconic, XrmRBoolean, sizeof(Boolean),
-	    Offset(shell.iconic), XrmRString, "FALSE"},
-	{ XtNtitle, XtCTitle, XrmRString, sizeof(char *),
-	    Offset(shell.title), XrmRString, NULL},
-	{ XtNcreatePopupChildProc, XtCCreatePopupChildProc, XtRFunction,
-	    sizeof(XtCreatePopupChildProc), Offset(shell.create_popup_child),
-	    XtRFunction, NULL},
-	{ XtNsaveUnder, XtCSaveUnder, XrmRBoolean, sizeof(Boolean),
-	    Offset(shell.save_under), XrmRString, "FALSE"},
-	{ XtNtransient, XtCTransient, XrmRBoolean, sizeof(Boolean),
-	    Offset(shell.transient), XrmRString, "FALSE"},
-	{ XtNoverrideRedirect, XtCOverrideRedirect, XrmRBoolean, 
-	    sizeof(Boolean),
-	    Offset(shell.override_redirect), XrmRString, "FALSE"},
-/* sizehints minus things stored in core */
-	{ XtNminWidth, XtCMinWidth, XrmRInt, sizeof(int),
-	    Offset(shell.sizehints.min_width), XrmRString, "-1"},
-	{ XtNminHeight, XtCMinHeight, XrmRInt, sizeof(int),
-	    Offset(shell.sizehints.min_height), XrmRString, "-1"},
-	{ XtNmaxWidth, XtCMaxWidth, XrmRInt, sizeof(int),
-	    Offset(shell.sizehints.max_width), XrmRString, "-1"},
-	{ XtNmaxHeight, XtCMaxHeight, XrmRInt, sizeof(int),
-	    Offset(shell.sizehints.max_height), XrmRString, "-1"},
-	{ XtNwidthInc, XtCWidthInc, XrmRInt, sizeof(int),
-	    Offset(shell.sizehints.width_inc), XrmRString, "-1"},
-	{ XtNheightInc, XtCHeightInc, XrmRInt, sizeof(int),
-	    Offset(shell.sizehints.height_inc), XrmRString, "-1"},
-	{ XtNminAspectNum, XtCMinAspectNum, XrmRInt, sizeof(int),
-	    Offset(shell.sizehints.min_aspect.x), XrmRString, "-1"},
-	{ XtNminAspectDenom, XtCMinAspectDenom, XrmRInt, sizeof(int),
-	    Offset(shell.sizehints.min_aspect.y), XrmRString, "-1"},
-	{ XtNmaxAspectNum, XtCMaxAspectNum, XrmRInt, sizeof(int),
-	    Offset(shell.sizehints.max_aspect.x), XrmRString, "-1"},
-	{ XtNmaxAspectDenom, XtCMaxAspectDenom, XrmRInt, sizeof(int),
-	    Offset(shell.sizehints.max_aspect.y), XrmRString, "-1"},
-/* wmhints */
-	{ XtNinput, XtCInput, XrmRBoolean, sizeof(Boolean),
-	    Offset(shell.wmhints.input), XrmRString, "FALSE"},
-	{ XtNinitial, XtCInitial, XrmRInt, sizeof(int),
-	    Offset(shell.wmhints.initial_state), XrmRString, "1"},
-	{ XtNiconPixmap, XtCIconPixmap, XrmRPixmap, sizeof(caddr_t),
-	    Offset(shell.wmhints.icon_pixmap), XrmRPixmap, NULL},
-	{ XtNiconWindow, XtCIconWindow, XrmRWindow, sizeof(caddr_t),
-	    Offset(shell.wmhints.icon_window), XrmRWindow,   (caddr_t) NULL},
-	{ XtNiconX, XtNiconX, XrmRInt, sizeof(int),
-	    Offset(shell.wmhints.icon_x), XrmRString, "-1"},
-	{ XtNiconY, XtNiconY, XrmRInt, sizeof(int),
-	    Offset(shell.wmhints.icon_y), XrmRString, "-1"},
-	{ XtNiconMask, XtCIconMask, XrmRPixmap, sizeof(caddr_t),
-	    Offset(shell.wmhints.icon_mask), XrmRPixmap, NULL},
-	{ XtNwindowGroup, XtCWindowGroup, XrmRWindow, sizeof(XID),
-	    Offset(shell.wmhints.window_group), XrmRWindow, NULL},
-/*	{ XtNinitial, XtCInitial, XrmRInitialstate, sizeof(int),
-	    Offset(shell.initial), XrmRString, "Normal"} */
-};
-static void Initialize();
-static void Realize();
-static Boolean SetValues();
-static void Destroy();
-static void InsertChild();
-static void ChangeManaged(); /* XXX */
-static XtGeometryResult GeometryManager();
-static void EventHandler();
-static void ClassInitialize();
-static void _popup_set_prop();
-static void _ask_wm_for_size();
-static void _do_setsave_under();
-
-ShellClassRec shellClassRec = {
-    /* superclass         */    (WidgetClass) &compositeClassRec,
-    /* class_name         */    "No Name",
-				/* shell doesn't have a name it is pass
-       				 * to XtInitialize
-				 */
-    /* size               */    sizeof(ShellRec),
-    /* Class Initializer  */	ClassInitialize,
-    /* Class init'ed ?    */	FALSE,
-    /* initialize         */    Initialize,
-    /* realize            */    Realize,
-    /* actions            */    NULL,
-    /* num_actions        */    0,
-    /* resources          */    resources,
-    /* resource_count     */	XtNumber(resources),
-    /* xrm_class          */    NULLQUARK,
-    /* compress_motion    */    FALSE,
-    /* compress_exposure  */    TRUE,
-    /* visible_interest   */    FALSE,
-    /* destroy            */    Destroy,
-    /* resize             */    NULL,
-    /* expose             */    NULL,
-    /* set_values         */    SetValues,
-    /* accept_focus       */    NULL,
-    /* callback offsets   */    NULL,
-    /* reserved           */    NULL,
-    /* geometry_manager   */    GeometryManager,
-    /* change_managed     */    ChangeManaged,
-    /* insert_child	  */	InsertChild,
-    /* delete_child	  */	NULL,	      /* ||| Inherit from Composite */
-    /* move_focus_to_next */    NULL,
-    /* move_focus_to_prev */    NULL
-};
-
-WidgetClass shellWidgetClass = (WidgetClass) (&shellClassRec);
 
 /****************************************************************
  *
@@ -206,822 +87,112 @@ static void
 DO_Initialize() {
 
 extern void _XtResourceListInitialize();
-extern void _XtTranslateInitialize();
-extern void _XtCursorsInitialize();
 
     /* Resource management initialization */
-    QuarkInitialize();
     XrmInitialize();
     _XtResourceListInitialize();
 
     /* Other intrinsic intialization */
+    _XtConvertInitialize();
     _XtEventInitialize();
     _XtTranslateInitialize();
-    _XtCursorsInitialize();
-
-#ifdef VMS
-     sys$clref(EVENT_TIMER_FLAG);
-     sys$clref(1);    
-#endif
-
 }
 Atom XtHasInput;
 Atom XtTimerExpired;
-
+extern Atom WM_CONFIGURE_DENIED;
+extern Atom WM_MOVED;
 static void
 init_atoms(dpy)
 Display *dpy;
 {
 	XtHasInput = XInternAtom(dpy, "XtHasInput", False);
 	XtTimerExpired = XInternAtom(dpy, "XtTimerExpired", False);
+	WM_CONFIGURE_DENIED = XInternAtom(dpy, "WM_CONFIGURE_DENIED", False);
+	WM_MOVED= XInternAtom(dpy, "WM_MOVED", False);
 }
 
-
-static void ClassInitialize()
-{
-    CompositeWidgetClass superclass;
-    ShellWidgetClass myclass;
-
-    myclass = (ShellWidgetClass) shellWidgetClass;
-    superclass = (CompositeWidgetClass) myclass->core_class.superclass;
-
-    /* Inherit  delete_child from Composite */
-    /* I have a insert_child that calls my parents superclasses insert_child */
-    /* I can't inherit this one because of the implied add that Joel wants */
-
-    myclass->composite_class.delete_child =
-        superclass->composite_class.delete_child;
-}
 
 /*
-    What this routine does load the resource data base.
+    Load the resource data base.
 
     The order that things are loaded into the database follows,
     1) an optional application specific file.
-    2) server defaults, generic.
-    3) server defaults for machine.
-    4) .Xdefaults
+    2) Server defaults
+    3) .Xdefaults if no server defaults
 
  */
 
-static XrmResourceDataBase
-XGetUsersDataBase(dpy, name)
+static XrmDatabase XGetUsersDatabase(dpy, name)
 Display *dpy;
 char *name;
 {
-	XrmResourceDataBase userResources = NULL;
-	XrmResourceDataBase resources = NULL;
-#ifndef VMS
-	int uid;
-	extern struct passwd *getpwuid();
-	struct passwd *pw;
-#endif VMS
+	XrmDatabase rdb;
+
 	char filenamebuf[1024];
 	char *filename = &filenamebuf[0];
 	static Boolean first = TRUE;
 	
 	if(name != NULL) { /* application provided a file */
-		userResources=	XrmGetDataBase(name);
-		XrmMergeDataBases(userResources, &XtDefaultDB);
+		rdb = XrmGetFileDatabase(name);
+		XrmMergeDatabases(rdb, &XtDefaultDB);
 	}
 
 	if (first) {
 		first = FALSE;
 		/* MERGE server defaults */
+		if (dpy->xdefaults != NULL) {
+		    rdb = XrmGetStringDatabase(dpy->xdefaults);
+		} else {
+#ifdef notdef
+/* put this stuff in if Xlib stops getting property off of the root window */
+/* on XOpenDisplay */
+		/* get the resource manager database off the root window. */
+		    Atom actual_type;
+		    int actual_format;
+		    unsigned long nitems;
+		    long leftover;
+		    if (XGetWindowProperty(dpy, DefaultRootWindow(dpy),
+			XA_RESOURCE_MANAGER, 0L, 100000000L, FALSE, XA_STRING,
+			&actual_type, &actual_format, &nitems, &leftover,
+			&dpy->xdefaults) != Success) {
+			dpy->xdefaults = (char *) NULL;
+			} else if ( (actual_type != XA_STRING)
+			    ||  (actual_format != 8) ) {
+			    if (dpy->xdefaults != NULL)
+			        XtFree ( dpy->xdefaults );
+			    dpy->xdefaults = (char *) NULL;
+			    }
+#endif
 		/* Open .Xdefaults file and merge into existing data base */
-#ifndef VMS
-		uid = getuid();
-		pw = getpwuid(uid);
-		if (pw) {
-			(void) strcpy(filename, pw->pw_dir);
-			(void) strcat(filename, "/.Xdefaults");
-		}
-#else
-		filename = "SYS$LOGIN:XDEFAULTS.DAT";
-#endif
-		userResources = XrmGetDataBase(filename);
-		XrmMergeDataBases(userResources,&XtDefaultDB);
-/*
-		XtDefaultDB = XrmGetDataBase(filename);
-*/
-	}
-    return userResources;
-}
+		    int uid;
+		    extern char *getenv();
+		    extern int getuid();
+		    extern struct passwd *getpwuid();
+		    struct passwd *pw;
+		    register char *ptr;
 
-/* ARGSUSED */
-static void
-Initialize(request, new, args, num_args)
-Widget request, new;
-ArgList args;
-Cardinal *num_args;
-{
-	ShellWidget w = (ShellWidget) new;
-	int flag;
+		    if((ptr = getenv("HOME")) != NULL) {
+			    (void) strcpy(filename, ptr);
 
-	if(w->shell.icon_name == NULL) {
-		strcpy(w->shell.icon_name=
-		       (String)XtMalloc((unsigned)strlen(w->core.name)+1)
-			,w->core.name);
-	}
-	if(w->shell.title == NULL) {
-		strcpy(w->shell.title = 
-			(String)XtMalloc((unsigned)strlen(w->shell.icon_name) + 1)
-		       ,w->shell.icon_name);
-	}
-	w->shell.sizehints.flags = 0;
-	w->shell.wmhints.flags = 0;
-	w->shell.popped_up = FALSE;
-	w->shell.argc = -1;
-	w->shell.argv = NULL;
-	w->core.background_pixmap = None;
-
-	if(w->shell.geostr != NULL) {
-		flag = XParseGeometry(w->shell.geostr, &w->core.x, &w->core.y,
-			       &w->core.width, &w->core.height);
-		
-		w->shell.sizehints.flags |= USPosition | USSize;
-		if(flag & XNegative) 
-		    w->core.x += WidthOfScreen(XtScreen(w))
-			         - w->core.width - (w->core.border_width<<1);
-		if(flag & YNegative) 
-		    w->core.y += HeightOfScreen(XtScreen(w))
-			         - w->core.height - (w->core.border_width<<1);
-	}
-	if(w->core.width != 0 && w->core.height != 0) {
-	  	w->shell.clientspecified = TRUE;
-        } else 	w->shell.clientspecified = FALSE;
-	XtAddEventHandler(
-	    new, (EventMask) StructureNotifyMask,
-	    FALSE, EventHandler, (Opaque) NULL);
-}
-
-static void
-Realize(wid, vmask, attr)
-Widget wid;
-Mask *vmask;
-XSetWindowAttributes *attr;
-{
-	register ShellWidget w = (ShellWidget) wid;
-        Mask mask = *vmask;
-
-	/* I attempt to inherit my child's background to avoid screen flash
-	 * if there is latency between when I get resized and when my child
-	 * is resized.  Background=None is not satisfactory, as I want the
-	 * user to get immediate feedback on the new dimensions.  It is
-	 * especially important to clear any old cruft from the display
-	 * when I am resized larger */
-
-	if (w->composite.num_children > 0) {
-	    Widget child;
-	    if (w->composite.num_mapped_children == 0)
-		child = w->composite.children[0];
-	    else {
-		int i;
-		for (i = 0; i < w->composite.num_children; i++) {
-		    if (XtIsManaged(child = w->composite.children[i]))
-			break;
-		}
-	    }
-	    if (child->core.background_pixmap) {
-		mask &= ~(CWBackPixel);
-		mask |= CWBackPixmap;
-		attr->background_pixmap = child->core.background_pixmap;
-	    } else {
-		attr->background_pixel = child->core.background_pixel;
-	    }
-	}
-	if(w->shell.save_under) {
-		mask |= CWSaveUnder;
-		attr->save_under = TRUE;
-	}
-	if(w->shell.override_redirect) {
-		mask |= CWOverrideRedirect;
-		attr->override_redirect = TRUE;
-	}
-	wid->core.window = XCreateWindow(XtDisplay(wid),
-		      wid->core.screen->root, wid->core.x, wid->core.y,
-		      wid->core.width, wid->core.height,
-		      wid->core.border_width, (int) wid->core.depth,
-		       (unsigned int) InputOutput, (Visual *) CopyFromParent,
-		      mask, attr);
-	_popup_set_prop(w);
-}
-
-static void _popup_set_prop(w)
-ShellWidget w;
-{
-	Window win;
-	Display *dpy = XtDisplay(w);
-	Widget	ptr;
-#ifdef UNIX
-	char hostname[1024];
-#endif
-#ifndef VMS
-	XClassHint classhint;
-#endif
-	win = XtWindow(w);
-	XStoreName(dpy, win, w->shell.title);
-	XSetIconName(dpy, win, w->shell.icon_name);
-	if(w->shell.argc != -1)
-	  XSetCommand(dpy, win, w->shell.argv, w->shell.argc);
-#ifdef UNIX
-	/* gethostname(hostname, sizeof(hostname)); ||| */
-#endif
-
-/* now hide everything needed to set the properties until realize is called */
-	w->shell.wmhints.flags = 0;
-	w->shell.wmhints.flags |= InputHint ;
-	if(w->shell.wmhints.input)
-	  w->shell.wmhints.input = FALSE;
-
-	/* Should I tell the window manager to bring me up iconfied */
-	w->shell.wmhints.flags |= StateHint | InputHint;
-	if(w->shell.iconic) {
-	  w->shell.wmhints.initial_state = IconicState;
-	}
-	if(w->shell.wmhints.icon_x != -1 || w->shell.wmhints.icon_y != -1)
-	  w->shell.wmhints.flags |= IconPositionHint;
-	if(w->shell.wmhints.icon_pixmap != NULL) {
-		w->shell.wmhints.flags |=  IconPixmapHint;
-	}
-	if(w->shell.wmhints.icon_mask != NULL) {
-		w->shell.wmhints.flags |=  IconMaskHint;
-	}
-	if(w->shell.wmhints.icon_window != NULL) {
-		w->shell.wmhints.flags |=  IconWindowHint;
-	}
-#ifndef VMS     /* beta Xlib's Xutil.h doesn't have .window_group */
-	if(w->shell.wmhints.window_group == -1) {
-		if(w->core.parent) {
-			for(ptr = w->core.parent; ptr->core.parent ;
-			    ptr = ptr->core.parent );
-			w->shell.wmhints.window_group = XtWindow(ptr);
-			w->shell.wmhints.flags |=  WindowGroupHint;
-		}
-	} else {
-		w->shell.wmhints.flags |=  WindowGroupHint;
-	}
-#endif
-
-	XSetWMHints(dpy, win, &(w->shell.wmhints));
-/* ||| this function must still be written
-	XSetHostName(dpy, win, hostname); */
-
-
-	w->shell.sizehints.x = w->core.x;
-	w->shell.sizehints.y = w->core.y;
-	w->shell.sizehints.width = w->core.width;
-	w->shell.sizehints.height = w->core.height;
-	w->shell.sizehints.flags |= PSize | PPosition;
-	if(w->shell.sizehints.min_aspect.x != -1 || 
-	   w->shell.sizehints.min_aspect.y != -1 || 
-	   w->shell.sizehints.max_aspect.x != -1 || 
-	   w->shell.sizehints.max_aspect.y != -1 )
-	  w->shell.sizehints.flags |= PAspect;
-	if(w->shell.sizehints.width_inc != -1 || w->shell.sizehints.height_inc != -1)
-		 w->shell.sizehints.flags |= PResizeInc;
-	if(w->shell.sizehints.max_width != -1 ||w->shell.sizehints.max_height != -1)
-		w->shell.sizehints.flags |= PMaxSize;
-	if(w->shell.sizehints.min_width != -1 ||w->shell.sizehints.min_height != -1)
-		w->shell.sizehints.flags |= PMinSize;
-
-	XSetNormalHints(dpy, win, &w->shell.sizehints);
-#ifndef VMS
-	if(w->shell.transient)
-	  XSetTransientForHint(dpy, win, w->shell.wmhints.window_group);
-	classhint.res_name = w->core.name;
-	classhint.res_class = XtClass(w)->core_class.class_name;
-	XSetClassHint(dpy, win, &classhint);
-#endif
-	  
-}
-
-/* ARGSUSED */
-static void
-EventHandler(wid, closure, event)
-Widget wid;
-Opaque closure;
-XEvent *event;
-{
-	Widget childwid;
-	int i;
-	ShellWidget w = (ShellWidget) wid;
-
-	if(w->core.window != event->xany.window) {
-		XtError("Event with wrong window");
-		  return;
-	}
-	/* I am only interested in resize */
-	switch(event->type) {
-	      case ConfigureNotify:
-		w->core.width = event->xconfigure.width;
-		w->core.height = event->xconfigure.height;
-		w->core.border_width = event->xconfigure.border_width;
-		w->core.x = event->xconfigure.x;
-		w->core.y = event->xconfigure.y;
-
-		for(i = 0; i < w->composite.num_children; i++) {
-		    if(w->composite.children[i]->core.managed) {
-			  childwid = w->composite.children[i];
-			  XtResizeWidget(
-			      childwid,
-			      w->core.width,
-			      w->core.height,
-			      (Dimension)0);
-			  break;
+		    } else {
+			    if((ptr = getenv("USER")) != NULL) {
+				    pw = getpwnam(ptr);
+			    } else {
+				    uid = getuid();
+				    pw = getpwuid(uid);
+			    }
+			    if (pw) {
+				    (void) strcpy(filename, pw->pw_dir);
+			    }
 		    }
+		    (void) strcat(filename, "/.Xdefaults");
+
+		    rdb = XrmGetFileDatabase(filename);
 		}
-		break;
-	      default:
-		return;
-	}  
+		XrmMergeDatabases(rdb, &XtDefaultDB);
+	}
+    return rdb;
 }
-
-static void
-Destroy(wid)
-Widget wid;
-{
-	ShellWidget w = (ShellWidget) wid;
-
-	if(w->shell.argv != NULL)
-		XtFree((char *)w->shell.argv);
-	w->shell.argv = NULL;
-}
-
-/* ARGSUSED */
-static void InsertChild(w, args, num_argsP)
-    Widget w;
-    ArgList args;
-    Cardinal *num_argsP;
-{
-    Cardinal num_args = *num_argsP;
-
-    if (((CompositeWidget)(w->core.parent))->composite.num_mapped_children > 0) {
-      	XtError("The root and popup shells widget only support one child");
-	return;
-    }
-
-    (*(((CompositeWidgetClass)(shellWidgetClass->core_class.superclass))->
-		composite_class.insert_child)) (w, args, &num_args);
-}
-
-/*
- * There is some real ugliness here.  If I have a width and a height which are
- * zero, and as such suspect, and I have not yet been realized then I will 
- * grow to match my child.
- *
- */
-static void 
-ChangeManaged(wid)
-Widget wid;
-{
-    ShellWidget w = (ShellWidget) wid;
-    int     i;
-    Widget childwid;
-    Boolean needresize = FALSE;
-
-    if(w->composite.num_mapped_children > 1) {
-      	XtError("The root and popup sheels widget only support one  child");
-	return;
-    }
-    for (i = 0; i < w->composite.num_children; i++) {
-	if (w->composite.children[i]->core.managed) {
-	    childwid = w->composite.children[i];
-	    if (!XtIsRealized ((Widget) wid)) {
-		/* we inherit our child's width and height if either is 0 */
-		if (w->core.width == 0 || w->core.height == 0) {
-		    if (w->core.width == 0)
-			w->core.width = childwid->core.width;
-		    if (w->core.height == 0)
-			w->core.height = childwid->core.height;
-		    w->shell.sizehints.flags |= PSize;
-		} else 
-		     needresize = TRUE;
-		if(childwid->core.border_width != 0)
-		     needresize = TRUE;
-		if(needresize) {
-		    /* our child gets our attributes */
-		    XtResizeWidget (
-		        childwid,
-			w->core.width,
-			w->core.height,
-			(Dimension) 0);
-		    
-		}
-	    }
-	    if(childwid->core.x != -childwid->core.border_width || 
-	       childwid->core.y != -childwid->core.border_width) {
-		      XtMoveWidget (childwid,
-				    (int)(-childwid->core.border_width),
-				    (int)(-childwid->core.border_width));
-	    }
-	}
-    }
-
-}
-
-/*
- * This is gross, I can't wait to see if the change happened so I will ask
- * the window manager to change my size and do the appropriate X work.
- * I will then tell the requester that he can.  Care must be taken because
- * it is possible that some time in the future the request will be
- * asynchronusly denied and the window reverted to it's old size/shape.
- */
- 
-static XtGeometryResult
-GeometryManager( wid, request, reply )
-Widget wid;
-XtWidgetGeometry *request;
-XtWidgetGeometry *reply;
-{
-	Position x, y;
-	ShellWidget w = (ShellWidget)(wid->core.parent);
-
-	if(w->shell.resizeable == FALSE &&
-	   ((w->shell.clientspecified == TRUE)||XtIsRealized(wid)))
-		return(XtGeometryNo);
-	if(!XtIsRealized((Widget)w)){
-		if (request->request_mode & (CWX|CWY|CWBorderWidth)) {
-			return(XtGeometryNo);
-		}
-		*reply = *request;
-		if(request->request_mode & CWWidth)
-		   wid->core.width = w->core.width = request->width;
-		if(request->request_mode & CWHeight) 
-		   wid->core.height = w->core.height = request->height;
-		return(XtGeometryYes);
-	}
-/* ||| this code depends on the core x,y,width,height,borderwidth fields */
-/* being the same size and same order as an XWindowChanges record. Yechh!!! */
-	_ask_wm_for_size(w, (XWindowChanges *) &(request->x), request->request_mode);
-
-
-	/* ||| we're responsible for x,y, but Intrinsics do w,h,bw */
-	x = (request->request_mode & CWX) ? request->x : wid->core.x;
-	y = (request->request_mode & CWY) ? request->y : wid->core.y;
-	XtMoveWidget(wid, x, y);
-
-	if (request->request_mode & CWWidth)
-	    wid->core.width = request->width;
-
-	if (request->request_mode & CWHeight)
-	    wid->core.height = request->height;
-
-	if (request->request_mode & CWBorderWidth)
-	    wid->core.border_width = request->border_width;
-
-	return(XtGeometryYes);
-}
-
-static void _ask_wm_for_size(w, values, mask)
-ShellWidget	w;
-XWindowChanges *values;
-int mask;
-{
-	XGrabServer(XtDisplay(w));
-	XGetNormalHints(XtDisplay(w), w->core.window, &w->shell.sizehints);
-	if(mask & CWX) {
-		w->shell.sizehints.flags &= ~USPosition;
-                w->shell.sizehints.flags |= PPosition;
-                w->core.x = w->shell.sizehints.x = values->x;
-	}
-	if(mask & CWY) {
-		w->shell.sizehints.flags &= ~USPosition;
-                w->shell.sizehints.flags |= PPosition;
-                w->core.y = w->shell.sizehints.y = values->y;
-	}
-	if(mask & CWBorderWidth) {
-                w->core.border_width = values->border_width;
-	}
-        if(mask & CWWidth) {
-                w->shell.sizehints.flags &= ~USSize;
-                w->shell.sizehints.flags |= PSize;
-                w->core.width = w->shell.sizehints.width = values->width;
-        }
-        if(mask & CWHeight) {
-                w->shell.sizehints.flags &= ~USSize;
-                w->shell.sizehints.flags |= PSize;
-                w->core.height = w->shell.sizehints.height = values->height;
-        }
-        XSetNormalHints(XtDisplay(w), w->core.window, &w->shell.sizehints);
-
-	XConfigureWindow(XtDisplay(w), w->core.window, mask, values);
-	XUngrabServer(XtDisplay(w));
-}
-
-static void _do_setsave_under(w, flag)
-ShellWidget w;
-Boolean flag;
-{
-	int mask;
-	XSetWindowAttributes attr;
-
-	if(XtIsRealized((Widget)w)) {
-		mask = CWSaveUnder;
-		attr.save_under = w->shell.save_under;
-		XChangeWindowAttributes(XtDisplay(w), XtWindow(w), mask, &attr);
-	}
-}
-
-static void _do_setoverride_redirect(w, flag)
-ShellWidget w;
-Boolean flag;
-{
-	int mask;
-	XSetWindowAttributes attr;
-
-	if(XtIsRealized((Widget)w)) {
-		mask = CWOverrideRedirect;
-		attr.override_redirect = w->shell.override_redirect;
-		XChangeWindowAttributes(XtDisplay(w), XtWindow(w), mask, &attr);
-	}
-}
-
-static Boolean SetValues(current, request, newvals, last)
-Widget current, request, newvals;
-Boolean last;
-{
-	XWMHints  *oldhints;
-	ShellWidget cur = (ShellWidget) current;
-	ShellWidget req = (ShellWidget) request;
-	ShellWidget new = (ShellWidget) newvals;
-	Boolean name = FALSE;
-	Boolean wmhints = FALSE;
-	Boolean title = FALSE;
-	Boolean size = FALSE;
-	XWindowChanges values;
-	int mask;
-	
-	/* I don't let people play with most of my values */
-	new = cur;
-
-	/* except these few... */
-	new->core.sensitive = req->core.sensitive;
-	new->shell.resizeable = req->shell.resizeable;
-	new->shell.transient = req->shell.transient;
-	new->shell.create_popup_child = req->shell.create_popup_child;
-
-#define	EQ(x) (cur->shell.x == req->shell.x)
-#define EQC(x)	(cur->core.x == req->core.x)
-	if(! EQ(save_under) ) {
-		new->shell.save_under = req->shell.save_under;
-		_do_setsave_under(cur, new->shell.save_under) ;
-	}
-	if(! EQ(override_redirect) ) {
-		new->shell.override_redirect = req->shell.override_redirect;
-		_do_setoverride_redirect(cur, new->shell.override_redirect) ;
-	}
-#define EQS(x) (EQ(sizehints.x))
-
-	if(! EQS(min_width)||! EQS(min_height)) {
-	  if(req->shell.sizehints.min_width != -1 ||
-	     (req->shell.sizehints.min_height != -1)) {
-	    new->shell.sizehints.min_width = req->shell.sizehints.min_width;
-	    new->shell.sizehints.min_height = req->shell.sizehints.min_height;
-	    new->shell.sizehints.flags |= PMinSize;
-	  } else
-	     new->shell.sizehints.flags &= ~PMinSize;
-	  size = TRUE;
-	}
-	if( ! EQS(max_width) || ! EQS(max_height) ) {
-	  if(req->shell.sizehints.max_width != -1 ||
-	     (req->shell.sizehints.max_height != -1)) {
-	    new->shell.sizehints.max_width = req->shell.sizehints.max_width;
-	    new->shell.sizehints.max_height = req->shell.sizehints.max_height;
-	    new->shell.sizehints.flags |=PMaxSize;
-	  } else
-	     new->shell.sizehints.flags &= ~PMaxSize;
-	  size = TRUE;
-	}
-	if( ! EQS(width_inc) || ! EQS(height_inc) ) {
-	  if(req->shell.sizehints.width_inc != -1 ||
-	     (req->shell.sizehints.height_inc != -1)) {
-	    new->shell.sizehints.width_inc = req->shell.sizehints.width_inc;
-	    new->shell.sizehints.height_inc = req->shell.sizehints.height_inc;
-	    new->shell.sizehints.flags |=PResizeInc;
-	  } else
-	     new->shell.sizehints.flags &= ~PResizeInc;
-	  size = TRUE;
-	}
-	if( ! EQS(min_aspect.x) ||! EQS(min_aspect.y) ||
-	   ! EQS(max_aspect.x) ||! EQS(max_aspect.y)) {
-		
-	  if((req->shell.sizehints.min_aspect.x != -1) ||
-	     (req->shell.sizehints.min_aspect.y != -1) ||
-	     (req->shell.sizehints.max_aspect.x != -1) ||
-	     (req->shell.sizehints.max_aspect.y != -1)) {
-	    new->shell.sizehints.min_aspect.x = req->shell.sizehints.min_aspect.x;
-	    new->shell.sizehints.min_aspect.y = req->shell.sizehints.min_aspect.y;
-	    new->shell.sizehints.max_aspect.x = req->shell.sizehints.max_aspect.x;
-	    new->shell.sizehints.max_aspect.y = req->shell.sizehints.max_aspect.y;
-	    new->shell.sizehints.flags |=PAspect;
-	  } else
-	     new->shell.sizehints.flags &= ~PAspect;
-	  size = TRUE;
-	}
-	if(size && XtIsRealized(cur)) {
-	    XSetNormalHints(XtDisplay(cur), XtWindow(cur), &new->shell.sizehints);
-	}
-	if(! EQ(title) ) {
-	  	XtFree(cur->shell.title);
-		strcpy(new->shell.title = 
-		       (String) XtMalloc(strlen(req->shell.title) + 1),
-		       req->shell.title);
-		title = TRUE;
-        }
-	
-	if(! EQ(icon_name)) {
-	  	XtFree(cur->shell.icon_name);
-		strcpy(new ->shell.icon_name = 
-		       (String)XtMalloc(strlen(req->shell.icon_name) + 1),
-		       req->shell.icon_name);
-		name = TRUE;
-	}
-#define EQW(x)	(EQ(wmhints.x))
-#define GETWMHINTS \
-	  	if(XtIsRealized((Widget)cur) && !wmhints) { \
-		    oldhints = XGetWMHints(XtDisplay(cur), cur->core.window); \
-		    new->shell.wmhints = *oldhints; \
-		    XtFree((char *)oldhints); \
-	        } \
-		wmhints = TRUE;
-
-	if(! EQW(initial_state)) {
-		GETWMHINTS;
-		new->shell.wmhints.initial_state = req->shell.wmhints.initial_state;
-		new->shell.wmhints.flags |= StateHint;
-	}
-	if(! EQW(icon_x)|| !EQW(icon_y)) {
-		GETWMHINTS;
-		new->shell.wmhints.icon_x = req->shell.wmhints.icon_x;
-		new->shell.wmhints.icon_y = req->shell.wmhints.icon_y;
-		new->shell.wmhints.flags |= IconPositionHint;
-	}
-	if(!XtIsRealized((Widget)cur)) { 
-	  /*The rest doesn't work until we are realized */
-	        if(!cur->shell.clientspecified) {
-		  	new->core.x = req->core.x;
-			new->core.y = req->core.y;
-			new->core.width = req->core.width;
-			new->core.height = req->core.height;
-			new->core.border_width = req->core.border_width;
-		}
-	} else {
-		if(cur->shell.resizeable) {
-		  mask = 0;
-		  if(!EQC(x)) {
-		  	mask |= CWX;
-			values.x = req->core.x;
-		  }
-		  if(!EQC(y)) {
-		  	mask |= CWY;
-			values.y = req->core.y;
-		  }
-		  if(!EQC(width)) {
-		  	mask |= CWWidth;
-			values.width = req->core.width;
-		  }
-		  if(!EQC(height)) {
-		  	mask |= CWHeight;
-			values.height = req->core.height;
-		  }
-		  if(!EQC(border_width)) {
-		  	mask |= CWBorderWidth;
-			values.border_width = req->core.border_width;
-		  }
-		  if(mask)
-		    _ask_wm_for_size(cur, &values, mask);
-	    }
-	}
-/*XXX Leak alleret  These should be copied and freed but I am lazy */
-	if(!EQW(icon_pixmap)) {
-		GETWMHINTS;
-		new ->shell.wmhints.icon_pixmap = req->shell.wmhints.icon_pixmap;
-		new->shell.wmhints.flags |= IconPixmapHint;
-	}
-	if(!EQW(icon_mask)) {
-		GETWMHINTS;
-		new ->shell.wmhints.icon_mask = req->shell.wmhints.icon_mask;
-		new->shell.wmhints.flags |= IconMaskHint;
-	}
-	if(!EQW(icon_window)) {
-		GETWMHINTS;
-		new ->shell.wmhints.icon_window = req->shell.wmhints.icon_window;
-		new->shell.wmhints.flags |= IconWindowHint;
-	}
-#ifndef VMS    /* Beta Xlib's Xutil.h doesn't have window_group */
-	if(!EQW(window_group)) {
-	  	GETWMHINTS;
-		new ->shell.wmhints.window_group = req->shell.wmhints.window_group;
-		new->shell.wmhints.flags |= WindowGroupHint;
-	}
-#endif
-
-#undef GETWMHINTS
-
-	if(!XtIsRealized((Widget)cur))
-		return( FALSE );
-
-	if(name) {
-		XSetIconName(XtDisplay(cur), cur->core.window, new->shell.icon_name);
-	}
-	if( title ) {
-		XStoreName(XtDisplay(cur), cur->core.window, new->shell.title);
-	}
-	if(wmhints) {
-		XSetWMHints( XtDisplay(cur), cur->core.window, &(new->shell.wmhints));
-	}
-#ifdef DECHINTS
-	FOO not written yet 
-#endif
-
-	return( FALSE );
-
-}
-
-/*
- * Merge two option tables, allowing the second to over-ride the first,
- * so that ambiguous abbreviations can be noticed.
- */
-
-void
-XtMergeOptionTables(src1, num_src1, src2, num_src2, dst, num_dst)
-    XrmOptionDescRec *src1, *src2;
-    Cardinal num_src1, num_src2;
-    XrmOptionDescRec **dst;
-    Cardinal *num_dst;
-{
-    XrmOptionDescRec *table, *endP;
-    register XrmOptionDescRec *opt1, *opt2, *dstP, *startP; 
-    int i1, i2, len1, len2, dst_len, order;
-    Boolean found;
-
-    *dst = table = (XrmOptionDescRec*)
-	XtMalloc( sizeof(XrmOptionDescRec) * (num_src1 + num_src2) );
-
-    bcopy( src1, table, sizeof(XrmOptionDescRec) * num_src1 );
-    if (num_src2 == 0) {
-	*num_dst = num_src1;
-	return;
-    }
-    endP = &table[dst_len = num_src1];
-    for (opt2 = src2, i2= 0; i2 < num_src2; opt2++, i2++) {
-	found = False;
-	for (opt1 = table, i1 = 0; i1 < dst_len; opt1++, i1++) {
-	    /* have to walk the entire new table so new list is ordered */
-	    if ((order = strcmp(opt1->option, opt2->option)) == 0) {
-		*opt1 = *opt2;
-		found = True;
-		break;
-	    }
-	    len1 = strlen(opt1->option);
-	    len2 = strlen(opt2->option);
-	    if (len1 != len2 &&
-		strncmp(opt1->option, opt2->option, min(len1, len2)) == 0) {
-		/* one is abbrev of the other; make sure shorter one
-		   is found first in the table.  We'll shift the
-		   remainder of the table to try to preserve sort if
-		   src1 was sorted. */
-		startP = opt1;
-		if (len1 < len2) startP++;
-		for (dstP = endP; dstP > startP;)
-		    *dstP-- = *(dstP-1);
-		*startP = *opt2;
-		dst_len++;
-		endP++;
-		found = True;
-		break;
-	    }
-	    if (order < 0) startP = opt1+1;
-	}
-	if (!found) {		/* insert after startP to preserve order */
-	    for (dstP = endP; dstP > startP;)
-		*dstP-- = *(dstP-1);
-	    *startP = *opt2;
-	    dst_len++;
-	    endP++;
-	}
-    }
-    *num_dst = dst_len;
-}
-
-
-static void
-ComputeAbbrevLen(string, name, len)
-    String string;		/* the variable */
-    String name;		/* the constant */
-    int *len;			/* the current ambiguous length */
-{
-    int string_len = strlen(string);
-    int name_len = strlen(name);
-    int i;
-
-    for (i=0; i<string_len && i<name_len && *string++ == *name++; i++);
-
-    if (i < name_len && i > *len)
-	*len = i;
-}
-
 
 /*
  * This routine creates the desired widget and does the "Right Thing" for
@@ -1043,20 +214,15 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	int i;
 	char filename[MAXPATHLEN];
 	char **saved_argv;
-	Cardinal saved_argc = *argc;
+	int    saved_argc = *argc;
 	Display *dpy;
 	char *ptr, *rindex();
-	ShellWidget w;
+	ApplicationShellWidget w;
 	Widget root;
+#ifndef TRASHCOLONDISPLAY
 	int squish = -1;
+#endif
 	Boolean dosync = FALSE;
-	XrmOptionDescRec *options;
-	Cardinal num_options;
-	Boolean found_display = FALSE;
-	int min_display_len = 0;
-	int min_name_len = 0;
-	int min_sync_len = 0;
-	int squish_sync = -1;
 
 	if( name == NULL) {
 	  	ptr = rindex(argv[0], '/');
@@ -1080,56 +246,43 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	 */
 	displayName[0] = 0;
 
-	XtMergeOptionTables( opTable, XtNumber(opTable), urlist, num_urs,
-			     &options, &num_options );
-
-	for (i = 0; i < num_options; i++) {
-	    ComputeAbbrevLen(options[i].option, "-display",  &min_display_len);
-	    ComputeAbbrevLen(options[i].option, "-name",        &min_name_len);
-	    ComputeAbbrevLen(options[i].option, "-synchronous", &min_sync_len);
-	}
-
 	for(i = 1; i < *argc; i++) {
-	  int len = strlen(argv[i]);
-	  if (!found_display && index(argv[i], ':') != NULL) {
+#ifndef TRASHCOLONDISPLAY
+	  if (index(argv[i], ':') != NULL) {
 		  (void) strncpy(displayName, argv[i], sizeof(displayName));
-		  squish = i;
+		  if( *argc == i + 1) {
+		    (*argc)--;
+		  } else {  /* need to squish this one out of the list */
+		    squish = i;
+		  }
 		  continue;
 	  }
-	  if(len > min_display_len && !strncmp("-display", argv[i], len)) {
-	          i++;
+#endif
+	  if (!strcmp("-d", argv[i]) || !strcmp("-display", argv[i])) {
+		  i++;
 		  if(i == *argc) break;
-		  strncpy(displayName, argv[i], sizeof(displayName));
-		  found_display = TRUE;
-		  squish = i-1;
+		  (void) strncpy(displayName, argv[i], sizeof(displayName));
 		  continue;
 	  }
-	  if(len > min_name_len && !strncmp("-name", argv[i], len)) {
+	  if(!strcmp("-name", argv[i]) || ! strcmp("-n", argv[i])) {
 		  i++;
 		  if(i == *argc) break;
 		  name = argv[i];
 		  continue;
-		  /* name doesn't get removed from arglist */
 	  }
-	  if (len > min_sync_len && !strncmp("-synchronous", argv[i], len)) {
+	  if (!strcmp("-sync", argv[i])) {
 		  dosync = TRUE;
-		  squish_sync = i;
 		  continue;
 	  }
 	}
+#ifndef TRASHCOLONDISPLAY
 	if(squish != -1) {
-	        int offset = found_display ? 2 : 1;
-		(*argc) -= offset;
+		(*argc)--;
 		for(i = squish; i < *argc; i++) {
-			argv[i] = argv[i+offset];
+			argv[i] = argv[i+1];
 		}
 	}
-	if(squish_sync != -1) {
-	        (*argc)--;
-		for(i = squish_sync; i < *argc; i++) {
-		        argv[i] = argv[i+1];
-		}
-	}
+#endif
 	/* Open display  */
 	if (!(dpy = XOpenDisplay(displayName))) {
 		char buf[1024];
@@ -1147,27 +300,24 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	    
 	/* initialize the toolkit */
 	DO_Initialize();
-#ifndef VMS
-#define XAPPLOADDIR  "/usr/lib/X11/app-defaults/"
-#else
 #define XAPPLOADDIR  "SYS$LIBRARY:"
-#endif VMS
 	(void) strcpy(filename, XAPPLOADDIR);
 	(void) strcat(filename, classname);
-#ifdef VMS
-	(void) strcat(filename, ".DAT");
-#endif VMS
 
 	/*set up resource database */
-	(void) XGetUsersDataBase(dpy, filename);
+	(void) XGetUsersDatabase(dpy, filename);
 
 	/*
 	   This routine parses the command line arguments and removes them from
 	   argv.
 	 */
-	XrmParseCommand( &XtDefaultDB, options, num_options, name, argc, argv);
-	XtFree( (char*)options );
+	XrmParseCommand(&XtDefaultDB, opTable, XtNumber(opTable), name,
+	    argc, argv);
 	
+	if(num_urs != 0) {
+	       /* the application has some more defaults */
+	       XrmParseCommand(&XtDefaultDB, urlist, num_urs, name, argc, argv);
+	}
 	/* Resources are initialize and loaded */
 	/* I now must handle geometry specs a compond resource */
 
@@ -1177,16 +327,16 @@ XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	     The name is supplied in the call to XtInitialize.
 	 */
 	(void) strcpy(
-	    ((ShellClassRec *)(shellWidgetClass))->core_class.class_name
+	    applicationShellWidgetClass->core_class.class_name
 	        = (String)XtMalloc((unsigned)strlen(classname)+1),
 	       classname);
-        root = XtCreateApplicationShell(name,shellWidgetClass,
+        root = XtCreateApplicationShell(name, applicationShellWidgetClass,
                   args,num_args);
 
 
-	w = (ShellWidget) root;
-	w->shell.argc = saved_argc;
-	w->shell.argv = saved_argv;
+	w = (ApplicationShellWidget) root;
+	w->application.argc = saved_argc;
+	w->application.argv = saved_argv;
 
 	init_atoms(dpy);
 
