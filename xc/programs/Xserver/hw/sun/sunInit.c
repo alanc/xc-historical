@@ -156,13 +156,21 @@ InitOutput(pScreenInfo, argc, argv)
     char    	  **argv;
 {
     int     	  i, index;
+    int		  nonBlockConsole = 1;
 
+    while (argc--) {
+	if (!strcmp(*argv,"-debug")) {
+	    nonBlockConsole = 0;
+	    break;
+	}
+	argv++;
+    }
     /*
      *	Writes to /dev/console can block - causing an
      *	excess of error messages to hang the server in
      *	deadlock.  So.......
      */
-    if (fcntl(fileno(stderr), F_SETFL, O_NDELAY) < 0) {
+    if (nonBlockConsole && (fcntl(fileno(stderr), F_SETFL, O_NDELAY) < 0)) {
 	perror("fcntl");
 	ErrorF("InitOutput: can't put stderr in non-block mode\n");
     }
