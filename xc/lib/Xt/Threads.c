@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.1 93/08/27 08:55:29 kaleb Exp $ */
+/* $XConsortium: Threads.c,v 1.2 93/08/27 16:19:22 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -234,7 +234,7 @@ FreeAppLock(app)
 
 	XtFree((char *)app_lock);
 	app->lock_info = NULL;
-	if(app->stack->p != (xmutex_t *)NULL)
+	if(app->stack->p != (xthread_t *)NULL)
 	    XtFree((char *)app->stack->p);
 	if(app->stack != (ThreadStackPtr)NULL)
 	    XtFree((char *)app->stack);
