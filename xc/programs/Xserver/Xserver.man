@@ -18,7 +18,7 @@ Xqvss	Digital monochrome vaxstationII or II
 Xqdss	Digital color vaxstationII or II
 Xsun	Sun monochrome or color Sun 2, 3, or 4
 Xhp	HP Topcat 9000s300
-Xapollo	Apollo monochrome (Domain/IX 9.6)
+Xapollo	Apollo monochrome or color (Domain/OS SR10.1 or SR10.2)
 Xibm	IBM APA and megapel PC/RT
 XmacII	Apple monochrome Macintosh II
 Xplx	Parallax color and video graphics controller
