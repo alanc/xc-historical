@@ -1,6 +1,4 @@
-#if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: xedit.c,v 1.24 90/05/01 18:58:03 converse Exp $";
-#endif /* lint && SABER */
+/* $XConsortium: xedit.c,v 1.25 90/10/26 12:00:00 dave Exp $ */
  
 /*
  *			  COPYRIGHT 1987
@@ -39,6 +37,8 @@ Widget textwindow, messwidget, labelwindow, filenamewindow;
 
 void ResetSourceChanged();
 
+static void makeButtonsAndBoxes();
+
 Display *CurDpy;
 
 struct _app_resources app_resources;
@@ -59,14 +59,13 @@ main(argc, argv)
 int argc;
 char **argv;
 {
+  XtAppContext appcon;
   Widget top;
   String filename = NULL;
-  static void makeButtonsAndBoxes();
 
-  top = XtInitialize( "xedit", "Xedit", NULL, 0, (Cardinal *) &argc, argv);
+  top = XtAppInitialize(&appcon, "Xedit", NULL, 0, &argc, argv, NULL, NULL, 0);
 
-  XtAppAddActions
-      (XtWidgetToApplicationContext(top), actions, XtNumber(actions));
+  XtAppAddActions(appcon, actions, XtNumber(actions));
   XtOverrideTranslations
       (top, XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
   
@@ -111,7 +110,7 @@ char **argv;
   (void) XSetWMProtocols (XtDisplay(top), XtWindow(top),
 			  &wm_delete_window, 1);
   
-  XtMainLoop();
+  XtAppMainLoop(appcon);
 }
 
 static void
