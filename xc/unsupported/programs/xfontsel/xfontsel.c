@@ -1,8 +1,8 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.11 89/10/09 16:20:48 jim Exp $";
+static char Xrcsid[] = "$XConsortium: fntchoosr.c,v 1.2 89/11/06 17:18:12 swick Exp $";
 #endif
 
-/* $XConsortium: copyright.h,v 1.4 89/07/25 16:12:03 rws Exp $ */
+/* $XConsortium: fntchoosr.c,v 1.2 89/11/06 17:18:12 swick Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -480,7 +480,7 @@ void SelectValue(w, closure, callData)
 #ifdef LOG_CHOICES
     Choice *choice = XtNew(Choice);
 #else
-    Choice pChoice;
+    static Choice pChoice;
     Choice *choice = &pChoice;
 #endif
 
