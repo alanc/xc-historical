@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.9 89/10/06 19:18:49 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.11 89/11/28 10:28:16 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -97,6 +97,7 @@ typedef struct {
    Window window;
    Widget widget;
    Boolean allSent;
+   Boolean anySent;
    XtIntervalId timeout;
 } PropGoneRec, *PropGone;
 
