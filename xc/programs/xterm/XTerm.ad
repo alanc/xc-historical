@@ -41,7 +41,7 @@ XTerm*vtMenu*tekmode*Label:  Switch to Tek Mode
 XTerm*vtMenu*vthide*Label:  Hide VT Window
 
 XTerm*fontMenu.Label:  VT Fonts
-XTerm*fontMenu*fontdefault*Label:	Default Font
+XTerm*fontMenu*fontdefault*Label:	Default
 !font0 is overridden to control the normal font
 XTerm*fontMenu*font1*Label:	Tiny
 XTerm*VT100*font1:		nil2
@@ -51,7 +51,7 @@ XTerm*fontMenu*font3*Label:	Medium
 XTerm*VT100*font3:		8x13
 XTerm*fontMenu*font4*Label:	Large
 XTerm*VT100*font4:		9x15
-XTerm*fontMenu*fontother*Label:	Escape Font
+XTerm*fontMenu*fontother*Label:	On The Fly
 !fontother is overridden to control the escape sequence font
 
 XTerm*tekMenu.Label:  Tek Options
