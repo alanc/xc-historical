@@ -19,7 +19,7 @@ static void AddChild(), FillNode();
 extern void PrepareToLayoutTree(), LayoutTree();
 
 extern void _TreeSelectNode(), _TreeActivateNode(), _TreeRelabelNode();
-extern WNode ** CopyActiveNodes();
+static WNode ** CopyActiveNodes();
 
 void TreeToggle();
 

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.22 90/09/15 12:13:36 rws Exp $
+ * $XConsortium: auth.c,v 1.23 90/09/20 19:27:07 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -449,6 +449,7 @@ Xauth	*auth;
 {
 	struct addrList	*new;
 	char		*malloc ();
+	static		checkEntry ();
 
 	if (checkEntry (auth))
 		return;
@@ -965,6 +966,7 @@ RemoveUserAuthorization (d, verify)
     FILE    *old, *new;
     struct stat	statb;
     int	    i;
+    char    *getEnv ();
 
     if (!(auths = d->authorizations))
 	return;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.8 90/06/28 12:17:57 kit Exp $
+ * $XConsortium: geometry.c,v 1.9 90/09/27 19:57:06 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -50,7 +50,8 @@ _FindWidget(w)
 Widget w;
 {
     char msg[BUFSIZ];
-    WNode * node, *FindWidgetFromWindow();
+    WNode * node;
+    static WNode *FindWidgetFromWindow();
     Window win, GetClientWindow();
     int x, y;			/* location of event in root coordinates. */
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.1 90/09/13 18:29:42 keith Exp $
+ * $XConsortium: access.c,v 1.2 90/09/14 17:51:56 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -405,6 +405,7 @@ scanHostlist (h, clientAddress, connectionType, function, closure, depth)
     int		depth;
 {
     int	haveLocalhost = 0;
+    static int indirectAlias ();
 
     for (; h; h = h->next)
     {
@@ -542,7 +543,7 @@ AcceptableDisplayAddress (clientAddress, connectionType, type)
     xdmOpCode	type;
 {
     DisplayEntry    *d;
-    char	    *clientName = 0;
+    char	    *clientName = 0, *NetworkAddressToHostname ();
 
     if (type == INDIRECT_QUERY)
 	return 1;
