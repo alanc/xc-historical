@@ -1,14 +1,16 @@
-.TH XEDIT 1 "1 March 1988" "X Version 11"
+.TH XEDIT 1 "26 October 1988" "X Version 11"
 .SH NAME
 xedit - simple text editor for X
 .SH SYNTAX
 \fBxedit\fP [ \fI-toolkitoption\fP ...] [ filename ]
 .SH OPTIONS
 .I Xedit
-accepts all of the standard X Toolkit command line options, plus:
+accepts all of the standard X Toolkit command line
+options (see \fIX(1)\fP), plus:
 .TP 8
 .I filename
 Specifies the file that is to be loaded during start-up.
+This is the file which will be edited.
 If a file is not specified,
 .I xedit
 lets you load a file or create a new file after it has started up.
@@ -140,7 +142,7 @@ to be used as the default for the
 .I xedit
 window.
 For information about the format of the geometry specification,
-see ARGUMENTS.
+see \fIX(1)\fP.
 .IP internalHeight
 Specifies the internal horizontal padding (spacing between text and button
 border) for command buttons.
@@ -175,10 +177,8 @@ Specifies the key or mouse button that is used to invoke the named function.
 Specifies the function to be invoked when the named key is pressed.
 .LP
 For more information about specifications in the
-.B .XtActions
-file,
-see
-.MS X 1X .
+.I .XtActions
+file, see \fIX(1)\fP.
 .SH FILES
 ~/.XtActions
 .br
@@ -187,9 +187,12 @@ see
 X(1), xrdb(1)
 .SH RESTRICTIONS
 Large numbers of certain edit functions (for example, Undo or More)
-tend to degrade performance over
-time.
+tend to degrade performance over time.
 If there is a noticeable decrease in response time,
 save and reload the file.
+.SH BUGS
+It is not clear how to select a line number for the \fIJump\fP command.
+.PP
+The string searches don't work properly.
 .SH COPYRIGHT
 Copyright 1988, Digital Equipment Corporation.
