@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.13 93/11/22 16:29:18 mor Exp $ */
+/* $XConsortium: accept.c,v 1.14 93/11/24 15:08:05 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -59,7 +59,17 @@ IceListenObj listenObj;
     iceConn->fd = newconn;
     iceConn->sequence = 0;
 
-    iceConn->connection_string = listenObj->network_id;
+    iceConn->connection_string = (char *) malloc (
+	strlen (listenObj->network_id) + 1);
+
+    if (iceConn->connection_string == NULL)
+    {
+	close (newconn);
+	free ((char *) iceConn);
+	return (NULL);
+    }
+    else
+	strcpy (iceConn->connection_string, listenObj->network_id);
 
     iceConn->vendor = NULL;
     iceConn->release = NULL;
