@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.11 88/10/05 15:12:27 swick Exp $
+ *	$XConsortium: button.c,v 1.12 88/10/06 07:33:40 swick Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.11 88/10/05 15:12:27 swick Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.12 88/10/06 07:33:40 swick Exp $";
 #endif	/* lint */
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -111,9 +111,6 @@ extern XtermWidget term;
 
 /* Raw char position where the selection started */
 static int rawRow, rawCol;
-
-/* Hilited area */
-static int startHRow, startHCol, endHRow, endHCol, startHCoord, endHCoord = 0;
 
 /* Selected area before CHAR, WORD, LINE selectUnit processing */
 static int startRRow, startRCol, endRRow, endRCol = 0;
@@ -574,13 +571,18 @@ int x, y;
 }
 
 
-ScrollSelection(amount)
+ScrollSelection(screen, amount)
+register TScreen* screen;
 int amount;
 {
-	/* Sent by scrollbar stuff, so amount never takes selection out of
-	   saved text */
-startRRow += amount; endRRow += amount; startSRow += amount; endSRow += amount;
-rawRow += amount;
+    /* Sent by scrollbar stuff, so amount never takes selection out of
+       saved text */
+
+    startRRow += amount; endRRow += amount;
+    startSRow += amount; endSRow += amount;
+    rawRow += amount;
+    screen->startHRow += amount;
+    screen->endHRow += amount;
 }
 
 
@@ -772,32 +774,37 @@ register int frow, fcol, trow, tcol;
 	}
 	from = Coordinate(frow, fcol);
 	to = Coordinate(trow, tcol);
-	if (to <= startHCoord || from > endHCoord) {
+	if (to <= screen->startHCoord || from > screen->endHCoord) {
 		/* No overlap whatsoever between old and new hilite */
-		HiliteText(startHRow, startHCol, endHRow, endHCol, FALSE);
+		HiliteText(screen->startHRow, screen->startHCol,
+			   screen->endHRow, screen->endHCol, FALSE);
 		HiliteText(frow, fcol, trow, tcol, TRUE);
 	} else {
-		if (from < startHCoord) {
+		if (from < screen->startHCoord) {
 			/* Extend left end */
-			HiliteText(frow, fcol, startHRow, startHCol, TRUE); 
-		} else if (from > startHCoord) {
+			HiliteText(frow, fcol, screen->startHRow,
+				   screen->startHCol, TRUE); 
+		} else if (from > screen->startHCoord) {
 			/* Shorten left end */
-			HiliteText(startHRow, startHCol, frow, fcol, FALSE);
+			HiliteText(screen->startHRow, screen->startHCol,
+				   frow, fcol, FALSE);
 		}
-		if (to > endHCoord) {
+		if (to > screen->endHCoord) {
 			/* Extend right end */
-			HiliteText(endHRow, endHCol, trow, tcol, TRUE); 
-		} else if (to < endHCoord) {
+			HiliteText(screen->endHRow, screen->endHCol,
+				   trow, tcol, TRUE); 
+		} else if (to < screen->endHCoord) {
 			/* Shorten right end */
-			HiliteText(trow, tcol, endHRow, endHCol, FALSE);
+			HiliteText(trow, tcol, screen->endHRow,
+				   screen->endHCol, FALSE);
 		}
 	}
-	startHRow = frow;
-	startHCol = fcol;
-	endHRow   = trow;
-	endHCol   = tcol;
-	startHCoord = from;
-	endHCoord = to;
+	screen->startHRow = frow;
+	screen->startHCol = fcol;
+	screen->endHRow   = trow;
+	screen->endHCol   = tcol;
+	screen->startHCoord = from;
+	screen->endHCoord = to;
 }
 
 HiliteText(frow, fcol, trow, tcol, hilite)
@@ -809,6 +816,10 @@ int hilite;
 	register int i, j;
 	GC tempgc;
 
+	if (frow < 0) frow = 0;
+	if (trow < 0) trow = 0;
+	if (frow > screen->max_row) frow = screen->max_row;
+	if (trow > screen->max_row) trow = screen->max_row;
 	if (frow == trow && fcol == tcol)
 		return;
 	if(hilite) {

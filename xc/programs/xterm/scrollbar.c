@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.13 88/09/06 17:08:34 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.14 88/09/26 12:38:56 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -42,7 +42,7 @@
 extern void Bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.13 88/09/06 17:08:34 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.14 88/09/26 12:38:56 swick Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -247,7 +247,7 @@ WindowScroll(screen, top)
 		return;
 	}
 
-	ScrollSelection(i);
+	ScrollSelection(screen, i);
 
 	if(screen->cursor_state)
 		HideCursor();

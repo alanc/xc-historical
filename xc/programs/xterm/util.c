@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.6 88/07/29 14:50:05 jim Exp $
+ *	$XConsortium: util.c,v 1.7 88/09/06 17:08:37 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* util.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.6 88/07/29 14:50:05 jim Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.7 88/09/06 17:08:37 jim Exp $";
 #endif	/* lint */
 
 #include <stdio.h>
@@ -135,6 +135,7 @@ register TScreen *screen;
 		    (int) screen->border + screen->scrollbar, 
 		    (int) scrolltop*FontHeight(screen) + screen->border);
 	}
+	ScrollSelection(screen, -(screen->scroll_amt));
 	screen->scroll_amt = 0;
 	screen->refresh_amt = 0;
 	if(refreshheight > 0) {

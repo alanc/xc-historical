@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.14 88/09/06 17:08:22 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.15 88/10/05 12:04:39 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -335,6 +335,9 @@ typedef struct {
 	int		selection_size; /* size of allocated buffer */
 	int		selection_length; /* number of significant bytes */
 	int		selection_time;	/* latest event timestamp */
+	int		startHRow, startHCol, /* highlighted text */
+			endHRow, endHCol,
+			startHCoord, endHCoord;
 } TScreen;
 
 /* meaning of bits in screen.select flag */
