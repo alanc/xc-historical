@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.35 89/12/13 12:54:07 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.36 89/12/15 21:51:19 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -449,8 +449,13 @@ static void ComputeArgs(widget, convert_args, num_args, args)
 		    ancestor = _XtWindowedAncestor(widget);
 	    }
 
+#ifdef CRAY1
+	    args[i].addr =
+		(XtPointer)((int)ancestor + (int)convert_args[i].address_id);
+#else
 	    args[i].addr =
 		(XtPointer)ancestor + (int)convert_args[i].address_id;
+#endif
 	    break;
 
 	case XtImmediate:
