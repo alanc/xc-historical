@@ -1,4 +1,4 @@
-.\" $XConsortium: relnotes.mm,v 1.5 92/07/04 17:06:03 rws Exp $
+.\" $XConsortium: relnotes.mm,v 1.6 92/07/04 17:54:18 rws Exp $
 .ds dD Release Notes for the X Test Suite
 .so 00.header
 '\"
@@ -267,7 +267,7 @@ the sources maintained at MIT.  However, if you discover bugs that you think
 will not show up on systems tested at MIT, feel free to report them.
 .P
 Bugs in TET/tcc software and documentation should not be reported to MIT.
-Send TET/tcc bug reports to tet_support@xopen.co.
+Send TET/tcc bug reports to tet_support@xopen.co.uk.
 .H 1 "Setting up your X\ server"
 Your attention is drawn to section 7.1 of the User Guide entitled 
 "Setting up your X\ server". You should follow the guidelines in section 
