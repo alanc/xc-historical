@@ -1,4 +1,4 @@
-/* $XConsortium: Paned.c,v 1.17 90/06/14 14:45:39 kit Exp $ */
+/* $XConsortium: Paned.c,v 1.18 90/12/31 17:07:41 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -86,23 +86,23 @@ static char defGripTranslations[] =
      <Btn3Motion>:		GripAction(Move, LowRight) \n\
      Any<BtnUp>:		GripAction(Commit)";
 
-#define offset(field) XtOffset(PanedWidget, paned.field)
+#define offset(field) XtOffsetOf(PanedRec, paned.field)
 
 static XtResource resources[] = {
     {XtNinternalBorderColor, XtCBorderColor, XtRPixel, sizeof(Pixel),
 	 offset(internal_bp), XtRString, 
-         (caddr_t) "XtDefaultForeground"},
+         (XtPointer) "XtDefaultForeground"},
     {XtNinternalBorderWidth, XtCBorderWidth, XtRDimension, sizeof(Dimension),
-	 offset(internal_bw), XtRImmediate, (caddr_t) 1},
+	 offset(internal_bw), XtRImmediate, (XtPointer) 1},
     {XtNgripIndent, XtCGripIndent, XtRPosition, sizeof(Position),
-	 offset(grip_indent), XtRImmediate, (caddr_t) 10},
+	 offset(grip_indent), XtRImmediate, (XtPointer) 10},
     {XtNrefigureMode, XtCBoolean, XtRBoolean, sizeof(Boolean),
-         offset(refiguremode), XtRImmediate, (caddr_t) TRUE},
+         offset(refiguremode), XtRImmediate, (XtPointer) TRUE},
     {XtNgripTranslations, XtCTranslations, XtRTranslationTable,
          sizeof(XtTranslations),
-         offset(grip_translations), XtRString, (caddr_t)defGripTranslations},
+         offset(grip_translations), XtRString, (XtPointer)defGripTranslations},
     {XtNorientation,  XtCOrientation, XtROrientation, sizeof(XtOrientation),
-         offset(orientation), XtRImmediate, (caddr_t) XtorientVertical},
+         offset(orientation), XtRImmediate, (XtPointer) XtorientVertical},
 
     /* Cursors - both horiz and vertical have to work. */
 
@@ -134,26 +134,26 @@ static XtResource resources[] = {
 
 #undef offset
 
-#define offset(field) XtOffset(Pane, field)
+#define offset(field) XtOffsetOf(PanedConstraintsRec, field)
 
 static XtResource subresources[] = {
     {XtNallowResize, XtCBoolean, XtRBoolean, sizeof(Boolean),
-	 offset(allow_resize), XtRImmediate, (caddr_t) FALSE},
+	 offset(allow_resize), XtRImmediate, (XtPointer) FALSE},
     {XtNposition, XtCPosition, XtRInt, sizeof(int),
-         offset(position), XtRImmediate, (caddr_t) 0},
+         offset(position), XtRImmediate, (XtPointer) 0},
     {XtNmin, XtCMin, XtRDimension, sizeof(Dimension),
-         offset(min), XtRImmediate, (caddr_t) PANED_GRIP_SIZE},
+         offset(min), XtRImmediate, (XtPointer) PANED_GRIP_SIZE},
     {XtNmax, XtCMax, XtRDimension, sizeof(Dimension),
-         offset(max), XtRImmediate, (caddr_t) ~0},
+         offset(max), XtRImmediate, (XtPointer) ~0},
     {XtNpreferredPaneSize, XtCPreferredPaneSize, XtRDimension,
 	 sizeof(Dimension), offset(preferred_size), 
-         XtRImmediate, (caddr_t) PANED_ASK_CHILD},
+         XtRImmediate, (XtPointer) PANED_ASK_CHILD},
     {XtNresizeToPreferred, XtCBoolean, XtRBoolean, sizeof(Boolean),
-         offset(resize_to_pref), XtRImmediate, (caddr_t) FALSE},
+         offset(resize_to_pref), XtRImmediate, (XtPointer) FALSE},
     {XtNskipAdjust, XtCBoolean, XtRBoolean, sizeof(Boolean),
-         offset(skip_adjust), XtRImmediate, (caddr_t) FALSE},
+         offset(skip_adjust), XtRImmediate, (XtPointer) FALSE},
     {XtNshowGrip, XtCShowGrip, XtRBoolean, sizeof(Boolean),
-	 offset(show_grip), XtRImmediate, (caddr_t) TRUE},
+	 offset(show_grip), XtRImmediate, (XtPointer) TRUE},
 };
 
 #undef offset
@@ -1140,8 +1140,8 @@ PanedWidget pw;
        XtUnmanageChildren( unmanaged_grips,
 			   (Cardinal)(unmanagedP - unmanaged_grips) );
 
-   XtFree((caddr_t)managed_grips);
-   XtFree((caddr_t)unmanaged_grips);
+   XtFree((char *)managed_grips);
+   XtFree((char *)unmanaged_grips);
 }
 
 /*	Function Name: CreateGrip
@@ -1173,7 +1173,7 @@ Widget child;
 					   arglist, num_args);
     
     XtAddCallback(PaneInfo(child)->grip, XtNcallback, 
-		  HandleGrip, (caddr_t) child);
+		  HandleGrip, (XtPointer) child);
 }
 
 /*	Function Name: GetGCs

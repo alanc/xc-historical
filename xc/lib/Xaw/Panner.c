@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.38 90/12/02 18:15:06 keith Exp $
+ * $XConsortium: Panner.c,v 1.39 90/12/31 17:18:16 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -66,7 +66,7 @@ static XtActionsRec actions[] = {
  * resources for the panner
  */
 static XtResource resources[] = {
-#define poff(field) XtOffset(PannerWidget, panner.field)
+#define poff(field) XtOffsetOf(PannerRec, panner.field)
     { XtNallowOff, XtCAllowOff, XtRBoolean, sizeof(Boolean),
 	poff(allow_off), XtRImmediate, (XtPointer) FALSE },
     { XtNresize, XtCResize, XtRBoolean, sizeof(Boolean),
@@ -895,7 +895,7 @@ static void ActionNotify (gw, event, params, num_params)
 	rep.slider_height = pw->panner.slider_height;
 	rep.canvas_width = pw->panner.canvas_width;
 	rep.canvas_height = pw->panner.canvas_height;
-	XtCallCallbackList (gw, pw->panner.report_callbacks, (caddr_t) &rep);
+	XtCallCallbackList (gw, pw->panner.report_callbacks, (XtPointer) &rep);
     }
 }
 
