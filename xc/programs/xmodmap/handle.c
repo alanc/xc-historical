@@ -1,7 +1,7 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $XConsortium: handle.c,v 1.13 88/10/08 16:03:36 jim Exp $
+ * $XConsortium: handle.c,v 1.14 88/10/09 15:46:56 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -274,11 +274,20 @@ static Bool parse_number (str, val)
     char *str;
     unsigned long *val;
 {
-    char *cp;
     char *fmt = "%ld";
 
-    if (*str == '0') str++, fmt = "%lo";
-    if (*str == 'x' || *str == 'X') str++, fmt = "%lx";
+    if (*str == '0') {
+	str++;
+	fmt = "%lo";
+	if (*str == '\0') {
+	    *val = 0;
+	    return 1;
+	}
+	if (*str == 'x' || *str == 'X') {
+	    str++;
+	    fmt = "%lx";
+	}
+    }
     return (sscanf (str, fmt, val) == 1);
 }
 
