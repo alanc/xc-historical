@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$xHeader$";
+static char rcsid[] = "$xHeader: Converters.c,v 1.29 88/08/31 10:17:02 swick Exp $";
 /* $oHeader: Converters.c,v 1.4 88/08/19 16:43:21 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -672,6 +672,38 @@ static void CvtIntToPixmap(args, num_args, fromVal, toVal)
 };
 
 
+/* ARGSUSED */
+static void CvtStringToBackingStore (args, num_args, fromVal, toVal)
+    XrmValue	*args;		/* unused */
+    Cardinal	*num_args;	/* unused */
+    XrmValuePtr fromVal;
+    XrmValuePtr toVal;
+{
+    char	lowerString[1024];
+    XrmQuark	q;
+    static int	backingStoreType;
+
+    if (*num_args != 0)
+        XtWarning("String to BackingStore conversion needs no extra arguments");
+    LowerCase ((char *) fromVal->addr, lowerString);
+    q = XrmStringToQuark (lowerString);
+    if ( q == XtQEnotUseful ) {
+	backingStoreType = NotUseful;
+	done (&backingStoreType, int);
+    } else if ( q == XtQEwhenMapped ) {
+    	backingStoreType = WhenMapped;
+	done (&backingStoreType, int);
+    } else if ( q == XtQEalways ) {
+	backingStoreType = Always;
+	done (&backingStoreType, int);
+    } else if ( q == XtQEdefault ) {
+    	backingStoreType = Always + WhenMapped + NotUseful;
+	done (&backingStoreType, int);
+    } else {
+    	backingStoreType = Always + WhenMapped + NotUseful;
+	done (&backingStoreType, int);
+    }
+}
 
 void LowerCase(source, dest)
     register char  *source, *dest;
@@ -687,6 +719,7 @@ void LowerCase(source, dest)
     *dest = 0;
 }
 
+XrmQuark  XtQBackingStore;
 XrmQuark  XtQBoolean;
 XrmQuark  XtQBool;
 XrmQuark  XtQColor;
@@ -712,6 +745,10 @@ XrmQuark  XtQEno;
 XrmQuark  XtQEon;
 XrmQuark  XtQEtrue;
 XrmQuark  XtQEyes;
+XrmQuark  XtQEnotUseful;
+XrmQuark  XtQEwhenMapped;
+XrmQuark  XtQEalways;
+XrmQuark  XtQEdefault;
 
 XrmQuark  XtQExtdefaultbackground;
 XrmQuark  XtQExtdefaultforeground;
@@ -726,6 +763,7 @@ void _XtConvertInitialize()
 
 /* Representation types */
 
+    XtQBackingStore	= XrmStringToQuark(XtRBackingStore);
     XtQBoolean		= XrmStringToQuark(XtRBoolean);
     XtQColor		= XrmStringToQuark(XtRColor);
     XtQCursor		= XrmStringToQuark(XtRCursor);
@@ -759,6 +797,12 @@ void _XtConvertInitialize()
     XtQExtdefaultbackground = XrmStringToQuark(XtExtdefaultbackground);
     XtQExtdefaultforeground = XrmStringToQuark(XtExtdefaultforeground);
     XtQExtdefaultfont	    = XrmStringToQuark(XtExtdefaultfont);
+
+/* Backing store enumeration constants */
+    XtQEnotUseful  = XrmStringToQuark(XtEnotUseful);
+    XtQEwhenMapped = XrmStringToQuark(XtEwhenMapped);
+    XtQEalways     = XrmStringToQuark(XtEalways);
+    XtQEdefault	  = XrmStringToQuark(XtEdefault);
 
 #define Add(from, to, proc, convert_args, num_args) \
     _XtAddConverter(from, to, (XtConverter) proc, \
@@ -796,4 +840,5 @@ void _XtConvertInitialize()
     Add(XtQPixel,   XtQColor,       CvtIntOrPixelToXColor,  
 	colorConvertArgs, XtNumber(colorConvertArgs));
 
+    Add(XtQString,  XtQBackingStore,CvtStringToBackingStore,	NULL, 0);
 }

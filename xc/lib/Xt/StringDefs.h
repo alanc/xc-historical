@@ -1,5 +1,5 @@
 /*
-* $xHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
+* $xHeader: StringDefs.h,v 1.33 88/08/31 10:25:44 swick Exp $
 * $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 
@@ -173,6 +173,7 @@ SOFTWARE.
 /* Representation types */
 
 #define XtRAcceleratorTable     "AcceleratorTable"
+#define XtRBackingStore		"BackingStore"
 #define XtRBool			"Bool"
 #define XtRBoolean		"Boolean"
 #define XtRCallback             "Callback"
@@ -212,6 +213,10 @@ SOFTWARE.
 #define XtEon			"on"
 #define XtEtrue			"true"
 #define XtEyes			"yes"
+#define XtEnotUseful		"notUseful"
+#define XtEwhenMapped		"whenMapped"
+#define XtEalways		"always"
+#define XtEdefault		"default"
 
 /* Orientation enumeration constants */
 
