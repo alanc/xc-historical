@@ -34,15 +34,6 @@
  *
  ***********************************************************************/
 
-/* Inherited from Core, why document here too? */
-#define XtNx			"x"
-#define XtNy			"y"
-#define XtNwidth		"width"
-#define XtNheight		"height"
-#define XtNborderWidth		"borderWidth"
-#define XtNborder		"border"
-#define XtNbackground		"background"
-
 /* New fields */
 #define XtNhSpace		"hSpace"
 #define XtNvSpace		"vSpace"
@@ -63,11 +54,12 @@ typedef struct {
     CoreClass       core_class;
     CompositeClass  composite_class;
     ButtonBoxClass  button_box_class;
-} ButtonBoxClassData;
+} ButtonBoxWidgetClassData;
 
 /* Class record constant */
 
-extern ButtonBoxClassData buttonBoxClassData;
+extern ButtonBoxWidgetClassData buttonBoxClassData;
+#define buttonBoxWidgetClass    (&buttonBoxClassData)
 
 #endif _XtButtonBox_h
 /* DON'T ADD STUFF AFTER THIS #endif */
