@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 1.155 89/04/05 10:58:05 rws Exp $ */
+/* $XConsortium: main.c,v 1.156 89/04/07 16:54:05 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -263,6 +263,7 @@ main(argc, argv)
 	ResetWellKnownSockets ();
 	looping = 1;
     }
+    exit(0);
 }
 
 static int padlength[4] = {0, 3, 2, 1};
