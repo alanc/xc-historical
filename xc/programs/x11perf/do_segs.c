@@ -230,7 +230,7 @@ int InitHorizSegments(xp, p, reps)
 	y += 2;
 	if (y >= HEIGHT - size - half) {
 	    y = half;
-	    x += size;
+	    x += size + 1;
 	    if (x >= WIDTH - size - half)
 		x = half;
 	}
@@ -268,7 +268,7 @@ int InitVertSegments(xp, p, reps)
 	segments[i].y1 = y;
 	segments[i].x2 = x;
 	segments[i].y2 = y + size;
-	y += size;
+	y += size + 1;
 	if (y >= HEIGHT - size - half) {
 	    y = half;
 	    x += 2;
