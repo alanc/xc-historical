@@ -132,6 +132,7 @@ print_screen_info (dpy, scr)
     int nvi;				/* number of elements returned */
     int nscr;				/* number of screens */
     int i;				/* temp variable: iterator */
+    char eventbuf[80];			/* want 79 chars per line + nul */
     static char *yes = "YES", *no = "NO";
 
     printf ("\n");
@@ -154,6 +155,8 @@ print_screen_info (dpy, scr)
 	    DoesBackingStore (s) ? yes : no,
 	    DoesSaveUnders (s) ? yes : no);
     printf ("  current input event mask:    0x%lx\n", EventMaskOfScreen (s));
+    (void) print_event_mask (eventbuf, 79, 4, EventMaskOfScreen (s));
+		      
 
     nvi = 0;
     viproto.screen = scr;
@@ -202,4 +205,78 @@ print_visual_info (dpy, vip)
 	    vip->bits_per_rgb);
 
     return;
+}
+
+/*
+ * The following routine prints out an event mask, wrapping events at nice
+ * boundaries.
+ */
+
+#define MASK_NAME_WIDTH 25
+
+static struct _event_table {
+    char *name;
+    long value;
+} event_table[] = {
+    { "KeyPressMask             ", KeyPressMask },
+    { "KeyReleaseMask           ", KeyReleaseMask },
+    { "ButtonPressMask          ", ButtonPressMask },
+    { "ButtonReleaseMask        ", ButtonReleaseMask },
+    { "EnterWindowMask          ", EnterWindowMask },
+    { "LeaveWindowMask          ", LeaveWindowMask },
+    { "PointerMotionMask        ", PointerMotionMask },
+    { "PointerMotionHintMask    ", PointerMotionHintMask },
+    { "Button1MotionMask        ", Button1MotionMask },
+    { "Button2MotionMask        ", Button2MotionMask },
+    { "Button3MotionMask        ", Button3MotionMask },
+    { "Button4MotionMask        ", Button4MotionMask },
+    { "Button5MotionMask        ", Button5MotionMask },
+    { "ButtonMotionMask         ", ButtonMotionMask },
+    { "KeymapStateMask          ", KeymapStateMask },
+    { "ExposureMask             ", ExposureMask },
+    { "VisibilityChangeMask     ", VisibilityChangeMask },
+    { "StructureNotifyMask      ", StructureNotifyMask },
+    { "ResizeRedirectMask       ", ResizeRedirectMask },
+    { "SubstructureNotifyMask   ", SubstructureNotifyMask },
+    { "SubstructureRedirectMask ", SubstructureRedirectMask },
+    { "FocusChangeMask          ", FocusChangeMask },
+    { "PropertyChangeMask       ", PropertyChangeMask },
+    { "ColormapChangeMask       ", ColormapChangeMask },
+    { "OwnerGrabButtonMask      ", OwnerGrabButtonMask },
+    { NULL, 0 }};
+
+int print_event_mask (buf, lastcol, indent, mask)
+    char *buf;				/* string to write into */
+    int lastcol;			/* strlen(buf)+1 */
+    int indent;				/* amount by which to indent */
+    long mask;				/* event mask */
+{
+    struct _event_table *etp;
+    int len;
+    int bitsfound = 0;
+
+    buf[0] = buf[lastcol] = '\0';	/* just in case */
+
+#define INDENT() { register int i; len = indent; \
+		   for (i = 0; i < indent; i++) buf[i] = ' '; }
+
+    INDENT ();
+
+    for (etp = event_table; etp->name; etp++) {
+	if (mask & etp->value) {
+	    if (len + MASK_NAME_WIDTH > lastcol) {
+		puts (buf);
+		INDENT ();
+	    }
+	    strcpy (buf+len, etp->name);
+	    len += MASK_NAME_WIDTH;
+	    bitsfound++;
+	}
+    }
+
+    if (bitsfound) puts (buf);
+
+#undef INDENT
+
+    return (bitsfound);
 }
