@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.60 94/01/31 12:29:33 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.61 94/02/04 11:52:14 mor Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -17,6 +17,9 @@ XFSDIR = xfs
 #if BuildMTXServer
 MTXDIR = MTXserver
 #endif
+#if BuildLBX
+LBXPROXYDIR = lbxproxy
+#endif
 
 SUBDIRS = \
 	appres bdftopcf bitmap editres fsinfo fslsfonts fstobdf iceauth \
@@ -24,7 +27,7 @@ SUBDIRS = \
 	xcmsdb xconsole xdm xdpyinfo xfd $(XFSDIR) xhost \
 	xieperf $(XINIDIR) xkill xlogo xlsatoms xlsclients xlsfonts \
 	xmag xmh xmodmap xprop xrdb xrefresh xset xsetroot xstdcmap xterm \
-	xwd xwininfo xwud xsm $(XSDIR) $(MTXDIR) scripts
+	xwd xwininfo xwud xsm $(XSDIR) $(MTXDIR) $(LBXPROXYDIR) scripts
 
 #else
 
