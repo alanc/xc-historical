@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $Header: swaprep.c,v 1.20 87/08/01 13:32:03 toddb Locked $ */
+/* $Header: swaprep.c,v 1.21 87/08/01 13:48:38 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -111,6 +111,7 @@ SGenericReply(pClient, size, pRep)
     int n;
 
     swaps(&pRep->sequenceNumber, n);
+    WriteToClient(pClient, size, pRep);
 }
 
 /* Extra-large reply */
@@ -259,33 +260,6 @@ SGetSelectionOwnerReply(pClient, size, pRep)
 
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->owner, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
-}
-
-void
-SGrabPointerReply(pClient, size, pRep)
-    xGrabPointerReply	*pRep;
-    ClientPtr		pClient;
-    int			size;
-{
-    int n;
-
-    swaps(&pRep->sequenceNumber, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
-}
-
-
-void
-SGrabKeyboardReply(pClient, size, pRep)
-    xGrabKeyboardReply	*pRep;
-    ClientPtr			pClient;
-    int				size;
-{
-    int n;
-
-    swaps(&pRep->sequenceNumber, n);
     WriteToClient(pClient, size, pRep);
     pClient->pSwapReplyFunc = (void (*) ())NULL;
 }
@@ -641,19 +615,6 @@ SQueryBestSizeReply(pClient, size, pRep)
 }
 
 void
-SQueryExtensionReply(pClient, size, pRep)
-    ClientPtr			pClient;
-    int				size;
-    xQueryExtensionReply	*pRep;
-{
-    int n;
-
-    swaps(&pRep->sequenceNumber, n);
-    WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = (void (*) ())NULL;
-}
-
-void
 SListExtensionsReply(pClient, size, pRep)
     ClientPtr			pClient;
     int				size;
@@ -706,7 +667,6 @@ SGetModifierMappingReply(pClient, size, pRep)
     swaps(&pRep->sequenceNumber, n);
     swapl(&pRep->length, n);
     WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = Write8;
 }
 
 void
@@ -723,7 +683,6 @@ SGetKeyboardControlReply(pClient, size, pRep)
     swaps(&pRep->bellPitch, n);
     swaps(&pRep->bellDuration, n);
     WriteToClient(pClient, size, pRep);
-    pClient->pSwapReplyFunc = Write8;
 }
 
 void
@@ -1503,8 +1462,9 @@ SwapVisual(pVis, pVisT)
 }
 
 void
-WriteSConnSetupPrefix(pClient, pcsp)
+WriteSConnSetupPrefix(pClient, size, pcsp)
     ClientPtr		pClient;
+    int 		size;
     xConnSetupPrefix	*pcsp;
 {
     xConnSetupPrefix	cspT;
