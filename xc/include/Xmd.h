@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.41 91/05/10 10:00:03 jap Exp $ */
+/* $XConsortium: Xmd.h,v 1.42 92/10/18 16:28:23 rws Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */
@@ -74,13 +74,23 @@ SOFTWARE.
 #ifdef WORD64
 #define B32 :32
 #define B16 :16
-typedef signed int     INT32;
-typedef signed int     INT16;
+#ifdef UNSIGNEDBITFIELDS
+typedef unsigned int INT32;
+typedef unsigned int INT16;
+#else
+#if __STDC__
+typedef signed int INT32;
+typedef signed int INT16;
+#else
+typedef int INT32;
+typedef int INT16;
+#endif
+#endif
 #else
 #define B32
 #define B16
-typedef long           INT32;
-typedef short          INT16;
+typedef long INT32;
+typedef short INT16;
 #endif
 
 #if __STDC__ || defined(sgi) || defined(AIXV3)
