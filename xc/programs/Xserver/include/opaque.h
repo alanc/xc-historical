@@ -1,4 +1,4 @@
-/* $XConsortium: opaque.h,v 1.4 88/01/02 17:49:34 rws Exp $ */
+/* $XConsortium: opaque.h,v 1.5 88/09/06 15:48:51 jim Exp $ */
 
 extern char *defaultFontPath;
 extern char *defaultTextFont;
@@ -14,7 +14,7 @@ extern void Xfree();
 extern void AddResource();
 extern void FreeResource();
 extern pointer LookupID();
-extern int	TimeOutValue;
+extern long TimeOutValue;
 extern long ScreenSaverTime;
 extern long ScreenSaverInterval;
 extern int  ScreenSaverBlanking;
