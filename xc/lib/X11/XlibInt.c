@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.167 93/06/25 16:28:02 gildea Exp $
+ * $XConsortium: XlibInt.c,v 11.168 93/07/10 19:10:24 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -259,7 +259,7 @@ _XWaitForReadable(dpy)
 	if (result == -1 && errno != EINTR) _XIOError(dpy);
     } while (result <= 0);
 #ifdef XTHREADS
-#ifdef TDEBUG
+#ifdef XTHREADS_DEBUG
     printf("thread %x _XWaitForReadable returning\n", xthread_self());
 #endif
 #endif
@@ -362,7 +362,7 @@ _XEventsQueued (dpy, mode)
 	int entry_event_serial_num;
 	struct _XCVList *cvl;
 
-#ifdef TDEBUG
+#ifdef XTHREADS_DEBUG
 	printf("_XEventsQueued called in thread %x\n", xthread_self());
 #endif
 #endif /* XTHREADS*/
@@ -524,7 +524,7 @@ _XReadEvents(dpy)
 	int entry_event_serial_num;
 	Bool first_time = True;
 
-#ifdef TDEBUG
+#ifdef XTHREADS_DEBUG
 	printf("_XReadEvents called in thread %x\n",
 	       xthread_self());
 #endif
@@ -1098,12 +1098,12 @@ Status _XReply (dpy, rep, extra, discard)
     /* create our condition variable and append to list */
     cvl = QueueReplyReaderLock(dpy);
 
-#ifdef TDEBUG
+#ifdef XTHREADS_DEBUG
     printf("_XReply called in thread %x, adding %x to cvl\n",
 	   xthread_self(), cvl);
 #endif
 
-    _XFlushInt(dpy, cvl->cv);
+    _XFlushInt(dpy, cvl ? cvl->cv : NULL);
 
     /* if it is not our turn to read a reply off the wire,
        wait til we're at head of list */
@@ -1258,7 +1258,7 @@ _XAsyncReply(dpy, rep, buf, lenp, discard)
 		       "Xlib: unexpected async reply (sequence 0x%lx)!\n",
 		       dpy->last_request_read);
 #ifdef XTHREADS
-#ifdef TDEBUG
+#ifdef XTHREADS_DEBUG
 	printf("thread %x, unexpected async reply\n", xthread_self());
 #endif
 #endif
