@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.12 91/10/31 11:41:55 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.13 92/11/17 10:53:46 rws Exp $
 XCOMM 
 XCOMM Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 XCOMM 
@@ -53,6 +53,8 @@ FONTS_BINARY = Roman.phont Roman_M.phont
        SRCS = to_wfont.c lex.c
        OBJS = to_wfont.o lex.o
 
+    TOWFONT = ./to_wfont
+
 all:: to_wfont $(FONTS_BINARY)
 
 to_wfont.h to_wfont.c: to_wfont.y
@@ -60,13 +62,13 @@ to_wfont.h to_wfont.c: to_wfont.y
 	$(MV) y.tab.c to_wfont.c
 	$(MV) y.tab.h to_wfont.h
 
-SingleProgramTarget(to_wfont,$(OBJS), $(LIBS),NullParameter)
+SingleProgramTarget(to_wfont,$(OBJS),$(LIBS),NullParameter)
 
 .src.phont:
-	./to_wfont -o $@ $<
+	RunProgram(TOWFONT,-o $@ $<)
 
 clean:: 
-	$(RM) $(FONTS_BINARY) lex.c y.tab.h y.tab.c to_wfont.h to_wfont.c
+	RemoveFiles($(FONTS_BINARY) lex.c y.tab.h y.tab.c to_wfont.h to_wfont.c)
 
 depend:: lex.c to_wfont.c
 
