@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.103 91/07/23 11:30:13 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.104 91/07/27 14:09:37 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -36,12 +36,6 @@ XCOMM
 /* depend::  includes */
 
 DependSubdirs($(SUBDIRS))
-
-
-InstallManPage(X,$(MANDIR))
-InstallManPageLong(Consortium,$(MANDIR),XConsortium)
-InstallManPageLong(Standards,$(MANDIR),XStandards)
-
 
 XCOMM do not name your log file make.log when you run this ...
 World::
@@ -90,30 +84,13 @@ Everything::
 
 
 RELNOTES.PS::  RELNOTES.ms
-	tbl RELNOTES.ms | ptroff -t -ms >$@
+	$(TBL) RELNOTES.ms | $(TROFF) $(MSMACROS) >$@
 
 RELNOTES.lpt:  RELNOTES.ms
-	tbl RELNOTES.ms | nroff -ms >$@
+	$(TBL) RELNOTES.ms | nroff $(MSMACROS) >$@
 
 RELNOTES.txt:  RELNOTES.ms
-	tbl RELNOTES.ms | nroff -ms | colcrt >$@
-
-    RESOLUTION = 75
-
-RELNOTES.dit:  RELNOTES.ms
-	tbl RELNOTES.ms | ditroff -TX$(RESOLUTION) -ms >$@
-
-preview::
-	xditview '| tbl RELNOTES.ms | ditroff -TX$(RESOLUTION) -ms'
-
-
-CHANGES.ALL::
-	$(RM) $@
-	(for i in `find . -name CHANGES -print`; do \
-	echo $$i; echo ""; cat $$i; echo ""; \
-	echo "==========================================================="; \
-	done) >$@
-
+	$(TBL) RELNOTES.ms | nroff $(MSMACROS) | colcrt >$@
 
 /*
  * This section used for generating distributions will not be useful to most
@@ -128,10 +105,3 @@ flushlinks::
 	make -k clean
 	find . -type l -exec rm {} \;
 	find . \( \! \( -type d -o -name Makefile \) \) -print
-
-XCOMM rebuild the top-level Makefile
-mastermakefile::
-	cd $(IMAKESRC); $(MAKE) $(MFLAGS) -f Makefile.ini clean; $(MAKE) $(MFLAGS) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
-	-$(RM) Makefile.bak; $(MV) Makefile Makefile.bak
-	$(MAKE) $(MFLAGS) -f Makefile.bak Makefile
-	cd $(IMAKESRC); $(MAKE) $(MFLAGS) clean
