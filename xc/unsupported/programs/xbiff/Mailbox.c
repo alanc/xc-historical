@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.45 90/10/22 14:40:41 converse Exp $
+ * $XConsortium: Mailbox.c,v 1.46 90/12/01 13:00:22 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -30,18 +30,34 @@
 #include <X11/IntrinsicP.h>		/* for toolkit stuff */
 #include <sys/stat.h>			/* for stat() ** needs types.h ***/
 
+#ifdef _POSIX_SOURCE
+# ifdef SVR4
+#  undef _POSIX_SOURCE /* so WCOREDUMP will get defined */
+#  include <sys/wait.h>
+#  define _POSIX_SOURCE
+#  define waitCore(w)	WCOREDUMP(w)
+# else /* not SVR4 */
+#  include <sys/wait.h>
+# endif /* SVR4 */
+# define waitCode(w)	WEXITSTATUS(w)
+# define waitSig(w)	WIFSIGNALED(w)
+typedef int		waitType;
+# define INTWAITTYPE
+#else /* not _POSIX_SOURCE */
 #ifdef SYSV
 # define waitCode(w)	(((w) >> 8) & 0x7f)
 # define waitSig(w)	((w) & 0xff)
 # define waitCore(w)	(((w) >> 15) & 0x01)
 typedef int		waitType;
+# define INTWAITTYPE
 #else
 # include	<sys/wait.h>
 # define waitCode(w)	((w).w_T.w_Retcode)
 # define waitSig(w)	((w).w_T.w_Termsig)
 # define waitCore(w)	((w).w_T.w_Coredump)
 typedef union wait	waitType;
-#endif
+#endif /* SYSV else */
+#endif /* _POSIX_SOURCE else */
 
 #include <X11/bitmaps/mailfull>		/* for flag up (mail present) bits */
 #include <X11/bitmaps/mailempty>	/* for flag down (mail not here) */
@@ -356,12 +372,12 @@ static void Realize (gw, valuemaskp, attr)
      */
     if (w->mailbox.full.bitmap == None) {
 	w->mailbox.full.bitmap = 
-	  XCreateBitmapFromData (dpy, w->core.window, mailfull_bits,
+	  XCreateBitmapFromData (dpy, w->core.window, (char *) mailfull_bits,
 				 mailfull_width, mailfull_height);
     }
     if (w->mailbox.empty.bitmap == None) {
 	w->mailbox.empty.bitmap =
-	  XCreateBitmapFromData (dpy, w->core.window, mailempty_bits,
+	  XCreateBitmapFromData (dpy, w->core.window, (char *) mailempty_bits,
 				 mailempty_width, mailempty_height);
     }
 
@@ -428,7 +444,7 @@ static void check_mailbox (w, force_redraw, reset)
     if (w->mailbox.check_command != NULL) {
 	waitType wait_status;
 	int	check_status;
-#ifdef SYSV
+#ifdef INTWAITTYPE
 	wait_status = system(w->mailbox.check_command);
 #else
 	wait_status.w_status = system(w->mailbox.check_command);
