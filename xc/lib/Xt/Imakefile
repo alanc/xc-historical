@@ -93,22 +93,17 @@ NormalLibraryObjectRule()
 #endif
 
 NormalLibraryTarget(Xt,$(OBJS))
-AliasedLibraryTarget(Xt,Xt11)
 LintLibraryTarget(Xt,$(SRCS))
 InstallLibrary(Xt,$(USRLIBDIR))
-InstallLibraryAlias(Xt,Xt11,$(USRLIBDIR))
 InstallLintLibrary(Xt,$(LINTLIBDIR))
 
 #if ProfileLibXt
 ProfiledLibraryTarget(Xt,$(OBJS))
-AliasedLibraryTarget(Xt_p,Xt11_p)
 InstallLibrary(Xt_p,$(USRLIBDIR))
-InstallLibraryAlias(Xt_p,Xt11_p,$(USRLIBDIR))
 #endif
 
 #if DebugLibXt
 DebuggedLibraryTarget(Xt,$(OBJS))
-AliasedLibraryTarget(Xt_d,Xt11_d)
 #endif
 
 InstallMultiple($(HEADERS),$(INCDIR))
