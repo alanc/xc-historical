@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.11 94/08/30 18:00:27 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.12 94/12/06 14:35:12 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -32,6 +32,7 @@ in this Software without prior written authorization from the X Consortium.
 Widget savePopup;
 Widget   saveForm;
 Widget	   saveMessageLabel;
+Widget	   saveName;
 Widget	   saveTypeLabel;
 Widget	   saveTypeGlobal;
 Widget	   saveTypeLocal;
@@ -42,6 +43,11 @@ Widget	   interactStyleErrors;
 Widget	   interactStyleAny;
 Widget	 saveOkButton;
 Widget	 saveCancelButton;
+Widget nameInUsePopup;
+Widget   nameInUseForm;
+Widget	   nameInUseLabel;
+Widget     nameInUseOverwriteButton;
+Widget	   nameInUseCancelButton;
 Widget badSavePopup;
 Widget   badSaveForm;
 Widget	   badSaveLabel;
@@ -66,19 +72,172 @@ static int interactStyleData[] = {
 };
 
 static String *failedNames = NULL;
-static ClientRec **failedClients = NULL;
 static int numFailedNames = 0;
+
+static String name_in_use = NULL;
+static Bool name_locked = False;
 
 void SetSaveSensitivity ();
 
+
+static void
+MakeCurrentSession (new_name, name_changed)
+
+String new_name;
+Bool name_changed;
+
+{
+    char title[256];
+    ClientRec *client;
+    List *cl;
+
+    if (session_name)
+    {
+	/*
+	 * In the old session, for any client that was not restarted by the
+	 * session manager (previous ID was NULL), if we did not issue a
+	 * checkpoint to this client after the initial startup, remove the
+	 * client's checkpoint file using the discard command.
+	 */
+
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+	{
+	    ClientRec *client = (ClientRec *) cl->thing;
+
+	    if (!client->restarted &&
+		!client->userIssuedCheckpoint &&
+		client->discardCommand)
+	    {
+		system (client->discardCommand);
+		XtFree (client->discardCommand);
+		client->discardCommand = NULL;
+	    }
+	}
+	
+	/*
+	 * Unlock the old session.
+	 */
+	
+	if (!need_to_name_session)
+	    UnlockSession (session_name);
+    }
+
+    if (name_changed)
+    {
+	if (session_name)
+	    XtFree (session_name);
+
+	session_name = XtNewString (new_name);
+    }
+
+    LockSession (session_name, True);
+
+    sprintf (title, "xsm: %s", session_name);
+
+    XtVaSetValues (topLevel,
+	XtNtitle, title,
+	NULL);
+
+    set_session_save_file_name (session_name);
+
+
+    /*
+     * For each client, set the DiscardCommand ptr to NULL.
+     * This is so when we do a checkpoint with the new session
+     * name, we don't wipe out the checkpoint files needed by
+     * the previous session.  We also set the userIssuedCheckpoint
+     * flag to false for each client in the new session.
+     */
+
+    for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+    {
+	ClientRec *client = (ClientRec *) cl->thing;
+
+	client->userIssuedCheckpoint = False;
+
+	if (client->discardCommand)
+	{
+	    XtFree (client->discardCommand);
+	    client->discardCommand = NULL;
+	}
+    }
+
+    need_to_name_session = False;
+}
+
+
+
+
+#define NAME_OK     0
+#define NAME_EMPTY  1
+#define NAME_EXISTS 2
+#define NAME_LOCKED 3
+
+static int
+GetSaveName (nameRet)
+
+String *nameRet;
+
+{
+    String new_name = NULL;
+    Bool name_changed;
+
+    /*
+     * Get the name of the session for the save
+     */
+
+    XtVaGetValues (saveName,
+	XtNstring, &new_name,
+	NULL);
+
+    *nameRet = new_name;
+
+    if (!new_name || *new_name == '\0')
+	return (NAME_EMPTY);
+
+    /*
+     * See if this is a new session.  If not return.
+     */
+
+    name_changed = !session_name ||
+	(session_name && strcmp (session_name, new_name) != 0);
+
+    if (!need_to_name_session && !name_changed)
+	return (NAME_OK);
+
+
+    /*
+     * Make sure the session name is unique.
+     */
+
+    if (GetSessionNames (&sessionNameCount,
+	&sessionNamesShort, NULL, &sessionsLocked))
+    {
+	int i, no_good = 0, locked;
+
+	for (i = 0; i < sessionNameCount; i++)
+	    if (strcmp (new_name, sessionNamesShort[i]) == 0)
+	    {
+		no_good = 1;
+		locked = sessionsLocked[i];
+		break;
+	    }
+
+	FreeSessionNames (sessionNameCount,
+	    sessionNamesShort, NULL, sessionsLocked);
+	
+	if (no_good)
+	    return (locked ? NAME_LOCKED : NAME_EXISTS);
+    }
+
+    MakeCurrentSession (new_name, name_changed);
+
+    return (NAME_OK);
+}
 
 
 static void
-SaveOkXtProc (w, client_data, callData)
-
-Widget		w;
-XtPointer 	client_data;
-XtPointer 	callData;
+DoSave ()
 
 {
     ClientRec	*client;
@@ -119,8 +278,9 @@ XtPointer 	callData;
     SetSaveSensitivity (False);
 
     saveInProgress = True;
+    
     shutdownCancelled = False;
-    saveWaitCount = 0;
+    phase2InProgress = False;
 
     for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
     {
@@ -130,9 +290,9 @@ XtPointer 	callData;
 	    saveType, wantShutdown, interactStyle, fast);
 
 	ListAddLast (WaitForSaveDoneList, client);
-	saveWaitCount++;
 
 	client->userIssuedCheckpoint = True;
+	client->receivedDiscardCommand = False;
 
 	if (verbose)
 	{
@@ -150,6 +310,89 @@ XtPointer 	callData;
 	printf ("SAVE YOURSELF PHASE 2 REQUEST from each client.\n");
 	printf ("\n");
     }
+}
+
+
+
+static void
+SaveOkXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    Position x, y, rootx, rooty;
+    String name = NULL;
+    char label[256];
+    int	status;
+
+    if ((status = GetSaveName (&name)) != NAME_OK)
+    {
+	XBell (XtDisplay (topLevel), 0);
+
+	if (status == NAME_EXISTS || status == NAME_LOCKED)
+	{
+	    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
+	    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
+	    XtVaSetValues (nameInUsePopup,
+		XtNx, rootx + 25, XtNy, rooty + 100, NULL);
+
+	    name_in_use = name;
+
+	    if (status == NAME_LOCKED)
+	    {
+		name_locked = True;
+
+		sprintf (label, "Another session by the name '%s' is active.\nChoose another name for the session.", name);
+
+		XtUnmanageChild (nameInUseOverwriteButton);
+
+		XtVaSetValues (nameInUseCancelButton,
+		    XtNlabel, "OK",
+		    XtNfromHoriz, NULL,
+		    NULL);
+	    }
+	    else
+	    {
+		name_locked = False;
+
+		sprintf (label, "Another session by the name '%s' already exists.\nWould you like to overwrite it?", name);
+
+		XtManageChild (nameInUseOverwriteButton);
+
+		XtVaSetValues (nameInUseCancelButton,
+		    XtNlabel, "Cancel",
+		    XtNfromHoriz, nameInUseOverwriteButton,
+		    NULL);
+	    }
+
+	    XtVaSetValues (nameInUseLabel,
+		XtNlabel, label,
+		NULL);
+
+	    XtPopdown (savePopup);
+	    XtPopup (nameInUsePopup, XtGrabNone);
+	}
+
+	return;
+    }
+
+    DoSave ();
+}
+
+
+
+void
+SaveOkAction (w, event, params, num_params)
+
+Widget	 w;
+XEvent	 *event;
+String	 *params;
+Cardinal *num_params;
+
+{
+    XtCallCallbacks (saveOkButton, XtNcallback, NULL);
 }
 
 
@@ -201,6 +444,8 @@ StartPhase2 ()
     }
 
     ListFreeAllButHead (WaitForPhase2List);
+
+    phase2InProgress = True;
 }
 
 
@@ -219,38 +464,40 @@ FinishUpSave ()
     }
 
     saveInProgress = False;
+    phase2InProgress = False;
 
-    if (!shutdownCancelled)
+    /*
+     * Now execute discard commands
+     */
+
+    for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
     {
-	/*
-	 * Now execute discard commands
-	 */
+	client = (ClientRec *) cl->thing;
 
-	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+	if (!client->receivedDiscardCommand)
+	    continue;
+
+	if (client->discardCommand)
 	{
-	    client = (ClientRec *) cl->thing;
-
-	    if (client->discardCommand)
-	    {
-		system (client->discardCommand);
-		XtFree (client->discardCommand);
-		client->discardCommand = NULL;
-	    }
-	    
-	    if (client->saveDiscardCommand)
-	    {
-		client->discardCommand = client->saveDiscardCommand;
-		client->saveDiscardCommand = NULL;
-	    }
+	    system (client->discardCommand);
+	    XtFree (client->discardCommand);
+	    client->discardCommand = NULL;
 	}
-
-
-	/*
-	 * Write the save file
-	 */
-
-	WriteSave (sm_id);
+	    
+	if (client->saveDiscardCommand)
+	{
+	    client->discardCommand = client->saveDiscardCommand;
+	    client->saveDiscardCommand = NULL;
+	}
     }
+
+
+    /*
+     * Write the save file
+     */
+    
+    WriteSave (sm_id);
+
 
     if (wantShutdown && shutdownCancelled)
     {
@@ -291,14 +538,7 @@ FinishUpSave ()
     if (!shutdownInProgress)
     {
 	XtPopdown (savePopup);
-
-	if (naming_session)
-	{
-	    SetSaveSensitivity (True);
-	    XtPopup (nameSessionPopup, XtGrabNone);
-	}
-	else
-	    SetAllSensitive (1);
+	SetAllSensitive (1);
     }
 }
 
@@ -313,14 +553,7 @@ XtPointer 	callData;
 
 {
     XtPopdown (savePopup);
-
-    if (naming_session)
-    {
-	SetSaveSensitivity (True);
-	XtPopup (nameSessionPopup, XtGrabNone);
-    }
-    else
-	SetAllSensitive (1);
+    SetAllSensitive (1);
 }
 
 
@@ -389,6 +622,88 @@ Bool on;
 
 
 
+void
+SavePopupStructureNotifyXtHandler (w, closure, event, continue_to_dispatch)
+
+Widget w;
+XtPointer closure;
+XEvent *event;
+Boolean *continue_to_dispatch;
+
+{
+    if (event->type == MapNotify)
+    {
+	/*
+	 * Now that the Save Dialog is back up, we can do the save.
+	 */
+
+	if (name_locked)
+	{
+	    /* Force shutdown */
+	}
+
+	DeleteSession (name_in_use);
+
+	MakeCurrentSession (name_in_use, True);
+
+	name_in_use = NULL;
+
+	DoSave ();
+
+	XtRemoveEventHandler (savePopup, StructureNotifyMask, False,
+	    SavePopupStructureNotifyXtHandler, NULL);
+    }
+}
+
+
+
+static void
+NameInUseOverwriteXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    if (name_locked)
+    {
+	/* force shutdown not implemented yet */
+
+	return;
+    }
+
+    XtPopdown (nameInUsePopup);
+
+    /*
+     * We want to popup the Save dialog again.  In order to avoid a race
+     * condition with the BadSave handler trying to pop down the Save Dialog,
+     * we wait for the MapNotify on the Save dialog, and then do the save.
+     */
+
+    XtAddEventHandler (savePopup, StructureNotifyMask, False,
+	SavePopupStructureNotifyXtHandler, NULL);
+
+    XtPopup (savePopup, XtGrabNone);
+}
+
+
+
+static void
+NameInUseCancelXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    XtPopdown (nameInUsePopup);
+    XtPopup (savePopup, XtGrabNone);
+
+    name_in_use = NULL;
+}
+
+
+
 static void
 BadSaveOkXtProc (w, client_data, callData)
 
@@ -414,8 +729,27 @@ XtPointer 	callData;
 {
     ListFreeAllButHead (FailedSaveList);
     XtPopdown (badSavePopup);
+
     if (wantShutdown)
+    {
+	List *cl;
+
 	shutdownCancelled = True;
+
+	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
+	{
+	    ClientRec *client = (ClientRec *) cl->thing;
+
+	    SmsShutdownCancelled (client->smsConn);
+
+	    if (verbose) 
+	    {
+		printf ("Client Id = %s, sent SHUTDOWN CANCELLED\n",
+			client->clientId);
+	    }
+	}
+    }
+
     FinishUpSave ();
 }
 
@@ -438,6 +772,13 @@ void
 create_save_popup ()
 
 {
+    XtTranslations translations;
+
+    XtActionsRec save_actions[] = {
+        {"SaveOkAction", SaveOkAction}
+    };
+
+
     /*
      * Pop up for Save Yourself button.
      */
@@ -455,7 +796,14 @@ create_save_popup ()
         XtNfromHoriz, NULL,
         XtNfromVert, NULL,
         XtNborderWidth, 0,
+	NULL);
+
+    saveName = XtVaCreateManagedWidget (
+	"saveName", asciiTextWidgetClass, saveForm,
+        XtNfromVert, NULL,
+	XtNeditType, XawtextEdit,
 	XtNresizable, True,
+	XtNresize, XawtextResizeWidth,
 	NULL);
 
     saveTypeLabel = XtVaCreateManagedWidget (
@@ -463,6 +811,7 @@ create_save_popup ()
         XtNfromHoriz, NULL,
         XtNfromVert, saveMessageLabel,
         XtNborderWidth, 0,
+        XtNvertDistance, 20,
 	NULL);
 
     saveTypeLocal = AddToggle (
@@ -495,6 +844,11 @@ create_save_popup ()
         saveMessageLabel			/* fromVert */
     );
 
+
+    XtVaSetValues (saveName, XtNfromHoriz, saveTypeLabel, NULL);
+    XtVaSetValues (saveTypeLocal, XtNvertDistance, 20, NULL);
+    XtVaSetValues (saveTypeGlobal, XtNvertDistance, 20, NULL);
+    XtVaSetValues (saveTypeBoth, XtNvertDistance, 20, NULL);
 
     interactStyleLabel = XtVaCreateManagedWidget (
 	"interactStyleLabel", labelWidgetClass, saveForm,
@@ -536,17 +890,16 @@ create_save_popup ()
 
     saveOkButton = XtVaCreateManagedWidget (
 	"saveOkButton",	commandWidgetClass, saveForm,
-	XtNresizable, True,
         XtNfromHoriz, NULL,
         XtNfromVert, interactStyleLabel,
         XtNvertDistance, 20,
+	XtNresizable, True,
         NULL);
     
     XtAddCallback (saveOkButton, XtNcallback, SaveOkXtProc, 0);
 
     saveCancelButton = XtVaCreateManagedWidget (
 	"saveCancelButton", commandWidgetClass, saveForm,
-	XtNresizable, True,
         XtNfromHoriz, saveOkButton,
         XtNfromVert, interactStyleLabel,
         XtNvertDistance, 20,
@@ -554,7 +907,66 @@ create_save_popup ()
 
     XtAddCallback (saveCancelButton, XtNcallback, SaveCancelXtProc, 0);
 
+    XtSetKeyboardFocus (saveForm, saveName);
+
+    XtAppAddActions (appContext, save_actions, XtNumber (save_actions));
+
+    translations = XtParseTranslationTable
+	("<Key>Return: SaveOkAction()\n");
+    XtOverrideTranslations(saveName, translations);
+
     XtInstallAllAccelerators (saveForm, saveForm);
+
+
+    /*
+     * Pop up when user tries to save the session under an
+     * already used name.
+     */
+
+    nameInUsePopup = XtVaCreatePopupShell (
+	"nameInUsePopup", transientShellWidgetClass, topLevel,
+	XtNallowShellResize, True,
+	NULL);
+    
+
+    nameInUseForm = XtVaCreateManagedWidget (
+	"nameInUseForm", formWidgetClass, nameInUsePopup,
+	NULL);
+
+    nameInUseLabel = XtVaCreateManagedWidget (
+	"nameInUseLabel", labelWidgetClass, nameInUseForm,
+	XtNresizable, True,
+        XtNfromHoriz, NULL,
+        XtNfromVert, NULL,
+        XtNborderWidth, 0,
+	XtNtop, XawChainTop,
+	XtNbottom, XawChainTop,
+	NULL);
+
+    nameInUseOverwriteButton = XtVaCreateManagedWidget (
+	"nameInUseOverwriteButton", commandWidgetClass, nameInUseForm,
+        XtNfromHoriz, NULL,
+        XtNfromVert, nameInUseLabel,
+	XtNtop, XawChainBottom,
+	XtNbottom, XawChainBottom,
+        NULL);
+    
+    XtAddCallback (nameInUseOverwriteButton, XtNcallback,
+	NameInUseOverwriteXtProc, 0);
+
+
+    nameInUseCancelButton = XtVaCreateManagedWidget (
+	"nameInUseCancelButton", commandWidgetClass, nameInUseForm,
+	XtNresizable, True,
+        XtNfromHoriz, nameInUseOverwriteButton,
+        XtNfromVert, nameInUseLabel,
+	XtNtop, XawChainBottom,
+	XtNbottom, XawChainBottom,
+        NULL);
+    
+    XtAddCallback (nameInUseCancelButton, XtNcallback,
+	NameInUseCancelXtProc, 0);
+
 
 
     /*
@@ -562,7 +974,7 @@ create_save_popup ()
      */
 
     badSavePopup = XtVaCreatePopupShell (
-	"badSavePopup", topLevelShellWidgetClass, topLevel,
+	"badSavePopup", transientShellWidgetClass, topLevel,
 	XtNallowShellResize, True,
 	NULL);
     
@@ -576,18 +988,17 @@ create_save_popup ()
         XtNfromHoriz, NULL,
         XtNfromVert, NULL,
         XtNborderWidth, 0,
-	XtNresizable, True,
 	XtNtop, XawChainTop,
 	XtNbottom, XawChainTop,
 	NULL);
 
     badSaveListWidget = XtVaCreateManagedWidget (
 	"badSaveListWidget", listWidgetClass, badSaveForm,
+	XtNresizable, True,
         XtNdefaultColumns, 1,
 	XtNforceColumns, True,
         XtNfromHoriz, NULL,
         XtNfromVert, badSaveLabel,
-	XtNresizable, True,
 	XtNtop, XawChainTop,
 	XtNbottom, XawChainBottom,
 	NULL);
@@ -614,6 +1025,8 @@ create_save_popup ()
         NULL);
     
     XtAddCallback (badSaveCancelButton, XtNcallback, BadSaveCancelXtProc, 0);
+
+    XtInstallAllAccelerators (badSaveForm, badSaveForm);
 }
 
 
@@ -623,7 +1036,6 @@ PopupSaveDialog ()
 
 {
     Position x, y, rootx, rooty;
-    char msgLabel[64];
 
     XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
     XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
@@ -642,25 +1054,13 @@ PopupSaveDialog ()
 	XtNtitle, wantShutdown ? "Shutdown" : "Checkpoint",
 	NULL);
 
-    sprintf (msgLabel, "%s for session \"%s\"\n\n",
-	wantShutdown ? "Shutdown" : "Checkpoint",
-	session_name);
-
-    XtVaSetValues (saveMessageLabel,
-	XtNlabel, msgLabel,
+    XtVaSetValues (saveName,
+	XtNstring, need_to_name_session ? "" : session_name,
 	NULL);
 
     XtVaSetValues (saveOkButton,
 	XtNlabel, wantShutdown ? "Shutdown" : "Checkpoint",
 	NULL);
-
-    if (naming_session)
-	XtPopdown (nameSessionPopup);
-
-    if (wantShutdown)
-	XtManageChild (badSaveCancelButton);
-    else
-	XtUnmanageChild (badSaveCancelButton);
 
     XtPopup (savePopup, XtGrabNone);
 }
@@ -676,16 +1076,8 @@ XtPointer 	client_data;
 XtPointer 	callData;
 
 {
-    if (need_to_name_session)
-    {
-	checkpoint_after_name = True;
-	PopupNameSessionDialog ();
-    }
-    else
-    {
-	wantShutdown = False;
-	PopupSaveDialog ();
-    }
+    wantShutdown = False;
+    PopupSaveDialog ();
 }
 
 
@@ -699,16 +1091,8 @@ XtPointer 	client_data;
 XtPointer 	callData;
 
 {
-    if (need_to_name_session)
-    {
-	shutdown_after_name = True;
-	PopupNameSessionDialog ();
-    }
-    else
-    {
-	wantShutdown = True;
-	PopupSaveDialog ();
-    }
+    wantShutdown = True;
+    PopupSaveDialog ();
 }
 
 
@@ -723,6 +1107,7 @@ PopupBadSave ()
     int maxlen1, maxlen2;
     char extraBuf1[80], extraBuf2[80];
     char *restart_service_prop;
+    Position x, y, rootx, rooty;
     List *cl, *pl;
     int i, k;
 
@@ -739,16 +1124,6 @@ PopupBadSave ()
 	XtFree ((char *) failedNames);
 
 	failedNames = NULL;
-    }
-
-    if (failedClients)
-    {
-	/*
-	 * Free the mapping of client names to client records
-	 */
-
-	XtFree ((char *) failedClients);
-	failedClients = NULL;
     }
 
     maxlen1 = maxlen2 = 0;
@@ -803,8 +1178,6 @@ PopupBadSave ()
 
     failedNames = (String *) XtMalloc (
 	numFailedNames * sizeof (String));
-    failedClients = (ClientRec **) XtMalloc (
-	numFailedNames * sizeof (ClientRec *));
 
     i = 0;
     for (cl = ListFirst (FailedSaveList); cl; cl = ListNext (cl))
@@ -863,14 +1236,28 @@ PopupBadSave ()
 	sprintf (clientInfo, "%s%s (%s%s)", progName, extraBuf1,
 	    hostname, extraBuf2);
 
-	failedClients[i] = client;
 	failedNames[i++] = clientInfo;
+
+	if (client->freeAfterBadSavePopup)
+	{
+	    FreeClient (client, True /* free props */);
+	}
     }
 
     XawListChange (badSaveListWidget,
 	failedNames, numFailedNames, 0, True);
 
     XtPopdown (savePopup);
+
+    if (wantShutdown && !shutdownCancelled)
+	XtManageChild (badSaveCancelButton);
+    else
+	XtUnmanageChild (badSaveCancelButton);
+
+    XtVaGetValues (mainWindow, XtNx, &x, XtNy, &y, NULL);
+    XtTranslateCoords (mainWindow, x, y, &rootx, &rooty);
+    XtVaSetValues (badSavePopup, XtNx, rootx + 25, XtNy, rooty + 100, NULL);
+
     XtPopup (badSavePopup, XtGrabNone);
 }
 
