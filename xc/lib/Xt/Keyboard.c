@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.25 92/04/22 16:49:33 rws Exp $ */
+/* $XConsortium: Keyboard.c,v 1.26 92/10/06 14:01:53 converse Exp $ */
 
 /********************************************************
 
@@ -689,11 +689,6 @@ static void FocusDestroyCallback(widget, closure, call_data)
     XtPointer call_data;
 {
     XtSetKeyboardFocus((Widget)closure, None);
-    /* invalidate FindKeyDestination's ancestor list if it is still for us */
-    if (pseudoTraceDepth &&
-	pseudoTraceDisplay == XtDisplay((Widget)closure) &&
-	_GetWindowedAncestor(widget) == pseudoTrace[0])
-	pseudoTraceDepth = 0;
 }
 
 void XtSetKeyboardFocus(widget, descendant)
@@ -719,6 +714,11 @@ void XtSetKeyboardFocus(widget, descendant)
 	/* all the rest handles focus ins and focus outs and misc gunk */
 	
 	if (oldDesc) {
+	    /* invalidate FindKeyDestination's ancestor list */
+	    if (pseudoTraceDepth && pseudoTraceDisplay == XtDisplay(widget) &&
+		oldTarget == pseudoTrace[0])
+		pseudoTraceDepth = 0;
+
 	    if (!oldDesc->core.being_destroyed) {
 		XtRemoveCallback (oldDesc, XtNdestroyCallback, 
 				  FocusDestroyCallback, (XtPointer) widget);
