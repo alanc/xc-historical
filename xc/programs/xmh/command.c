@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: command.c,v 2.23 89/06/06 10:42:20 swick Exp $";
+static char rcs_id[] = "$XConsortium: command.c,v 2.24 89/06/29 16:30:06 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -225,7 +225,7 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	int type_ahead_count = 0, alt_queue_size = 0, alt_queue_count = 0;
 	XtAppContext app = XtWidgetToApplicationContext(toplevel);
 	int num_fds = ConnectionNumber(theDisplay)+1;
-	if (status->output_pipe[0] >= num_fds)
+	if (output_to_pipe && status->output_pipe[0] >= num_fds)
 	    num_fds = status->output_pipe[0]+1;
 	if (status->error_pipe[0] >= num_fds)
 	    num_fds = status->error_pipe[0]+1;
