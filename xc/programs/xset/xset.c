@@ -1,13 +1,13 @@
 /* 
  * $header: xset.c,v 1.18 87/07/11 08:47:46 dkk Locked $ 
- * $Locker:  $ 
+ * $Locker: jim $ 
  */
 #include <X11/copyright.h>
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 #ifndef lint
-static char *rcsid_xset_c = "$Header: xset.c,v 1.27 88/02/23 15:38:32 rws Exp $";
+static char *rcsid_xset_c = "$Header: xset.c,v 1.28 88/02/27 10:21:45 rws Exp $";
 #endif
 
 #include <X11/Xos.h>
@@ -261,7 +261,6 @@ for (i = 1; i < argc; ) {
     colors[numpixels] = argv[i];
     i++;
     numpixels++;
-    set_pixels(dpy, pixels, colors, numpixels);
   }
   else if (*arg == '-' && *(arg + 1) == 'k') {
     set_lock(dpy, OFF);
@@ -275,6 +274,9 @@ for (i = 1; i < argc; ) {
   else
     usage(argv[0]);
 }
+
+if (numpixels)
+    set_pixels(dpy, pixels, colors, numpixels);
 
 XCloseDisplay (dpy);
 
@@ -443,16 +445,23 @@ int numpixels;
   XColor def;
   int scr = DefaultScreen (dpy);
   Colormap cmap = DefaultColormap (dpy, scr);
+  int max_cells = DisplayCells(dpy, scr);
 
   if(DisplayCells(dpy, scr) >= 2) {
     while (--numpixels >= 0) {
       def.pixel = pixels[numpixels];
-      if (XParseColor (dpy, cmap, colors[numpixels], &def))
-	XStoreColor(dpy, cmap, &def);
-      else
+      if (def.pixel >= max_cells)
 	fprintf(stderr, 
+		"%s:  Attempt to set pixel #%d in 0-%d colormap\n",
+		progName, def.pixel, max_cells - 1);
+      else {
+        if (XParseColor (dpy, cmap, colors[numpixels], &def))
+	  XStoreColor(dpy, cmap, &def);
+        else
+	  fprintf(stderr, 
 		"%s:  No such color '%s' in colormap %ld = 0x%lx\n",
 		progName, colors[numpixels], cmap, cmap);
+      }
     }
   }
   return;
