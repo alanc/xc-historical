@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.6 91/04/07 18:58:34 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.7 91/04/08 11:27:01 rws Exp $
  */
 
 /*
@@ -441,7 +441,11 @@ typedef XLCd (*XLCdLoadProc)(
 
 _XFUNCPROTOBEGIN
 
-extern XLCd _XlcCurrentLC ();
+extern XLCd _XlcCurrentLC(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 extern Bool _XlcValidModSyntax(
 #if NeedFunctionPrototypes
