@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: VarGet.c,v 1.11 90/02/09 16:38:49 kit Exp $";
+    "$XConsortium: VarGet.c,v 1.12 90/04/04 11:28:54 swick Exp $";
 #endif
 /*
 
@@ -25,7 +25,6 @@ without express or implied warranty.
 #include "IntrinsicI.h"
 #include "VarargsI.h"
 
-static String XtNconversionFailed = "conversionFailed";
 static String XtNxtGetTypedArg = "xtGetTypedArg";
 
 #if NeedFunctionPrototypes
@@ -154,7 +153,7 @@ _XtGetTypedArg(widget, typed_arg, resources, num_resources)
 	    params[0] = typed_arg->type;
 	    params[1] = XtName(widget);
 	    XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		XtNconversionFailed, XtNxtGetTypedArg, XtCXtToolkitError,
+		"insufficientSpace", XtNxtGetTypedArg, XtCXtToolkitError,
 		"Insufficient space for converted type '%s' in widget '%s'",
 		params, &num_params);
 	}
@@ -165,7 +164,7 @@ _XtGetTypedArg(widget, typed_arg, resources, num_resources)
 	    params[1] = typed_arg->type;
 	    params[2] = XtName(widget);
 	    XtAppWarningMsg(XtWidgetToApplicationContext(widget),
-		XtNconversionFailed, XtNxtGetTypedArg, XtCXtToolkitError,
+		"conversionFailed", XtNxtGetTypedArg, XtCXtToolkitError,
 		"Type conversion (%s to %s) failed for widget '%s'",
 		params, &num_params);
 	}
