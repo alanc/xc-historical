@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpa_util.c,v 5.1 91/02/16 09:48:18 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -232,24 +232,29 @@ phg_cpa_open_struct_in_list( cph, css_srvr, id_type, count, ids )
 
     register int		i;
     register Cpa_struct_data	*open_struct = (Cpa_struct_data *)NULL;
+    register Cpa_struct_data	*rtn_struct = (Cpa_struct_data *)NULL;
 
     if ( open_struct = phg_cpa_struct_exists( cph, css_srvr, CPX_BY_SID,
 	    cph->psl->open_struct, CPA_STRUCT_OP_CHECK ) ) {
 	switch ( id_type ) {
 	    case CPX_BY_SID:
 		for ( i = 0; i < count; i++, ids++ )
-		    if ( *ids == open_struct->sid )
+		    if ( *ids == open_struct->sid ) {
+                        rtn_struct = open_struct;
 			break;
+		    }
 		break;
 	    case CPX_BY_XID:
 		for ( i = 0; i < count; i++, ids += sizeof(XID)/sizeof(*ids) )
-		    if ( *((XID*)ids) == open_struct->xid )
+		    if ( *((XID*)ids) == open_struct->xid ) {
+                        rtn_struct = open_struct;
 			break;
+		    }
 		break;
 	}
     }
 
-    return open_struct;
+    return rtn_struct;
 }
 
 
