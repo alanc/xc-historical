@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.14 88/02/26 07:34:05 swick Exp $
+ *	$Header: misc.c,v 1.15 88/02/27 09:38:23 rws Exp $
  */
 
 
@@ -53,7 +53,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.14 88/02/26 07:34:05 swick Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.15 88/02/27 09:38:23 rws Exp $";
 #endif	/* lint */
 
 xevents()
@@ -798,9 +798,10 @@ register char	*s1, *s2;
 {
 	register char	*s3;
 	char		*index();
+	int s2len = strlen (s2);
 
 	while ((s3=index(s1, *s2)) != NULL) {
-		if (strncmp(s3, s2, strlen(s2)) == 0)
+		if (strncmp(s3, s2, s2len) == 0)
 			return (s3);
 		s1 = ++s3;
 	}

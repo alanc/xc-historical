@@ -1,9 +1,9 @@
 /*
- *	$Header: resize.c,v 1.7 87/12/29 13:35:01 rws Exp $
+ *	$Header: resize.c,v 1.1 88/02/12 08:42:27 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_resize_c = "$Header: resize.c,v 1.7 87/12/29 13:35:01 rws Exp $";
+static char *rcsid_resize_c = "$Header: resize.c,v 1.1 88/02/12 08:42:27 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -56,7 +56,7 @@ extern struct passwd *fgetpwent();
 #endif	/* SYSV */
 
 #ifndef lint
-static char rcs_id[] = "$Header: resize.c,v 1.7 87/12/29 13:35:01 rws Exp $";
+static char rcs_id[] = "$Header: resize.c,v 1.1 88/02/12 08:42:27 jim Exp $";
 #endif
 
 #define	EMULATIONS	2
@@ -381,10 +381,11 @@ char *strindex (s1, s2)
 register char *s1, *s2;
 {
 	register char *s3;
+	int s2len = strlen (s2);
 
 	while ((s3 = index (s1, *s2)) != NULL)
 	{
-		if (strncmp (s3, s2, strlen (s2)) == 0) return (s3);
+		if (strncmp (s3, s2, s2len) == 0) return (s3);
 		s1 = ++s3;
 	}
 	return (NULL);
