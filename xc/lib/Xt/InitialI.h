@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.56 91/05/17 16:53:44 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.57 91/05/29 15:11:15 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -265,6 +265,7 @@ typedef struct _XtPerDisplayStruct {
     struct _WWTable *WWtable;	       /* window to widget table */
     XrmDatabase *per_screen_db;        /* per screen resource databases */
     XrmDatabase cmd_db;		       /* db from command line, if needed */
+    XrmDatabase server_db;	       /* resource property else .Xdefaults */
 } XtPerDisplayStruct, *XtPerDisplay;
 
 typedef struct _PerDisplayTable {
