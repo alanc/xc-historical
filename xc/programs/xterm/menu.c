@@ -533,7 +533,7 @@ static void do_vthide (gw, closure, data)
     register TScreen *screen = &term->screen;
 
     set_vt_visibility (FALSE);
-    do_tekmode (gw, closure, data);
+    if (!screen->TekEmu) switch_modes (False);	/* switch to tek mode */
 }
 
 
@@ -632,7 +632,5 @@ static void do_tekhide (gw, closure, data)
 
     set_tek_visibility (FALSE);
     TekRefresh = (TekLink *)0;
-    do_vtmode (gw, closure, data);
+    if (screen->TekEmu) switch_modes (True);	/* does longjmp to vt mode */
 }
-
-
