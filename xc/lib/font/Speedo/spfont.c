@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.21 94/02/07 14:49:23 gildea Exp $ */
+/* $XConsortium: spfont.c,v 1.22 94/04/17 20:17:48 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -59,7 +59,13 @@ from the X Consortium.
 #include	"FSproto.h"
 #include	"spint.h"
 #include	<servermd.h>
-#include	<math.h>
+#ifdef _XOPEN_SOURCE
+#include <math.h>
+#else
+#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _XOPEN_SOURCE
+#endif
 
 #ifndef M_PI
 #define M_PI 3.14159

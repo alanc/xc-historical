@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.18 94/04/12 21:56:54 dpw Exp $ */
+/* $XConsortium: t1funcs.c,v 1.19 94/04/17 20:17:22 dpw Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -86,7 +86,13 @@ from the X Consortium.
 */
  
 #include <string.h>
+#ifdef _XOPEN_SOURCE
 #include <math.h>
+#else
+#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _X_OPEN_SOURCE
+#endif
 #include "X11/Xfuncs.h"
 #include "fntfilst.h"
 #include "FSproto.h"

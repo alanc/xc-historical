@@ -1,4 +1,4 @@
-/* $XConsortium: fontscale.c,v 1.12 94/02/08 12:30:05 gildea Exp $ */
+/* $XConsortium: fontscale.c,v 1.13 94/04/17 20:17:07 gildea Exp $ */
 
 /*
 
@@ -32,7 +32,13 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include    "fntfilst.h"
-#include    "math.h"
+#ifdef _XOPEN_SOURCE
+#include <math.h>
+#else
+#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _XOPEN_SOURCE
+#endif
 
 Bool
 FontFileAddScaledInstance (entry, vals, pFont, bitmapName)

@@ -1,4 +1,4 @@
-/* $XConsortium: bitscale.c,v 1.26 94/03/08 15:55:43 gildea Exp $ */
+/* $XConsortium: bitscale.c,v 1.27 94/04/17 20:17:13 gildea Exp $ */
 
 /*
 
@@ -36,7 +36,13 @@ from the X Consortium.
 
 #include "fntfilst.h"
 #include "bitmap.h"
+#ifdef _XOPEN_SOURCE
 #include <math.h>
+#else
+#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _XOPEN_SOURCE
+#endif
 
 extern Atom MakeAtom();
 
