@@ -1,4 +1,4 @@
-/* $XConsortium: FSFontInfo.c,v 1.2 91/05/13 15:11:37 gildea Exp $ */
+/* $XConsortium: FSFontInfo.c,v 1.3 92/05/12 18:07:18 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -246,8 +246,11 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
 		_FSEatData(svr, (unsigned long) nbytes);
 		goto badmem;
 	    }
-	    _FSReadPad(svr, flist[i], (long) reply.nameLength);
+	    _FSRead(svr, flist[i], (long) reply.nameLength);
 	    flist[i][reply.nameLength] = '\0';
+
+	    nbytes = pi[i]->data_len + reply.nameLength;
+	    _FSEatData(svr, (unsigned long) (((nbytes+3)&~3) - nbytes));
 	}
     }
     *info = fhdr;

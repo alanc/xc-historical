@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.20 92/04/26 16:26:57 rws Exp $ */
+/* $XConsortium: fserve.c,v 1.21 92/05/12 18:07:27 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -1729,6 +1729,8 @@ fs_list_fonts(client, fpe, pattern, patlen, maxnames, newnames)
     return fs_send_list_fonts(client, fpe, pattern, patlen, maxnames, newnames);
 }
 
+static int  padlength[4] = {0, 3, 2, 1};
+
 static int
 fs_read_list_info(fpe, blockrec)
     FontPathElementPtr fpe;
@@ -1814,7 +1816,11 @@ fs_read_list_info(fpe, blockrec)
 	    err = _fs_read_pad(conn, (char *) pd, pi.data_len);
     }
     if (err != -1  &&  conn->fsMajorVersion != 1)
-	err = _fs_read_pad(conn, name, rep.nameLength);
+    {
+	err = _fs_read(conn, name, rep.nameLength);
+	if (err != -1)
+	    err = _fs_drain_bytes(conn, padlength[(pi.data_len+rep.nameLength)&3]);
+    }
 
     if (err == -1) {
 	xfree(name);
