@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.17 91/05/14 12:20:10 rws Exp $ */
+/* $XConsortium: devices.c,v 5.18 91/07/17 16:46:06 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -458,7 +458,7 @@ InitValuatorClassDeviceStruct(dev, numAxes, motionProc, numMotionEvents, mode)
     valc->numAxes = numAxes;
     valc->mode = mode;
     valc->axes = (AxisInfoPtr)(valc + 1);
-    valc->axisVal = (unsigned int *)(valc->axes + numAxes);
+    valc->axisVal = (int *)(valc->axes + numAxes);
     for (i=0; i<numAxes; i++)
 	valc->axisVal[i]=0;
     dev->valuator = valc;
