@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCCC.c,v 1.3 91/02/07 15:43:01 dave Exp $" */
+/* $XConsortium: XcmsCCC.c,v 1.4 91/02/07 17:35:57 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -31,19 +31,9 @@
  *
  */
 
-
-
-/*
- *      EXTERNAL INCLUDES
- */
-#include "TekCMS.h"
-
-/*
- *      INTERNAL INCLUDES
- */
 #include <stdio.h>
 #include "Xlibos.h"
-#include "TekCMSP.h"
+#include "Xcmsint.h"
 
 
 

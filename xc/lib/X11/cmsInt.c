@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsInt.c,v 1.11 91/01/28 14:33:58 alt Exp $" */
+/* $XConsortium: XcmsInt.c,v 1.1 91/01/30 18:42:36 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991, Tektronix Inc.
@@ -33,19 +33,10 @@
  */
 
 
-
-/*
- *      EXTERNAL INCLUDES
- */
 /* #define NEED_EVENTS */
-#include "TekCMS.h"
-
-/*
- *      INTERNAL INCLUDES
- */
 #include <stdio.h>
 #include "Xlibos.h"
-#include "TekCMSP.h"
+#include "Xcmsint.h"
 
 /*
  *      EXTERNS

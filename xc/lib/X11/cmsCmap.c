@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.3 91/02/07 15:43:03 dave Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.4 91/02/07 17:35:59 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -31,18 +31,7 @@
  *
  */
 
-
-
-/*
- *      EXTERNAL INCLUDES
- */
-#include "Xlib.h"
-#include "TekCMS.h"
-#include "TekCMSP.h"
-
-/*
- *      INTERNAL INCLUDES
- */
+#include "Xcmsint.h"
 #include "Xlibos.h"
 #include "Xutil.h"
 #include <X11/Xproto.h>

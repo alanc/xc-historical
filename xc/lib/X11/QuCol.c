@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsQuCol.c,v 1.8 91/01/27 00:39:30 alt Exp $" */
+/* $XConsortium: XcmsQuCol.c,v 1.1 91/01/30 18:58:17 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -30,13 +30,7 @@
  *
  */
 
-/*
- *      EXTERNAL INCLUDES
- *              Include files that must be exported to any package or
- *              program using this package.
- */
-#include "Xlib.h"
-#include "TekCMS.h"
+#include "Xcmsint.h"
 
 
 

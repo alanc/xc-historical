@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsSetGet.c,v 1.9 91/01/27 00:39:41 alt Exp $" */
+/* $XConsortium: XcmsSetGet.c,v 1.1 91/01/30 19:00:54 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsRtoX.c,v 1.7 91/01/27 00:39:38 alt Exp $" */
+/* $XConsortium: XcmsXRGB.c,v 1.1 91/01/30 19:33:57 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -25,18 +25,13 @@
  *		XcmsRtoX.c
  *
  *	DESCRIPTION
- *		Convert color specifications in XcmsRGB format in one array
- *		of XcmsColor structures to RGB in an array of XColor structures.
+ *		Convert color specifications in XcmsRGB format in one array of
+ *		XcmsColor structures to RGB in an array of XColor structures.
  *
  *
  */
 
-/*
- *      EXTERNAL INCLUDES
- *              Include files that must be exported to any package or
- *              program using this package.
- */
-#include "TekCMS.h"
+#include "Xcmsint.h"
 
 /*
  *      LOCAL VARIABLES

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAddSF.c,v 1.5 91/01/22 22:15:04 alt Exp $" */
+/* $XConsortium: XcmsAddSF.c,v 1.1 91/01/30 18:21:23 dave Exp $" */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -30,23 +30,7 @@
  *
  */
 
-/*
- *      EXTERNAL INCLUDES
- *              Include files that must be exported to any package or
- *              program using this package.
- */
-#include "Xlib.h"
-#include "TekCMS.h"
-#include "TekCMSext.h"
-
-
-/*
- *      INTERNAL INCLUDES
- *              Include files for local use only, therefore, NOT exported
- *		to any package or program using this package.
- */
-#include "TekCMSP.h"
-
+#include "Xcmsint.h"
 
 /*
  *      DEFINES

@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCMxVs.c,v 1.1 91/01/30 18:07:09 dave Exp $" */
+/* $XConsortium: TekHVCMxVs.c,v 1.2 91/02/05 13:41:20 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -28,19 +28,7 @@
  *		querying routine.
  */
 
-/*
- *	EXTERNAL INCLUDES
- *		Include files that must be exported to any package or
- *		program using this package.
- */
-#include "TekCMS.h"
-
-/*
- *	INTERNAL INCLUDES
- *		Include files that need NOT be exported to any package or
- *		program using this package.
- */
-#include "TekCMSext.h"
+#include "Xcmsint.h"
 
 /*
  *	EXTERNS

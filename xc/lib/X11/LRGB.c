@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.3 91/02/07 15:43:11 dave Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.4 91/02/07 17:36:08 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -33,27 +33,11 @@
  *
  */
 
-/*
- *      EXTERNAL INCLUDES
- *              Include files that must be exported to any package or
- *              program using this package.
- */
-#include "Xlib.h"
-#include "TekCMS.h"
-
-
-/*
- *      INTERNAL INCLUDES
- *              Include files for local use only, therefore, NOT exported
- *		to any package or program using this package.
- */
 #include <stdio.h>
 #include <X11/Xos.h>
 #include "Xlibos.h"
-#include "TekCMSP.h"
-#include "TekCMSext.h"
 #include <X11/Xatom.h>
-#include "XcmsLRGBSD.h"
+#include "Xcmsint.h"
 
 /*
  *      EXTERNS

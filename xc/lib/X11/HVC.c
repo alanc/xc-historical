@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVC.c,v 1.1 91/01/30 17:55:03 dave Exp $" */
+/* $XConsortium: TekHVC.c,v 1.2 91/02/05 13:41:00 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -32,21 +32,8 @@
  *		"TekColor Color Management System, System Implementor's Manual"
  */
 
-/*
- *	EXTERNAL INCLUDES
- *		Include files that must be exported to any package or
- *		program using this package.
- */
-#include "TekCMS.h"
-
-/*
- *	INTERNAL INCLUDES
- *		Include files that need NOT be exported to any package or
- *		program using this package.
- */
+#include "Xcmsint.h"
 #include <X11/Xos.h>
-#include "TekCMSext.h"
-#include "XcmsMath.h"
 
 /*
  *	DEFINES

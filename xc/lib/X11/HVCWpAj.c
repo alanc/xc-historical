@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCWpAj.c,v 1.9 91/01/22 22:14:54 alt Exp $" */
+/* $XConsortium: TekHVCWpAj.c,v 1.1 91/01/30 18:08:24 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -29,17 +29,7 @@
  *		space.
  */
 
-/*
- *	EXTERNAL INCLUDES
- *		Include files that must be exported to any package or
- *		program using this package.
- */
-#include "TekCMS.h"
-
-/*
- *	INTERNAL INCLUDES
- */
-#include "TekCMSext.h"
+#include "Xcmsint.h"
 
 /*
  *	EXTERNS

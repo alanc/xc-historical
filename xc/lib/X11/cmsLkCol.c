@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLkCol.c,v 1.2 91/02/07 15:42:49 dave Exp $ */
+/* $XConsortium: XcmsLkCol.c,v 1.3 91/02/07 17:35:43 dave Exp $ */
 
 /*
  * (c) Copyright 1989 1990 1991 Tektronix Inc.
@@ -30,24 +30,10 @@
  *
  */
 
-/*
- *      EXTERNAL INCLUDES
- *              Include files that must be exported to any package or
- *              program using this package.
- */
-#include "Xlib.h"
-#include "TekCMS.h"
-#include "TekCMSP.h"
-
-
-/*
- *      INTERNAL INCLUDES
- *              Include files for local use only, therefore, NOT exported
- *		to any package or program using this package.
- */
 #define NEED_REPLIES
 #include <stdio.h>
 #include "Xlibint.h"
+#include "Xcmsint.h"
 
 /*
  *      EXTERNS

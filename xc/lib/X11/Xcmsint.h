@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.2 91/02/05 13:40:56 dave Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.1 91/02/11 11:50:46 dave Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -226,7 +226,7 @@ double XcmsSquareRoot();
  *
  *	DESCRIPTION
  *		This file contains a series of standard white point values.
-
+ */
 #define CIE_A_u		0.2560
 #define CIE_A_v		0.5243
 #define CIE_A_Y		1.0000
