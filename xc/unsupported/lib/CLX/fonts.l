@@ -152,12 +152,14 @@
   (let* ((name-string (string-downcase (string name)))
 	 (font (car (member name-string (display-font-cache display)
 			    :key 'font-name
-			    :test 'equal))))
+			    :test 'equal)))
+	 font-id)
     (unless font
       (setq font (make-font :display display :name name-string))
-      (setf (font-id-internal font) (allocate-resource-id display font 'font))
+      (setq font-id (allocate-resource-id display font 'font))
+      (setf (font-id-internal font) font-id)
       (with-buffer-request (display *x-openfont*)
-	(font font)
+	(resource-id font-id)
 	(card16 (length name-string))
 	(pad16 nil)
 	(string name-string))
@@ -174,7 +176,7 @@
 	 (id (allocate-resource-id display font 'font)))
     (setf (font-id-internal font) id)
     (with-buffer-request (display *x-openfont*)
-      (font font)
+      (resource-id id)
       (card16 (length name-string))
       (pad16 nil)
       (string name-string))
@@ -194,11 +196,13 @@
   (declare (type font font))
   (declare-values font-info)
   (let ((display (font-display font))
+	font-id
 	font-info
 	props)
     (with-display (display)
+      (setq font-id (font-id font)) ;; May issue an open-font request
       (with-buffer-request (display *x-queryfont* :no-after)
-	(font font))
+	(resource-id font-id))
       (wait-for-reply display nil)
       (reading-buffer-reply (display)
 	(buffer-input display buffer-bbuf *replysize* 60)
@@ -246,13 +250,14 @@
   (declare (type font font))
   (when (and (not (plusp (decf (font-reference-count font))))
 	     (font-id-internal font))
-    (let ((display (font-display font)))
+    (let ((display (font-display font))
+	  (id (font-id-internal font)))
       (declare (type display display))
       ;; Remove font from cache
       (setf (display-font-cache display) (delete font (display-font-cache display)))
       ;; Close the font
       (with-buffer-request (display *x-closefont*)
-	(font font)))))
+	(resource-id id)))))
 
 (defun list-font-names (display pattern &key (max-fonts 65535) (result-type 'list))
   (declare (type display display)
