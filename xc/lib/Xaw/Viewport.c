@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.41 89/05/11 19:10:32 converse Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.42 89/05/31 10:08:15 swick Exp $";
 #endif /* lint */
 
 
@@ -331,7 +331,7 @@ static void ChangeManaged(widget)
 				     (Position)0, (Position)0 );
 		    if (child->core.mapped_when_managed)
 			XtMapWidget( child );
-#else notdef
+#else 
 		    w->core.window = XtWindow(w->viewport.clip);
 		    XtRealizeWidget( child );
 		    w->core.window = window;
