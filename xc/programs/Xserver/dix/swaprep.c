@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.32 89/03/11 16:53:39 rws Exp $ */
+/* $XConsortium: swaprep.c,v 1.33 89/03/18 16:20:52 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1230,15 +1230,15 @@ SClientMessageEvent(from, to)
 	     to->u.clientMessage.u.s.shorts9);
 	  break;
        case 32:
-	  cpswaps(from->u.clientMessage.u.l.longs0,
+	  cpswapl(from->u.clientMessage.u.l.longs0,
 	     to->u.clientMessage.u.l.longs0);
-	  cpswaps(from->u.clientMessage.u.l.longs1,
+	  cpswapl(from->u.clientMessage.u.l.longs1,
 	     to->u.clientMessage.u.l.longs1);
-	  cpswaps(from->u.clientMessage.u.l.longs2,
+	  cpswapl(from->u.clientMessage.u.l.longs2,
 	     to->u.clientMessage.u.l.longs2);
-	  cpswaps(from->u.clientMessage.u.l.longs3,
+	  cpswapl(from->u.clientMessage.u.l.longs3,
 	     to->u.clientMessage.u.l.longs3);
-	  cpswaps(from->u.clientMessage.u.l.longs4,
+	  cpswapl(from->u.clientMessage.u.l.longs4,
 	     to->u.clientMessage.u.l.longs4);
 	  break;
        }
