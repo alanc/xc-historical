@@ -2,6 +2,16 @@ There are several code fragments that need to be placed in the device
 dependent part of the server.  These are described below.  These code
 fragments are device and implementation dependent.
 
+This code fragment should go in your ddx InitInput() routine:
+
+#ifdef XTESTEXT1
+extern KeyCode xtest_command_key;
+#endif
+
+#ifdef XTESTEXT1
+    xtest_command_key = <whatever-is-a-good-keycode-for-your-keyboard>;
+#endif
+
 This code fragment should go at the front of the file that handles
 keyboards:
 
@@ -56,3 +66,24 @@ for something to happen:
 	    if (playback_on)
 		    i = XTestProcessInputAction(i, &waittime);
 #endif XTESTEXT1
+
+
+You also need to implement the following routines:
+
+void
+XTestGenerateEvent(dev_type, keycode, keystate, mousex, mousey)
+	int	dev_type;
+	int	keycode;
+	int	keystate;
+	int	mousex;
+	int	mousey;
+
+void
+XTestGetPointerPos(fmousex, fmousey)
+	short *fmousex, *fmousey;
+
+void
+XTestJumpPointer(jx, jy, dev_type)
+	int	jx;
+	int	jy;
+	int	dev_type;
