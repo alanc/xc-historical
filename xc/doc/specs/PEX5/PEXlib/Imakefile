@@ -1,25 +1,17 @@
-SRCS =	pexlibmac.t	\
-	cover		\
-	credits		\
-	chapter01	\
-	chapter02.[1234]\
-	chapter0[3456789]\
-	chapter1[0123456]\
-	appendix\
+XCOMM $XConsortium$
+
+XDOCMACROS = pexlibmac.t
+XIDXMACROS = pexlibndxmac.t
+
+SRCS =	cover \
+	credits \
+	chapter01 \
+	chapter02.[1234] \
+	chapter0[3456789] \
+	chapter1[0123456] \
+	appendix \
 	postproc
 
-ISRCS = pexlibndxmac.t
+MakeEqnDoc(PEXlib,$(SRCS))
 
-all: PEXlib.PS PEXlib.ndx.PS
-
-PEXlib.PS:
-	$(TBL) $(SRCS) | $(EQN) | $(TROFF) $(MSMACROS) 2> index.raw > PEXlib.PS
-
-PEXlib.ndx.PS:
-	tail -1 index.raw > index.pageno
-	grep -v '^.pn ' index.raw | sort -f -t: +1 -3 +0n -1n | awk -f fixindex.awk | awk -f block.awk > index.troff
-	cat $(ISRCS) index.troff | $(TROFF) -me > PEXlib.ndx.PS
-	$(RM) index.troff index.pageno
-
-clean::
-	$(RM) index.raw index.troff index.pageno PEXlib.PS PEXlib.ndx.PS
+MakeDocIndex(PEXlib,NullParameter)
