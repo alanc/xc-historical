@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.181 93/09/27 14:49:24 gildea Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.182 93/09/28 17:53:17 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1060,6 +1060,7 @@ static char *implementation_default_path()
     /* if you know how to pass % thru the compiler let me know */
     static char xfilesearchpath[] = XFILESEARCHPATHDEFAULT;
     static Bool fixed;
+    char *ch;
 
     if (!fixed) {
 	for (ch = xfilesearchpath; ch = strchr(ch, ';'); ch++)
