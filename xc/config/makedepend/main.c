@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.23 89/04/10 09:07:20 jim Exp $
+ * $XConsortium: main.c,v 1.24 89/04/13 14:36:07 jim Exp $
  */
 #include "def.h"
 #ifdef hpux
@@ -89,7 +89,7 @@ boolean	show_where_not = FALSE;
 #if defined (mips) && defined (SYSTYPE_SYSV)
 void  catch();
 #else /* !(mips && SYSTYPE_SYSV) */
-#ifdef ultrix
+#if defined(ultrix) || defined(sun)
 void  catch();
 #else
 int   catch();
