@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.c,v 1.8 89/12/10 22:54:38 jim Exp $
+ * $XConsortium: extutil.c,v 1.9 91/05/04 12:09:58 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -243,9 +243,15 @@ int (*XSetExtensionErrorHandler(handler))()
 /*
  * XMissingExtension - call the extension error handler
  */
+#if NeedFunctionPrototypes
+int XMissingExtension (
+    Display *dpy,
+    _Xconst char *ext_name)
+#else
 int XMissingExtension (dpy, ext_name)
     Display *dpy;
     char *ext_name;
+#endif
 {
     int (*func)() = (_XExtensionErrorFunction ?
 		     _XExtensionErrorFunction : _default_exterror);
