@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.137 94/02/09 22:51:02 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.138 94/03/29 10:49:14 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -724,20 +724,105 @@ typedef struct _XExten {	/* private to extension mechanism */
 _XFUNCPROTOBEGIN
 
 #ifdef DataRoutineIsProcedure
-extern void Data();
+extern void Data(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    char*	/* data */,
+    long	/* len */
 #endif
-extern int _XError();			/* prepare to upcall user handler */
-extern int _XIOError();			/* prepare to upcall user handler */
-extern int (*_XIOErrorFunction)();	/* X system error reporting routine. */
-extern int (*_XErrorFunction)();	/* X_Error event reporting routine. */
-extern void _XEatData();		/* swallow data from server */
-extern char *_XAllocScratch();		/* fast memory allocator */
-extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
-extern unsigned long _XSetLastRequestRead();	/* update dpy->last_request_read */
-extern int _XGetHostname();		/* get name of this machine */
-extern Screen *_XScreenOfWindow ();	/* get Screen pointer for window */
-extern Bool _XAsyncErrorHandler ();	/* internal error handler */
-extern char *_XGetAsyncReply();		/* get async reply */
+);
+#endif
+extern int _XError(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    xError*	/* rep */
+#endif
+);
+extern int _XIOError(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */
+#endif
+);
+extern int (*_XIOErrorFunction)(
+#if NeedNestedPrototypes
+    Display*	/* dpy */
+#endif
+);
+extern int (*_XErrorFunction)(
+#if NeedNestedPrototypes
+    Display*		/* dpy */,
+    XErrorEvent*	/* error_event */
+#endif
+);
+extern void _XEatData(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    unsigned long	/* n */
+#endif
+);
+extern char *_XAllocScratch(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    unsigned long	/* nbytes */
+#endif
+);
+extern char *_XAllocTemp(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    unsigned long	/* nbytes */
+#endif
+);
+extern void _XFreeTemp(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    char*		/* buf */,
+    unsigned long	/* nbytes */
+#endif
+);
+extern Visual *_XVIDtoVisual(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    VisualID	/* id */
+#endif
+);
+extern unsigned long _XSetLastRequestRead(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    xGenericReply*	/* rep */
+#endif
+);
+extern int _XGetHostname(
+#if NeedFunctionPrototypes
+    char*	/* buf */,
+    int		/* maxlen */
+#endif
+);
+extern Screen *_XScreenOfWindow(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    Window	/* w */
+#endif
+);
+extern Bool _XAsyncErrorHandler(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    xReply*	/* rep */,
+    char*	/* buf */,
+    int		/* len */,
+    XPointer	/* data */
+#endif
+);
+extern char *_XGetAsyncReply(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    char*	/* replbuf */,
+    xReply*	/* rep */,
+    char*	/* buf */,
+    int		/* len */,
+    int		/* extra */,
+    Bool	/* discard */
+#endif
+);
 
 extern int (*XESetCreateGC(
 #if NeedFunctionPrototypes
