@@ -1,6 +1,6 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.189 94/03/28 17:11:59 matt Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.190 94/03/29 15:42:09 gildea Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -35,6 +35,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.189 94/03/28 17:11:59 matt Exp $
  * BuildIncludesTop		(srclist)
  * BuildIncludes		(srclist,dstsubdir,dstupdir)
  * LinkRule			(program,options,objects,libraries)
+ * HostLinkRule			(program,options,objects,libraries)
  * NormalProgramTarget		(program,objects,deplibs,locallibs,syslibs)
  * SetUIDProgramTarget		(program,objects,deplibs,locallibs,syslibs)
  * SingleProgramTarget		(program,objects,locallibs,syslibs)
@@ -410,6 +411,14 @@ interfaces::								@@\
 #define LinkRule(program,options,objects,libraries) \
 $(CCLINK) -o program options objects libraries $(EXTRA_LOAD_FLAGS)
 #endif /* LinkRule */
+
+/*
+ * HostLinkRule - link a utility to be used on the build host
+ * (differs from LinkRule if cross compiling)
+ */
+#ifndef HostLinkRule
+#define HostLinkRule LinkRule
+#endif
 
 #ifndef CplusplusLinkRule
 #define CplusplusLinkRule(program,options,objects,libraries) \
