@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: util.c,v 1.9 91/02/13 19:14:31 rws Exp $
+ * $XConsortium: util.c,v 1.10 91/02/16 16:32:39 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -65,7 +65,7 @@ getEnv (e, name)
 	int	l = strlen (name);
 
 	while (*e) {
-		if (strlen (*e) > l && !strncmp (*e, name, l) &&
+		if ((int)strlen (*e) > l && !strncmp (*e, name, l) &&
 			(*e)[l] == '=')
 			return (*e) + l + 1;
 		++e;
@@ -92,7 +92,7 @@ setEnv (e, name, value)
 	}
 	if (e) {
 		for (old = e; *old; old++)
-			if (strlen (*old) > l && !strncmp (*old, name, l) && (*old)[l] == '=')
+			if ((int)strlen (*old) > l && !strncmp (*old, name, l) && (*old)[l] == '=')
 				break;
 		if (*old) {
 			free (*old);
