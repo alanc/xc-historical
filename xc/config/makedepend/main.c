@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.82 94/04/13 16:57:14 gildea Exp $ */
+/* $XConsortium: main.c,v 1.83 94/04/17 20:10:36 gildea Exp kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -108,7 +108,7 @@ catch (sig)
 	fatalerr ("got signal %d\n", sig);
 }
 
-#if defined(USG) || (defined(SYSV386) && defined(SYSV)) || defined(WIN32)
+#if defined(USG) || (defined(i386) && defined(SYSV)) || defined(WIN32)
 #define USGISH
 #endif
 
