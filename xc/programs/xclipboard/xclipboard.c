@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.8 89/12/08 13:10:53 swick Exp $
+ * $XConsortium: xclipboard.c,v 1.9 89/12/08 16:09:37 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  * Updated for R4:  Chris D. Peterson,  MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.8 89/12/08 13:10:53 swick Exp $ */
+/* $XConsortium: xclipboard.c,v 1.9 89/12/08 16:09:37 kit Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -45,8 +45,8 @@
 #define INFINITY 10000000	/* pretty big, huh? */
 
 static XrmOptionDescRec table[] = {
-    {"-w",	    "*text*wrap",		XrmoptionNoArg,  "Never"},
-    {"-nw",	    "*text*wrap",		XrmoptionNoArg,  "Word"},
+    {"-w",	    "*text*wrap",		XrmoptionNoArg,  "Word"},
+    {"-nw",	    "*text*wrap",		XrmoptionNoArg,  "Never"},
 };
 
 static void 
@@ -211,7 +211,7 @@ char **argv;
     if (XGetSelectionOwner(XtDisplay(top), manager))
 	XtError("another clipboard is already running\n");
 
-    parent = XtCreateManagedWidget("shell", formWidgetClass, top, NULL, ZERO);
+    parent = XtCreateManagedWidget("form", formWidgetClass, top, NULL, ZERO);
     quit = XtCreateManagedWidget("quit", Command, parent, NULL, ZERO);
     erase = XtCreateManagedWidget("erase", Command, parent, NULL, ZERO);
 

@@ -22,21 +22,20 @@ xclipboard - X clipboard client
 \fBxclipboard\fP [ \fI-toolkitoption\fP ...] [-w] [-nw]
 .SH DESCRIPTION
 The \fIxclipboard\fP program is used to collect and display text selections 
-that are sent to the CLIP_BOARD by other clients.  It is typically used to
+that are sent to the CLIPBOARD by other clients.  It is typically used to
 gather together and hold a block of text that has been selected from
-a variety of
-different places.
+a variety of different places.
 .PP
 Since \fIxclipboard\fP uses a Text Widget to display the contents of the 
-clipboard, text sent to the CLIP_BOARD may be re-selected
+clipboard, text sent to the CLIPBOARD may be re-selected
 for use in other applications.
 .PP
 An \fIxclipboard\fP window has the following buttons across the top:
 .TP 8
-.I "    quit"
+.I quit
 When this button is pressed, \fIxclipboard\fP exits.
 .TP 8
-.I "    erase"
+.I erase
 When this button is pressed, the contents of the text window are erased.
 .SH OPTIONS
 The \fIxclipboard\fP program accepts all of the standard X Toolkit command 
@@ -48,9 +47,23 @@ one line in the clipboard should wrap around to the following lines.
 .TP 8
 .B \-nw
 This option indicates that long lines of text should not wrap around.
+.SH WIDGETS
+The widgets used by xclipboard are listed below.  Widgets are listed by
+name and class.  Consult the \fIX Toolkit Athena Widgets\fP or the \fPX Toolkit
+Intrinsics\fP for the each widget's list of settable resources.
+.sp
+.Ds 5
+.TA .5i 1.0i 1.5i
+.ta .5i 1.0i 1.5i
+xclipboard - XClipboard
+	form - Form
+		quit  - Command
+		erase - Command
+		text  - Text
+.De
 .SH SENDING TO CLIPBOARD
 Text is copied to the clipboard whenever a client asserts ownership of
-the \fBCLIP_BOARD\fP selection.  Examples of event bindings that a user
+the \fBCLIPBOARD\fP selection.  Examples of event bindings that a user
 may wish to include in his/her resource configuration file to use
 the clipboard are:
 .sp
@@ -65,21 +78,9 @@ the clipboard are:
 	Button1 <Btn2Down>:	extend-end(CLIPBOARD)
 .De
 .sp
-.SH X DEFAULTS
-This program accepts all of the standard X Toolkit resource names and classes
-as well as:
-.TP 8
-.B "wordWrap (\fPclass\fB WordWrap)"
-This resource specifies whether or not lines of text should wrap around to
-the following lines.  The default is \fIno\fP.
 .SH "SEE ALSO"
 X(1), xcutsel(1), xterm(1), individual client documentation for how to make a 
-selection and send it to the CLIP_BOARD.
-.SH BUGS
-The erase button is not yet implemented.
-.PP
-It would be nice to have a way of specifying the file in which the
-clipboard contents are saved.
+selection and send it to the CLIPBOARD.
 .SH FILES
 /usr/lib/X11/app-defaults/XClipboard - specifies required resources
 .SH COPYRIGHT
@@ -88,3 +89,4 @@ Copyright 1988, Massachusetts Institute of Technology
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Ralph R. Swick, DEC/MIT Project Athena
+.br
