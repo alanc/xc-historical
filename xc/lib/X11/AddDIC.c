@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAddDIC.c,v 1.3 91/02/12 16:12:14 dave Exp $" */
+/* $XConsortium: XcmsAddDIC.c,v 1.4 91/05/13 23:01:51 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -52,7 +52,7 @@ extern XcmsPerDpyInfo *_XcmsFindDpyInfo();
 extern XPointer *_XcmsPushPointerArray();
 extern XcmsColorFormat _XcmsRegFormatOfPrefix();
 extern XcmsColorSpace **_XcmsDIColorSpaces;
-extern XcmsColorSpace **_XcmsDIColorSpacesInit;
+extern XcmsColorSpace *_XcmsDIColorSpacesInit[];
 
 /*
  *	NAME
