@@ -118,18 +118,6 @@ EventKey events[] = {
 
 static Boolean initialized = FALSE;
 
-void XtTranslateInitialize()
-{
-    int i;
-    if (initialized)
-        return;
-    initialized = TRUE;
-    for (i = 0; events[i].event != NULL; i++)
-         events[i].context = XAtomToContext(events[i].event);
-    for (i = 0; modifiers[i].name != NULL; i++)
-         modifiers[i].context = XAtomToContext(modifiers[i].name);
-} 
-
 static void FreeEventSeq(event)
   EventSeqPtr event;
 {
@@ -383,11 +371,11 @@ static void ProcessEvent(eventTypeStr, eventCodeStr, eventCharStr, repsStr,
 
 
 /***********************************************************************
- * XtInterpretAction
+ * InterpretAction
  * Given an action, it returns a pointer to the appropriate procedure.
  ***********************************************************************/
 
-static caddr_t XtInterpretAction(compiledActionTable, action)
+static caddr_t InterpretAction(compiledActionTable, action)
   CompiledActionTable compiledActionTable;
   XtAction action; 
 {
@@ -409,8 +397,8 @@ static caddr_t XtInterpretAction(compiledActionTable, action)
  * Parses one line of event bindings.
  ***********************************************************************/
 
-static void ParseTranslationTableProduction(widget, compiledActionTable, str)
-  Widget widget;
+static void ParseTranslationTableProduction(w, compiledActionTable, str)
+  Widget w;
   CompiledActionTable	compiledActionTable;
   char *str;
 {
@@ -465,7 +453,7 @@ static void ParseTranslationTableProduction(widget, compiledActionTable, str)
 			ptr++;
 			break;
 		}
-		LookupEventType(eventTypeStr, &eventType, &widget->core.event_mask);
+		LookupEventType(eventTypeStr, &eventType, &w->core.event_mask);
 		switch (eventType) {
 		    case KeyPress:
 		    case KeyRelease:
@@ -509,7 +497,7 @@ static void ParseTranslationTableProduction(widget, compiledActionTable, str)
         if (done) {   /** done with one event **/
 	    done = FALSE;
 	    ProcessEvent(eventTypeStr, eventCodeStr, eventCharStr, repsStr, 
-		         curEvent, &widget->core.event_mask);
+		         curEvent, &w->core.event_mask);
 	    eventTypeStr[0] = 0;
 	    eventCodeStr[0] = 0;
 	    eventCharStr[0] = 0;
@@ -520,7 +508,7 @@ static void ParseTranslationTableProduction(widget, compiledActionTable, str)
     if (*--ptr != ':')
     if (strcmp(eventTypeStr, ""))
         ProcessEvent(eventTypeStr, eventCodeStr, eventCharStr, 
-		     repsStr, curEvent, &widget->core.event_mask);
+		     repsStr, curEvent, &w->core.event_mask);
     ptr++;
     ptr++;			/* step over ':' */
 
@@ -552,7 +540,7 @@ static void ParseTranslationTableProduction(widget, compiledActionTable, str)
 		    && c != 0
 		    && c != '(');
 		*--ptr2 = 0;
-		actions->proc = (ActionProc) XtInterpretAction(
+		actions->proc = (ActionProc) InterpretAction(
 		    compiledActionTable, XtAtomToAction (str2));
 		actions->token = (char *) XtMalloc(strlen(str2)+1);
 		(void) strcpy(actions->token, str2);
@@ -575,13 +563,13 @@ static void ParseTranslationTableProduction(widget, compiledActionTable, str)
 	}
     }
     while (curEvent != NULL && curEvent->eventType > 0) {
-        widget->core.translations->eventObjTbl = EventMapObjectCreate(
-	    widget->core.translations, curEvent); 
+        w->core.translations->eventObjTbl = EventMapObjectCreate(
+	    w->core.translations, curEvent); 
 	curEvent = curEvent->next;
     }
     curEvent = firstEvent;
-    widget->core.translations->eventObjTbl = EventMapObjectSet(
-	widget->core.translations, curEvent); 
+    w->core.translations->eventObjTbl = EventMapObjectSet(
+	w->core.translations, curEvent); 
     FreeEventSeq(curEvent);
 }
 
@@ -589,26 +577,26 @@ static void ParseTranslationTableProduction(widget, compiledActionTable, str)
  * Parses a user's or applications translation table
  */
 
-static void XtParseTranslationTable(widget, compiledActionTable)
-    Widget widget;
+static void ParseTranslationTable(w, compiledActionTable)
+    Widget w;
     CompiledActionTable	compiledActionTable;
 {
-    char **translationTableSource = (char **)widget->core.translations;
+    char **translationTableSource = (char **)w->core.translations;
     int i;
 
-    widget->core.translations =
+    w->core.translations =
 	(Translations) XtMalloc(sizeof(TranslationData));
-    widget->core.translations->numEvents = 0;
-    widget->core.translations->eventTblSize = 0;
-    widget->core.translations->eventObjTbl = NULL;
+    w->core.translations->numEvents = 0;
+    w->core.translations->eventTblSize = 0;
+    w->core.translations->eventObjTbl = NULL;
 
     /* !!! need some way of setting this !!! */
-    widget->core.translations->clickTime = 50;
+    w->core.translations->clickTime = 50;
 
     i = 0;
     while (translationTableSource[i]) {
         ParseTranslationTableProduction(
-	    widget, compiledActionTable, translationTableSource[i]);
+	    w, compiledActionTable, translationTableSource[i]);
 	i++;
     }
 
@@ -616,31 +604,42 @@ static void XtParseTranslationTable(widget, compiledActionTable)
 
 /*** public procedures ***/
 
-void XtDefineTranslation(widget)
-  Widget widget;
+void DefineTranslation(w)
+  Widget w;
 {
     /* this procedure assumes that there is a string table in the */
     /* core.translations field. It compiles it, combines it with */
     /* the action bindings and puts the resulting internal data */
     /* structure into the core.translations field. Note that this means */
-    /* that if you call XtDefineTranslation twice, bad things will happen */
+    /* that if you call DefineTranslation twice, bad things will happen */
 
     CompiledActionTable	compiledActionTable;
 
     compiledActionTable =
-	CompileActionTable(widget->core.widget_class->coreClass.actions);
-    XtParseTranslationTable(widget, compiledActionTable);
+	CompileActionTable(w->core.widget_class->coreClass.actions);
+    ParseTranslationTable(w, compiledActionTable);
     FreeCompiledActionTable(compiledActionTable);
 
 
     /* double click needs to make sure that you have selected on both
        button down and up. */
-    if (widget->core.event_mask & ButtonPressMask || 
-        widget->core.event_mask & ButtonReleaseMask)
-	   widget->core.event_mask |= ButtonPressMask | ButtonReleaseMask;
+    if (w->core.event_mask & ButtonPressMask || 
+        w->core.event_mask & ButtonReleaseMask)
+	   w->core.event_mask |= ButtonPressMask | ButtonReleaseMask;
 
 
-    XtSetEventHandler(XtDisplay(widget), widget->core.window, XtTranslateEvent,
-		      widget->core.event_mask, NULL);
+    XtSetEventHandler(XtDisplay(w), w->core.window, XtTranslateEvent,
+		      w->core.event_mask, NULL);
 }
 
+void TranslateInitialize()
+{
+    int i;
+    if (initialized)
+        return;
+    initialized = TRUE;
+    for (i = 0; events[i].event != NULL; i++)
+         events[i].context = XAtomToContext(events[i].event);
+    for (i = 0; modifiers[i].name != NULL; i++)
+         modifiers[i].context = XAtomToContext(modifiers[i].name);
+} 

@@ -29,6 +29,7 @@
 #include "Intrinsic.h"
 #include "Atoms.h"
 #include "TM.h"
+#include "TMprivate.h"
 
 extern char *strcpy();
 
@@ -264,8 +265,8 @@ EventObjPtr EventMapObjectSet(translations, eventSeq)
 }
 
 
-void XtTranslateEvent(widget, event)
-  Widget widget;
+void TranslateEvent(w, event)
+  Widget w;
   register XEvent *event;
 {
     static unsigned long upTime=0;
@@ -293,7 +294,7 @@ void XtTranslateEvent(widget, event)
 	    if (buttonUp && curState != NULL) 
 		if ((unsigned long)
 	            (upTime - event->xbutton.time) >
-		    widget->core.translations->clickTime)
+		    w->core.translations->clickTime)
 		    curState = NULL;
 	    buttonUp = FALSE;
  	    curEvent.eventCode = event->xbutton.button;
@@ -319,7 +320,7 @@ void XtTranslateEvent(widget, event)
 	    break;
     }
     if (curState != NULL) {	/* check the current level */
-	index = EventIndex(widget->core.translations, &curEvent);
+	index = EventIndex(w->core.translations, &curEvent);
 	oldState = curState;
 	while (curState != NULL && curState->index != index)
 	    curState = curState->next;
@@ -331,28 +332,27 @@ void XtTranslateEvent(widget, event)
 			 last event---> start over with this new event. */
 		if (oldState->actions != NULL) {
 		    curState = oldState;
-		    index = EventIndex(widget->core.translations, &curEvent);
-        	    curState = ((EventObjPtr)
-				 widget->core.translations->eventObjTbl)[index].state;
+		    index = EventIndex(w->core.translations, &curEvent);
+        	    curState = w->core.translations->eventObjTbl[index].state;
 		}
            }
     } else {
-	index = EventIndex(widget->core.translations, &curEvent);
-        curState = ((EventObjPtr)widget->core.translations->eventObjTbl)[index].state;
+	index = EventIndex(w->core.translations, &curEvent);
+        curState = w->core.translations->eventObjTbl[index].state;
     }
     if (curState != NULL && !specialCase) {
 	actions = curState->actions;
 	while (actions != NULL)  { /* perform any actions */
 	    if (actions->proc != NULL)
 			/*!!!!! should have params here */
-		(*(actions->proc))(widget, event);
+		(*(actions->proc))(w, event);
 	    actions = actions->next;
         }
         curState = curState->nextLevel;
     }
 }
 
-void XtTranslateTableFree(translations)
+void TranslateTableFree(translations)
     Translations translations;
 {
     EventObjPtr tbl = translations->eventObjTbl;
@@ -385,7 +385,7 @@ int EventIndex(translations, eventSeq)
 }
 
 
-void XtTranslateTablePrint(translations)
+void TranslateTablePrint(translations)
     Translations translations;
 {
     EventObjPtr tbl = translations->eventObjTbl;
