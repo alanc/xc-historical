@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: input.c,v 1.7 89/03/02 12:05:08 jim Exp $
+ *	$XConsortium: input.c,v 1.8 89/12/10 20:44:48 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_input_c = "$XConsortium: input.c,v 1.7 89/03/02 12:05:08 jim Exp $";
+static char *rcsid_input_c = "$XConsortium: input.c,v 1.8 89/12/10 20:44:48 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@ static char *rcsid_input_c = "$XConsortium: input.c,v 1.7 89/03/02 12:05:08 jim 
 /* input.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: input.c,v 1.7 89/03/02 12:05:08 jim Exp $";
+static char rcs_id[] = "$XConsortium: input.c,v 1.8 89/12/10 20:44:48 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -46,7 +46,7 @@ static char rcs_id[] = "$XConsortium: input.c,v 1.7 89/03/02 12:05:08 jim Exp $"
 #include "ptyx.h"
 
 static XComposeStatus compose_status = {NULL, 0};
-static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-.\\0123456789XXX=";
+static char *kypd_num = " XXXXXXXX\tXXX\rXXXxxxxXXXXXXXXXXXXXXXXXXXXX*+,-./0123456789XXX=";
 static char *kypd_apl = " ABCDEFGHIJKLMNOPQRSTUVWXYZ??????abcdefghijklmnopqrstuvwxyzXXX";
 static char *cur = "DACB";
 
