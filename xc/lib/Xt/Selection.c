@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.89 94/03/02 11:36:58 mumble Exp $ */
+/* $XConsortium: Selection.c,v 1.90 94/03/09 11:44:03 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1164,7 +1164,8 @@ Boolean *cont;
 			     &info->type, 
 			     (info->offset == 0 ? value : info->value), 
 			     &u_offset, &info->format);
-       if (info->offset = u_offset) XFree(value);
+       if (info->offset == 0) XtFree(info->value);
+       else XFree(value);
        XtRemoveEventHandler(widget, (EventMask) PropertyChangeMask, FALSE, 
 		HandleGetIncrement, (XtPointer) info);
        FreeSelectionProperty(event->display, info->property);
@@ -1270,6 +1271,16 @@ Atom selection;
     if (type == info->ctx->prop_list->incr_atom) {
 	unsigned long size = IncrPropSize(widget, value, format, length);
 	XFree((char *)value);
+	if (info->property != property) {
+	    /* within MULTIPLE */
+	    CallBackInfo ninfo;
+	    ninfo = MakeInfo(info->ctx, &info->callbacks[number], 
+			     &info->req_closure[number], 1, widget, 
+			     info->time, &info->incremental[number], &property);
+	    ninfo->target = (Atom *) XtMalloc((unsigned) sizeof(Atom));
+	    *ninfo->target = info->target[number + 1];
+	    info = ninfo;
+	}
 	HandleIncremental(dpy, widget, property, info, size, number);
 	return FALSE;
     }
