@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.11 92/03/26 17:39:40 gildea Exp $ */
+/* $XConsortium: bdfread.c,v 1.12 92/04/16 09:20:54 gildea Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -808,8 +808,6 @@ bdfReadFont(pFont, file, bit, byte, glyph, scan)
     if (state.weightProp && (state.weightProp->value == -1))
 	state.weightProp->value = bitmapComputeWeight(pFont);
 
-    pFont->get_bitmaps = bitmapGetBitmaps;
-    pFont->get_extents = bitmapGetExtents;
     pFont->get_glyphs = bitmapGetGlyphs;
     pFont->get_metrics = bitmapGetMetrics;
     pFont->unload_font = bdfUnloadFont;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.8 92/02/11 13:16:44 eswu Exp $
+ * $XConsortium: pcfread.c,v 1.9 92/03/20 14:34:37 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -558,8 +558,6 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
     }
     bitmapFont->bitmapExtra = (BitmapExtraPtr) 0;
     pFont->fontPrivate = (pointer) bitmapFont;
-    pFont->get_bitmaps = bitmapGetBitmaps;
-    pFont->get_extents = bitmapGetExtents;
     pFont->get_glyphs = bitmapGetGlyphs;
     pFont->get_metrics = bitmapGetMetrics;
     pFont->unload_font = pcfUnloadFont;

@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.8 92/03/26 16:42:08 eswu Exp $ */
+/* $XConsortium: t1funcs.c,v 1.9 92/03/27 18:13:14 eswu Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -69,10 +69,8 @@
  
 int         Type1OpenScalable ();
 static int  Type1GetGlyphs();
-extern int  GenericGetExtents();
 void        Type1CloseFont();
 extern int  Type1GetInfoScalable ();
-extern int  GenericGetBitmaps();
  
 static int  Type1GetMetrics ();
  
@@ -252,10 +250,8 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format, fmask)
        pFont->info.firstRow = 0;
        pFont->info.lastRow  = 0;
  
-       pFont->get_bitmaps = GenericGetBitmaps;
        pFont->get_metrics = Type1GetMetrics;
        pFont->get_glyphs  = Type1GetGlyphs;
-       pFont->get_extents = GenericGetExtents;
        pFont->unload_font = Type1CloseFont;
        pFont->refcnt = 0;
        pFont->maxPrivate = -1;
