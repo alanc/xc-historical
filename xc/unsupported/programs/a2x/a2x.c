@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.27 92/03/24 19:07:56 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.28 92/03/24 19:11:02 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -33,6 +33,7 @@ Syntax of magic values in the input stream:
 ^T^X<number>^T		move mouse <number> pixels horizontally
 ^T^Y<number>^T		move mouse <number> pixels vertically
 ^Texit^T		exit the program
+^Tdbg^T			print debugging info
 ^T<hexnumber>^T		press and release key with numeric keysym <hexnumber>
 ^Tname^T		press and release key with keysym named <name>
 
@@ -94,7 +95,6 @@ undo no_undos[] = {
 undo *undos = no_undos;
 int curbscount = 0;
 Bool in_control_seq = False;
-Bool need_bs = False;
 
 void process();
 
@@ -461,6 +461,7 @@ trim_history()
 	bcopy(history + (sizeof(history)/2), history, history_end);
 	history_end -= sizeof(history)/2;
     }
+    bzero(history + history_end, sizeof(history) - history_end);
 }
 
 void
@@ -488,6 +489,7 @@ void
 undo_stroke()
 {
     char c;
+    int i;
 
     if (!history_end) {
 	in_control_seq = False;
@@ -501,20 +503,28 @@ undo_stroke()
 	 ((history_end > 1) &&
 	  (history[history_end-2] == control_char)))) {
 	in_control_seq = True;
-	need_bs = False;
     }
-    if (c == control_char && in_control_seq) {
-	if (need_bs && !iscntrl(history[history_end]))
-	    do_char('\b');
-	in_control_seq = False;
-    } else if (has_bs(c)) {
+    if (has_bs(c)) {
 	curbscount--;
-	if (in_control_seq)
-	    need_bs = True;
-	else
-	    do_char('\b');
+	if (!in_control_seq) {
+	    if ((history_end < 3) ||
+		(history[history_end-2] != '\015') ||
+		(history[history_end-3] != control_char))
+		do_char('\b');
+	}
     }
     history_end--;
+    if (in_control_seq) {
+	for (i = history_end - 1; i >= 0; i--) {
+	    c = history[i];
+	    if (c == control_char) {
+		history_end = i;
+		in_control_seq = False;
+		break;
+	    } else if (has_bs(c))
+		break;
+	}
+    }
 }
 
 void
@@ -669,13 +679,17 @@ get_undofile(undofile)
 void
 debug_state()
 {
-    int i;
+    int i, max;
 
     fprintf(stderr, "in_control_seq: %d\n", in_control_seq);
     fprintf(stderr, "bscount: %d\n", curbscount);
-    fprintf(stderr, "need_bs: %d\n", need_bs);
     fprintf(stderr, "history: ");
-    for (i = history_end - 70; i < history_end + 20; i++) {
+    max = sizeof(history) - 1;
+    while (max >= history_end && !history[max])
+	max--;
+    if (max > history_end + 20)
+	max = history_end + 20;
+    for (i = history_end - 70; i <= max; i++) {
 	if (i < 0)
 	    continue;
 	if (i >= sizeof(history))
@@ -787,7 +801,7 @@ process(buf, n, len)
 		do_y(atoi(buf+i+1));
 	    else if (!strcmp(buf+i, "exit"))
 		quit(0);
-	    else if (!strcmp(buf+i, "debug"))
+	    else if (!strcmp(buf+i, "dbg"))
 		debug_state();
 	    else if ((sym = strtoul(buf+i, &endptr, 16)) && !*endptr)
 		do_keysym(sym);
