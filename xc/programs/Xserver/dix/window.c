@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.20 89/07/16 17:23:15 rws Exp $ */
+/* $XConsortium: window.c,v 5.21 89/07/16 19:14:16 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -144,7 +144,7 @@ CheckSubSaveUnder(pParent, pFirst, pRegion)
 {
     register WindowPtr	pChild;	    	/* Current child */
     ScreenPtr	  	pScreen;    	/* Screen to use */
-    RegionPtr	  	pSubRegion; 	/* Area of children obscured */
+    RegionRec	  	SubRegion; 	/* Area of children obscured */
 
     pScreen = pParent->drawable.pScreen;
     if (pChild = pParent->firstChild)
@@ -157,7 +157,7 @@ CheckSubSaveUnder(pParent, pFirst, pRegion)
 	    if (pChild->viewable && pChild->saveUnder)
 		(* pScreen->Union) (pRegion, pRegion, &pChild->borderSize);
 	
-	pSubRegion = NullRegion;
+	(*pScreen->RegionInit)(&SubRegion, NullBox, 0);
 
 	/*
 	 * check region below and including first changed window
@@ -167,24 +167,20 @@ CheckSubSaveUnder(pParent, pFirst, pRegion)
 	{
 	    if (pChild->viewable)
 	    {
-		if (!pSubRegion)
-		    pSubRegion = (* pScreen->RegionCreate) (NullBox, 1);
-
 		/*
 		 * don't save under nephew/niece windows;
 		 * use a separate region
 		 */
 
-		(* pScreen->RegionCopy) (pSubRegion, pRegion);
-		CheckSubSaveUnder(pChild, pChild->firstChild, pSubRegion);
+		(* pScreen->RegionCopy) (&SubRegion, pRegion);
+		CheckSubSaveUnder(pChild, pChild->firstChild, &SubRegion);
 
 		if (pChild->saveUnder)
 		    (* pScreen->Union) (pRegion, pRegion, &pChild->borderSize);
 	    }
 	}
 
-	if (pSubRegion)
-	    (* pScreen->RegionDestroy) (pSubRegion);
+	 (* pScreen->RegionUninit) (&SubRegion);
     }
 
     /*
@@ -229,11 +225,11 @@ void
 CheckSaveUnder (pWin)
     WindowPtr	pWin;	    	/* Window to check */
 {
-    RegionPtr	pRegion;    	/* Extent of siblings with saveUnder */
+    RegionRec	rgn;    	/* Extent of siblings with saveUnder */
 
-    pRegion = (* pWin->drawable.pScreen->RegionCreate) (NullBox, 1);
-    CheckSubSaveUnder (pWin->parent, pWin->nextSib, pRegion);
-    (*pWin->drawable.pScreen->RegionDestroy) (pRegion);
+    (* pWin->drawable.pScreen->RegionInit) (&rgn, NullBox, 1);
+    CheckSubSaveUnder (pWin->parent, pWin->nextSib, &rgn);
+    (*pWin->drawable.pScreen->RegionUninit) (&rgn);
 }
 
 
@@ -257,14 +253,14 @@ ChangeSaveUnder(pWin, first)
     WindowPtr  	  	first; 	    	/* First window to check.
 					 * Used when pWin was restacked */
 {
-    register RegionPtr	pRegion;  	/* Area obscured by saveUnder windows */
-    ScreenPtr	  	pScreen;
+    RegionRec	rgn;  	/* Area obscured by saveUnder windows */
+    ScreenPtr	pScreen;
 
     pScreen = pWin->drawable.pScreen;
 
-    pRegion = (* pScreen->RegionCreate) (NullBox, 1);
-    CheckSubSaveUnder (pWin->parent, first, pRegion);
-    (* pScreen->RegionDestroy) (pRegion);
+    (* pScreen->RegionInit) (&rgn, NullBox, 1);
+    CheckSubSaveUnder (pWin->parent, first, &rgn);
+    (* pScreen->RegionUninit) (&rgn);
 }
 
 /*-
@@ -1552,12 +1548,12 @@ PatchUp:
     if ((vmaskCopy & (CWBorderPixel | CWBorderPixmap))
 	&& pWin->viewable && HasBorder (pWin))
     {
-	RegionPtr exposed;
+	RegionRec exposed;
 
-	exposed = (* pScreen->RegionCreate)(NullBox, 1);
-        (* pScreen->Subtract)(exposed, &pWin->borderClip, &pWin->winSize);
-	(*pWin->drawable.pScreen->PaintWindowBorder)(pWin, exposed, PW_BORDER);
-        (* pScreen->RegionDestroy)(exposed);
+	(* pScreen->RegionInit)(&exposed, NullBox, 0);
+        (* pScreen->Subtract)(&exposed, &pWin->borderClip, &pWin->winSize);
+	(*pWin->drawable.pScreen->PaintWindowBorder)(pWin, &exposed, PW_BORDER);
+        (* pScreen->RegionUninit)(&exposed);
     }
     return error;
 }
