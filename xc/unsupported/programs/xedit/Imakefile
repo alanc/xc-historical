@@ -1,3 +1,5 @@
+#include BandAidCompiler
+
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
   SYS_LIBRARIES = -lm
            SRCS = xedit.c EDiskSrc.c ap.c commands.c ps.c util.c
