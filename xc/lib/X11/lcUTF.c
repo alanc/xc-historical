@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcUTF.c,v 1.1 93/09/17 13:31:50 rws Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.
@@ -646,8 +646,8 @@ cstoucs(conv, from, from_left, to, to_left, args, num_args)
     ucsptr = (wchar_t *)*to;
     csstr_len = *from_left;
     ucs_len = *to_left;
-    cmp_len = strchr(charset->name, ':') - charset->name;
     charset = (XlcCharSet)args[0];
+    cmp_len = strchr(charset->name, ':') - charset->name;
 
     while(pdata->next) {
         if(!_XlcNCompareISOLatin1(charset->name, pdata->charset->name, cmp_len)) {
