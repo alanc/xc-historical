@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.32 89/09/26 13:05:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.33 89/09/28 11:37:57 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -220,6 +220,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	XtAddToAppContext(dpy, app);
 
 	pd = NewPerDisplay(dpy);
+	pd->destroy_callbacks = NULL;
 	pd->region = XCreateRegion();
         pd->defaultCaseConverter = _XtConvertCase;
         pd->defaultKeycodeTranslator = XtTranslateKey;
@@ -238,6 +239,7 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 					      we need to use it.*/
 	pd->last_timestamp = 0;
 	pd->tm_context = NULL;
+	pd->mapping_callbacks = NULL;
 	_XtHeapInit(&pd->heap);
 
 	_XtDisplayInitialize(dpy, pd, name, classname, urlist, 
@@ -289,8 +291,7 @@ static void DestroyAppContext(app)
 	_XtCacheFlushTag(app, (XtPointer)&app->heap);
 	_XtHeapFree(&app->heap);
 	if (app->destroy_callbacks != NULL) {
-	    XtCallCallbackList((XtCallbackList)app->destroy_callbacks,
-			       (XtPointer)app);
+	    _XtCallCallbacks(&app->destroy_callbacks, (XtPointer)app);
 	    _XtRemoveAllCallbacks(&app->destroy_callbacks);
 	}
 	while (*prev_app != app) prev_app = &(*prev_app)->next;
@@ -460,6 +461,12 @@ static void CloseDisplay(dpy)
 
         if (xtpd != NULL) {
 	    extern void _XtGClistFree();
+	    if (xtpd->destroy_callbacks != NULL) {
+		_XtCallCallbacks(&xtpd->destroy_callbacks, (XtPointer)xtpd);
+		_XtRemoveAllCallbacks(&xtpd->destroy_callbacks);
+	    }
+	    if (xtpd->mapping_callbacks != NULL)
+		_XtRemoveAllCallbacks(&xtpd->mapping_callbacks);
 	    XtDeleteFromAppContext(dpy, xtpd->appContext);
             XtFree((char *) xtpd->keysyms);
             XtFree((char *) xtpd->modKeysyms);
