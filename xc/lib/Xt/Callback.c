@@ -1,7 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$Header: Callback.c,v 1.3 88/02/03 22:28:43 swick Exp $";
+static char rcsid[] = "$xHeader: Callback.c,v 1.5 88/08/31 09:47:31 swick Exp $";
+/* $oHeader: Callback.c,v 1.3 88/08/19 16:46:25 asente Exp $ */
 #endif lint
-
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -28,7 +28,6 @@ SOFTWARE.
 ******************************************************************/
 
 #include "IntrinsicI.h"
-#include "Resource.h"
 
 extern CallbackList _CompileCallbackList();
 
@@ -37,7 +36,7 @@ typedef struct _CallbackRec {
     CallbackList  next;
     Widget	    widget;
     XtCallbackProc  callback;
-    caddr_t	    closure;
+    Opaque	    closure;
 } CallbackRec;
 
 static CallbackList *FetchCallbackList (widget, name)
@@ -63,7 +62,7 @@ void _XtAddCallback(widget, callbacks, callback, closure)
     Widget		    widget;
     register CallbackList   *callbacks;
     XtCallbackProc	    callback;
-    caddr_t		    closure;
+    Opaque		    closure;
 {
     register CallbackRec *new;
 
@@ -81,13 +80,15 @@ void XtAddCallback(widget, name, callback, closure)
     Widget	    widget;
     String	    name;
     XtCallbackProc  callback;
-    caddr_t	    closure;
+    Opaque	    closure;
 {
     CallbackList *callbacks;
 
     callbacks = FetchCallbackList(widget,name);
     if (callbacks == NULL) {
-       XtWarning("Cannot find callback list in XtAddCallbacks");
+       XtWarningMsg("invalidCallbackList","xtAddCallback","XtToolkitError",
+              "Cannot find callback list in XtAddCallbacks",
+	      (String *)NULL, (Cardinal *)NULL);
        return;
     }
     _XtAddCallback(widget, callbacks, callback, closure);
@@ -112,7 +113,9 @@ void XtAddCallbacks(widget, name, xtcallbacks)
 
     callbacks = FetchCallbackList(widget, name);
     if (callbacks == NULL) {
-       XtWarning("Cannot find callback list in XtAddCallbacks");
+       XtWarningMsg("invalidCallbackList","xtAddCallback","XtToolkitError",
+              "Cannot find callback list in XtAddCallbacks",
+	      (String *)NULL, (Cardinal *)NULL);
        return;
     }
     AddCallbacks(widget, callbacks, _CompileCallbackList(widget, xtcallbacks));
@@ -122,7 +125,7 @@ void RemoveCallback (widget, callbacks, callback, closure)
     Widget		    widget;
     register CallbackList   *callbacks;
     XtCallbackProc	    callback;
-    caddr_t		    closure;
+    Opaque		    closure;
 
 {
     register CallbackList cl;
@@ -141,14 +144,16 @@ void XtRemoveCallback (widget, name, callback, closure)
     Widget	    widget;
     String	    name;
     XtCallbackProc  callback;
-    caddr_t	    closure;
+    Opaque	    closure;
 {
 
     CallbackList *callbacks;
 
     callbacks = FetchCallbackList(widget, name);
     if (callbacks == NULL) {
-	XtWarning("Cannot find callback list in XtRemoveCallback");
+       XtWarningMsg("invalidCallbackList","xtRemoveCallback","XtToolkitError",
+              "Cannot find callback list in XtRemoveCallbacks",
+	      (String *)NULL, (Cardinal *)NULL);
 	return;
     }
     RemoveCallback(widget, callbacks, callback, closure);
@@ -165,14 +170,16 @@ void XtRemoveCallbacks (widget, name, xtcallbacks)
 
     callbacks = FetchCallbackList(widget, name);
     if (callbacks == NULL) {
-	XtWarning("Cannot find callback list in XtRemoveCallbacks");
+       XtWarningMsg("invalidCallbackList","xtRemoveCallback","XtToolkitError",
+              "Cannot find callback list in XtRemoveCallbacks",
+	      (String *)NULL, (Cardinal *)NULL);
 	return;
     }
 
     for (; xtcallbacks->callback != NULL; xtcallbacks++) {
 	RemoveCallback(
 	    widget, callbacks, xtcallbacks->callback,
-	    (caddr_t) xtcallbacks->closure);
+	    (Opaque) xtcallbacks->closure);
     }
 } /* XtRemoveCallbacks */
 
@@ -199,7 +206,10 @@ void XtRemoveAllCallbacks(widget, name)
 
     callbacks = FetchCallbackList(widget, name);
     if (callbacks == NULL) {
-	XtWarning("Cannot find callback list in XtRemoveAllCallbacks");
+       XtWarningMsg("invalidCallbackList","xtRemoveAllCallback","XtToolkitError",
+              "Cannot find callback list in XtRemoveAllCallbacks",
+	      (String *)NULL, (Cardinal *)NULL);
+
 	return;
     }
     _XtRemoveAllCallbacks(callbacks);
@@ -211,7 +221,7 @@ void XtRemoveAllCallbacks(widget, name)
 
 void _XtCallCallbacks (callbacks, call_data)
     CallbackList *callbacks;
-    caddr_t       call_data;
+    Opaque       call_data;
 {
     register CallbackRec *cl;
     CallbackRec		 stack_cache [CALLBACK_CACHE_SIZE];
@@ -264,7 +274,7 @@ CallbackList _CompileCallbackList(widget, xtcallbacks)
 	pLast		= &(new->next);
 	new->widget     = widget;
 	new->callback   = xtcallbacks->callback;
-	new->closure    = (caddr_t) xtcallbacks->closure;
+	new->closure    = (Opaque) xtcallbacks->closure;
     };
     *pLast = NULL;
 
@@ -274,46 +284,19 @@ CallbackList _CompileCallbackList(widget, xtcallbacks)
 void XtCallCallbacks(widget, name, call_data)
     Widget   widget;
     String   name;
-    caddr_t  call_data;
+    Opaque  call_data;
 {
     CallbackList *callbacks;
 
     callbacks = FetchCallbackList(widget, name);
     if (callbacks == NULL) {
-	XtWarning("Cannot find callback list in XtCallCallbacks");
+       XtWarningMsg("invalidCallbackList","xtCallCallback","XtToolkitError",
+              "Cannot find callback list in XtCallCallbacks",
+	      (String *)NULL, (Cardinal *)NULL);
 	return;
     }
     _XtCallCallbacks(callbacks, call_data);
 } /* XtCallCallbacks */
-
-/* ||| What is this doing here? */
-static void OverrideCallback(callbacks, callback)
-    CallbackList	    *callbacks;
-    register XtCallbackProc callback;
-{
-    register CallbackList cl;
-
-    cl = *callbacks;
-    while (cl != NULL) {
-	cl->callback = callback;
-	cl = cl->next;
-    }
-} /* OverrideCallback */
-
-/* ||| What is this doing here? */
-void XtOverrideCallback(widget, callback_name, callback)
-     Widget		widget;
-     String		callback_name;
-     XtCallbackProc	callback;
-{
-    CallbackList *callbacks;
-    callbacks = FetchCallbackList(widget,callback_name);
-    if (callbacks == NULL) {
-	XtWarning("Cannot find callback list in XtOverrideCallback");
-	return;
-    }
-    OverrideCallback(callbacks, callback);
-} /* XtOverrideCallback */
 
 /* ||| What is this doing here? */
 extern XtCallbackStatus XtHasCallbacks(widget, callback_name)
@@ -323,8 +306,8 @@ extern XtCallbackStatus XtHasCallbacks(widget, callback_name)
     CallbackList *callbacks;
     callbacks = FetchCallbackList(widget, callback_name);
     if (callbacks == NULL) {
-	return (XtCallbackNoList);
+	return XtCallbackNoList;
     }    
-    if (*callbacks == NULL) return (XtCallbackHasNone);
-    return (XtCallbackHasSome);
+    if (*callbacks == NULL) return XtCallbackHasNone;
+    return XtCallbackHasSome;
 } /* XtHasCallbacks */
