@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.10 94/05/14 16:20:45 rws Exp $ */
+/* $XConsortium: imDefLkup.c,v 1.11 94/07/06 14:46:54 kaleb Exp kaleb $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED
@@ -492,14 +492,10 @@ _XimRegisterTriggerKeysCallback(xim, len, data, call_data)
 #endif /* NeedFunctionPrototypes */
 {
     CARD16	*buf_s = (CARD16 *)((CARD8 *)data + XIM_HEADER_SIZE);
-    XIMID        imid = buf_s[0];
     Xim		 im = (Xim)call_data;
 
-    if (imid == im->private.proto.imid) {
-	(void )_XimRegisterTriggerkey(im, (XPointer)&buf_s[2]);
-	return True;
-    }
-    return False;
+    (void )_XimRegisterTriggerkey(im, (XPointer)&buf_s[2]);
+    return True;
 }
 
 Public EVENTMASK
