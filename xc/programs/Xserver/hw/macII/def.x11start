@@ -1,16 +1,16 @@
-: "@(#) /usr/lib/X11/.x11start		Shell Script for X11R2"
+: "@(#) /usr/lib/X11/.x11start		Shell Script for X11"
 xset m 4 2
 twm &
 sleep 1
-xclock -analog -update 60 =96x96-2-2 &
+xclock -analog -update 60 -geometry 96x96-2-2 &
 sleep 1
-xload =96x96-100-2 &
+xload -geometry 96x96-100-2 &
 sleep 1
-xlogo -fg grey -bg maroon -g =96x96-200-2 &
+xlogo -fg grey -bg maroon -g -geometry 96x96-200-2 &
 sleep 1
-xterm =80x24+40+88 -title "`hostname` 1" &
+xterm -geometry 80x24+40+88 -title "`hostname` 1" &
 sleep 1
-xterm =80x24+60+108 -title "`hostname` 2" &
+xterm -geometry 80x24+60+108 -title "`hostname` 2" &
 sleep 1
 if [ -r /dev/oldmsgs ]
 then
