@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.13 91/01/02 11:40:14 gildea Exp $ */
+/* $XConsortium: TextPop.c,v 1.14 91/02/18 12:21:16 rws Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -1234,7 +1234,6 @@ void (*func)();
   XtSetArg(args[num_args], XtNiconName, name); num_args++;
   XtSetArg(args[num_args], XtNgeometry, NULL); num_args++;
   XtSetArg(args[num_args], XtNallowShellResize, TRUE); num_args++;
-  XtSetArg(args[num_args], XtNsaveUnder, TRUE); num_args++;
   XtSetArg(args[num_args], XtNtransientFor, GetShell(parent)); num_args++;
   popup = XtCreatePopupShell(name, transientShellWidgetClass, 
 			     parent, args, XtNumber(args) );
