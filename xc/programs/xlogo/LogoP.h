@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LogoP.h,v 1.6 89/05/11 01:05:52 kit Exp $
+* $XConsortium: LogoP.h,v 1.7 90/04/11 17:11:29 jim Exp $
 */
 
 /*
@@ -29,6 +29,8 @@ typedef struct {
 	 Boolean reverse_video;
 	 GC	 foreGC;
 	 GC	 backGC;
+	 Boolean shape_window;
+	 Boolean need_shaping;
    } LogoPart;
 
 typedef struct _LogoRec {

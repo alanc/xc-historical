@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Logo.h,v 1.8 89/03/30 16:05:42 jim Exp $
+* $XConsortium: Logo.h,v 1.9 89/05/11 01:05:50 kit Exp $
 */
 
 /*
@@ -33,11 +33,15 @@ without express or implied warranty.
  height		     Height		Dimension	100
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  reverseVideo	     ReverseVideo	Boolean		False
+ shapeWindow	     ShapeWindow	Boolean		False
  width		     Width		Dimension	100
  x		     Position		Position	0
  y		     Position		Position	0
 
 */
+
+#define XtNshapeWindow "shapeWindow"
+#define XtCShapeWindow "ShapeWindow"
 
 typedef struct _LogoRec *LogoWidget;
 typedef struct _LogoClassRec *LogoWidgetClass;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Logo.c,v 1.13 90/04/11 17:16:54 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Logo.c,v 1.14 90/04/17 15:55:20 jim Exp $";
 #endif
 
 /*
@@ -22,16 +22,23 @@ without express or implied warranty.
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/LogoP.h>
+#ifdef SHAPE
+#include <X11/extensions/shape.h>
+#endif
 
 static XtResource resources[] = {
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
         XtOffset(LogoWidget,logo.fgpixel), XtRString,
        (XtPointer) "XtDefaultForeground"},
     {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
-	XtOffset(LogoWidget,logo.reverse_video), XtRString, "FALSE"},
+	XtOffset(LogoWidget,logo.reverse_video), XtRImmediate,
+       (XtPointer) FALSE},
+    {XtNshapeWindow, XtCShapeWindow, XtRBoolean, sizeof (Boolean),
+       XtOffset(LogoWidget,logo.shape_window), XtRImmediate, 
+       (XtPointer) FALSE},
 };
 
-static void Initialize(), Destroy(), Redisplay();
+static void Initialize(), Realize(), Destroy(), Redisplay(), Resize();
 static Boolean SetValues();
 
 LogoClassRec logoClassRec = {
@@ -44,7 +51,7 @@ LogoClassRec logoClassRec = {
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,
     /* initialize_hook		*/	NULL,
-    /* realize			*/	XtInheritRealize,
+    /* realize			*/	Realize,
     /* actions			*/	NULL,
     /* num_actions		*/	0,
     /* resources		*/	resources,
@@ -55,7 +62,7 @@ LogoClassRec logoClassRec = {
     /* compress_enterleave	*/	TRUE,
     /* visible_interest		*/	FALSE,
     /* destroy			*/	Destroy,
-    /* resize			*/	NULL,
+    /* resize			*/	Resize,
     /* expose			*/	Redisplay,
     /* set_values		*/	SetValues,
     /* set_values_hook		*/	NULL,
@@ -78,6 +85,88 @@ LogoClassRec logoClassRec = {
 };
 
 WidgetClass logoWidgetClass = (WidgetClass) &logoClassRec;
+
+
+static void check_shape (w)
+    LogoWidget w;
+{
+    if (w->logo.shape_window) {
+#ifdef SHAPE
+	int event_base, error_base;
+
+	if (!XShapeQueryExtension (XtDisplay (w), &event_base, &error_base))
+#endif
+	  w->logo.shape_window = FALSE;
+    }
+}
+
+
+static void unset_shape (w)
+    LogoWidget w;
+{
+#ifdef SHAPE
+    XSetWindowAttributes attr;
+    unsigned long mask;
+    Display *dpy = XtDisplay ((Widget) w);
+    Window win = XtWindow ((Widget) w);
+
+    if (win == None) return;
+
+    if (w->core.background_pixmap != None && 
+	w->core.background_pixmap != XtUnspecifiedPixmap) {
+	attr.background_pixmap = w->core.background_pixmap;
+	mask = CWBackPixmap;
+    } else {
+	attr.background_pixel = w->core.background_pixel;
+	mask = CWBackPixel;
+    }
+    XChangeWindowAttributes (dpy, win, mask, &attr);
+    XShapeCombineMask (dpy, win, ShapeBounding, 0, 0, None, ShapeSet);
+    w->logo.need_shaping = w->logo.shape_window;
+#endif
+}
+
+static void set_shape (w)
+    LogoWidget w;
+{
+#ifdef SHAPE
+    GC ones, zeros;
+    Display *dpy = XtDisplay ((Widget) w);
+    Window win = XtWindow ((Widget) w);
+    unsigned int width = (unsigned int) w->core.width;
+    unsigned int height = (unsigned int) w->core.height;
+    Pixmap pm = XCreatePixmap (dpy, win, width, height, (unsigned int) 1);
+    XGCValues v;
+
+    v.foreground = (Pixel) 1;
+    v.background = (Pixel) 0;
+    ones = XCreateGC (dpy, pm, (GCForeground | GCBackground), &v);
+    v.foreground = (Pixel) 0;
+    v.background = (Pixel) 1;
+    zeros = XCreateGC (dpy, pm, (GCForeground | GCBackground), &v);
+
+    if (pm && ones && zeros) {
+	int x = 0, y = 0;
+	Widget parent;
+
+	XmuDrawLogo (dpy, pm, ones, zeros, 0, 0, width, height);
+	for (parent = (Widget) w; XtParent(parent);
+	     parent = XtParent(parent)) {
+	    x += parent->core.x + parent->core.border_width;
+	    y += parent->core.y + parent->core.border_width;
+	}
+	XShapeCombineMask (dpy, XtWindow (parent), ShapeBounding,
+			   x, y, pm, ShapeSet);
+	w->logo.need_shaping = FALSE;
+    } else {
+	unset_shape (w);
+    }
+    if (ones) XFreeGC (dpy, ones);
+    if (zeros) XFreeGC (dpy, zeros);
+    if (pm) XFreePixmap (dpy, pm);
+#endif
+}
+
 
 /* ARGSUSED */
 static void Initialize (request, new)
@@ -103,14 +192,43 @@ static void Initialize (request, new)
     w->logo.foreGC = XtGetGC((Widget)w, GCForeground, &gcv);
     gcv.foreground = w->core.background_pixel;
     w->logo.backGC = XtGetGC((Widget)w, GCForeground, &gcv);
+
+    check_shape (w);
+    w->logo.need_shaping = w->logo.shape_window;
 }
 
 static void Destroy (gw)
     Widget gw;
 {
     LogoWidget w = (LogoWidget) gw;
-    XtDestroyGC (w->logo.foreGC);
-    XtDestroyGC (w->logo.backGC);
+    if (w->logo.foreGC) XtDestroyGC (w->logo.foreGC);
+    if (w->logo.backGC) XtDestroyGC (w->logo.backGC);
+}
+
+static void Realize (gw, valuemaskp, attr)
+    Widget gw;
+    XtValueMask *valuemaskp;
+    XSetWindowAttributes *attr;
+{
+#ifdef SHAPE
+    LogoWidget w = (LogoWidget) gw;
+
+    if (w->logo.shape_window) {
+	attr->background_pixel = w->logo.fgpixel;  /* going to shape */
+	*valuemaskp |= CWBackPixel;
+    }
+#endif
+    (*XtSuperclass(gw)->core_class.realize) (gw, valuemaskp, attr);
+}
+
+static void Resize (gw)
+    Widget gw;
+{
+#ifdef SHAPE
+    LogoWidget w = (LogoWidget) gw;
+
+    if (w->logo.shape_window) set_shape (w);
+#endif
 }
 
 /* ARGSUSED */
@@ -121,9 +239,15 @@ static void Redisplay (gw, event, region)
 {
     LogoWidget w = (LogoWidget) gw;
 
-    XmuDrawLogo(XtDisplay(w), XtWindow(w), w->logo.foreGC, w->logo.backGC,
-		0, 0, (unsigned int) w->core.width,
-		(unsigned int) w->core.height);
+#ifdef SHAPE
+    if (w->logo.shape_window) {
+	if (w->logo.need_shaping) set_shape (w);  /* may change shape flag */
+    }
+    if (!w->logo.shape_window)
+#endif
+      XmuDrawLogo(XtDisplay(w), XtWindow(w), w->logo.foreGC, w->logo.backGC,
+		  0, 0, (unsigned int) w->core.width,
+		  (unsigned int) w->core.height);
 }
 
 /* ARGSUSED */
@@ -137,8 +261,7 @@ static Boolean SetValues (gcurrent, grequest, gnew)
 
     if ((new->logo.fgpixel != current->logo.fgpixel) ||
 	(new->core.background_pixel != current->core.background_pixel)) {
-	XtDestroyGC (current->logo.foreGC);
-	XtDestroyGC (current->logo.backGC);
+	Destroy (gcurrent);
 	gcv.foreground = new->logo.fgpixel;
 	new->logo.foreGC = XtGetGC(gnew, GCForeground, &gcv);
 	gcv.foreground = new->core.background_pixel;
@@ -146,5 +269,16 @@ static Boolean SetValues (gcurrent, grequest, gnew)
 	redisplay = TRUE;
     }
    
+   check_shape (new);
+   if (new->logo.shape_window != current->logo.shape_window) {
+       if (new->logo.shape_window) {
+	   set_shape (new);
+	   redisplay = FALSE;
+       } else {
+	   unset_shape (new);
+	   redisplay = TRUE;
+       }
+   }
+
    return (redisplay);
 }
