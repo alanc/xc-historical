@@ -1,5 +1,5 @@
-.\" $Header: kbd_mode.man,v 1.2 88/02/27 19:24:53 rws Exp $
-.TH KBD_MODE "1 March 1988" "X Version 11"
+.\" $Header: kbd_mode.man,v 1.3 88/02/29 11:33:18 rws Exp $
+.TH KBD_MODE 1 "1 March 1988" "X Version 11"
 .SH NAME
 kbd_mode \- recover the Sun console keyboard
 .SH SYNOPSIS
@@ -16,9 +16,11 @@ Causes ASCII to be reported.
 .TP 8
 .B \-e
 Causes \fIFirm_events\fP to be reported.
-.TP \-n
+.TP 8
+.B \-n
 Causes up/down key codes to be reported.
-.TP \-u
+.TP 8
+.B \-u
 Causes undecoded keyboard values to be reported.
 .SH SEE ALSO
 kb(4S)
