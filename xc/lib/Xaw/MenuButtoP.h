@@ -1,5 +1,4 @@
-/*
- * $XConsortium$
+/* $XConsortium: MenuButtoP.h,v 1.6 89/12/11 14:57:23 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -41,7 +40,7 @@
  */
 
 #ifndef _XawMenuButtonP_h
-#define _XawtMenuButtonP_h
+#define _XawMenuButtonP_h
 
 #include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/CommandP.h>
