@@ -1,4 +1,4 @@
-.\" $XConsortium: CH07,v 1.14 94/04/18 17:15:16 kaleb Exp $
+.\" $XConsortium: CH07,v 1.15 94/04/18 18:48:17 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -471,7 +471,7 @@ and is set to
 by
 .PN XtNoticeSignal .
 When 
-.XtAppNextEvent
+.PN XtAppNextEvent
 or
 .PN XtAppProcessEvent
 (with a mask including

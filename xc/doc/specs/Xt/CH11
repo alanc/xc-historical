@@ -1,4 +1,4 @@
-.\" $XConsortium: CH11,v 1.17 94/04/18 16:50:55 kaleb Exp $
+.\" $XConsortium: CH11,v 1.18 94/04/18 18:48:32 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -1267,7 +1267,7 @@ when it desires notification upon no longer having ownership is of
 type
 .PN XtLoseSelectionIncrProc .
 .IN "XtLoseSelectionIncrProc" "" "@DEF@"
-.FN 0
+.FD 0
 typedef void (*XtLoseSelectionIncrProc)(Widget, Atom*, XtPointer);
 .br
       Widget \fIw\fP;

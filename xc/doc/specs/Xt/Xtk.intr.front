@@ -1,4 +1,4 @@
-.\" $XConsortium: Xtk.intr.front,v 1.8 94/04/18 18:14:58 converse Exp $
+.\" $XConsortium: Xtk.intr.front,v 1.9 94/04/18 18:21:06 rws Exp $
 .\" MIT header page and copyright notice
 .\" MIT page header and footers
 .\"
@@ -200,6 +200,7 @@ Digital Equipment Corporation
 MIT Project Athena
 
 June, 1988
+.De
 .sp
 .LP
 From Release 3 to Release 4, several new members joined the design

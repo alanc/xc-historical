@@ -1,4 +1,4 @@
-.\" $XConsortium: appB,v 1.5 91/07/31 20:24:53 swick Exp $
+.\" $XConsortium: appB,v 1.6 94/04/18 18:49:03 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -175,21 +175,21 @@ No Modifiers:	None <event> detail
 Any Modifiers:	<event> detail
 Only these Modifiers:	! mod1 mod2 <event> detail
 These modifiers and any others:	mod1 mod2 <event> detail
+.De
 .LP
 The use of ``None'' for a modifier list is identical to the use
 of an exclamation point with no modifers.
-.De
+.LP
 .TS H
 lw(1i) lw(1i) lw(3i).
 _
 .sp 6p
-.TB
 Modifier	Abbreviation	Meaning
 .sp 6p
 _
 .sp 6p
-.TH
 .R
+.TH
 Ctrl	c	Control modifier bit
 Shift	s	Shift modifier bit
 Lock	l	Lock modifier bit
@@ -258,7 +258,6 @@ are defined:
 lw(1.5i) lw(3i).
 _
 .sp 6p
-.TB
 Type	Meaning
 .sp 6p
 _
@@ -386,7 +385,6 @@ The supported abbreviations are:
 lw(1.5i) lw(1.25i) lw(1.75i).
 _
 .sp 6p
-.TB
 Abbreviation	Event Type	Including
 .sp 6p
 _
@@ -460,14 +458,14 @@ detail field of the corresponding event as described
 by \fI\*(xP\fP, Section 11.  The detail field is supported
 for the following event types:
 .LP
-.TS
+.TS H
 l l .
 _
 .sp 6p
-.TB
 Event	Event Field
 .sp 6p
 _
+.TH
 .sp 6p
 KeyPress	KeySym from event \fIdetail\fP (keycode)
 KeyRelease	KeySym from event \fIdetail\fP (keycode)
@@ -563,8 +561,8 @@ escape_char	= ``\\\\"''
 The canonical modifier names are
 .LP
 .Ds
-.TA 1i 1i 2.5i
-.ta 1i 1i 2.5i
+.TA 1i 2.5i
+.ta 1i 2.5i
 Ctrl	Mod1	Button1
 Shift	Mod2	Button2
 Lock	Mod3	Button3

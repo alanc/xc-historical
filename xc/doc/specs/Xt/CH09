@@ -1,4 +1,4 @@
-.\" $XConsortium: CH09,v 1.11 94/04/18 17:45:49 converse Exp $
+.\" $XConsortium: CH09,v 1.12 94/04/18 18:48:24 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -216,7 +216,6 @@ The \*(xI define the following resource types:
 lw(2.75i) lw(2.75i).
 _
 .sp 6p
-.TB
 Resource Type	Structure or Field Type
 .sp 6p
 _
@@ -529,8 +528,8 @@ see Sections 9.7.1 and 9.7.2.
 Here is an abbreviated version of a possible resource list for a Label widget:
 .LP
 .Ds
-.TA .5i 1.5 3i
-.ta .5i 1.5 3i
+.TA .5i 1.5i 3i
+.ta .5i 1.5i 3i
 /* Resources specific to Label */
 static XtResource resources[] = {
 {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),

@@ -1,4 +1,4 @@
-.\" $XConsortium: CH02,v 1.16 94/04/18 17:57:18 converse Exp $
+.\" $XConsortium: CH02,v 1.17 94/04/18 18:47:59 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -959,11 +959,11 @@ typedef struct {
 .De
 .LP
 The standard table contains the following entries:
-.TS
+.TS H
 l l l l .
 _
 .sp 6p
-.TB
+.TH
 Option String	Resource Name	Argument Kind	Resource Value
 .sp 6p
 _
@@ -2883,7 +2883,7 @@ typedef void (*XtWidgetProc)(Widget);
 .br
       Widget \fIw\fP;
 .FN
-.IP \fIw\fP i1
+.IP \fIw\fP 1i
 Specifies the widget being destroyed.
 .LP
 The destroy procedures are called in subclass-to-superclass order.

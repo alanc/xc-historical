@@ -1,4 +1,4 @@
-.\" $XConsortium: appD,v 1.6 94/04/14 16:04:53 kaleb Exp $
+.\" $XConsortium: appD,v 1.7 94/04/18 18:49:09 rws Exp $
 .\" Copyright \(co 1985, 1986, 1987, 1988, 1991, 1994
 .\" X Consortium
 .\" 
@@ -357,7 +357,7 @@ typeConversionError	noConverter	T{
 No type converter registered for '%s' to '%s' conversion.
 T}
 versionMismatch	widget	T{
-Widget class %s version mismatch:\n widget %d vs. intrinsics %d.
+Widget class %s version mismatch:\\n widget %d vs. intrinsics %d.
 T}
 .TE
 .TS
