@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xlcint.h,v 11.5 91/04/07 17:15:28 rws Exp $
+ * $XConsortium: Xlcint.h,v 11.6 91/04/07 18:58:34 rws Exp $
  */
 
 /*
@@ -42,6 +42,11 @@
 #define	_XLCINT_H_
 
 #include <X11/Xresource.h>
+
+/* current Ultrix compiler gets horribly confused */
+#if defined(FUNCPROTO) && defined(ultrix)
+#undef NeedFunctionPrototypes
+#endif
 
 typedef struct _XIMFilter {
     struct _XIMFilter *next;
@@ -422,6 +427,11 @@ typedef struct _XIC {
     XICMethods		methods;		/* method list of this IC */
     XICCoreRec		core;			/* data of this IC */
 } XICRec;
+
+/* current Ultrix compiler gets horribly confused */
+#if !defined(NeedFunctionPrototypes) && defined(FUNCPROTO)
+#define NeedFunctionPrototypes 1
+#endif
 
 typedef XLCd (*XLCdLoadProc)(
 #if NeedFunctionPrototypes
