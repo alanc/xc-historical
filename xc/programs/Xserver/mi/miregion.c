@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.41 89/05/01 18:24:55 keith Exp $ */
+/* $XConsortium: miregion.c,v 1.42 89/07/09 15:43:01 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -1152,7 +1152,7 @@ miRegionAppend(dstrgn, rgn)
 {
     register int numRects;
 
-    if (!rgn->data && REGION_NIL(dstrgn))
+    if (!rgn->data && (dstrgn->data == &EmptyData))
     {
 	dstrgn->extents = rgn->extents;
 	dstrgn->data = (RegDataPtr)NULL;
@@ -1301,7 +1301,22 @@ miRegionValidate(badreg)
     if (!badreg->data)
 	return FALSE;
     numRects = badreg->data->numRects;
-    if (!numRects || (badreg->extents.x1 < badreg->extents.x2))
+    if (!numRects)
+    {
+	if (badreg->data->size)
+	{
+	    xfreeData(badreg);
+	    badreg->data = &EmptyData;
+	}
+	return FALSE;
+    }
+    if (numRects == 1)
+    {
+	xfreeData(badreg);
+	badreg->data = (RegDataPtr)NULL;
+	return FALSE;
+    }
+    if (badreg->extents.x1 < badreg->extents.x2)
 	return FALSE;
 
     /* Step 1: Sort the rects array into ascending (y1, x1) order */
