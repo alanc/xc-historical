@@ -1,4 +1,4 @@
-/* $XConsortium: vmod.h,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: vmod.h,v 1.1 94/04/02 17:08:10 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -34,23 +34,6 @@ typedef struct _VModInfo {
     unsigned		newlyDefined;
     int			errorCount;
 } VModInfo;
-
-extern char *	vmodIndexText(
-#if NeedFunctionPrototypes
-    XkbDescPtr	/* xkb */,
-    unsigned	/* mask */,
-    unsigned	/* format */
-#endif
-);
-
-extern char *	vmodMaskText(
-#if NeedFunctionPrototypes
-    XkbDescPtr	/* xkb */,
-    unsigned	/* modMask */,
-    unsigned	/* vmodMask */,
-    unsigned	/* format */
-#endif
-);
 
 extern void	InitVModInfo(
 #if NeedFunctionPrototypes

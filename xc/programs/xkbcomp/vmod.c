@@ -1,4 +1,4 @@
-/* $XConsortium: vmod.c,v 1.1 94/04/02 17:07:57 erik Exp $ */
+/* $XConsortium: vmod.c,v 1.2 94/04/04 15:28:35 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -28,7 +28,7 @@
 #define	DEBUG_VAR debugFlags
 #include <stdio.h>
 #include "xkbcomp.h"
-#include "xkbio.h"
+#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 #include "misc.h"
@@ -37,69 +37,6 @@
 #include <X11/extensions/XKBstr.h>
 
 #include "vmod.h"
-
-char *
-vmodIndexText(xkb,ndx,format)
-    XkbDescPtr	xkb;
-    unsigned	ndx;
-    unsigned	format;
-{
-register int i;
-register StringToken *vmodNames;
-static char buf[16];
-
-    if (xkb && xkb->names)
-	 vmodNames= (StringToken *)xkb->names->vmods;
-    else vmodNames= NULL;
-
-    if (ndx>=XkbNumVirtualMods)
-	 sprintf(buf,"illegal");
-    else if (format==XkbCHeaderFile)
-	 sprintf(buf,"%d",ndx);
-    else if ((!vmodNames)||(vmodNames[ndx]==NullStringToken))
-	 sprintf(buf,"0x%x",ndx);
-    else return stGetString(vmodNames[ndx]);
-    return buf;
-}
-
-char *
-vmodMaskText(xkb,modMask,mask,format)
-    XkbDescPtr	xkb;
-    unsigned	modMask;
-    unsigned	mask;
-    unsigned	format;
-{
-register int i,bit;
-static char buf[64];
-char *str= buf;
-
-    if ((modMask==0)&&(mask==0)) {
-	if (format==XkbCHeaderFile)
-	     sprintf(buf,"0");
-	else sprintf(buf,"None");
-	return buf;
-    }
-    buf[0]= '\0';
-    if (modMask) {
-	strcpy(buf,modMaskText(modMask,format));
-	str= &str[strlen(str)];
-    }
-    if (mask) {
-	for (i=0,bit=1;i<XkbNumVirtualMods;i++,bit<<=1) {
-	    if (mask&bit) {
-		if (str!=buf) {
-		    if (format==XkbCHeaderFile)	*str++= '|';
-		    else			*str++= '+';
-		}
-		if (format==XkbCHeaderFile)
-		     sprintf(str,"(1<<%s)",vmodIndexText(xkb,i,format));
-		else strcpy(str,vmodIndexText(xkb,i,format));
-		str= &str[strlen(str)];
-	    }
-	}
-    }
-    return buf;
-}
 
 void
 InitVModInfo(info,xkb)
@@ -165,10 +102,10 @@ XkbNamesPtr	names;
 
 		    str1= stText(stmt->name);
 		    uWarning("Virtual modifier %s multiply defined\n",str1);
-		    str1= modIndexText(srv->vmods[i],XkbCHeaderFile);
+		    str1= XkbModIndexText(srv->vmods[i],XkbCFile);
 		    if (mergeMode==MergeOverride) {
 			str2= str1;
-			str1= modIndexText(mod.uval,XkbCHeaderFile);
+			str1= XkbModIndexText(mod.uval,XkbCFile);
 		    }
 		    uAction("Using %s, ignoring %s\n",str1,str2);
 		    if (mergeMode==MergeOverride)
