@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.68 91/07/30 11:34:39 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.69 91/09/09 18:23:59 rws Exp $
 
 #define OSName            SunOS 4.1.1
 XCOMM operating system:  OSName
@@ -20,6 +20,7 @@ XCOMM operating system:  OSName
 #define XsunServer	  YES		/* has color and mono support */
 #define XsunMonoServer	  YES		/* monochrome only */
 #define BuildPexExt	  XsunServer
+#define InstKmemFlags	  -g kmem -m 2755
 
 #ifdef sparc
 #undef sparc
