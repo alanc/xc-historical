@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.159 91/12/03 16:33:34 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.160 92/02/24 17:47:10 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -397,14 +397,12 @@ Boolean _XtMatchAtom(typeMatch, modMatch, eventSeq)
     TMModifierMatch	modMatch;
     TMEventPtr 		eventSeq;
 {
-    if (typeMatch->eventCodeMask) {	/* first time? */
-	typeMatch->eventCode = XInternAtom( eventSeq->xev->xany.display,
-				        XrmQuarkToString(typeMatch->eventCode),
-				        False
-				      );
-	typeMatch->eventCodeMask = 0L;
-    }
-    return (typeMatch->eventCode == eventSeq->event.eventCode);
+    Atom	atom;
+
+    atom = XInternAtom(eventSeq->xev->xany.display, 
+		       XrmQuarkToString(typeMatch->eventCode),
+		       False);
+    return (atom == eventSeq->event.eventCode);
 }
 
 #define IsOn(vec,idx) ((vec)[(idx)>>3] & (1 << ((idx) & 7)))
