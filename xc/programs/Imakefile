@@ -3,7 +3,7 @@
 
 SUBDIRS = \
 	bitmap oclock twm xauth xbiff xcalc xclipboard xclock xcmap \
- 	xditview xdm xdpyinfo xedit xev xfd xhost xinit xkill \
+ 	xditview xdm xdpyinfo xedit xfd xhost xinit xkill \
  	xload xlogo xlsclients xlsfonts xlswins xmag xman xmessage xmh \
 	xmodmap xpr xprop xrdb xrefresh \
  	xset xsetroot xterm xwd xwininfo xwud
