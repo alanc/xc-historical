@@ -13,7 +13,7 @@ SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \
 	 cfbbltC.c cfbbltX.c cfbbltO.c cfbbltG.c \
 	 cfb8bit.c cfbteblt8.c cfbglblt8.c cfbglrop8.c \
  	 cfbpush8.c cfbrctstp8.c cfbpolypnt.c \
-	 cfb8lineC.c cfb8lineX.c cfb8lineG.c cfb8lineCS.c \
+	 cfb8lineCO.c cfb8lineX.c cfb8lineG.c cfb8lineCP.c \
  	 cfb8segC.c cfb8segX.c cfb8segG.c cfb8segCS.c \
 	 cfbbres.c cfbline.c cfbhrzvert.c cfbbresd.c cfbimage.c cfbseg.c
 
@@ -30,7 +30,7 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
 	 cfb8bit.o cfbteblt8.o cfbglblt8.o cfbglrop8.o \
  	 cfbrctstp8.o cfbpolypnt.o \
  	 cfb8segCS.o cfb8segX.o cfb8segG.o cfb8segC.o \
-	 cfb8lineCS.o cfb8lineX.o cfb8lineG.o cfb8lineC.o \
+	 cfb8lineCO.o cfb8lineX.o cfb8lineG.o cfb8lineCP.o \
 	 cfbbres.o cfbline.o cfbhrzvert.o cfbbresd.o cfbimage.o cfbseg.o \
  	 cfbbitblt.o cfbbltC.o cfbbltX.o cfbbltO.o cfbbltG.o \
 	 cfbpush8.o
@@ -86,8 +86,8 @@ ObjectFromSpecialSource(cfbtileoddC,cfbtileodd,-DMROP=Mcopy)
 
 ObjectFromSpecialSource(cfbtileoddG,cfbtileodd,-DMROP=0)
 
-ObjectFromSpecialSource(cfb8lineCS,cfb8line,-DRROP=GXcopy -DWIDTH_SHIFT)
-ObjectFromSpecialSource(cfb8lineC,cfb8line,-DRROP=GXcopy)
+ObjectFromSpecialSource(cfb8lineCO,cfb8line,-DRROP=GXcopy)
+ObjectFromSpecialSource(cfb8lineCP,cfb8line,-DRROP=GXcopy -DPREVIOUS)
 ObjectFromSpecialSource(cfb8lineX,cfb8line,-DRROP=GXxor)
 ObjectFromSpecialSource(cfb8lineG,cfb8line,-DRROP=GXset)
 ObjectFromSpecialSource(cfb8segCS,cfb8line,-DRROP=GXcopy -DPOLYSEGMENT -DWIDTH_SHIFT)
