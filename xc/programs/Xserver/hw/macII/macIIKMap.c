@@ -146,18 +146,18 @@ static KeySym macIIMap[] = {
 	XK_F15,		XK_Pause,		/* 0x71 */
 	XK_Help,	XK_Insert,		/* 0x72 */
 	XK_Home,	NoSymbol,		/* 0x73 */
-	XK_Prior,	NoSymbol,		/* 0x74 */
+	XK_Prior,	NoSymbol,		/* 0x74 */ /* Page Up */
 	XK_Delete,	NoSymbol,		/* 0x75 */
 	XK_F4,		NoSymbol,		/* 0x76 */
 	XK_End,		NoSymbol,		/* 0x77 */
-	NoSymbol,	NoSymbol,		/* 0x78 */
-	XK_Next,	NoSymbol,		/* 0x79 */
+	XK_F2,		NoSymbol,		/* 0x78 */
+	XK_Next,	NoSymbol,		/* 0x79 */ /* Page Down */
 	XK_F1,		NoSymbol,		/* 0x7a */
-	XK_F2,		NoSymbol,		/* 0x7b */
+	XK_Right,	NoSymbol,		/* 0x7b */
 	XK_Left,	NoSymbol,		/* 0x7c */
 	XK_Down,	NoSymbol,		/* 0x7d */
 	XK_Up,		NoSymbol,		/* 0x7e */
-	NoSymbol,	NoSymbol,		/* 0x7f */
+	NoSymbol,	NoSymbol,		/* 0x7f */ /* Soft Power */
 };
 
 KeySymsRec macIIKeySyms[] = {
