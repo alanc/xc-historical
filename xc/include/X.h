@@ -1,5 +1,5 @@
 /*
- *	$Header: X.h,v 1.63 87/08/26 21:32:09 toddb Exp $
+ *	$Header: X.h,v 1.64 87/08/29 15:58:45 toddb Locked $
  */
 
 /* Definitions for the X window system likely to be used by applications */
@@ -31,7 +31,7 @@ SOFTWARE.
 
 ******************************************************************/
 #define X_PROTOCOL	11		/* current protocol version */
-#define X_PROTOCOL_REVISION 65533	/* current minor version */
+#define X_PROTOCOL_REVISION 0		/* current minor version */
 
 /* Resources */
 
