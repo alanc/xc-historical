@@ -37,10 +37,11 @@ This option indicates that reverse video should be simulated by swapping
 the foreground and background colors.
 .TP 8
 .B \-geometry \fIgeometry\fP
-This option specifies the prefered size and position of the logo window.
+This option specifies the prefered size and position of the logo window;
+see \fIX(1)\fP.
 .TP 8
-.B \-display \fIhost\fP:\fIdisplay\fP
-This option specifies the X server to contact.
+.B \-display \fIdisplay\fP
+This option specifies the X server to contact; see \fIX(1)\fP.
 .TP 8
 .B \-xrm \fIresourcestring\fP
 This option specifies a resource string to be used.  This is especially

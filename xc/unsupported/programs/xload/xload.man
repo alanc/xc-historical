@@ -64,11 +64,12 @@ foreground and background colors.
 .PP
 .TP 8
 .B \-geometry \fIgeometry\fP
-This option specifies the prefered size and postion of the window.
+This option specifies the prefered size and postion of the window;
+see \fIX(1)\fP.
 .PP
 .TP 8
-.B \-display \fIhost\fP:\fIdisplay\fP
-This option specifies the X server to contact.
+.B \-display \fIdisplay\fP
+This option specifies the X server to contact; see \fIX(1)\fP.
 .PP
 .TP 8
 .B \-xrm \fIresourcestring\fP
