@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.16 91/02/09 17:54:24 rws Exp $ */
+/* $Header: XExtInt.c,v 1.17 91/02/22 15:24:36 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -555,6 +555,7 @@ XInputWireToEvent (dpy, re, event)
 	    deviceMappingNotify *ev2 = (deviceMappingNotify *) event;
 
 	    *ev			= *((XDeviceMappingEvent *) save);
+	    ev->window		= 0;
 	    ev->first_keycode 	= ev2->firstKeyCode;
 	    ev->request 		= ev2->request;
 	    ev->count 		= ev2->count;
@@ -569,6 +570,7 @@ XInputWireToEvent (dpy, re, event)
 	    changeDeviceNotify *ev2 = (changeDeviceNotify *) event;
 
 	    *ev			= *((XChangeDeviceNotifyEvent *) save);
+	    ev->window		= 0;
 	    ev->request 		= ev2->request;
 	    ev->time  		= ev2->time;
 	    ev->deviceid 		= ev2->deviceid & DEVICE_BITS;
