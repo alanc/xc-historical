@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.137 91/02/17 14:51:56 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.138 91/02/17 15:00:40 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -34,21 +34,24 @@ static void _EatData32();
 int _XReadV(), _XWriteV();
 #endif 
 
-#ifdef LACHMAN
+#ifndef X_NOT_POSIX
+#define E_BLOCKED EAGAIN
+#else
+#if defined(LACHMAN) || (defined(STREAMSCONN) && (!defined(EWOULDBLOCK)) && defined(EAGAIN))
+#define E_BLOCKED EAGAIN
+#else
 #ifdef EWOULDBLOCK
-#undef EWOULDBLOCK
+#define E_BLOCKED EWOULDBLOCK
 #endif
-#define EWOULDBLOCK EAGAIN
+#endif
+#endif
+
+#ifdef LACHMAN
 #ifdef EMSGSIZE
 #undef EMSGSIZE
 #endif
 #define EMSGSIZE ERANGE
 #endif
-
-#if defined(STREAMSCONN) && (!defined(EWOULDBLOCK)) && defined(EAGAIN)
-#define EWOULDBLOCK EAGAIN
-#endif
-
 
 /*
  * The following routines are internal routines used by Xlib for protocol
@@ -105,8 +108,8 @@ _XFlush (dpy)
 		size -= write_stat;
 		todo = size;
 		bufindex += write_stat;
-#ifdef EWOULDBLOCK
-	    } else if (errno == EWOULDBLOCK) {
+#ifdef E_BLOCKED
+	    } else if (errno == E_BLOCKED) {
 		_XWaitForWritable(dpy);
 #endif
 #ifdef SUNSYSV
@@ -239,8 +242,8 @@ _XRead (dpy, data, size)
 		    size -= bytes_read;
 		    data += bytes_read;
 		    }
-#ifdef EWOULDBLOCK
-		else if (errno == EWOULDBLOCK) {
+#ifdef E_BLOCKED
+		else if (errno == E_BLOCKED) {
 		    _XWaitForReadable(dpy);
 		    errno = 0;
 		}
@@ -410,13 +413,6 @@ _XReadPad (dpy, data, size)
 	iov[1].iov_len = padlength[size & 3];
 	iov[1].iov_base = pad;
 	size += iov[1].iov_len;
-#ifdef apollo /* stupid sr10.1 bug */
-	if (size >= 131072) {
-	    _XRead (dpy, data, size - iov[1].iov_len);
-	    if (iov[1].iov_len) _XRead (dpy, pad, iov[1].iov_len);
-	    return;
-	}
-#endif
 	errno = 0;
 	while ((bytes_read = ReadvFromServer (dpy->fd, iov, 2)) != size) {
 
@@ -430,8 +426,8 @@ _XReadPad (dpy, data, size)
 	    	else
 	    	    iov[0].iov_base += bytes_read;
 	    	}
-#ifdef EWOULDBLOCK
-	    else if (errno == EWOULDBLOCK) {
+#ifdef E_BLOCKED
+	    else if (errno == E_BLOCKED) {
 		_XWaitForReadable(dpy);
 		errno = 0;
 	    }
@@ -530,13 +526,8 @@ _XSend (dpy, data, size)
 		skip += len;
 		total -= len;
 		todo = total;
-#ifdef EWOULDBLOCK
-	    } else if (errno == EWOULDBLOCK) {
-#ifdef apollo /* stupid sr10.1 UDS bug - supposedly fixed in sr10.2 */
-		if (todo > 4096)
-		    todo = 4096;
-		else
-#endif
+#ifdef E_BLOCKED
+	    } else if (errno == E_BLOCKED) {
 		_XWaitForWritable(dpy);
 #endif
 #ifdef SUNSYSV
