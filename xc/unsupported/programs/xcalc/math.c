@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.1 89/05/04 11:44:10 jim Exp $ 
+/* $XConsortium: math.c,v 1.2 89/05/04 12:15:21 jim Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -8,11 +8,11 @@
  *
  *  RPN mode added and port to X11 by Mark Rosenstein, MIT Project Athena
  *
- *  Modified to be a client of the Xt toolkit and the Athena widget set,
+ *  Modified to be a client of the Xt toolkit and the Athena widget set by
  *  Donna Converse, MIT X Consortium.  This is all that remains of the 
  *  original calculator, and it still needs to be rewritten.  The HP
  *  functionality should be separated from the TI functionality. 
- *  Beware the HP functions: there are possibly still subtle errors here.
+ *  Beware the HP functions: there are still errors here.
  */
 
 #include <stdio.h>
@@ -178,12 +178,12 @@ DrawDisplay()
             }
         }
     draw(dispstr);
-    setflag(MEMORY, (flagM));
-    setflag(INVERSE, (flagINV));
-    setflag(DEGREE, (drgmode==DEG));
-    setflag(RADIAN, (drgmode==RAD));
-    setflag(GRADAM, (drgmode==GRAD));
-    setflag(PARENTHESIS, (flagPAREN));
+    setflag(XCalc_MEMORY, (flagM));
+    setflag(XCalc_INVERSE, (flagINV));
+    setflag(XCalc_DEGREE, (drgmode==DEG));
+    setflag(XCalc_RADIAN, (drgmode==RAD));
+    setflag(XCalc_GRADAM, (drgmode==GRAD));
+    setflag(XCalc_PAREN, (flagPAREN));
 }
 
 /*-------------------------------------------------------------------------*/
@@ -855,12 +855,12 @@ ResetCalc()
 /********/
 {
     flagM=flagINV=flagPAREN=0;  drgmode=DEG;
-    setflag(MEMORY, False);
-    setflag(INVERSE, False);
-    setflag(PARENTHESIS, False);
-    setflag(RADIAN, False);
-    setflag(GRADAM, False);
-    setflag(DEGREE, True);
+    setflag(XCalc_MEMORY, False);
+    setflag(XCalc_INVERSE, False);
+    setflag(XCalc_PAREN, False);
+    setflag(XCalc_RADIAN, False);
+    setflag(XCalc_GRADAM, False);
+    setflag(XCalc_DEGREE, True);
     strcpy(dispstr,"0");
     draw(dispstr);
     ClearStacks();

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: xcalc.h,v 1.1 89/05/04 11:44:14 jim Exp $
  * 
  * xcalc.h - symbolic constants for xcalc
  *
@@ -73,9 +73,9 @@
 #define kNOP   45	/* no operation */
 #define kBKSP  46	/* backspace */
 
-#define MEMORY	0	/* memory indicator */
-#define INVERSE 1	/* inverse function indicator */
-#define DEGREE  2	/* degree indicator */
-#define RADIAN	3	/* radian indicator */
-#define GRADAM	4	/* grad indicator */
-#define PARENTHESIS	5	/* parenthesis indicator */
+#define XCalc_MEMORY	0	/* memory indicator */
+#define XCalc_INVERSE   1	/* inverse function indicator */
+#define XCalc_DEGREE	2	/* degree indicator */
+#define XCalc_RADIAN	3	/* radian indicator */
+#define XCalc_GRADAM	4	/* grad indicator */
+#define XCalc_PAREN	5	/* parenthesis indicator */

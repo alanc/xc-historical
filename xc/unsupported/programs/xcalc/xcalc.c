@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.7 89/10/08 13:48:58 rws Exp $
+ * $XConsortium: xcalc.c,v 1.8 89/11/14 18:50:44 converse Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -183,7 +183,7 @@ void create_display(parent)
 				   (ArgList) NULL, ZERO);
 
     /* M - the memory indicator */
-    ind[MEMORY] = XtCreateManagedWidget("M", labelWidgetClass, screen,
+    ind[XCalc_MEMORY] = XtCreateManagedWidget("M", labelWidgetClass, screen,
 					args, XtNumber(args));
 
     /* liquid crystal display */
@@ -191,23 +191,23 @@ void create_display(parent)
 				XtNumber(args));
 
     /* INV - the inverse function indicator */
-    ind[INVERSE] = XtCreateManagedWidget("INV", labelWidgetClass, 
+    ind[XCalc_INVERSE] = XtCreateManagedWidget("INV", labelWidgetClass, 
 					 screen, args, XtNumber(args));
 
     /* DEG - the degrees switch indicator */
-    ind[DEGREE] = XtCreateManagedWidget("DEG", labelWidgetClass, screen,
+    ind[XCalc_DEGREE] = XtCreateManagedWidget("DEG", labelWidgetClass, screen,
 					args, XtNumber(args));
 
     /* RAD - the radian switch indicator */
-    ind[RADIAN] = XtCreateManagedWidget("RAD", labelWidgetClass, screen,
+    ind[XCalc_RADIAN] = XtCreateManagedWidget("RAD", labelWidgetClass, screen,
 					args, XtNumber(args));
 
     /* GRAD - the grad switch indicator */
-    ind[GRADAM] = XtCreateManagedWidget("GRAD", labelWidgetClass, screen,
+    ind[XCalc_GRADAM] = XtCreateManagedWidget("GRAD", labelWidgetClass, screen,
 					args, XtNumber(args));
 
     /* () - the parenthesis indicator */
-    ind[PARENTHESIS] = XtCreateManagedWidget("P", labelWidgetClass, screen,
+    ind[XCalc_PAREN] = XtCreateManagedWidget("P", labelWidgetClass, screen,
 					     args, XtNumber(args));
 }
 
