@@ -1,8 +1,17 @@
 .TH xdm 1 "1 March 1988" "X Version 11"
 .SH NAME
 xdm \- X Display Manager
+.br
 .B xdm
-[configuration-file]
+[-config configuration-file]
+[-daemon]
+[-debug debug-level]
+[-error error-log-file-name]
+[-nodaemon]
+[-resources resource-file]
+[-server server-entry]
+[-session session-program]
+[-xrm resource-specification]
 .SH DESCRIPTION
 .I Xdm
 manages sessions on a collection of X displays, both local and remote.
@@ -18,7 +27,9 @@ ritual unix procedures normally proscribed to the getty/login programs.
 .PP
 At this point, the session is begun.  Similar to terminal-based unix usage,
 the session is defined by the lifetime of a particular unix process, in the
-traditional setting, the users login shell process.  In the xdm context, it
+traditional setting, the users login shell process.  In the
+.I xdm
+context, it
 is an arbitrary session manager.  Until real session managers become widely
 availible, this is likely to be either a window manager with an "exit" option
 or a terminal emulator running a shell.
@@ -26,6 +37,48 @@ or a terminal emulator running a shell.
 When the session is terminated,
 .I xdm
 resets the X server and restarts the authentication procedure.
+.SH OPTIONS
+.PP
+First, all of these options, except -config, specify values for entries
+in the configuration file.
+.IP "-config configuration-file"
+Specifies a resource file which specifies the remaining configuation
+parameters.  If no file is specified and the file /usr/lib/X11/xdm/xdm-config
+exists,
+.I xdm
+will assume that it contains a reasonable configuation and use it.
+.IP "-daemon"
+Specifies "true" as the value for the DisplayManager.daemonMode resource.
+This makes
+.I xdm
+close all file descriptors, disassociate the controlling terminal and put
+itself in the "background".  It is the default behaviour.
+.IP "-debug debug-level"
+Specifies the numeric value for the DisplayManager.debugLevel resource.  A
+non-zero value causes
+.I xdm
+to print piles of debugging statements to the terminal; it also disables the
+DisplayManager.daemonMode resource, forcing
+.I xdm
+to run syncronously.
+.IP "-error error-log-file-name"
+Specifies the value for the DisplayManager.errorLogFile resource.  This file
+contains errors from
+.I xdm
+as well as anything written to stderr by the various scripts and programs
+run during the progress of the session.
+.IP "-nodaemon"
+Specifies "false" as the value for the DisplayManager.daemonMode resource.
+.IP "-resources resource-file"
+Specifies the value for the DisplayManager*resources resource.  This file
+is loaded using xrdb to specify configuration parameters for the
+authentication widget.
+.IP "-server server-entry"
+Specifies the value for the DisplayManager*servers resource.  See the section
+below which describes this resource in depth.
+.IP "-xrm resource-specification"
+This allows an arbitrary resource to be specified; like most tool-kit
+applications.
 .SH RESOURCES
 At many stages the actions of
 .I xdm
@@ -44,16 +97,18 @@ file containing the list.  Each entry consists of three parts:  a display-name,
 a display-type and a type-specific collection of space-separated words.
 .nf
 
-  unix:0 secure /usr/bin/X11/X :0
+  :0 local /usr/bin/X11/X :0
 
 .fi
 is a typical entry for local display number 0.  The types are:
 .ta 1.5i
 .nf
 
-secure	a local display which cannot be disabled
-insecure	a local display which can be disabled
-foreign		a remote display which only receives the session
+local		a local display which receives multiple sessions
+foreign		a remote display which receives multiple sessions
+localTransient	a local display which has only one session run
+transient	a remote display which has only one session run
+
 .fi
 .IP
 The type-specific collection of words for local servers
@@ -65,7 +120,7 @@ does not search through PATH.
 For foreign servers, the type-specific
 collection of words is ignored, but must contain at least one word.  These
 servers are typically X terminals which want sessions run from a file
-server or other compute engine.  In the future, it is expected that
+server or other compute engines.  In the future, it is expected that
 the X terminal will negotiate the session startup, but for now it is
 fixed in this file.
 .IP "DisplayManager.errorLogFile"
@@ -83,13 +138,16 @@ Specifies the program used to load the resources.  By default,
 uses /usr/bin/X11/xrdb.
 .IP "DisplayManager.DISPLAY.startup"
 This specifies a program which is run (as root) after the authentication process
-suceeds.  By default, no program is run.
+suceeds.  By default, no program is run.  The traditional name for a file
+used here is Xstartup.  See the Xstartup section further on in this document.
 .IP "DisplayManager.DISPLAY.reset"
 This specifies a program which is run (as root) after the session terminates.
-Again, by default no program is run.
+Again, by default no program is run.  The traditional name is Xreset.  See
+the Xreset section further on in this document.
 .IP "DisplayManager.DISPLAY.session"
 This specifies the session to be executed.  By default, /usr/bin/X11/xterm is
-run.
+run.  The traditional name is Xsession.  See the Xsession section further on
+in this document.
 .IP "DisplayManager.DISPLAY.openDelay,\ DisplayManager.DISPLAY.openRepeat"
 These numeric resoruces control the behaviour of
 .I xdm
@@ -103,9 +161,18 @@ This boolean resource specifies whether the X server should be terminated
 when a session terminates (instead of simply resetting it).  This option
 can be used when the server tends to grow without bound over time to
 limit the amount of time the server is run.
-.IP "DisplayManager.DISPLAY.unixPath"
+.IP "DisplayManager.DISPLAY.userPath"
 .I Xdm
-sets the PATH environment variable for the session.
+sets the PATH environment variable for the session to this value.  It should
+be a colon seperated list of directories, see sh(1) for a full description.
+.IP "DisplayManager.DISPLAY.systemPath"
+.I Xdm
+sets the PATH environment variable for the startup and reset scripts to the
+value of this resource.
+.IP "DisplayManager.DISPLAY.systemShell"
+.I Xdm
+sets the SHELL environment variable for the startup and reset scripts to the
+value of this resource.
 .SH "CONTROLING THE SERVER"
 .I Xdm
 controls local servers using Unix signals.  SIGHUP is expected to reset the server,
@@ -121,45 +188,83 @@ searches the window heirarchy on the display and uses the protocol request
 KillClient in an attempt to clean up the terminal for the next session.  This
 may not actually kill all of the clients, as only those which have created
 windows will be noticed.  This is also expected to change when better
-X terminal support is agreed upon.
+X terminal support is designed.
+.SH "CONTROLLING XDM"
+.PP
+.I Xdm
+responds to two signals: SIGHUP and SIGTERM.  When sent a SIGHUP,
+.I xdm
+rereads the servers file and notices when entries are added or removed.  When
+a new entry is added,
+.I xdm
+starts a session on the associated display, while missing entries are
+disabled immediately.  That means that a session in progress will be
+terminated without notice and no new session will be started.
+.PP
+When sent a SIGTERM,
+.I xdm
+terminates all sessions in progress and exits.  This can be used when
+shutting the system down.
 .SH "AUTHENTICATION WIDGET"
 The authentication widget is a very simplistic tool which reads a name/password
 pair from the keyboard.  As this is a toolkit client, nearly every imaginable
 parameter can be controlled with a resource.  Resources for this widget
 should be put into the file named by DisplayManager.DISPLAY.resources.
-.IP "xlogin*width,height,x,y"
-The geometry of the xlogin widget is normally computed automatically.  If you
+.IP "xlogin.Login.width,xlogin.Login.height,xlogin.Login.x,xlogin.Login.y"
+The geometry of the login widget is normally computed automatically.  If you
 wish to position it elsewhere, specify each of these resources.
-.IP "xlogin*foreground"
+.IP "xlogin.Login.foreground"
 The color used to display the typed-in user name.
-.IP "xlogin*font"
+.IP "xlogin.Login.font"
 The font used to display the typed-in user name.
-.IP "xlogin*greeting"
+.IP "xlogin.Login.greeting"
 A string which identifies this window.
 The default is "Welcome to the X Window System".
-.IP "xlogin*greetFont"
+.IP "xlogin.Login.greetFont"
 The font used to display the greeting.
-.IP "xlogin*greetColor"
+.IP "xlogin.Login.greetColor"
 The color used to display the greeting.
-.IP "xlogin*namePrompt"
+.IP "xlogin.Login.namePrompt"
 The string displayed to prompt for a user name.
 The default is "Login:  "
-.IP "xlogin*passwdPrompt"
+.IP "xlogin.Login.passwdPrompt"
 The string displayed to prompt for a password.
 The default is "Password:  ".
-.IP "xlogin*promptFont"
+.IP "xlogin.Login.promptFont"
 The font used to display both prompts.
-.IP "xlogin*promptColor"
+.IP "xlogin.Login.promptColor"
 The color used to display both prompts.
-.IP "xlogin*fail"
+.IP "xlogin.Login.fail"
 A message which is displayed when the authentication fails.
 The default is "Login Failed".
-.IP "xlogin*failFont"
+.IP "xlogin.Login.failFont"
 The font used to display the failure message
-.IP "xlogin*failColor"
+.IP "xlogin.Login.failColor"
 The color used to display the failure message
-.IP "xlogin*failTimeout"
+.IP "xlogin.Login.failTimeout"
 The time (in seconds) that the fail message is displayed.
+.IP "xlogin.Login.translations"
+This specifies the translations used for the login widget.  The default
+translation table is:
+.nf
+.ta .5i 2i
+	Ctrl<Key>H:	delete-previous-character() \\n\\
+	Ctrl<Key>D:	delete-character() \\n\\
+	Ctrl<Key>B:	move-backward-character() \\n\\
+	Ctrl<Key>F:	move-forward-character() \\n\\
+	Ctrl<Key>A:	move-to-begining() \\n\\
+	Ctrl<Key>E:	move-to-end() \\n\\
+	Ctrl<Key>K:	erase-to-end-of-line() \\n\\
+	Ctrl<Key>U:	erase-line() \\n\\
+	Ctrl<Key>X:	erase-line() \\n\\
+	Ctrl<Key>C:	restart-session() \\n\\
+	Ctrl<Key>\\\\\\\\:	abort-session() \\n\\
+	<Key>BackSpace:	delete-previous-character() \\n\\
+	<Key>Delete:	delete-previous-character() \\n\\
+	<Key>Return:	finish-field() \\n\\
+	<Key>:	insert-char() \\
+.fi
+.IP
 .PP
 The Login widget uses the Translation manager to process events, the actions
 supported are:
@@ -174,7 +279,7 @@ Moves the cursor forward.
 .IP "move-to-begining (Cntl<Key>A)"
 Moves the cursor to the begining of the editible text.
 .IP "move-to-end (Cntl<Key>E)"
-Moves the cursor to the end ot the editible text.
+pMoves the cursor to the end ot the editible text.
 .IP "erase-to-end-of-line (Cntl<Key>K)"
 Erases all text after the cursor.
 .IP "erase-line (Cntl(Key>U)"
@@ -190,11 +295,280 @@ Terminates the server, disabling it.
 Resets the X server and starts a new session.
 .IP "insert-char"
 Inserts the character.
+.IP "set-session-argument "
+Specifies a single word argument which is passed to the session at startup.
+.SH "The Xstartup file"
+.PP
+This file is typically a shell script.  It is run as "root" and should be
+very careful about security.  This is the place to put commands which make
+fake entries in /etc/utmp, mount users home directories from file servers,
+display the message of the day or abort the session if logins are not
+allowed.  Various environment variables are set for the use of this script:
+.nf
+.ta .5i 2i
+	DISPLAY	is set to the associated display name
+	HOME	is set to the home directory of the user
+	USER	is set to the user name
+	PATH	is set to DisplayManager.DISPLAY.systemPath
+	SHELL	is set to DisplayManager.DISPLAY.systemShell
+.fi
+.PP
+No arguments of any kind are passed to the script.
+.I Xdm
+waits until this script exits before starting the user session.  If the
+exit value of this script is non-zero,
+.I xdm
+discontinues the session immediately and starts another authentication
+cycle.
+.SH "The Xreset file"
+.PP
+Symetrical with Xstartup, this script is run after the user session has
+terminated.  Run as root, it is expected to contain commands that
+"undo" the effects of commands in Xstartup, removing fake entries
+from /etc/utmp and unmounting directories from file servers.  The
+collection of environment variables that were passed to Xstartup are
+also given to Xreset.
+.SH "The Xsession program"
+.PP
+This is the command which is run as the users session.  It is run with
+the permissions of the authorized user, and has several environment variables
+specified:
+.nf
+.ta .5i 2i
+	DISPLAY	is set to the associated display name
+	HOME	is set to the home directory of the user
+	USER	is set to the user name
+	PATH	is set to DisplayManager.DISPLAY.userPath
+	SHELL	is set to the users default shell (from /etc/passwd)
+.fi
+.PP
+At most installations, Xsession should look in $HOME for a file ".xsession"
+which would contain commands that each user would like to use as a session; 
+if it exists.  Xsession should implement a default session if no
+user-specified session exists.  See the section on Typical Usage below.
+.PP
+An argument may be passed to this program from the authentication widget.
+This can be used to select different styles of session.  One very good use
+of this feature is to allow the user to escape from the ordinary session
+when that fails.  This would allow users to repair their own .xsession if
+it fails for some reason without requiring administrative intervention.
+.SH "Typical Usage"
+.PP
+Actually,
+.I xdm
+is designed to operate in such a wide variety of environments that "typical"
+is probably a mis-nomer.  But, this section will focus on making
+.I xdm
+a superior solution to traditional means of starting X from /etc/ttys or
+manually.
+.PP
+First off, the
+.I xdm
+configuration file should be set up.  A good thing to do is make a directory
+(/usr/lib/X11/xdm comes immediately to mind) to contain all of the relavent
+files.  Here is a reasonable configuration file, it might be named
+"xdm-config":
+.nf
+
+.ta .5i 4i
+DisplayManager.servers:      /usr/lib/X11/xdm/Xservers
+DisplayManager.errorLogFile: /usr/lib/X11/xdm/xdm-errors
+DisplayManager*resources:    /usr/lib/X11/xdm/Xresources
+DisplayManager*startup:      /usr/lib/X11/xdm/Xstartup
+DisplayManager*session:      /usr/lib/X11/xdm/Xsession
+DisplayManager*reset:        /usr/lib/X11/xdm/Xreset
+
+.fi
+.PP
+As you can see, this file simply contains references to other files.  Note
+that some of the resources are specified with * seperating the components.
+These resources can be made unique for each different display, but normally
+this is not very useful.
+.PP
+The first file /usr/lib/X11/xdm/Xservers contains the list of displays to
+manage.  Most workstations have only one display, numbered 0 so the file
+will look like:
+.nf
+.ta .5i
+
+	:0 local /usr/bin/X11/X
+
+.fi
+.PP
+This will keep /usr/bin/X11/X running on this display and manage a continuous
+cycle of sessions.
+.PP
+The file /usr/lib/X11/xdm/xdm-errors will contain error messages from
+.I xdm
+and any output to stderr by the various client scripts.  When you have
+trouble getting
+.I xdm
+working, check this file to see if
+.I xdm
+has any clue to the trouble.
+.PP
+The next configuration entry /usr/lib/X11/xdm/Xresources is loaded onto
+the display as a resource-database using xrdb.  As the authentication
+widget reads this database before starting up, it usually contains
+parameters for that widget:
+.nf
+.ta .5i 1i
+
+	xlogin*login.translations: #override\\
+		<Key>F1: set-session-argument(failsafe) finish-field()\\n\\
+		<Key>Return: set-session-argument() finish-field()
+	xlogin*borderWidth: 3
+	#ifdef COLOR
+	xlogin*greetColor: #f63
+	xlogin*failColor: red
+	xlogin*Foreground: black
+	xlogin*Background: #fdc
+	#else
+	xlogin*Foreground: black
+	xlogin*Background: white
+	#endif
+
+.fi
+.PP
+The various colors specified here look reasonable on several of the displays
+we have, but may look awful on other monitors.  As X does not currently have
+any standard color naming scheme, you will need to tune these entries to
+avoid disgusting results.  Please note the translations entry.  It specifies
+a few new translations for the widget which allow users to escape from the
+default session (and avoid troubles that may occur in it).  If #override
+is not specified, the default translations are replaced by the resource,
+not a very useful goal as some of the default translations are quite
+useful (like "<Key>: insert-char ()" which responds to normal typing).
+.PP
+The Xstartup file used here simply prevents login while the file /etc/nologin
+exists.  As there is no standard X utility for displaying files, the user
+will probably be baffled by this behaviour.  I don't offer this as
+a useful example, but simply a demonstration of the availible functionality.
+.nf
+.ta .5i 1i
+
+	#!/bin/sh
+	#
+	# Xstartup
+	#
+	# This program is run as root after the user is verified
+	#
+	if [ -f /etc/nologin ]; then
+		exit 1
+	fi
+	exit 0
+.fi
+.PP
+.PP
+The most interesting script is Xsession.  This version recognises the special
+"failsafe" mode specified in the translations above and provides an escape
+from the ordinary session:
+.nf
+.ta .5i 1i 1.5i
+
+	#!/bin/sh
+	#
+	# Xsession
+	#
+	
+	#
+	# check to see if the failsafe option is desired
+	#
+	
+	case $# in
+	1)
+		case $1 in
+		failsafe)
+			#
+			# this is about as failsafe as I can imagine,
+			# unfortunately, xterm frequently fails; but
+			# any other client is not particularily useful...
+			#
+			exec xterm -geometry 80x24+50+50
+			;;
+		esac
+	esac
+	
+	startup=$HOME/.xsession
+	resources=$HOME/.Xresources
+	
+	#
+	# check for a user-specific session and execute it
+	#
+	# Note:	the -x flag to test is not supported in all versions of
+	# 	unix, check with local authorities before proceeding...
+	#
+	if [ -f $startup ]; then
+		if [ -x $startup ]; then
+			exec $startup
+		else
+			exec /bin/sh $startup
+		fi
+	else
+		#
+		# a simple default session.  Check to see
+		# if the user has created a default resource file
+		# and load it, start the ugly window manager and
+		# use xterm as the session control process.
+		#
+		if [ -f $resources ]; then
+			xrdb -load $resources
+		fi
+		uwm &
+		exec xterm -geometry 80x24+10+10 -ls
+	fi
+
+.fi
+.PP
+Finally, the Xreset script in this demonstration is particularily boring.
+It does nothing:
+.nf
+.ta .5i
+
+	#!/bin/sh
+	#
+	# Xreset
+	#
+	# This program is run as root after the session terminates but
+	# before the display is closed
+	#
+
+.fi
+.SH "SOME OTHER POSSIBILITIES"
+.PP
+You can also use
+.I xdm
+to run a single session at a time, using the 4.3 init
+options or other suitable daemon by specifying the server on the command
+line:
+.nf
+.ta .5i
+
+	xdm -server ":0 localTransient /usr/bin/X :0"
+
+.fi
+.PP
+Or, you might have a file server and a collection of X terminals.  The
+configuration for this could look identical to the sample above, except the
+Xservers file might look like:
+.nf
+.ta .5i
+
+	extol:0 foreign X terminal on Keith's desk
+	exalt:0 foreign X terminal on Jim's desk
+	explode:0 foreign X terminal on Bob's desk
+
+.fi
+.PP
+This would direct
+.I xdm
+to manage sessions on all three of these terminals.  See the section on
+CONTROLLING XDM above for a description on using signals to enable
+and disable these terminals.
 .SH "SEE ALSO"
-X(1), xinit(1) and the proposed protocol for X terminal management
+X(1), xinit(1) and the proposed protocol for X terminal management.
 .SH BUGS
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
-
