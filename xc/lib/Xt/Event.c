@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.135 91/10/25 13:19:23 converse Exp $ */
+/* $XConsortium: Event.c,v 1.137 92/11/19 16:52:05 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -607,7 +607,10 @@ static Boolean DispatchEvent(event, widget, mask, pd)
 	    XPeekEvent(event->xcrossing.display, &nextEvent);
 	    if (nextEvent.type == LeaveNotify &&
 		  event->xcrossing.window == nextEvent.xcrossing.window &&
-		  event->xcrossing.subwindow == nextEvent.xcrossing.subwindow){
+		(event->xcrossing.detail != NotifyInferior &&
+		 nextEvent.xcrossing.detail != NotifyInferior ||
+		 event->xcrossing.detail == NotifyInferior &&
+		 nextEvent.xcrossing.detail == NotifyInferior)) {
 		/* skip the enter/leave pair */
 		XNextEvent(event->xcrossing.display, &nextEvent);
 		return XtDidNothing;
