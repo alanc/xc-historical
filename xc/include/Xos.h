@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.55 93/08/22 10:17:05 rws Exp $
+ * $XConsortium: Xos.h,v 1.56 93/09/26 11:03:19 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -85,18 +85,9 @@
  */
 #ifdef X_NOT_POSIX
 #include <fcntl.h>
-#ifdef USL
+#if defined(USL) || defined(CRAY) || defined(MOTOROLA) || defined(SYSV386) || defined(__sxg__)
 #include <unistd.h>
-#endif /* USL */
-#ifdef CRAY
-#include <unistd.h>
-#endif /* CRAY */
-#ifdef MOTOROLA
-#include <unistd.h>
-#endif /* MOTOROLA */
-#ifdef SYSV386
-#include <unistd.h>
-#endif /* SYSV386 */
+#endif
 #ifdef WIN32
 #include <X11/Xw32defs.h>
 #else
@@ -127,7 +118,7 @@
 #ifdef CRAY
 #undef word
 #endif /* CRAY */
-#if defined(USG) && !defined(CRAY) && !defined(MOTOROLA) && !defined(uniosu)
+#if defined(USG) && !defined(CRAY) && !defined(MOTOROLA) && !defined(uniosu) && !defined(__sxg__)
 struct timeval {
     long tv_sec;
     long tv_usec;
@@ -139,6 +130,13 @@ struct timezone {
 };
 #endif /* USL_SHARELIB */
 #endif /* USG */
+
+#ifdef _SEQUENT_
+struct timezone {
+    int tz_minuteswest;
+    int tz_dsttime;
+};
+#endif /* _SEQUENT_ */
 
 #else /* not SYSV */
 
@@ -165,7 +163,11 @@ struct timeval {
     (t)->tv_usec = _gtodtmp.millitm * 1000; \
 }
 #else
+#ifdef _SEQUENT_
+#include <time.h>
+#else
 #include <sys/time.h>
+#endif
 #endif
 #endif
 

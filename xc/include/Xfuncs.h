@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xfuncs.h,v 1.12 93/09/18 14:03:01 rws Exp $
+ * $XConsortium: Xfuncs.h,v 1.13 93/09/18 17:42:24 rws Exp $
  * 
  * Copyright 1990 by the Massachusetts Institute of Technology
  *
@@ -27,7 +27,7 @@ void bcopy();
 void bzero();
 int bcmp();
 #else
-#if (__STDC__ && !defined(X_NOT_STDC_ENV) && !defined(sun) && !defined(macII) && !defined(apollo)) || defined(SVR4) || defined(hpux) || defined(_IBMR2)
+#if (__STDC__ && !defined(X_NOT_STDC_ENV) && !defined(sun) && !defined(macII) && !defined(apollo)) || defined(SVR4) || defined(hpux) || defined(_IBMR2) || defined(_SEQUENT_)
 #include <string.h>
 #define _XFUNCS_H_INCLUDED_STRING_H
 #define bcopy(b1,b2,len) memmove(b2, b1, (size_t)(len))
@@ -61,7 +61,7 @@ int bcmp();
 #undef bzero
 #define bzero(b,len) memset(b,0,len)
 #else /* else X_NOT_STDC_ENV or SunOS 4 */
-#if defined(SYSV) || defined(luna) || defined(sun)
+#if defined(SYSV) || defined(luna) || defined(sun) || defined(__sxg__)
 #include <memory.h>
 #define memmove(dst,src,len) bcopy((char *)(src),(char *)(dst),(int)(len))
 #if defined(SYSV) && defined(_XBCOPYFUNC)
