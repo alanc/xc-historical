@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: xtest.ms,v 1.1 92/04/17 12:00:01 rws Exp $
+.\" $XConsortium: xtest.ms,v 1.2 92/04/20 14:17:06 rws Exp $
 .de lP
 .ne 8
 .LP
@@ -17,7 +17,7 @@
 .sp 3
 .ce 3
 Version 2.1
-MIT X Consortium Draft Standard
+MIT X Consortium Draft
 .sp 6
 .ce 4
 \s-1Kieron Drake
@@ -282,11 +282,14 @@ error occurs.
 .IP "\fIrootX\fP & \fIrootY\fP"
 In the case of motion events these fields indicate relative distance or
 absolute pointer coordinates, according to the setting of \fIdetail\fP.
+If the specified coordinates are off-screen, the closest on-screen
+coordinates will be substituted.
 .RE
 .IP
 When the simulated event(s) are processed they cause event propagation,
 passive grab activation, etc., just as if the corresponding input device
-action had occurred.
+action had occurred.  However, motion events might not be recorded in the
+motion history buffer.
 .IP
 For the currently supported event types, the event list must have length one,
 otherwise a
