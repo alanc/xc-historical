@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.179 91/05/14 15:20:38 gildea Exp $ */
+/* $XConsortium: Text.c,v 1.180 91/07/20 23:20:22 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -662,15 +662,16 @@ XawTextPosition left, right;
 {
   char *result, *tempResult;
   XawTextBlock text;
-  Cardinal length = (Cardinal) (right - left);
 
-  tempResult = result = XtMalloc(length + ONE);	/* leave space for '\0'. */
+  tempResult = result = XtMalloc(((Cardinal)(right - left)) + ONE);
   while (left < right) {
     left = SrcRead(ctx->text.source, left, &text, right - left);
+    if (!text.length)
+	break;
     (void) strncpy(tempResult, text.ptr, text.length);
     tempResult += text.length;
   }
-  result[(int) length] = '\0';	/* NULL terminate this sucker */
+  *tempResult = '\0';
   return(result);
 }
 
