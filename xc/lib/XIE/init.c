@@ -1,4 +1,4 @@
-/* $XConsortium: init.c,v 1.5 93/10/28 15:17:55 mor Exp $ */
+/* $XConsortium: init.c,v 1.6 93/10/30 14:56:24 rws Exp $ */
 
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -314,7 +314,7 @@ FILE		*fp;
 	 * Print the flo error type.
 	 */
 
-	fprintf (fp, "  Flo error : ");
+	fprintf (fp, "  Flo error:  ");
 
 	switch (flo_error->flo_error_code)
 	{
@@ -381,9 +381,9 @@ FILE		*fp;
 	 * All flo errors have this basic info to print.
 	 */
 
-	fprintf (fp, "  Name-space id : 0x%lx\n", flo_error->name_space);
-	fprintf (fp, "  Phototag : %d\n", flo_error->phototag);
-	fprintf (fp, "  Element type : %d\n", flo_error->elem_type);
+	fprintf (fp, "  Name-space:  0x%lx\n", flo_error->name_space);
+	fprintf (fp, "  Phototag:  %d\n", flo_error->phototag);
+	fprintf (fp, "  Element type:  %d\n", flo_error->elem_type);
 
 
 	/*
@@ -402,51 +402,51 @@ FILE		*fp;
 	    break;
 
 	case xieErrNoFloColormap:
-	    fprintf (fp, "  Colormap id : 0x%lx\n", res_error->resource_id);
+	    fprintf (fp, "  Colormap:  0x%lx\n", res_error->resource_id);
 	    break;
 
 	case xieErrNoFloColorList:
-	    fprintf (fp, "  ColorList id : 0x%lx\n", res_error->resource_id);
+	    fprintf (fp, "  ColorList:  0x%lx\n", res_error->resource_id);
 	    break;
 
 	case xieErrNoFloDrawable:
-	    fprintf (fp, "  Drawable id : 0x%lx\n", res_error->resource_id);
+	    fprintf (fp, "  Drawable:  0x%lx\n", res_error->resource_id);
 	    break;
 
 	case xieErrNoFloGC:
-	    fprintf (fp, "  GC id : 0x%lx\n", res_error->resource_id);
+	    fprintf (fp, "  GC:  0x%lx\n", res_error->resource_id);
 	    break;
 
 	case xieErrNoFloLUT:
-	    fprintf (fp, "  LUT id : 0x%lx\n", res_error->resource_id);
+	    fprintf (fp, "  LUT:  0x%lx\n", res_error->resource_id);
 	    break;
 
 	case xieErrNoFloPhotomap:
-	    fprintf (fp, "  Photomap id : 0x%lx\n", res_error->resource_id);
+	    fprintf (fp, "  Photomap:  0x%lx\n", res_error->resource_id);
 	    break;
 
 	case xieErrNoFloROI:
-	    fprintf (fp, "  ROI id : 0x%lx\n", res_error->resource_id);
+	    fprintf (fp, "  ROI:  0x%lx\n", res_error->resource_id);
 	    break;
 
 	case xieErrNoFloDomain:
-	    fprintf (fp, "  Phototag of domain src : %d\n",
+	    fprintf (fp, "  Phototag of domain src:  %d\n",
 		domain_error->domain_src);
 	    break;
 
 	case xieErrNoFloOperator:
-	    fprintf (fp, "  Operator : 0x%lx\n", operator_error->operator);
+	    fprintf (fp, "  Operator:  0x%lx\n", operator_error->operator);
 	    break;
 
 	case xieErrNoFloTechnique:
-	    fprintf (fp, "  Technique number : 0x%lx\n",
+	    fprintf (fp, "  Technique number:  0x%lx\n",
 		tech_error->technique_number);
-	    fprintf (fp, "  Number of technique params : %d\n",
+	    fprintf (fp, "  Number of technique params:  %d\n",
 		tech_error->num_tech_params);
 	    break;
 
 	case xieErrNoFloValue:
-	    fprintf (fp, "  Bad value : 0x%lx\n", value_error->bad_value);
+	    fprintf (fp, "  Bad value:  0x%lx\n", value_error->bad_value);
 	    break;
 
 	default:
