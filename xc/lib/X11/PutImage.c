@@ -1,4 +1,4 @@
-/* $XConsortium: XPutImage.c,v 11.60 91/06/07 16:33:38 rws Exp $ */
+/* $XConsortium: XPutImage.c,v 11.61 91/12/18 19:33:43 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -815,7 +815,7 @@ PutImageRequest(dpy, d, gc, image, req_xoffset, req_yoffset, x, y,
     req->height = req_height;
     req->depth = image->depth;
     req->format = image->format;
-    if ((image->bits_per_pixel == 1) || (image->format != ZPixmap))
+    if (image->bits_per_pixel == 1)
 	SendXYImage(dpy, req, image, req_xoffset, req_yoffset);
     else
 	SendZImage(dpy, req, image, req_xoffset, req_yoffset,
@@ -843,7 +843,7 @@ PutSubImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y,
 						 : (dpy->max_request_size << 2))
 		- SIZEOF(xPutImageReq);
 
-    if ((image->bits_per_pixel == 1) || (image->format != ZPixmap)) {
+    if (image->bits_per_pixel == 1) {
 	left_pad = (image->xoffset + req_xoffset) & (dpy->bitmap_unit - 1);
 	BytesPerRow = (ROUNDUP((long)req_width + left_pad,
 			       dpy->bitmap_pad) >> 3) * image->depth;
@@ -916,7 +916,7 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
     if ((width <= 0) || (height <= 0))
 	return;
 
-    if ((image->bits_per_pixel == 1) || (image->format != ZPixmap)) {
+    if (image->bits_per_pixel == 1) {
 	dest_bits_per_pixel = 1;
 	dest_scanline_pad = dpy->bitmap_pad;
     } else {
