@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.58 88/01/30 19:15:00 rws Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.58 88/01/31 10:05:47 rws Exp $";
 #endif
 
 /*
@@ -82,6 +82,82 @@ _XFlush (dpy)
 	    }
 	}
 	dpy->last_req = (char *)&_dummy_request;
+}
+
+int
+_XEventsQueued (dpy, mode)
+    register Display *dpy;
+    int mode;
+{
+	register int len;
+	int pend;
+	char buf[BUFSIZE];
+	register xReply *rep;
+	
+	switch (mode) {
+	    case QueuedAlready:
+		break;
+	    case QueuedAfterFlush:
+		_XFlush(dpy);	/* note deliberate fall through! */
+	    case QueuedAfterReading:
+		if (BytesReadable(dpy->fd, (char *) &pend) < 0)
+		    (*_XIOErrorFunction)(dpy);
+		if ((len = pend) < sizeof(xReply)) {
+		    return(dpy->qlen);
+		    }
+		else if (len > BUFSIZE)
+		    len = BUFSIZE;
+		len /= sizeof(xReply);
+		pend = len * sizeof(xReply);
+		_XRead (dpy, buf, (long) pend);
+		for (rep = (xReply *) buf; len > 0; rep++, len--) {
+		    if (rep->generic.type == X_Error)
+			_XError(dpy, (xError *)rep);
+		    else   /* must be an event packet */
+			_XEnq(dpy, (xEvent *) rep);
+		}
+	}
+	return(dpy->qlen);
+}
+
+/* _XReadEvents - Flush the output queue,
+ * then read as many events as possible and enqueue them
+ */
+_XReadEvents(dpy)
+	register Display *dpy;
+{
+	char buf[BUFSIZE];
+	long pend_not_register; /* because can't "&" a register variable */
+	register long pend;
+	register xEvent *ev;
+
+	_XFlush (dpy);
+	do {
+	    /* find out how much data can be read */
+	    if (BytesReadable(dpy->fd, (char *) &pend_not_register) < 0)
+	    	(*_XIOErrorFunction)(dpy);
+	    pend = pend_not_register;
+
+	    /* must read at least one xEvent; if none is pending, then
+	       we'll just block waiting for it */
+	    if (pend < sizeof(xEvent))
+	    	pend = sizeof (xEvent);
+		
+	    /* but we won't read more than the max buffer size */
+	    if (pend > BUFSIZE)
+	    	pend = BUFSIZE;
+
+	    /* round down to an integral number of XReps */
+	    pend = (pend / sizeof (xEvent)) * sizeof (xEvent);
+
+	    _XRead (dpy, buf, pend);
+	    for (ev = (xEvent *) buf; pend > 0; ev++, pend -= sizeof(xEvent)) {
+		if (ev->u.u.type == X_Error)
+		    _XError (dpy, (xError *) ev);
+		else  /* it's an event packet; enqueue it */
+		    _XEnq (dpy, ev);
+	    }
+	} while (dpy->head == NULL);
 }
 
 /* 
