@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.10 93/09/03 08:10:51 dpw Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.11 94/01/12 18:05:10 dpw Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -253,7 +253,8 @@ mfbCopyRotatePixmap(psrcPix, ppdstPix, xrot, yrot)
     else
     {
 	if (pdstPix)
-	    mfbDestroyPixmap(pdstPix);
+	    /* FIX XBUG 6168 */
+	    (*pdstPix->drawable.pScreen->DestroyPixmap)(pdstPix);
 	*ppdstPix = pdstPix = mfbCopyPixmap(psrcPix);
 	if (!pdstPix)
 	    return;

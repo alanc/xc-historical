@@ -1,4 +1,4 @@
-/* $XConsortium: cfbpixmap.c,v 5.11 93/09/03 08:11:39 dpw Exp $ */
+/* $XConsortium: cfbpixmap.c,v 5.12 93/12/13 17:22:17 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -333,7 +333,8 @@ cfbCopyRotatePixmap(psrcPix, ppdstPix, xrot, yrot)
     else
     {
 	if (pdstPix)
-	    cfbDestroyPixmap(pdstPix);
+	    /* FIX XBUG 6168 */
+	    (*pdstPix->drawable.pScreen->DestroyPixmap)(pdstPix);
 	*ppdstPix = pdstPix = cfbCopyPixmap(psrcPix);
 	if (!pdstPix)
 	    return;
