@@ -1,4 +1,4 @@
-/* $XConsortium: authutil.c,v 1.4 93/11/25 15:05:01 mor Exp $ */
+/* $XConsortium: authutil.c,v 1.5 93/11/25 16:27:42 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -33,13 +33,13 @@ static Status read_counted_string ();
 static Status write_short ();
 static Status write_string ();
 static Status write_counted_string ();
-static Bool address_valid ();
-static Bool auth_valid ();
 
 
 
 /*
  * The following routines are for manipulating the .ICEauthority file
+ * These are utility functions - they are not part of the standard
+ * ICE library specification.
  */
 
 char *
@@ -209,7 +209,7 @@ FILE	*auth_file;
 
     local.protocol_name = NULL;
     local.protocol_data = NULL;
-    local.address_list = NULL;
+    local.address = NULL;
     local.auth_name = NULL;
     local.auth_data = NULL;
 
@@ -220,7 +220,7 @@ FILE	*auth_file;
 	&local.protocol_data_length, &local.protocol_data))
 	goto bad;
 
-    if (!read_string (auth_file, &local.address_list))
+    if (!read_string (auth_file, &local.address))
 	goto bad;
 
     if (!read_string (auth_file, &local.auth_name))
@@ -241,7 +241,7 @@ FILE	*auth_file;
 
     if (local.protocol_name) free (local.protocol_name);
     if (local.protocol_data) free (local.protocol_data);
-    if (local.address_list) free (local.address_list);
+    if (local.address) free (local.address);
     if (local.auth_name) free (local.auth_name);
     if (local.auth_data) free (local.auth_data);
 
@@ -251,7 +251,7 @@ FILE	*auth_file;
 
 
 void
-IceDisposeAuthFileEntry (auth)
+IceFreeAuthFileEntry (auth)
 
 IceAuthFileEntry	*auth;
 
@@ -260,7 +260,7 @@ IceAuthFileEntry	*auth;
     {
 	if (auth->protocol_name) free (auth->protocol_name);
 	if (auth->protocol_data) free (auth->protocol_data);
-	if (auth->address_list) free (auth->address_list);
+	if (auth->address) free (auth->address);
 	if (auth->auth_name) free (auth->auth_name);
 	if (auth->auth_data) free (auth->auth_data);
 	free ((char *) auth);
@@ -283,7 +283,7 @@ IceAuthFileEntry	*auth;
 	auth->protocol_data_length, auth->protocol_data))
 	return (0);
 
-    if (!write_string (auth_file, auth->address_list))
+    if (!write_string (auth_file, auth->address))
 	return (0);
 
     if (!write_string (auth_file, auth->auth_name))
@@ -292,69 +292,6 @@ IceAuthFileEntry	*auth;
     if (!write_counted_string (auth_file,
 	auth->auth_data_length, auth->auth_data))
 	return (0);
-
-    return (1);
-}
-
-
-
-Status
-IceGetValidAuthIndicesFromAuthFile (protocol_name, address,
-    num_auth_names, auth_names, num_indices_ret, indices_ret)
-
-char	*protocol_name;
-char	*address;
-int	num_auth_names;
-char	**auth_names;
-int	*num_indices_ret;
-int	*indices_ret;		/* in/out arg */
-
-{
-    FILE    		*auth_file;
-    char    		*filename;
-    IceAuthFileEntry    *entry;
-    int			index_ret, i;
-
-    *num_indices_ret = 0;
-
-    if (!(filename = IceAuthFileName ()))
-	return (0);
-
-    if (access (filename, R_OK) != 0)		/* checks REAL id */
-	return (0);
-
-    if (!(auth_file = fopen (filename, "rb")))
-	return (0);
-
-    for (;;)
-    {
-	if (!(entry = IceReadAuthFileEntry (auth_file)))
-	    break;
-
-	if (strcmp (protocol_name, entry->protocol_name) == 0 &&
-	    address_valid (address, entry->address_list) &&
-	    auth_valid (entry->auth_name, num_auth_names,
-	    auth_names, &index_ret))
-	{
-	    /*
-	     * Make sure we didn't store this index already.
-	     */
-
-	    for (i = 0; i < *num_indices_ret; i++)
-		if (index_ret == indices_ret[i])
-		    break;
-
-	    if (i >= *num_indices_ret)
-	    {
-		indices_ret[*num_indices_ret] = index_ret;
-		*num_indices_ret += 1;
-	    }
-	}
-
-	IceDisposeAuthFileEntry (entry);
-    }
-
-    fclose (auth_file);
 
     return (1);
 }
@@ -388,67 +325,18 @@ char	*auth_name;
 	    break;
 
 	if (strcmp (protocol_name, entry->protocol_name) == 0 &&
-	    address_valid (address, entry->address_list) &&
+	    strcmp (address, entry->address) == 0 &&
             strcmp (auth_name, entry->auth_name) == 0)
 	{
 	    break;
 	}
 
-	IceDisposeAuthFileEntry (entry);
+	IceFreeAuthFileEntry (entry);
     }
 
     fclose (auth_file);
 
     return (entry);
-}
-
-
-
-/*
- * Internal routines to ICElib
- */
-
-void
-_IceGetValidAuthIndices (listen_obj, protocol_name,
-    num_auth_names, auth_names, num_indices_ret, indices_ret)
-
-IceListenObj	listen_obj;
-char		*protocol_name;
-int		num_auth_names;
-char		**auth_names;
-int		*num_indices_ret;
-int		*indices_ret;		/* in/out arg */
-
-{
-    int			index_ret;
-    int			i, j;
-    IceAuthDataEntry	*entry;
-
-    *num_indices_ret = 0;
-
-    for (i = 0;	i < listen_obj->auth_data_entry_count; i++)
-    {
-	entry = &listen_obj->auth_data_entries[i];
-
-	if (strcmp (protocol_name, entry->protocol_name) == 0 &&
-	    auth_valid (entry->auth_name, num_auth_names,
-	    auth_names, &index_ret))
-	{
-	    /*
-	     * Make sure we didn't store this index already.
-	     */
-
-	    for (j = 0; j < *num_indices_ret; j++)
-		if (index_ret == indices_ret[j])
-		    break;
-
-	    if (j >= *num_indices_ret)
-	    {
-		indices_ret[*num_indices_ret] = index_ret;
-		*num_indices_ret += 1;
-	    }
-	}
-    }
 }
 
 
@@ -605,97 +493,4 @@ char		*string;
 	return (0);
 
     return (1);
-}
-
-
-static char *
-findchar (strptr, ch, bytes)
-
-char		*strptr;
-char 		ch;
-unsigned	bytes;
-
-{
-    char *ptr = strptr;
-
-    while (*ptr != ch && bytes)
-    {
-	ptr++;
-	bytes--;
-    }
-
-    if (bytes > 0 && *ptr == ch)
-	return (ptr);
-    else
-	return (NULL);
-}
-
-
-static Bool
-address_valid (address, address_list)
-
-char	 *address;
-char     *address_list;
-
-{
-    /*
-     * Check if address is in address_list.
-     */
-
-    char	*ptr = address_list;
-    char	*next;
-    unsigned	bytes;
-    int		bytesLeft = strlen (address_list);
-
-    while (bytesLeft > 0)
-    {
-	next = (char *) findchar (ptr, ',', bytesLeft);
-
-	if (next)
-	    bytes = next - ptr;
-	else
-	    bytes = bytesLeft;
-
-	if (bytes == strlen (address) &&
-	    strncmp (ptr, address, bytes) == 0)
-	{
-	    return (1);
-	}
-
-	bytesLeft -= (bytes + 1);
-	ptr += (bytes + 1);
-    }
-
-    return (0);
-}
-
-
-static Bool
-auth_valid (auth_name, num_auth_names, auth_names, index_ret)
-
-char	*auth_name;
-int	num_auth_names;
-char	**auth_names;
-int	*index_ret;
-
-{
-    /*
-     * Check if auth_name is in auth_names.  Return index.
-     */
-
-    int i;
-
-    for (i = 0; i < num_auth_names; i++)
-	if (strcmp (auth_name, auth_names[i]) == 0)
-	{
-	    break;
-	}
-   
-    if (i < num_auth_names)
-    {
-	*index_ret = i;
-	return (1);
-    }
-    else
-	return (0);
 }
