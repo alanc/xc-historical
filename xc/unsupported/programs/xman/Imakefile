@@ -1,11 +1,7 @@
-#ifdef BandAidCompiler
-#include BandAidCompiler
-#endif
-
 # 
 #  xman - X window system manual page display program.
 # 
-#  $XConsortium: Imakefile,v 1.12 89/10/09 09:44:56 rws Exp $
+#  $XConsortium: Imakefile,v 1.13 89/11/24 18:02:50 jim Exp $
 #  $Athena: Imakefile,v 1.1 88/08/31 21:11:32 kit Locked $
 # 
 #  Copyright 1987, 1988 Massachusetts Institute of Technology

@@ -1,9 +1,5 @@
 #include <Library.tmpl>
 
-#ifdef BandAidCompiler
-#include BandAidCompiler
-#endif
-
        INCLUDES = -I. -I$(TOP)
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB)

@@ -1,7 +1,3 @@
-#ifdef BandAidCompiler
-#include BandAidCompiler
-#endif
-
 # 
 #  xbitmap
 # 

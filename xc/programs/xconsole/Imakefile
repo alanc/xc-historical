@@ -1,7 +1,3 @@
-#ifdef BandAidCompiler
-#include BandAidCompiler
-#endif
-
           SRCS = xconsole.c
           OBJS = xconsole.o
        PROGRAMS = xconsole

@@ -7,10 +7,6 @@ XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
 
-#ifdef BandAidCompiler
-#include BandAidCompiler
-#endif
-
 /*
  * add -DWTMP and -DLASTLOG if you want them; make sure that bcopy can
  * handle overlapping copies before using it.

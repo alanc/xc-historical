@@ -1,10 +1,5 @@
 #include <Library.tmpl>
 
-#ifdef BandAidCompiler
-#include BandAidCompiler
-#endif
-
-
 /* config options */
 
 XFILESEARCHPATHDEFAULT = XFileSearchPathDefault
