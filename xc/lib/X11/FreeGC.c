@@ -1,4 +1,4 @@
-/* $XConsortium: XFreeGC.c,v 11.10 91/01/06 11:45:48 rws Exp $ */
+/* $XConsortium: XFreeGC.c,v 11.11 91/05/02 18:16:02 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -22,15 +22,15 @@ XFreeGC (dpy, gc)
     register xResourceReq *req;
     register _XExtension *ext;
     LockDisplay(dpy);
-    GetResReq (FreeGC, gc->gid, req);
     ext = dpy->ext_procs;
     while (ext) {		/* call out to any extensions interested */
 	if (ext->free_GC != NULL) (*ext->free_GC)(dpy, gc, &ext->codes);
 	ext = ext->next;
 	}    
-    _XFreeExtData(gc->ext_data);
-    Xfree ((char *) gc);
+    GetResReq (FreeGC, gc->gid, req);
     UnlockDisplay(dpy);
     SyncHandle();
+    _XFreeExtData(gc->ext_data);
+    Xfree ((char *) gc);
     }
     
