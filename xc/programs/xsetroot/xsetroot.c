@@ -1,6 +1,7 @@
 /* Copyright 1987, Massachusetts Institute of Technology */
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <stdio.h>
 
 /*
