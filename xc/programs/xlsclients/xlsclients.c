@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsclients.c,v 1.3 89/03/29 14:37:22 jim Exp $
+ * $XConsortium: xlsclients.c,v 1.4 89/04/10 14:08:38 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -167,19 +167,19 @@ print_client_properties (dpy, w, verbose, maxcmdlen)
 	print_text_field (dpy, "  Machine:  ", &machtp);
 	if (XGetWMName (dpy, w, &nametp)) {
 	    print_text_field (dpy, "  Name:  ", &nametp);
-	    if (nametp.value) XFree (nametp.value);
+	    if (nametp.value) XFree ((char *) nametp.value);
 	}
     } else {
 	print_text_field (dpy, NULL, &machtp);
 	putchar (' ');
 	putchar (' ');
     }
-    if (machtp.value) XFree (machtp.value);
+    if (machtp.value) XFree ((char *) machtp.value);
 
     if (verbose) {
 	if (XGetWMIconName (dpy, w, &tp)) {
 	    print_text_field (dpy, "  Icon Name:  ", &tp);
-	    if (tp.value) XFree (tp.value);
+	    if (tp.value) XFree ((char *) tp.value);
 	}
     }
 
