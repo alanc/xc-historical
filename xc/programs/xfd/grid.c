@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.13 89/08/07 16:03:15 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.14 89/08/07 18:18:02 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -171,12 +171,12 @@ static void Initialize (request, new)
     FontGridWidget reqfg = (FontGridWidget) request;
     FontGridWidget newfg = (FontGridWidget) new;
     int tcols = 0, nrows = 16;
+    XFontStruct *fs = newfg->fontgrid.text_font;
 
     if (reqfg->fontgrid.cell_cols <= 0)
       newfg->fontgrid.cell_cols = 16;
 
     if (reqfg->fontgrid.cell_rows <= 0) {
-	XFontStruct *fs = newfg->fontgrid.text_font;
 	if (fs && fs->max_byte1 == 0) {
 	    newfg->fontgrid.cell_rows = (fs->max_char_or_byte2 / 
 					 newfg->fontgrid.cell_cols) + 1;
@@ -187,9 +187,9 @@ static void Initialize (request, new)
     }
 
     if (reqfg->fontgrid.cell_width <= 0)
-      newfg->fontgrid.cell_width = DefaultCellWidth (newfg);
+      newfg->fontgrid.cell_width = (fs ? DefaultCellWidth (newfg) : 0);
     if (reqfg->fontgrid.cell_height <= 0)
-      newfg->fontgrid.cell_height = DefaultCellHeight (newfg);
+      newfg->fontgrid.cell_height = (fs ? DefaultCellHeight (newfg) : 0);
 
     /* give a nice size that fits one screen full */
     if (newfg->core.width == 0)
@@ -207,8 +207,7 @@ static void Initialize (request, new)
      */
 
     if (newfg->fontgrid.start_char == -1L) {
-	newfg->fontgrid.start_char = 
-	  (long) (newfg->fontgrid.text_font->min_byte1 << 8);
+	newfg->fontgrid.start_char = (fs ? (long)(fs->min_byte1 << 8) : 0L);
     }
 
     return;
