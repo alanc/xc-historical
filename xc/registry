@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.40 91/05/29 16:17:41 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.41 91/05/30 10:12:18 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -689,6 +689,7 @@ Value	Name					Reference
 6	Sumitomo Electric Workstation Corp.	[77]
 7	Hewlett-Packard Co.			[78]
 8	Metro Link Inc.				[79]
+9	Stardent Computer			[80]
 
 
 REFERENCES
@@ -1054,3 +1055,9 @@ REFERENCES
 	Metro Link Incorporated
 	2213 W. McNab Rd
 	Pompano Beach, FL 33069
+
+[80]	John Dennis
+	Stardent Computer
+	6 New England Tech Center
+	521 Virginia Road
+	Concord, MA 01742
