@@ -126,7 +126,13 @@ alloca.o:  $(PWLIB)
 SpecialObjectRule(osinit.o, $(ICONFIGFILES), -DADMPATH=\"$(ADMDIR)/X\%smsgs\" $(DBM_DEFINES))
 SpecialObjectRule(WaitFor.o, $(ICONFIGFILES), $(EXT_DEFINES))
 SpecialObjectRule(fonttype.o, $(ICONFIGFILES), $(FONT_DEFINES))
+#if defined(SparcArchitecture) && HasGcc
+oscolor.o: $(ICONFIGFILES)
+	$(RM) $@
+	cc -c $(DBM_DEFINES) $(CDEBUGFLAGS) $(ALLDEFINES) $*.c
+#else
 SpecialObjectRule(oscolor.o, $(ICONFIGFILES), $(DBM_DEFINES))
+#endif
 
 #if HasSaberC
 saber_src:
