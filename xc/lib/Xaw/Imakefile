@@ -179,6 +179,10 @@ InstallLibrary(Xaw_p,$(USRLIBDIR))
 DebuggedLibraryTarget(Xaw,$(OBJS))
 #endif
 
+#ifdef CrayArchitecture
+/**/# Cray SCC optimizer is broken
+SpecialObjectRule(Paned.o,  ,-hnoopt)
+#endif
 BuildIncludes($(HEADERS),Xaw,..)
 
 MakeDirectories(install,$(INCDIR)/Xaw)
