@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcmap.c,v 1.2 89/05/02 18:40:08 rws Exp $
+ * $XConsortium: xcmap.c,v 1.3 89/05/19 14:29:02 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,6 +29,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xatom.h>
+#include <X11/Xmu/Xmu.h>
 
 extern void exit();
 
