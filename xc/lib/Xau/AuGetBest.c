@@ -1,4 +1,4 @@
-/* $XConsortium: AuGetBest.c,v 1.5 93/08/16 11:58:45 rws Exp $ */
+/* $XConsortium: AuGetBest.c,v 1.6 94/04/17 20:15:43 rws Exp mor $ */
 
 /*
 
@@ -29,6 +29,9 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/Xauth.h>
 #include <X11/Xos.h>
+#ifdef hpux
+#include <netdb.h>
+#endif
 
 static
 binaryEqual (a, b, len)
@@ -82,6 +85,10 @@ XauGetBestAuthByAddr (family, address_length, address,
     Xauth   *best;
     int	    best_type;
     int	    type;
+#ifdef hpux
+    char		*fully_qual_address;
+    unsigned short	fully_qual_address_length;
+#endif
 
     auth_name = XauFileName ();
     if (!auth_name)
@@ -91,6 +98,25 @@ XauGetBestAuthByAddr (family, address_length, address,
     auth_file = fopen (auth_name, "rb");
     if (!auth_file)
 	return 0;
+
+#ifdef hpux
+    if (family == FamilyLocal) {
+	struct hostent *host;
+
+	/* make sure we try fully-qualified hostname */
+	host = gethostbyname(address);
+	if (host) {
+	    fully_qual_address = host->h_name;
+	    fully_qual_address_length = strlen(fully_qual_address);
+	}
+	else
+	{
+	    fully_qual_address = NULL;
+	    fully_qual_address_length = 0;
+	}
+    }
+#endif /* hpux */
+
     best = 0;
     best_type = types_length;
     for (;;) {
@@ -114,8 +140,15 @@ XauGetBestAuthByAddr (family, address_length, address,
 
 	if ((family == FamilyWild || entry->family == FamilyWild ||
 	     (entry->family == family &&
-	      address_length == entry->address_length &&
-	      binaryEqual (entry->address, address, (int)address_length))) &&
+	     (address_length == entry->address_length &&
+	      binaryEqual (entry->address, address, (int)address_length))
+#ifdef hpux
+	     || (family == FamilyLocal &&
+		fully_qual_address_length == entry->address_length &&
+	     	binaryEqual (entry->address, fully_qual_address,
+		    (int) fully_qual_address_length))
+#endif
+	    )) &&
 	    (number_length == 0 || entry->number_length == 0 ||
 	     (number_length == entry->number_length &&
 	      binaryEqual (entry->number, number, (int)number_length))))

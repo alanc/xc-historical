@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.54 94/04/17 20:03:33 gildea Exp $ */
+/* $XConsortium: auth.c,v 1.55 94/06/03 16:34:12 mor Exp mor $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -655,15 +655,24 @@ DefineLocal (file, auth)
 	uname(&name);
 	strcpy(displayname, name.nodename);
 	}
-#else
+	writeAddr (FamilyLocal, strlen (displayname), displayname, file, auth);
+#endif
+
+#if (!defined(NEED_UTSNAME) || defined (hpux))
         /* AIXV3:
 	 * In AIXV3, _POSIX_SOURCE is defined, but uname gives only first
 	 * field of hostname. Thus, we use gethostname instead.
 	 */
 
+	/*
+	 * For HP-UX, HP's Xlib expects a fully-qualified domain name, which
+	 * is achieved by using gethostname().  For compatability, we must
+	 * also still create the entry using uname() above.
+	 */
+
 	gethostname(displayname, sizeof(displayname));
-#endif
 	writeAddr (FamilyLocal, strlen (displayname), displayname, file, auth);
+#endif
 }
 
 
