@@ -1417,12 +1417,12 @@
 ;; integers and did no translation.  Or the default could come from the
 ;; gcontext (but what about text-extents and text-width?).
 
-(defun text-extents (fonts sequence &key (start 0) end translate)
+(defun text-extents (font sequence &key (start 0) end translate)
   ;; If multiple fonts are involved, font-ascent and font-descent will be the
   ;; maximums.  If multiple directions are involved, the direction will be nil.
   ;; Translate will always be called with a 16-bit dst buffer.
   (declare (type sequence sequence)
-	   (type (or null font gcontext) font)
+	   (type (or font gcontext) font)
 	   (type translate translate)
 	   (values width ascent descent left right font-ascent font-descent direction
 		   (or null array-index))))
@@ -1430,7 +1430,7 @@
 (defun text-width (font sequence &key (start 0) end translate)
   ;; Translate will always be called with a 16-bit dst buffer.
   (declare (type sequence sequence)
-	   (type (or null font gcontext) font)
+	   (type (or font gcontext) font)
 	   (type translate translate)
 	   (values int32 (or null array-index))))
 

@@ -126,7 +126,7 @@
   ;; maximums.  If multiple directions are involved, the direction will be nil.
   ;; Translate will always be called with a 16-bit dst buffer.
   (declare (type sequence sequence)
-	   (type (or null font gcontext) font))
+	   (type (or font gcontext) font))
   (declare (type (or null translation-function) translate)
 	   (downward-funarg #+Genera * #-Genera translate))
   (declare (values width ascent descent left right
@@ -135,6 +135,7 @@
   (when (type? font 'gcontext)
     (force-gcontext-changes font)
     (setq font (gcontext-font font t)))
+  (check-type font font)
   (let* ((left-bearing 0)
 	 (right-bearing 0)
 	 ;; Sum of widths
@@ -225,7 +226,7 @@
 (defun text-width (font sequence &key (start 0) end translate)
   ;; Translate will always be called with a 16-bit dst buffer.
   (declare (type sequence sequence)
-	   (type (or null font gcontext) font)
+	   (type (or font gcontext) font)
 	   (type array-index start)
 	   (type (or null array-index) end))
   (declare (type (or null translation-function) translate)
@@ -234,6 +235,7 @@
   (when (type? font 'gcontext)
     (force-gcontext-changes font)
     (setq font (gcontext-font font t)))
+  (check-type font font)
   (let* ((width 0)
 	 (next-start nil)
 	 (display (font-display font)))
