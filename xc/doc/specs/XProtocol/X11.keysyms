@@ -1,3 +1,7 @@
+.EH ''''
+.OH ''''
+.EF ''''
+.OF ''''
 \&
 .sp 1
 .ce 3
@@ -8,9 +12,6 @@
 \s+1\fBKEYSYM Encoding\fP\s-1
 .sp 2
 .LP
-.XS
-Appendix A \- KEYSYM Encoding
-.XE
 .ps 9
 .nr PS 9
 .vs 10
