@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.157 94/07/06 16:19:53 mor Exp $
+ * $XConsortium: add_window.c,v 1.158 94/07/21 17:46:55 mor Exp mor $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -226,7 +226,7 @@ IconMgr *iconp;
 
     tmp_win->wmhints = XGetWMHints(dpy, tmp_win->w);
 
-    if (restore_iconified)
+    if (tmp_win->wmhints && restore_iconified)
     {
 	tmp_win->wmhints->initial_state = IconicState;
 	tmp_win->wmhints->flags |= StateHint;
