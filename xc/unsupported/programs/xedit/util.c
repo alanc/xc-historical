@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.94 89/07/16 16:20:33 kit Exp $";
+static char Xrcsid[] = "$XConsortium: util.c,v 1.12 89/07/21 19:52:54 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -72,7 +72,6 @@ String name, string;
   Widget StringW;
 
   XtSetArg(args[numargs], XtNeditType, XawtextEdit); numargs++;
-  XtSetArg(args[numargs], XtNtextOptions, resizeWidth); numargs++;
   XtSetArg(args[numargs], XtNstring, string); numargs++;
 
   StringW = XtCreateManagedWidget(name, asciiTextWidgetClass, 

@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.94 89/07/16 16:20:33 kit Exp $";
+static char Xrcsid[] = "$XConsortium: xedit.c,v 1.20 89/07/21 19:52:55 kit Exp $";
 #endif /* lint && SABER */
  
 /*
@@ -94,8 +94,6 @@ char * filename;
   XtCreateManagedWidget("bc_label", labelWidgetClass, outer, NULL, ZERO);
 
   num_args = 0;
-  XtSetArg(arglist[num_args], XtNtextOptions, (scrollVertical | autoFill) );
-  num_args++;
   XtSetArg(arglist[num_args], XtNeditType, XawtextEdit); num_args++;
   messwidget = XtCreateManagedWidget("messageWindow", asciiTextWidgetClass,
 				      outer, arglist, num_args);
@@ -108,8 +106,6 @@ char * filename;
 				      outer, arglist, num_args);
 
   num_args = 0;
-  XtSetArg(arglist[num_args], XtNtextOptions, (scrollVertical | autoFill) );
-  num_args++;
   XtSetArg(arglist[num_args], XtNstring, filename); num_args++;
   XtSetArg(arglist[num_args], XtNtype, XawAsciiFile); num_args++;
   XtSetArg(arglist[num_args], XtNeditType, XawtextEdit); num_args++;

@@ -16,4 +16,11 @@ Xedit*buttons*showGrip:			False
 Xedit*messageWindow*preferredPaneSize:	50
 Xedit*Paned*Text*allowResize:		True
 
+Xedit*messageWindow.autoFill:		True
+Xedit*messageWindow.scrollVertical:	WhenNeeded
+
+Xedit*editWindow.autoFill:		True
+Xedit*editWindow.scrollVertical:	WhenNeeded
+
 Xedit*bc_label*label:			Use Control-S and Control-R to Search.
+
