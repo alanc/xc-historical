@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.8 89/07/18 17:15:58 jim Exp $
+ * $XConsortium: icons.c,v 1.9 89/11/13 18:22:57 jim Exp $
  *
  * Icon releated routines
  *
@@ -314,14 +314,13 @@ int def_x, def_y;
     unsigned long event_mask;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
-    Pixmap pm;			/* tmp pixmap variable */
+    Pixmap pm = None;			/* tmp pixmap variable */
     int final_x, final_y;
     int x;
 
 
     FB(tmp_win->iconc.fore, tmp_win->iconc.back);
 
-    pm = NULL;
     tmp_win->forced = FALSE;
 
     /* now go through the steps to get an icon window,  if ForceIcon is 
@@ -371,7 +370,7 @@ int def_x, def_y;
      * that could mean that ForceIcon was not set, or that the window
      * was not in the Icons list, now check the WM hints for an icon
      */
-    if (pm == NULL && tmp_win->wmhints &&
+    if (pm == None && tmp_win->wmhints &&
 	tmp_win->wmhints->flags & IconPixmapHint)
     {
     
@@ -390,7 +389,7 @@ int def_x, def_y;
     /* if we still haven't got an icon, let's look in the Icon list 
      * if ForceIcon is not set
      */
-    if (pm == NULL && !Scr->ForceIcon)
+    if (pm == None && !Scr->ForceIcon)
     {
 	char *icon_name;
 	Pixmap bm;
@@ -429,7 +428,7 @@ int def_x, def_y;
 
     /* if we still don't have an icon, assign the UnknownIcon */
 
-    if (pm == NULL && Scr->UnknownPm != NULL)
+    if (pm == None && Scr->UnknownPm != NULL)
     {
 	tmp_win->icon_width = Scr->UnknownWidth;
 	tmp_win->icon_height = Scr->UnknownHeight;
@@ -442,7 +441,7 @@ int def_x, def_y;
 	    0,0, tmp_win->icon_width, tmp_win->icon_height, 0, 0, 1 );
     }
 
-    if (pm == NULL)
+    if (pm == None)
     {
 	tmp_win->icon_height = 0;
 	tmp_win->icon_width = 0;
@@ -503,7 +502,7 @@ int def_x, def_y;
 	ButtonPressMask | ButtonReleaseMask | event_mask);
 
     tmp_win->icon_bm_w = NULL;
-    if (pm != NULL &&
+    if (pm != None &&
 	(! (tmp_win->wmhints && tmp_win->wmhints->flags & IconWindowHint)))
     {
 	int y;
@@ -549,5 +548,6 @@ int def_x, def_y;
     XSaveContext(dpy, tmp_win->icon_w, TwmContext, tmp_win);
     XSaveContext(dpy, tmp_win->icon_w, ScreenContext, Scr);
     XDefineCursor(dpy, tmp_win->icon_w, Scr->IconCursor);
+    XFreePixmap (dpy, pm);
+    return;
 }
-
