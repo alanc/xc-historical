@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.5 94/07/19 12:37:47 mor Exp $ */
+/* $XConsortium: globals.c,v 1.6 94/07/21 14:54:25 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -54,6 +54,12 @@ int		numClientNames = 0;
 int		sessionNameCount = 0;
 String		*sessionNames = NULL;
 
+char		*display_env = NULL, *non_local_display_env = NULL;
+char		*session_env = NULL, *non_local_session_env = NULL;
+char		*audio_env = NULL;
+
+Bool		remote_allowed;
+
 XtAppContext	appContext;
 
 Widget		topLevel;
@@ -88,6 +94,7 @@ Widget		    clientInfoPopup;
 Widget		    	clientInfoForm;
 
 Widget			    viewPropButton;
+Widget			    cloneButton;
 Widget			    killClientButton;
 Widget			    clientInfoDoneButton;
 Widget			    clientListWidget;

@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.18 94/07/19 12:37:57 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.19 94/07/21 14:54:51 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -112,6 +112,12 @@ typedef struct _PendingValue {
 } PendingValue;
 
 
+extern char		*display_env, *non_local_display_env;
+extern char		*session_env, *non_local_session_env;
+extern char		*audio_env;
+
+extern Bool		remote_allowed;
+
 extern XtAppContext	appContext;
 
 extern Bool		verbose;
@@ -170,6 +176,7 @@ extern Widget		    clientInfoPopup;
 extern Widget		    	clientInfoForm;
 
 extern Widget			    viewPropButton;
+extern Widget			    cloneButton;
 extern Widget			    killClientButton;
 extern Widget			    clientInfoDoneButton;
 extern Widget			    clientListWidget;
