@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.112 91/07/20 19:43:01 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.113 91/07/23 13:56:07 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -788,6 +788,7 @@ void _XtShellAncestorSensitive(widget,closure,value)
    else _XtCopyFromParent (widget,closure,value);
 }
 
+/*ARGSUSED*/
 #ifndef CRAY
 static
 #endif
