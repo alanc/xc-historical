@@ -1,4 +1,4 @@
-/* $XConsortium: XImUtil.c,v 11.42 91/04/01 17:51:06 gildea Exp $ */
+/* $XConsortium: XImUtil.c,v 11.43 91/04/04 18:57:34 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -692,8 +692,6 @@ int _XSetImage (srcimg, dstimg, x, y)
 	register unsigned long pixel;
 	register int row, col;
 	int width, height, startrow, startcol;
-	if (srcimg->depth != dstimg->depth)
-	    _XReportBadImage ("depth", dstimg->depth, "_XSetImage");
 	if (x < 0) {
 	    startcol = -x;
 	    x = 0;
