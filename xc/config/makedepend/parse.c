@@ -1,5 +1,5 @@
 /*
- * $Header: parse.c,v 1.2 88/08/03 08:55:57 xswick Exp $
+ * $Header: parse.c,v 1.3 88/08/21 11:32:30 rws Exp $
  */
 #include "def.h"
 #include	<sys/signal.h>
@@ -191,6 +191,13 @@ deftype(line, filep, file_red, file, parse_it)
 	case INCLUDE:
 		debug2("%s, line %d: #include %s\n",
 			file->i_file, filep->f_line, p);
+		/* Support ANSI macro substitution */
+		{
+		    struct symtab *sym = defined(p, file_red);
+		    if (sym) {
+			p = sym->s_value;
+		    }
+		}
 		/*
 		 * Separate the name of the include file.
 		 */
