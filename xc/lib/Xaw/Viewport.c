@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.18 88/02/23 10:00:40 swick Exp $";
+static char rcsid[] = "$Header: Viewport.c,v 1.19 88/02/26 10:15:15 swick Exp $";
 #endif lint
 
 
@@ -567,12 +567,20 @@ static void ThumbProc(widget, closure, percent)
     Position x, y;
 
     if (widget == w->viewport.horiz_bar)
+#ifdef macII				/* bug in the macII A/UX 1.0 cc */
+	x = (int)(-percent * child->core.width);
+#else /* else not macII */
 	x = -(int)(percent * child->core.width);
+#endif /* macII */
     else
 	x = child->core.x;
 
     if (widget == w->viewport.vert_bar)
+#ifdef macII				/* bug in the macII A/UX 1.0 cc */
+	y = (int)(-percent * child->core.height);
+#else /* else not macII */
 	y = -(int)(percent * child->core.height);
+#endif /* macII */
     else
 	y = child->core.y;
 
