@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.h,v 1.13 94/04/17 20:11:19 rws Exp dpw $
+ * $XConsortium: extutil.h,v 1.14 94/09/15 21:03:30 dpw Exp kaleb $
  *
 Copyright (c) 1989  X Consortium
 
@@ -153,7 +153,7 @@ extern XExtDisplayInfo *XextAddDisplay(
     char*		/* ext_name */,
     XExtensionHooks*	/* hooks */,
     int			/* nevents */,
-    caddr_t		/* data */
+    XPointer		/* data */
 #endif
 );
 extern int XextRemoveDisplay(
