@@ -104,7 +104,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	if (srcBit + w <= PPW) 
 	{ 
 	    getbits(psrc, srcBit, w, tmpSrc);
-/*XXX*/	    putbits(tmpSrc, 0, w, pdst, -1); 
+/*XXX*/	    putbits(tmpSrc, 0, w, pdst, ~((unsigned long)0)); 
 	    pdst++;
 	} 
 	else 
@@ -121,7 +121,7 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	    if (startmask) 
 	    { 
 		getbits(psrc, srcBit, nstart, tmpSrc);
-/*XXX*/		putbits(tmpSrc, 0, nstart, pdst, -1);
+/*XXX*/		putbits(tmpSrc, 0, nstart, pdst, ~((unsigned long)0));
 		if(srcStartOver)
 		    psrc++;
 	    } 
@@ -129,14 +129,14 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	    while (nl--) 
 	    { 
 		tmpSrc = *psrc;
-/*XXX*/		putbits(tmpSrc, nstart, PPW, pdst, -1);
+/*XXX*/		putbits(tmpSrc, nstart, PPW, pdst, ~((unsigned long)0));
 		psrc++;
 		pdst++;
 	    } 
 	    if (endmask) 
 	    { 
 		getbits(psrc, 0, nend, tmpSrc);
-/*XXX*/		putbits(tmpSrc, nstart, nend, pdst, -1);
+/*XXX*/		putbits(tmpSrc, nstart, nend, pdst, ~((unsigned long)0));
 		if(nstart + nend >= PPW)
 		    pdst++;
 	    } 
