@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.30 90/03/05 18:57:50 keith Exp $
+ * $XConsortium: dm.h,v 1.31 90/03/29 11:36:37 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -51,6 +51,7 @@ typedef union wait	waitType;
 #ifdef UDP_SOCKET
 #include	<sys/types.h>
 #include	<netinet/in.h>
+#define BROADCAST_HOSTNAME  "BROADCAST"
 #endif
 
 # define waitCompose(sig,core,code) ((sig) * 256 + (core) * 128 + (code))
@@ -217,6 +218,7 @@ extern char	*authDir;
 extern int	autoRescan;
 extern int	removeDomainname;
 extern char	*keyFile;
+extern char	*accessFile;
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayBySessionID (),

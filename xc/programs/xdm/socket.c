@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.16 90/02/12 17:56:32 keith Exp $
+ * $XConsortium: socket.c,v 1.17 90/03/05 11:48:42 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -30,6 +30,9 @@
 # include	<sys/un.h>
 # include	<X11/X.h>
 # include	<netdb.h>
+# include	<ctype.h>
+
+#define getString(name,len)	((name = malloc (len + 1)) ? 1 : 0)
 
 /*
  * interface to policy routines
@@ -50,6 +53,7 @@ int	WellKnownSocketsMax;
 CreateWellKnownSockets ()
 {
     struct sockaddr_in	sock_addr;
+    char		*name, *localHostname();
 
     if (request_port == 0)
 	    return;
@@ -59,6 +63,8 @@ CreateWellKnownSockets ()
 	LogError ("socket creation failed\n");
 	return;
     }
+    name = localHostname ();
+    registerHostname (name, strlen (name));
     RegisterCloseOnFork (socketFd);
     sock_addr.sin_family = AF_INET;
     sock_addr.sin_port = htons ((short) request_port);
@@ -127,35 +133,6 @@ registerHostname (name, namelen)
 	return;
     for (i = 0; i < namelen; i++)
 	Hostname.data[i] = name[i];
-}
-
-typedef struct _forwardHost {
-    struct _forwardHost	*next;
-    struct sockaddr	*addr;
-    int			addrlen;
-} forwardHost, *forwardHostPtr;
-
-forwardHostPtr	forwardHosts;
-
-registerForwardHost (addr, addrlen)
-    struct sockaddr *addr;
-    int		    addrlen;
-{
-    forwardHostPtr  new;
-
-    new = (forwardHostPtr) malloc (sizeof (forwardHost));
-    if (!new)
-	return;
-    new->addr = (struct sockaddr *) malloc ((unsigned) addrlen);
-    if (!new->addr)
-    {
-	free ((char *) new);
-	return;
-    }
-    bcopy (addr, new->addr, addrlen);
-    new->addrlen = addrlen;
-    new->next = forwardHosts;
-    forwardHosts = new;
 }
 
 static XdmcpBuffer	buffer;
@@ -237,18 +214,55 @@ direct_query_respond (from, fromlen, length, type)
     XdmcpDisposeARRAYofARRAY8 (&queryAuthenticationNames);
 }
 
+static int
+sendForward (connectionType, address, closure)
+    CARD16	connectionType;
+    ARRAY8Ptr	address;
+    char	*closure;
+{
+#ifdef AF_INET
+    struct sockaddr_in	    in_addr;
+#endif
+#ifdef AF_DECnet
+#endif
+    struct sockaddr	    *addr;
+    int			    addrlen;
+
+    switch (connectionType)
+    {
+#ifdef AF_INET
+    case FamilyInternet:
+	addr = (struct sockaddr *) &in_addr;
+	in_addr.sin_family = AF_INET;
+	in_addr.sin_port = htons ((short) XDM_UDP_PORT);
+	if (address->length != 4)
+	    return;
+	bcopy (address->data, (char *) &in_addr.sin_addr, address->length);
+	addrlen = sizeof (struct sockaddr_in);
+	break;
+#endif
+#ifdef AF_DECnet
+    case FamilyDECnet:
+#endif
+    default:
+	return;
+    }
+    XdmcpFlush (socketFd, &buffer, addr, addrlen);
+}
+
 indirect_respond (from, fromlen, length)
     struct sockaddr *from;
     int		    fromlen;
     int		    length;
 {
-    forwardHostPtr  forward;
     ARRAYofARRAY8   queryAuthenticationNames;
     ARRAY8	    clientAddress;
     ARRAY8	    clientPort;
+    CARD16	    connectionType;
     int		    expectedLen;
     int		    i;
     XdmcpHeader	    header;
+    int		    localHostAsWell;
     
     Debug ("Indirect respond %d\n", length);
     if (!XdmcpReadARRAYofARRAY8 (&buffer, &queryAuthenticationNames))
@@ -277,6 +291,7 @@ indirect_respond (from, fromlen, length)
 	    	    for (i = 0; i < length; i++)
 		    	clientAddress.data[i] = un_addr->sun_path[i];
 	    	}
+		connectionType = FamilyLocal;
 	    	break;
     	    }
 #endif
@@ -284,6 +299,7 @@ indirect_respond (from, fromlen, length)
     	case AF_INET:
     	    {
 	    	struct sockaddr_in	*in_addr;
+		short			port;
     	
 	    	in_addr = (struct sockaddr_in *) from;
 	    	if (XdmcpAllocARRAY8 (&clientAddress, 4) &&
@@ -292,6 +308,7 @@ indirect_respond (from, fromlen, length)
 	    	    bcopy (&in_addr->sin_addr, clientAddress.data, 4);
 	    	    bcopy (&in_addr->sin_port, clientPort.data, 2);
 	    	}
+		connectionType = FamilyInternet;
     	    }
     	    break;
 #endif
@@ -301,6 +318,7 @@ indirect_respond (from, fromlen, length)
 #endif
 #ifdef AF_DECnet
     	case AF_DECnet:
+	    connectionType = FamilyDECnet;
     	    break;
 #endif
     	}
@@ -321,21 +339,12 @@ indirect_respond (from, fromlen, length)
     	XdmcpWriteARRAY8 (&buffer, &clientPort);
     	XdmcpWriteARRAYofARRAY8 (&buffer, &queryAuthenticationNames);
 
-	for (forward = forwardHosts; forward; forward = forward->next)
-	{
-	    /*
-	     * only forward to servers advertising matching
-	     * addressing styles
-	     */
-	    if (forward->addr->sa_family == from->sa_family)
-	    {
-		XdmcpFlush (socketFd, &buffer,
-			    forward->addr, forward->addrlen);
-	    }
-    	}
+	localHostAsWell = ForEachMatchingIndirectHost (&clientAddress, connectionType, sendForward, (char *) 0);
+	
 	XdmcpDisposeARRAY8 (&clientAddress);
 	XdmcpDisposeARRAY8 (&clientPort);
-    	all_query_respond (from, fromlen, &queryAuthenticationNames,
+	if (localHostAsWell)
+	    all_query_respond (from, fromlen, &queryAuthenticationNames,
 			   INDIRECT_QUERY);
     }
     else
@@ -372,16 +381,27 @@ forward_respond (from, fromlen, length)
 	expectedLen = 0;
 	expectedLen += 2 + clientAddress.length;
 	expectedLen += 2 + clientPort.length;
+	expectedLen += 1;	    /* authenticationNames */
 	for (i = 0; i < authenticationNames.length; i++)
 	    expectedLen += 2 + authenticationNames.data[i].length;
 	if (length == expectedLen)
 	{
+	    int	j;
+
+	    j = 0;
+	    for (i = 0; i < clientPort.length; i++)
+		j = j * 256 + clientPort.data[i];
+	    Debug ("Forward client address (port %d)", j);
+	    for (i = 0; i < clientAddress.length; i++)
+		Debug (" %d", clientAddress.data[i]);
+	    Debug ("\n");
     	    switch (from->sa_family)
     	    {
 #ifdef AF_INET
 	    case AF_INET:
 		{
 		    struct sockaddr_in	in_addr;
+		    short		port;
 
 		    if (clientAddress.length != 4 ||
 		        clientPort.length != 2)
@@ -390,7 +410,7 @@ forward_respond (from, fromlen, length)
 		    }
 		    in_addr.sin_family = AF_INET;
 		    bcopy (clientAddress.data, &in_addr.sin_addr, 4);
-		    bcopy (clientPort.data, &in_addr.sin_port, 2);
+		    bcopy (clientPort.data, (char *) &in_addr.sin_port, 2);
 		    client = (struct sockaddr *) &in_addr;
 		    clientlen = sizeof (in_addr);
 		}
@@ -444,9 +464,25 @@ all_query_respond (from, fromlen, authenticationNames, type)
 {
     ARRAY8Ptr	authenticationName;
     ARRAY8	status;
+    ARRAY8	addr;
+    CARD16	connectionType;
 
+    switch (from->sa_family)
+    {
+    case AF_INET:
+	addr.data = (CARD8 *) &((struct sockaddr_in *) from)->sin_addr;
+	addr.length = 4;
+	connectionType = FamilyInternet;
+	break;
+#ifdef DNETCONN
+    case AF_DNET:
+	break;
+#endif
+    default:
+	return 0;
+    }
     authenticationName = ChooseAuthentication (authenticationNames);
-    if (Willing (from, fromlen, authenticationName, &status))
+    if (Willing (&addr, connectionType, authenticationName, &status, type))
 	send_willing (from, fromlen, authenticationName, &status);
     else
 	if (type == QUERY)
@@ -904,10 +940,43 @@ send_alive (from, fromlen, length)
 }
 
 char *
+NetworkAddressToHostname (connectionType, connectionAddress)
+    CARD16	connectionType;
+    ARRAY8Ptr   connectionAddress;
+{
+    char    *name = 0;
+
+    switch (connectionType)
+    {
+    case FamilyInternet:
+	{
+	    struct hostent	*hostent;
+
+	    hostent = gethostbyaddr (connectionAddress->data,
+				     connectionAddress->length, AF_INET);
+
+	    if (!hostent)
+		break;
+	    if (!getString (name, strlen (hostent->h_name)))
+		break;
+	    strcpy (name, hostent->h_name);
+	    break;
+	}
+#ifdef DNET
+    case FamilyDECnet:
+	break;
+#endif DNET
+    default:
+	break;
+    }
+    return name;
+}
+
+char *
 NetworkAddressToName(connectionType, connectionAddress, displayNumber)
-CARD16	    connectionType;
-ARRAY8Ptr   connectionAddress;
-CARD16	    displayNumber;
+    CARD16	connectionType;
+    ARRAY8Ptr   connectionAddress;
+    CARD16	displayNumber;
 {
     switch (connectionType)
     {
@@ -923,8 +992,6 @@ CARD16	    displayNumber;
 				     connectionAddress->length, AF_INET);
 
 	    localhost = localHostname ();
-
-#define getString(name,len)	((name = malloc (len + 1)) ? 1 : 0)
 
 	    if (hostent)
 	    {
@@ -978,6 +1045,95 @@ CARD16	    displayNumber;
     default:
 	return NULL;
     }
+}
+
+HostnameToNetworkAddress (name, connectionType, connectionAddress)
+char	    *name;
+CARD16	    connectionType;
+ARRAY8Ptr   connectionAddress;
+{
+    switch (connectionType)
+    {
+    case FamilyInternet:
+	{
+	    struct hostent	*hostent;
+
+	    hostent = gethostbyname (name);
+	    if (!hostent)
+		return FALSE;
+	    if (!XdmcpAllocARRAY8 (connectionAddress, hostent->h_length))
+		return FALSE;
+	    bcopy (hostent->h_addr, connectionAddress->data, hostent->h_length);
+	    return TRUE;
+	}
+#ifdef DNET
+    case FamilyDECnet:
+	return FALSE;
+#endif
+    }
+    return FALSE;
+}
+
+/*
+ * converts a display name into a network address, using
+ * the same rules as XOpenDisplay (algorithm cribbed from there)
+ */
+
+NameToNetworkAddress(name, connectionTypep, connectionAddress, displayNumber)
+char	    *name;
+CARD16Ptr   connectionTypep;
+ARRAY8Ptr   connectionAddress;
+CARD16Ptr   displayNumber;
+{
+    char    *colon, *period, *display_number;
+    char    hostname[1024];
+    int	    dnet = FALSE;
+    CARD16  number;
+    CARD16  connectionType;
+
+    colon = index (name, ':');
+    if (!colon)
+	return FALSE;
+    if (colon != name)
+    {
+	if (colon - name > sizeof (hostname))
+	    return FALSE;
+	strncpy (hostname, name, colon - name);
+	hostname[colon - name] = '\0';
+    }
+    else
+    {
+	strcpy (hostname, localHostname ());
+    }
+    if (colon[1] == ':')
+    {
+	dnet = TRUE;
+	colon++;
+    }
+#ifndef DNETCONN
+    if (dnet)
+	return FALSE;
+#endif
+    display_number = colon + 1;
+    while (*display_number && *display_number != '.')
+    {
+	if (!isascii (*display_number) || !isdigit(*display_number))
+	    return FALSE;
+    }
+    if (display_number == colon + 1)
+	return FALSE;
+    number = atoi (colon + 1);
+#ifdef DNETCONN
+    if (dnet)
+	connectionType = FamilyDECnet;
+    else
+#endif
+	connectionType = FamilyInternet;
+    if (!HostnameToNetworkAddress (hostname, connectionType, connectionAddress))
+	return FALSE;
+    *displayNumber = number;
+    *connectionTypep = connectionType;
+    return TRUE;
 }
 
 static char localHostbuf[256];

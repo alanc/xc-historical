@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.31 90/03/05 18:57:52 keith Exp $
+ * $XConsortium: resource.c,v 1.32 90/03/29 11:37:53 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -42,6 +42,7 @@ char	*authDir;
 int	autoRescan;
 int	removeDomainname;
 char	*keyFile;
+char	*accessFile;
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -79,9 +80,6 @@ char	*keyFile;
 #ifndef CPP_PROGRAM
 #define CPP_PROGRAM "/lib/cpp"
 #endif
-#ifndef DEF_XDM_AUTH_GEN
-#define DEF_XDM_AUTH_GEN "/usr/lib/X11/xdm/xdmauthgen"
-#endif
 #ifndef DEF_AUTH_NAME
 #define DEF_AUTH_NAME	"MIT-MAGIC-COOKIE-1"
 #endif
@@ -94,6 +92,10 @@ char	*keyFile;
 #ifndef DEF_KEY_FILE
 #define DEF_KEY_FILE	"/usr/lib/X11/xdm/Xkeys"
 #endif
+#ifndef DEF_ACCESS_FILE
+#define DEF_ACCESS_FILE	"/usr/lib/X11/xdm/Xaccess"
+#endif
+
 #define DEF_UDP_PORT	"177"	    /* registered XDMCP port, dont change */
 
 struct dmResources {
@@ -124,6 +126,8 @@ struct dmResources {
 				"true",
 "keyFile",	"KeyFile",	DM_STRING,	&keyFile,
 				DEF_KEY_FILE,
+"accessFile",	"AccessFile",	DM_STRING,	&accessFile,
+				DEF_ACCESS_FILE,
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: policy.c,v 1.2 89/11/18 12:43:51 rws Exp $
+ * $XConsortium: policy.c,v 1.3 89/12/13 15:25:16 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -23,6 +23,11 @@
  */
 
 # include "dm.h"
+# include <X11/X.h>
+# include <sys/socket.h>
+#ifdef AF_INET
+# include <netinet/in.h>
+#endif
 
 static ARRAY8 noAuthentication = { (CARD16) 0, (CARD8Ptr) 0 };
 
@@ -95,23 +100,28 @@ SelectAuthorizationTypeIndex (authenticationName, authorizationNames)
 }
 
 int
-Willing (addr, addrlen, authenticationName, status)
-    struct sockaddr *addr;
-    int		    addrlen;
+Willing (addr, connectionType, authenticationName, status, type)
+    ARRAY8Ptr	    addr;
+    CARD16	    connectionType;
     ARRAY8Ptr	    authenticationName;
     ARRAY8Ptr	    status;
+    xdmOpCode	    type;
 {
-    static char	statusBuf[256];
-    extern char	*localHostname ();
-
-    sprintf (statusBuf, "host %s", localHostname());
+    char	statusBuf[256];
+    int		ret;
+    
+    ret = AcceptableDisplayAddress (addr, connectionType, type);
+    if (!ret)
+	sprintf (statusBuf, "Display not authorized to connect");
+    else
+	sprintf (statusBuf, "Ready and 'Rarrin to GO!");
     status->length = strlen (statusBuf);
     status->data = (CARD8Ptr) malloc (status->length);
     if (!status->data)
 	status->length = 0;
     else
 	bcopy (statusBuf, status->data, status->length);
-    return 1;
+    return ret;
 }
 
 ARRAY8Ptr

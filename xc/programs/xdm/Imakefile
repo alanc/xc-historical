@@ -27,16 +27,20 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
           SRCS1 = auth.c daemon.c server.c dpylist.c dm.c error.c \
 		  file.c greet.c reset.c resource.c protodpy.c policy.c \
 		  session.c socket.c util.c verify.c Login.c mitauth.c \
-		  cryptokey.c $(DESSRCS)
+		  cryptokey.c access.c $(DESSRCS)
           OBJS1 = auth.o daemon.o server.o dpylist.o dm.o error.o \
 		  file.o greet.o reset.o resource.o protodpy.o policy.o \
 		  session.o socket.o util.o verify.o Login.o mitauth.o \
-		  cryptokey.o $(DESOBJS)
+		  cryptokey.o access.o $(DESOBJS)
           SRCS2 = xdmshell.c 
           OBJS2 = xdmshell.o 
+          SRCS3 = chooser.c
+          OBJS3 = chooser.o
+       DEPLIBS3 = XawClientDepLibs $(TOP)/lib/Xdmcp/libXdmcp.a
+       
           SRCS4 = sessreg.c
           OBJS4 = sessreg.o
-       PROGRAMS = xdm xdmshell sessreg
+       PROGRAMS = xdm xdmshell sessreg chooser
 
 #if !HasVoidSignalReturn
         SIGDEFS = -DSIGNALRETURNSINT
@@ -61,7 +65,7 @@ DEF_USER_PATH = DefaultUserPath		/* no leading spaces or imake will */
 DEF_SYSTEM_PATH = DefaultSystemPath	/* indent as rule */
 BOURNE_SHELL = DefaultSystemShell
 CPP_PROGRAM = CppCmd
-RES_DEFINES = '-DDEF_SERVER_LINE=":0 secure $(DEF_SERVER) :0"' \
+RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 		  '-DXRDB_PROGRAM="$(BINDIR)/xrdb"' \
 		  '-DDEF_SESSION="$(BINDIR)/xterm -ls"' \
 		  '-DDEF_USER_PATH="$(DEF_USER_PATH)"' \
@@ -69,13 +73,15 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 secure $(DEF_SERVER) :0"' \
 		  '-DDEF_SYSTEM_SHELL="$(BOURNE_SHELL)"' \
 		  '-DDEF_FAILSAFE_CLIENT="$(BINDIR)/xterm"' \
 		  '-DDEF_XDM_CONFIG="$(XDMDIR)/xdm-config"' \
-		  '-DDEF_AUTH_FILE="$(XDMDIR)/auth-server"' \
 		  '-DDEF_AUTH_DIR="$(XDMDIR)"' \
+		  '-DDEF_KEY_FILE="$(XDMDIR)/Xkeys"' \
+		  '-DDEF_ACCESS_FILE="$(XDMDIR)/Xaccess"' \
 		  '-DCPP_PROGRAM="$(CPP_PROGRAM)"'
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES), /**/)
 SingleProgramTarget(xdmshell,$(OBJS2), /**/, /**/)
 SingleProgramTarget(sessreg,$(OBJS4), /**/, /**/)
+ComplexProgramTarget_3(chooser,XawClientLibs $(TOP)/lib/Xdmcp/libXdmcp.a, /**/)
 
 SpecialObjectRule(resource.o, $(ICONFIGFILES), $(RES_DEFINES))
 

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.39 90/03/29 11:34:57 keith Exp $
+ * $XConsortium: dm.c,v 1.40 90/03/29 14:23:32 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -45,7 +45,7 @@ extern void	exit (), abort ();
 
 static void	RescanServers ();
 int		Rescan;
-static long	ServersModTime, ConfigModTime;
+static long	ServersModTime, ConfigModTime, AccessFileModTime;
 static SIGVAL	StopAll (), RescanNotify ();
 void		StopDisplay ();
 static void	RestartDisplay ();
@@ -108,6 +108,8 @@ char	**argv;
      *	    Keep a sub-daemon running
      *	    for each entry
      */
+    SetAccessFileTime ();
+    ScanAccessDatabase ();
     ScanServers ();
     StartDisplays ();
     (void) signal (SIGHUP, RescanNotify);
@@ -194,9 +196,12 @@ RescanServers ()
     Debug ("rescanning servers\n");
     LogInfo ("Rescanning both config and servers files\n");
     ForEachDisplay (MarkDisplay);
+    SetConfigFileTime ();
     ReinitResources ();
     LoadDMResources ();
     ScanServers ();
+    SetAccessFileTime ();
+    ScanAccessDatabase ();
     StartDisplays ();
 }
 
@@ -208,12 +213,20 @@ SetConfigFileTime ()
 	ConfigModTime = statb.st_mtime;
 }
 
+SetAccessFileTime ()
+{
+    struct stat	statb;
+
+    if (stat (accessFile, &statb) != -1)
+	AccessFileModTime = statb.st_mtime;
+}
+
 static
 RescanIfMod ()
 {
     struct stat	statb;
 
-    if (stat (config, &statb) != -1)
+    if (config && stat (config, &statb) != -1)
     {
 	if (statb.st_mtime != ConfigModTime)
 	{
@@ -235,7 +248,16 @@ RescanIfMod ()
 	    ScanServers ();
 	}
     }
-    
+    if (accessFile && accessFile[0] && stat (accessFile, &statb) != -1)
+    {
+	if (statb.st_mtime != AccessFileModTime)
+	{
+	    Debug ("Access file %s has changed, rereading\n", accessFile);
+	    LogInfo ("Rereading access file %s\n", accessFile);
+	    AccessFileModTime = statb.st_mtime;
+	    ScanAccessDatabase ();
+	}
+    }
 }
 
 /*

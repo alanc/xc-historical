@@ -101,7 +101,7 @@ See the section below which describes this resource in depth.
 .IP "\fB-udpPort\fP \fIport_number\fP"
 Specifies the value for the \fBDisplayManager.requestPort\fP resource.  This
 sets the port-number which XDM will monitor for XDMCP requests.  As XDMCP
-uses the registered well-known udp port 177, this resource should probably
+uses the registered well-known udp port 177, this resource should
 not be changed except for debugging.
 .IP "\fB-session\fP \fIsession_program\fP"
 Specifies the value for the \fBDisplayManager*session\fP resource.  This
@@ -113,7 +113,7 @@ toolkit applications.
 At many stages the actions of
 .I xdm
 can be controlled through the use of the configuration file, which is in the
-familiar X resource format.  See Jim Fulton's article on resource files
+X resource format.  See Jim Fulton's article on resource files
 (\fIdoc/tutorials/resources.txt\fP) for a description of the format.
 Some resources modify the behavior of
 .I xdm
@@ -161,9 +161,13 @@ names (e.g. use ":0 local /usr/bin/X11/X :0" instead of "localhost:0 local
 display-specific resources, as the class portion of the resource.  This is
 useful if you have a large collection of similar displays (like a corral of
 X terminals) and would like to set resources for groups of them.  When using
-XDMCP, the display is required to specify the display class, so perhaps your
-X terminal documentation describes a reasonably standard display class
-string for your device.
+XDMCP, the display is required to specify the display class, so the manual
+for your particular X terminal should document the display class
+string for your device.  If it doesn't, you can run
+.I xdm
+in debug mode and
+look at the resource strings which it generates for that device which will
+include the class string.
 .IP "\fBDisplayManager.requestPort\fP"
 This indicates the UDP port number which
 .I xdm
@@ -189,15 +193,12 @@ Normally,
 .I xdm
 attempts to make itself into an unassociated daemon process.  This is
 accomplished by forking and leaving the parent process to exit, then closing
-file descriptors and mangling the controlling terminal.  When attempting to
-debug
-.I xdm ,
-this is quite bothersome.  Setting this resource to "false" will disable
-this feature.
+file descriptors and mangling the controlling terminal.  In some
+environments this is not desired (in particular, when debugging).  Setting
+this resource to "false" will disable this feature.
 .IP "\fBDisplayManager.pidFile\fP"
 The filename specified will be created to contain an ascii
-representation of the process-id of the main \fBxdm\fP process.  This is
-quite useful when reinitializing the system.
+representation of the process-id of the main \fBxdm\fP process.
 .I Xdm
 also uses file locking to attempt to eliminate multiple daemons running on
 the same machine, which would cause quite a bit of havoc.
@@ -205,18 +206,18 @@ the same machine, which would cause quite a bit of havoc.
 This is the resource which controls whether
 .I xdm
 uses file locking to keep multiple xdms from running amok.  On SYSV, this
-uses the lockf library call, while on BSD it uses flock.  The default value
-is "true".
+uses the lockf library call, while on BSD it uses flock.
 .IP "\fBDisplayManager.remoteAuthDir\fP"
-This is a directory name which
+This is a directory name in which
 .I xdm
-uses to temporarily store authorization files for displays using XDMCP.  The
+stores authorization files while initializing the session.  The
 default value is /usr/lib/X11/xdm.
 .IP \fBDisplayManager.autoRescan\fP"
 This boolean controls whether
 .I xdm
-rescans the configuration file and servers file after a session terminates
-and the files have changed.  By default it is "true".  You can force
+rescans the configuration, servers, access control and authentication keys
+files after a session terminates and the files have changed.  By default it
+is "true".  You can force
 .I xdm
 to reread these files by sending a SIGHUP to the main process.
 .IP "\fBDisplayManager.removeDomainname\fP"
@@ -236,7 +237,13 @@ values.  Each entry in the file consists of a display name and the shared
 key.  By default,
 .I xdm
 does not include support for XDM-AUTHENTICATION-1 as it requires DES which
-is not generally distributable.
+is not generally distributable because of US export restrictions.
+.IP \fBDisplayManager.accessFile\fP"
+To prevent unauthorized XDMCP service and to allow forwarding of XDMCP
+IndirectQuery requests, this file contains a database of hostnames which are
+either allowed direct access to this machine, or have a list of hosts to
+which queries should be forwarded to.  The format of this file is described
+below.
 .IP "\fBDisplayManager.DISPLAY.resources\fP"
 This resource specifies the name of the file to be loaded by \fIxrdb (1)\fP
 as the resource data-base onto the root window of screen 0 of the display.
@@ -298,7 +305,10 @@ requests.  \fBpingInterval\fP specifies the time (in minutes) between each
 ping attempt, \fBpingTimeout\fP specifies the maximum amount of time (in
 minutes) to wait for the terminal to respond to the request.  If the
 terminal does not respond, the session is declared dead and terminated.  By
-default, both are set to 5 minutes.
+default, both are set to 5 minutes.  If you frequently use X terminals which
+can become isolated from the managing host, you may wish to increase this
+value.  The only worry is that sessions will continue to exist after the
+terminal has been accidentally disabled.
 .I xdm
 will not ping local displays.  Although it would seem harmless, it is
 unpleasant when the workstation session is terminated as a result of the
@@ -357,7 +367,7 @@ kills and restarts the server (if possible) and session.
 .IP "\fBDisplayManager.DISPLAY.authName\fP"
 \fBauthorize\fP is a boolean resource which controls whether
 .I xdm
-generates and uses authorization for the server connections.  If
+generates and uses authorization for the local server connections.  If
 authorization is used, \fBauthName\fP specifies the type to use.  Currently,
 xdm supports only MIT-MAGIC-COOKIE-1 authorization, XDM-AUTHORIZATION-1
 could be supported as well, but DES is not generally distributable.  XDMCP
@@ -411,9 +421,9 @@ required to close all other connections.
 .I Xdm
 responds to two signals: SIGHUP and SIGTERM.  When sent a SIGHUP,
 .I xdm
-rereads the configuration file and the 1file specified by the
-\fBDisplayManager.servers\fP resource and notices if entries have been added
-or removed.  If a new entry has been added,
+rereads the configuration file, the access control file, the and the servers
+file.  For the servers file, it notices if entries have been added or
+removed.  If a new entry has been added,
 .I xdm
 starts a session on the associated display.  Entries which have been removed
 are disabled immediately, meaning that any session in progress will be
@@ -430,6 +440,72 @@ command line argument list in place.  Because xdm can't allocate additional
 space for this task, it is useful to start xdm with a reasonably long
 command line (15 to 20 characters should be enough).  Each process which is
 servicing a display is marked "-<Display-Name>".
+.SH "XDMCP ACCESS CONTROL"
+.PP
+The database file specified by the \fBDisplayManager.accessFile\fP provides
+information which
+.I xdm
+uses to control access from displays requesting XDMCP service.  This file
+contains two types of entries, simple entries which control the respond to
+direct queries and also entries accompanied by a list of hosts, each of
+which will be the target of a forwarded query if the display requests
+indirect service.
+.PP
+The format of the first type is simple, either a host name or a host name
+pattern which is distinguished from a simple host name by the inclusion of
+one or more meta characters ('*', matching any sequence of 0 or more
+characters and '?' matching any single character) which are used to compare
+the host name of the display device.  Canonical host names are always used
+in this pattern comparison, so ensure that you do not attempt to match
+aliases.  If the entry is a simple host name, all comparisons are done using
+network addresses, so any name which converts to the correct network address
+may be used.  Preceeding either type with a '!' character causes hosts which
+match that entry to be excluded.
+.PP
+The second type follows the host name or host name pattern with a list of
+host names or aliases to which indirect queries should be sent.  In this
+context, an alias refers to a separate entry in this table which contains
+additional host entries.  To distinguish aliases from hostnames, each alias
+name starts with a '%' character.  This method was chosen over simply using
+any non-existant hostname as an alias to avoid troubles of future additional
+hosts being added to the network with the alias name.  Aliases may be nested.
+.PP
+When checking access for a particular display host, each entry is scanned in
+turn and the first matching entry determines the response.  Direct/broadcast
+entries are ignored when scanning for an indirect response and vice-versa.
+.PP
+As a final note, blank lines are ignored, and '#' is treated as a comment
+delimiter which causes the rest of that line to be ignored, and '\newline'
+causes the newline to be ignored, allowing indirect host lists to span
+multiple lines.
+.PP
+Here is an example Xaccess file:
+.LP
+.nf
+#
+# Xaccess - XDMCP access control file
+#
+
+#
+# Direct/Broadcast query entries
+#
+
+!xtra.lcs.mit.edu	# disallow direct/broadcast service for xtra
+bambi.ogi.edu		# allow access from this particular display
+*.lcs.mit.edu		# allow access from any display in LCS
+
+#
+# Indirect query entries
+#
+
+%XHOSTS			expo.lcs.mit.edu xenon.lcs.mit.edu excess.lcs.mit.edu \\
+			sushi.lcs.mit.edu kanga.lcs.mit.edu
+
+mfb.lcs.mit.edu		xenon.lcs.mit.edu	# force mfb to contact xenon
+!xtra.lcs.mit.edu	%XHOSTS			# disallow indirect access
+
+*.lcs.mit.edu		%XHOSTS			# all others get to choose
+.fi
 .SH "AUTHENTICATION WIDGET"
 The authentication widget is an application which reads a name/password pair
 from the keyboard.  As this is a toolkit client, nearly every imaginable

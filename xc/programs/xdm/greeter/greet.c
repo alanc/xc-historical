@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.19 90/02/12 17:56:26 keith Exp $
+ * $XConsortium: greet.c,v 1.20 90/05/01 18:49:34 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -159,6 +159,7 @@ struct display	*d;
 	Debug ("Disabling access control\n");
 	XSetAccessControl (XtDisplay (toplevel), DisableAccess);
     }
+    XtDestroyWidget (toplevel);
     XCloseDisplay (XtDisplay (toplevel));
 }
 

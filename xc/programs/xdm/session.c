@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.32 90/03/29 11:35:41 keith Exp $
+ * $XConsortium: session.c,v 1.33 90/05/15 18:42:21 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -358,7 +358,6 @@ waitAbort ()
 }
 
 #ifdef SYSV
-# include	<ctype.h>
 #define killpg(pgrp, sig) kill(-(pgrp), sig)
 #endif /* SYSV */
 
@@ -401,11 +400,17 @@ source (verify, file)
 struct verify_info	*verify;
 char			*file;
 {
-    char	*args[2];
+    char	**args, *args_safe[2];
+    extern char	**parseArgs ();
     if (file && file[0]) {
 	Debug ("source %s\n", file);
-	args[0] = file;
-	args[1] = NULL;
+	args = parseArgs ((char **) 0, file);
+	if (!args)
+	{
+	    args = args_safe;
+	    args[0] = file;
+	    args[1] = NULL;
+	}
 	return runAndWait (args, verify->systemEnviron);
     }
     return 0;
