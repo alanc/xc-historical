@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.121 90/03/19 19:03:36 keith Exp $ */
+/* $XConsortium: connection.c,v 1.122 90/06/06 13:52:54 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -233,6 +233,7 @@ open_unix_socket ()
     int oldUmask;
     int request;
 
+    bzero ((char *) &unsock, sizeof (unsock));
     unsock.sun_family = AF_UNIX;
     oldUmask = umask (0);
 #ifdef X_UNIX_DIR
