@@ -1,5 +1,5 @@
 /*
-* $Header: IntrinsicI.h,v 6.15 88/01/29 16:25:36 asente Exp $
+* $Header: IntrinsicI.h,v 6.15 88/01/29 16:25:36 swick Locked $
 */
 
 /*
@@ -137,6 +137,8 @@ extern void XtGetResources();
 
 #ifndef INTRINSIC_C
 globalref XrmDatabase XtDefaultDB;
+globalref XrmName XtApplicationName;
+globalref XrmClass XtApplicationClass;
 #endif
 
 extern void _XtInstallTranslations(); /* widget, stateTable */

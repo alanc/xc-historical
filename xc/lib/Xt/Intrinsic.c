@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 6.16 88/02/01 19:57:50 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 6.16 88/01/29 12:03:57 asente Exp $";
 #endif lint
 
 /*
@@ -33,6 +33,8 @@ static char rcsid[] = "$Header: Intrinsic.c,v 6.16 88/02/01 19:57:50 swick Locke
 static void SetAncestorSensitive();
 
 globaldef XrmDatabase XtDefaultDB = NULL;
+globaldef XrmName XtApplicationName;
+globaldef XrmClass XtApplicationClass;
 
 Boolean XtIsSubclass(widget, widgetClass)
     Widget    widget;
