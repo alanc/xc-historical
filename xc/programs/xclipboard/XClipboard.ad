@@ -1,80 +1,80 @@
-XClipboard*quit.label: 			Quit
-XClipboard*quit.top: 			ChainTop
-XClipboard*quit.bottom: 		ChainTop
-XClipboard*quit.left: 			ChainLeft
-XClipboard*quit.right: 			ChainLeft
-XClipboard*quit.translations:		#override<BtnUp>:Quit() unset()
+*quit.label: 			Quit
+*quit.top: 			ChainTop
+*quit.bottom: 			ChainTop
+*quit.left: 			ChainLeft
+*quit.right: 			ChainLeft
+*quit.translations:		#override<BtnUp>:Quit() unset()
 
-XClipboard*delete.label: 		Delete
-XClipboard*delete.fromHoriz: 		quit
-XClipboard*delete.top: 			ChainTop
-XClipboard*delete.bottom:		ChainTop
-XClipboard*delete.left:			ChainLeft
-XClipboard*delete.right:		ChainLeft
-XClipboard*delete.translations:		#override<BtnUp>:DeleteClip() unset()
+*delete.label: 			Delete
+*delete.fromHoriz: 		quit
+*delete.top: 			ChainTop
+*delete.bottom:			ChainTop
+*delete.left:			ChainLeft
+*delete.right:			ChainLeft
+*delete.translations:		#override<BtnUp>:DeleteClip() unset()
 
-XClipboard*new.label: 			New
-XClipboard*new.fromHoriz: 		delete
-XClipboard*new.top: 			ChainTop
-XClipboard*new.bottom:			ChainTop
-XClipboard*new.left:			ChainLeft
-XClipboard*new.right:			ChainLeft
-XClipboard*new.translations:		#override<BtnUp>:NewClip() unset()
+*new.label: 			New
+*new.fromHoriz: 		delete
+*new.top: 			ChainTop
+*new.bottom:			ChainTop
+*new.left:			ChainLeft
+*new.right:			ChainLeft
+*new.translations:		#override<BtnUp>:NewClip() unset()
 
-XClipboard*save.label: 			Save
-XClipboard*save.fromHoriz: 		new
-XClipboard*save.top: 			ChainTop
-XClipboard*save.bottom:			ChainTop
-XClipboard*save.left:			ChainLeft
-XClipboard*save.right:			ChainLeft
-XClipboard*save.translations:		#override<BtnUp>:Save() unset()
+*save.label: 			Save
+*save.fromHoriz: 		new
+*save.top: 			ChainTop
+*save.bottom:			ChainTop
+*save.left:			ChainLeft
+*save.right:			ChainLeft
+*save.translations:		#override<BtnUp>:Save() unset()
 
-XClipboard*next.label: 			Next
-XClipboard*next.fromHoriz: 		save
-XClipboard*next.top: 			ChainTop
-XClipboard*next.bottom:			ChainTop
-XClipboard*next.left:			ChainLeft
-XClipboard*next.right:			ChainLeft
-XClipboard*next.translations:		#override<BtnUp>:NextClip() unset()
+*next.label: 			Next
+*next.fromHoriz: 		save
+*next.top: 			ChainTop
+*next.bottom:			ChainTop
+*next.left:			ChainLeft
+*next.right:			ChainLeft
+*next.translations:		#override<BtnUp>:NextClip() unset()
 
-XClipboard*prev.label: 			Prev
-XClipboard*prev.fromHoriz: 		next
-XClipboard*prev.top: 			ChainTop
-XClipboard*prev.bottom:			ChainTop
-XClipboard*prev.left:			ChainLeft
-XClipboard*prev.right:			ChainLeft
-XClipboard*prev.translations:		#override<BtnUp>:PrevClip() unset()
+*prev.label: 			Prev
+*prev.fromHoriz: 		next
+*prev.top: 			ChainTop
+*prev.bottom:			ChainTop
+*prev.left:			ChainLeft
+*prev.right:			ChainLeft
+*prev.translations:		#override<BtnUp>:PrevClip() unset()
 
-XClipboard*index.fromHoriz:		prev
-XClipboard*index.top: 			ChainTop
-XClipboard*index.bottom:		ChainTop
-XClipboard*index.left:			ChainLeft
-XClipboard*index.right:			ChainLeft
-XClipboard*index.resizable:		true
+*index.fromHoriz:		prev
+*index.top: 			ChainTop
+*index.bottom:			ChainTop
+*index.left:			ChainLeft
+*index.right:			ChainLeft
+*index.resizable:		true
 
-XClipboard*text.scrollVertical:  	WhenNeeded
-XClipboard*text.scrollHorizontal:  	WhenNeeded
-XClipboard*text.autoFill: 		on
+*text.scrollVertical:  		WhenNeeded
+*text.scrollHorizontal:  	WhenNeeded
+*text.autoFill: 		on
 
-XClipboard*text.fromVert: 		quit
-XClipboard*text.top: 			ChainTop
-XClipboard*text.bottom: 		ChainBottom
-XClipboard*text.left: 			ChainLeft
-XClipboard*text.right: 			ChainRight
-XClipboard*text.resizable:		true
-XClipboard*text.width:			300
+*text.fromVert: 		quit
+*text.top: 			ChainTop
+*text.bottom: 			ChainBottom
+*text.left: 			ChainLeft
+*text.right: 			ChainRight
+*text.resizable:		true
+*text.width:			300
 
-XClipboard.geometry:			300x200
-XClipboard*ShapeStyle:			oval
+XClipboard.geometry:		300x200
+*ShapeStyle:			oval
 
-XClipboard*fileDialog.label:			Save to file:
-XClipboard*fileDialogShell.allowShellResize:	true
-XClipboard*fileDialogShell.title:		File Save
+*fileDialog.label:			Save to file:
+*fileDialogShell.allowShellResize:	true
+*fileDialogShell.title:			File Save
 
-XClipboard*fileDialog*accept.label:		Accept
-XClipboard*fileDialog*accept.translations:	#override\
+*fileDialog*accept.label:		Accept
+*fileDialog*accept.translations:	#override\
 			<BtnUp>: AcceptSave() unset()
-XClipboard*fileDialog*value.translations:	#override\
+*fileDialog*value.translations:	#override\
 			<Key>Return: AcceptSave() \n\
 			Ctrl<Key>S: no-op(ring-bell) \n\
 			Ctrl<Key>R: no-op(ring-bell) \n\
@@ -82,20 +82,20 @@ XClipboard*fileDialog*value.translations:	#override\
 			Ctrl<Key>J: no-op(ring-bell) \n\
 			Meta<Key>I: no-op(ring-bell)
 
-XClipboard*fileDialog*cancel.label:		Cancel
-XClipboard*fileDialog*cancel.translations:	#override\
+*fileDialog*cancel.label:		Cancel
+*fileDialog*cancel.translations:	#override\
 			<BtnUp>:CancelSave() unset()
 
-XClipboard*failDialog*Label.resizable:		true
-XClipboard*failDialog.label:			Can't write file
-XClipboard*failDialogShell.title:		Error
-XClipboard*failDialogShell.allowShellResize:	true
+*failDialog*Label.resizable:		true
+*failDialog.label:			Can't write file
+*failDialogShell.title:			Error
+*failDialogShell.allowShellResize:	true
 
-XClipboard*failDialog*continue.label:		Continue
-XClipboard*failDialog*continue.translations:	#override\
+*failDialog*continue.label:		Continue
+*failDialog*continue.translations:	#override\
 			<BtnUp>:FailContinue() unset()
 
-XClipboard*failDialog*value.translations:	#override\
+*failDialog*value.translations:	#override\
 			<Key>Return: FailContinue() \n\
 			Ctrl<Key>S: no-op(ring-bell) \n\
 			Ctrl<Key>R: no-op(ring-bell) \n\
