@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Box.c,v 1.35 88/09/06 16:40:51 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Box.c,v 1.36 88/09/23 09:32:18 swick Exp $";
 #endif lint
 
 
@@ -142,8 +142,6 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
     Dimension bw, bh;	/* Width and height needed for current widget 	*/
     Dimension h_space;  /* Local copy of bbw->box.h_space 		*/
     register Widget widget;	/* Current widget 			*/
-    Mask valuemask;
-    XSetWindowAttributes attributes;
     int num_mapped_children = 0;
  
     /* Box width and height */
@@ -155,8 +153,6 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
     lh = 0;
     lw = h_space;
   
-    valuemask = CWWinGravity;
-    attributes.win_gravity = NorthWestGravity;
     for (i = 0; i < bbw->composite.num_children; i++) {
 	widget = bbw->composite.children[i];
 	if (widget->core.managed) {
@@ -168,7 +164,6 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
 		    /* At least one widget on this line, and
 		     * can't fit any more.  Start new line.
 		     */
-		    attributes.win_gravity = UnmapGravity;
 		    AssignMax(w, lw);
 		    h += lh + bbw->box.v_space;
 		    lh = 0;
@@ -182,17 +177,21 @@ static DoLayout(bbw, width, height, reply_width, reply_height, position)
 		}
 	    }
 	    if (position && (lw != widget->core.x || h != widget->core.y)) {
-#ifdef SERVERBROKEN
-		if (widget->core.y == bbw->box.v_space && XtIsRealized(widget))
-		    /* %%% dunno why, but on our server we get cruft */
+		/* It would be nice to use window gravity, but there isn't
+		 * sufficient fine-grain control to nicely handle all
+		 * situations (e.g. when only the height changes --
+		 * a common case).  Explicit unmapping is a cheap hack
+		 * to speed things up & avoid the visual jitter as
+		 * things slide around.
+		 *
+		 * %%% perhaps there should be a client resource to
+		 * control this.  If so, we'll have to optimize to
+		 * perform the moves from the correct end so we don't
+		 * force extra exposures as children occlude each other.
+		 */
+		if (XtIsRealized(widget))
 		    XUnmapWindow( XtDisplay(widget), XtWindow(widget) );
-#endif /*SERVERBROKEN*/
 		XtMoveWidget(bbw->composite.children[i], (int)lw, (int)h);
-		if (XtIsRealized(widget)) {
-		    XChangeWindowAttributes( XtDisplay(widget),
-					     XtWindow(widget),
-					     valuemask, &attributes );
-		}
 	    }
 	    lw += bw;
 	    bh = widget->core.height + 2*widget->core.border_width;
@@ -337,8 +336,6 @@ static void Resize(w)
     Widget	w;
 {
     Dimension junk;
-    if (XtIsRealized(w))
-	XClearWindow( XtDisplay(w), XtWindow(w) );
 
     DoLayout((BoxWidget)w, w->core.width, w->core.height, &junk, &junk, TRUE);
 
@@ -404,12 +401,6 @@ static Boolean TryNewLayout(bbw)
 		    /* recalc bounding box; height might change */
 		    DoLayout(bbw, proposed_width, 0,
 			     &preferred_width, &preferred_height, FALSE);
-		    if (preferred_width > proposed_width) {
-			/* punt; too narrow, but restore preferences first */
-			DoLayout(bbw, bbw->core.width, bbw->core.height,
-				 &preferred_width, &preferred_height, FALSE);
-			return FALSE;
-		    }
 		    proposed_height = preferred_height;
 		}
 		else { /* proposed_height != preferred_height */
