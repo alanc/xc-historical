@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.151 89/11/08 17:42:54 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.152 89/11/09 15:51:35 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -652,8 +652,8 @@ ArgList args_in;
  * Save away argv and argc so we can set the properties later 
  */
     
-    saved_argv = (String *) XtMalloc( (Cardinal) ((*argc_in_out + 1) *
-						  sizeof(String)) );
+    saved_argv = (String *)
+	ALLOCATE_LOCAL( (Cardinal)((*argc_in_out + 1) * sizeof(String)) );
 
     for (i = 0 ; i < saved_argc ; i++) saved_argv[i] = argv_in_out[i];
     saved_argv[i] = NULL;	/* NULL terminate that sucker. */
@@ -685,7 +685,7 @@ ArgList args_in;
 	*app_context_return = app_con;
 
     XtFree((XtPointer)merged_args);
-    XtFree((XtPointer)saved_argv);
+    DEALLOCATE_LOCAL((XtPointer)saved_argv);
     return(root);
 }
 
