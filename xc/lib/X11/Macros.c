@@ -1,4 +1,4 @@
-/* $XConsortium: XMacros.c,v 11.24 89/12/11 13:29:21 converse Exp $ */
+/* $XConsortium: XMacros.c,v 11.25 91/01/06 11:46:55 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1987	*/
 
 /*
@@ -226,6 +226,5 @@ XNoOp (dpy)
     GetEmptyReq(NoOperation, req);
 
     UnlockDisplay(dpy);
+    SyncHandle();
 }
-
-
