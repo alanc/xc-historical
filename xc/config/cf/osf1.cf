@@ -1,4 +1,5 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.7 92/06/27 21:52:21 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.8 92/06/28 17:41:50 rws Exp $
+/* only tested with Digital OSF/1 V1.0 */
 
 #define OSName			OSF/1 1.0
 XCOMM operating system:  OSName
@@ -13,11 +14,12 @@ XCOMM operating system:  OSName
 #define InstPgmFlags -S
 #define InstallCmd installbsd
 
-#ifdef MipsArchitecture
 #include <osfLib.rules>
-#define DefaultCCOptions	-Xc
 #define StandardDefines -D__OSF1__
 #define NoRConst YES
+
+#ifdef MipsArchitecture
+#define DefaultCCOptions	-Xc
 #define XdecServer YES
 #define PexCCOptions -Xc -Wf,-XNp15000,-XNd15000
 #endif
