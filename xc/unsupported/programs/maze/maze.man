@@ -33,11 +33,11 @@ Specifies the display to be used...
 The following lists the current functionality of various mouse button clicks;
 .IP "\fBLeftButton\fP"
 Clears the window and restarts maze...
-.IP "\fB\MiddleButton\fP"
+.IP "\fBMiddleButton\fP"
 Toggles the maze program, 
 first click -> \fIstop\fP, 
 second click -> \fIcontinue\fP...
-.IP "\fB\RightButton\fP"
+.IP "\fBRightButton\fP"
 Kills maze...
 .PP 
 .SH LIMITATIONS
