@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.57 93/09/03 08:06:33 dpw Exp $ */
+/* $XConsortium: miregion.c,v 1.58 94/01/07 09:44:52 dpw Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -162,8 +162,8 @@ if (((numRects) < ((reg)->data->size >> 1)) && ((reg)->data->size > 50)) \
 }
 
 
-BoxRec EmptyBox = {0, 0, 0, 0};
-RegDataRec EmptyData = {0, 0};
+BoxRec miEmptyBox = {0, 0, 0, 0};
+RegDataRec miEmptyData = {0, 0};
 
 #ifdef DEBUG
 int
@@ -226,7 +226,7 @@ miValidRegion(reg)
     if (!numRects)
 	return ((reg->extents.x1 == reg->extents.x2) &&
 		(reg->extents.y1 == reg->extents.y2) &&
-		(reg->data->size || (reg->data == &EmptyData)));
+		(reg->data->size || (reg->data == &miEmptyData)));
     else if (numRects == 1)
 	return (!reg->data);
     else
@@ -285,14 +285,14 @@ miRegionCreate(rect, size)
     }
     else
     {
-	pReg->extents = EmptyBox;
+	pReg->extents = miEmptyBox;
 	if ((size > 1) && (pReg->data = xallocData(size)))
 	{
 	    pReg->data->size = size;
 	    pReg->data->numRects = 0;
 	}
 	else
-	    pReg->data = &EmptyData;
+	    pReg->data = &miEmptyData;
     }
     return(pReg);
 }
@@ -315,14 +315,14 @@ miRegionInit(pReg, rect, size)
     }
     else
     {
-	pReg->extents = EmptyBox;
+	pReg->extents = miEmptyBox;
 	if ((size > 1) && (pReg->data = xallocData(size)))
 	{
 	    pReg->data->size = size;
 	    pReg->data->numRects = 0;
 	}
 	else
-	    pReg->data = &EmptyData;
+	    pReg->data = &miEmptyData;
     }
 }
 
@@ -646,14 +646,14 @@ miRegionOp(newReg, reg1, reg2, overlapFunc, appendNon1, appendNon2, pOverlap)
 	((newReg == reg2) && (numRects > 1)))
     {
 	oldData = newReg->data;
-	newReg->data = &EmptyData;
+	newReg->data = &miEmptyData;
     }
     /* guess at new size */
     if (numRects > newSize)
 	newSize = numRects;
     newSize <<= 1;
     if (!newReg->data)
-	newReg->data = &EmptyData;
+	newReg->data = &miEmptyData;
     else if (newReg->data->size)
 	newReg->data->numRects = 0;
     if (newSize > newReg->data->size)
@@ -788,7 +788,7 @@ miRegionOp(newReg, reg1, reg2, overlapFunc, appendNon1, appendNon2, pOverlap)
     if (!(numRects = newReg->data->numRects))
     {
 	xfreeData(newReg);
-	newReg->data = &EmptyData;
+	newReg->data = &miEmptyData;
     }
     else if (numRects == 1)
     {
@@ -943,7 +943,7 @@ miIntersect(newReg, reg1, reg2)
 	xfreeData(newReg);
 	newReg->extents.x2 = newReg->extents.x1;
 	newReg->extents.y2 = newReg->extents.y1;
-	newReg->data = &EmptyData;
+	newReg->data = &miEmptyData;
     }
     else if (!reg1->data && !reg2->data)
     {
@@ -1179,7 +1179,7 @@ miRegionAppend(dstrgn, rgn)
     BoxPtr new, old;
     Bool prepend;
 
-    if (!rgn->data && (dstrgn->data == &EmptyData))
+    if (!rgn->data && (dstrgn->data == &miEmptyData))
     {
 	dstrgn->extents = rgn->extents;
 	dstrgn->data = (RegDataPtr)NULL;
@@ -1775,7 +1775,7 @@ miSubtract(regD, regM, regS)
 	xfreeData(regD);
 	regD->extents.x2 = regD->extents.x1;
 	regD->extents.y2 = regD->extents.y1;
-	regD->data = &EmptyData;
+	regD->data = &miEmptyData;
 	return TRUE;
     }
  
@@ -2004,7 +2004,7 @@ miTranslateRegion(pReg, x, y)
 	pReg->extents.x2 = pReg->extents.x1;
 	pReg->extents.y2 = pReg->extents.y1;
 	xfreeData(pReg);
-	pReg->data = &EmptyData;
+	pReg->data = &miEmptyData;
 	return;
     }
     if (x1 < MINSHORT)
@@ -2119,7 +2119,7 @@ miRegionEmpty(pReg)
     xfreeData(pReg);
     pReg->extents.x2 = pReg->extents.x1;
     pReg->extents.y2 = pReg->extents.y1;
-    pReg->data = &EmptyData;
+    pReg->data = &miEmptyData;
 }
 
 BoxPtr
