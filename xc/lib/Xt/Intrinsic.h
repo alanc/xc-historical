@@ -180,26 +180,26 @@ typedef Widget *WidgetList;
  ********************************************************************/
 
 typedef struct _CoreClassPart {
-    struct _WidgetClassRec *superclass; /* pointer to superclass ClassRec     */
-    String      class_name;		/* widget resource class name         */
-    Cardinal    size;			/* size in bytes of widget record     */
-    WidgetProc  class_initialize;       /* class initialization proc	      */
-    Boolean     class_inited;		/* has class been initialized?        */
-    WidgetProc  initialize;		/* initialize subclass fields         */
-    RealizeProc realize;		/* XCreateWindow for widget	      */
-    struct _XtActionsRec *actions;      /* widget semantics name to proc map  */
-    Cardinal    num_actions;		/* number of entries in actions       */
-    struct _Resource *resources;	/* resources for subclass fields      */
-    Cardinal    num_resources;		/* number of entries in resources     */
-    XrmClass    xrm_class;		/* resource class quarkified	      */
-    Boolean     compress_motion;	/* compress MotionNotify for widget   */
-    Boolean     compress_exposure;      /* compress Expose events for widget  */
-    Boolean     visible_interest;       /* select for VisibilityNotify        */
-    WidgetProc  destroy;		/* free data for subclass pointers    */
-    WidgetProc  resize;			/* geom manager changed widget size   */
-    ExposeProc  expose;			/* rediplay window		      */
-    SetValuesProc	set_values;	/* set subclass resource values       */
-    WidgetProc	accept_focus;		/* assign input focus to widget       */
+    struct _WidgetClassRec *superclass;/* pointer to superclass ClassRec     */
+    String      class_name;	       /* widget resource class name         */
+    Cardinal    size;		       /* size in bytes of widget record     */
+    WidgetProc  class_initialize;      /* class initialization proc	     */
+    Boolean     class_inited;	       /* has class been initialized?        */
+    WidgetProc  initialize;	       /* initialize subclass fields         */
+    RealizeProc realize;	       /* XCreateWindow for widget	     */
+    struct _XtActionsRec *actions;     /* widget semantics name to proc map  */
+    Cardinal    num_actions;	       /* number of entries in actions       */
+    struct _Resource *resources;       /* resources for subclass fields      */
+    Cardinal    num_resources;	       /* number of entries in resources     */
+    XrmClass    xrm_class;	       /* resource class quarkified	     */
+    Boolean     compress_motion;       /* compress MotionNotify for widget   */
+    Boolean     compress_exposure;     /* compress Expose events for widget  */
+    Boolean     visible_interest;      /* select for VisibilityNotify        */
+    WidgetProc  destroy;	       /* free data for subclass pointers    */
+    WidgetProc  resize;		       /* geom manager changed widget size   */
+    ExposeProc  expose;		       /* rediplay window		     */
+    SetValuesProc	set_values;    /* set subclass resource values       */
+    WidgetProc	accept_focus;	       /* assign input focus to widget       */
   } CoreClassPart;
 
 typedef struct _WidgetClassRec {
@@ -220,11 +220,11 @@ typedef Cardinal (*OrderProc)();
 
 
 typedef struct _CompositePart {
-    WidgetList  children;       /* array of ALL widget children		      */
-    Cardinal    num_children;   /* total number of widget children 	      */
-    Cardinal    num_slots;      /* number of slots in children array	      */
-    Cardinal    num_managed_children; /* number of geometry managed children  */
-    OrderProc   insert_position;/* compute position new child should go into  */
+    WidgetList  children;	/* array of ALL widget children		     */
+    Cardinal    num_children;	/* total number of widget children 	     */
+    Cardinal    num_slots;      /* number of slots in children array	     */
+    Cardinal    num_managed_children; /* number of geometry managed children */
+    OrderProc   insert_position;/* compute position new child should go into */
 } CompositePart;
 
 typedef struct _CompositeRec {
@@ -249,12 +249,12 @@ typedef struct _ConstraintRec {
  ********************************************************************/
 
 typedef struct _CompositeClassPart {
-    XtGeometryHandler	geometry_manager;   /* geometry manager for children  */
-    WidgetProc  change_managed;		/* changed managed status of children */
-    WidgetProc  insert_child;		/* physically add child to parent     */
-    WidgetProc  delete_child;		/* physically remove child	      */
-    WidgetProc  move_focus_to_next;     /* move Focus to next child	      */
-    WidgetProc  move_focus_to_prev;     /* move Focus to previous child       */
+    XtGeometryHandler	geometry_manager;  /* geometry manager for children  */
+    WidgetProc  change_managed;	       /* changed managed status of children */
+    WidgetProc  insert_child;	       /* physically add child to parent     */
+    WidgetProc  delete_child;	       /* physically remove child	     */
+    WidgetProc  move_focus_to_next;    /* move Focus to next child	     */
+    WidgetProc  move_focus_to_prev;    /* move Focus to previous child       */
 } CompositeClassPart;
 
 typedef struct _CompositeClassRec {
@@ -267,8 +267,8 @@ extern CompositeWidgetClass compositeWidgetClass;
 
 
 typedef struct _ConstraintClassPart {
-    struct _Resource *constraints;    /* constraint resource list	      */
-    Cardinal   num_constraints;       /* number of constraints in list        */
+    struct _Resource *constraints;    /* constraint resource list	     */
+    Cardinal   num_constraints;       /* number of constraints in list       */
 } ConstraintClassPart;
 
 typedef struct _ConstraintClassRec {
@@ -397,11 +397,11 @@ extern void XtCallCallbacks ();
 extern Display *XtInitialize();
     /* XrmOptionsDescRec    options;    */
     /* Cardinal             opt_count;  */
-    /* Cardinal		    *argc; */  /* returns count of args not processed */
+    /* Cardinal		    *argc; */ /* returns count of args not processed */
     /* char		    **argv;     */
     /* XtAtom		    name;       */
     /* XtAtom		    class;      */
-    /* Widget		    *root; */  /*returns top-level application widget */
+    /* Widget		    *root; */ /*returns top-level application widget */
 
 /****************************************************************
  *
