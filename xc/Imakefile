@@ -48,7 +48,7 @@ InstallManPageLong(Standards,$(MANDIR),XStandards)
 XCOMM do not name your log file make.log when you run this ...
 World::
 	@echo ""
-	@echo "Building Release 5alpha of the X Window System"
+	@echo "Building Release 5beta of the X Window System"
 	@echo ""
 	@echo "##############################################################"
 	@echo "# Did you remember to check the configuration parameters in  #"
@@ -68,12 +68,12 @@ World::
 	@echo ""
 	@date
 	@echo ""
-	@echo "Full build of Release 5alpha of the X Window System complete."
+	@echo "Full build of Release 5beta of the X Window System complete."
 	@echo ""
 
 Everything::
 	@echo ""
-	@echo "Rebuilding Release 5alpha of the X Window System"
+	@echo "Rebuilding Release 5beta of the X Window System"
 	@echo ""
 	@date
 	@echo ""
@@ -87,7 +87,7 @@ Everything::
 	@echo ""
 	@date
 	@echo ""
-	@echo "Rebuild of Release 5alpha of the X Window System complete."
+	@echo "Rebuild of Release 5beta of the X Window System complete."
 	@echo ""
 
 
