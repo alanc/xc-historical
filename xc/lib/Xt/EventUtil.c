@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: EventUtil.c,v 1.2 89/12/15 11:00:27 swick Exp $";
+static char Xrcsid[] = "$XConsortium: EventUtil.c,v 1.3 89/12/15 23:20:25 swick Exp $";
 #endif
 
 /********************************************************
@@ -138,7 +138,7 @@ XtPerWidgetInput _XtGetPerWidgetInput(widget, create)
 
 void _XtFillAncestorList(listPtr, maxElemsPtr, numElemsPtr, start, breakWidget)
     Widget	**listPtr;
-    Cardinal	*maxElemsPtr, *numElemsPtr;
+    int		*maxElemsPtr, *numElemsPtr;
     Widget	start, breakWidget;
 {
 #define CACHESIZE 16
@@ -181,7 +181,6 @@ Widget _XtFindRemapWidget(event, widget, mask, pdi)
     XtPerDisplayInput pdi;
 {
     Widget		dspWidget = widget;
-    XtDevice		device = NULL;
     
     if (!pdi->traceDepth || !(widget == pdi->trace[0]))
       {
