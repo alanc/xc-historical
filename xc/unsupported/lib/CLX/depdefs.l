@@ -602,15 +602,11 @@
      ,@(when body
 	 `((princ " " .stream.)
 	   ,@body))
-     #+lcl3.0
-     (let ((*print-base* 16))
-       (princ " " .stream.)
-       (princ (sys:%pointer .object.) .stream.))
      (princ ">" .stream.)))
 
 #+lispm
 (defmacro printing-object ((object stream) &body body)
-  `(si:printing-random-object (,object ,stream :typep)
+  `(si:printing-random-object (,object ,stream :typep :no-pointer)
      ,@body))
 
 

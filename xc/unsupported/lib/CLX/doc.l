@@ -280,6 +280,7 @@
 
 (defstruct visual-info
   (id <unspec> :type resource-id)
+  (display <unspec> :type display)
   (class <unspec> :type (member :static-gray :static-color :true-color
 				:gray-scale :pseudo-color :direct-color))
   (red-mask <unspec> :type pixel)

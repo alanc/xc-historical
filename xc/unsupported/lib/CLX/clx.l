@@ -208,6 +208,7 @@
 	  visual-info
 	  visual-info-p
 	  visual-info-id
+	  visual-info-display
 	  visual-info-class
 	  visual-info-red-mask
 	  visual-info-green-mask
@@ -527,7 +528,7 @@
 	   (ignore depth))
   (printing-object (display stream)
     (princ (display-host display) stream)
-    (princ " " stream)
+    (princ ":" stream)
     (princ (display-display display) stream)
     (princ " (" stream)
     (princ (display-vendor-name display) stream)
@@ -547,6 +548,10 @@
   (declare (type drawable drawable)
 	   (ignore depth))
   (printing-object (drawable stream)
+    (princ (display-host (drawable-display drawable)) stream)
+    (princ ":" stream)
+    (princ (display-display (drawable-display drawable)) stream)
+    (princ " " stream)
     (prin1 (drawable-id drawable) stream)))
 
 (def-clx-class (window (:include drawable) (:copier nil)
@@ -559,6 +564,7 @@
 
 (def-clx-class (visual-info (:copier nil) (:print-function print-visual-info))
   (id 0 :type resource-id)
+  (display nil :type (or null display))
   (class :static-gray :type (member :static-gray :static-color :true-color
 				    :gray-scale :pseudo-color :direct-color))
   (red-mask 0 :type pixel)
@@ -573,11 +579,15 @@
   (declare (type visual-info visual-info)
 	   (ignore depth))
   (printing-object (visual-info stream)
-    (prin1 (visual-info-id visual-info) stream)
-    (princ " " stream)
     (prin1 (visual-info-bits-per-rgb visual-info) stream)
     (princ "-bit " stream)
-    (princ (visual-info-class visual-info) stream)))
+    (princ (visual-info-class visual-info) stream)
+    (princ " " stream)
+    (princ (display-host (visual-info-display visual-info)) stream)
+    (princ ":" stream)
+    (princ (display-display (visual-info-display visual-info)) stream)
+    (princ " " stream)
+    (prin1 (visual-info-id visual-info) stream)))
 
 (def-clx-class (colormap (:copier nil) (:print-function print-colormap))
   (id 0 :type resource-id)
@@ -589,10 +599,14 @@
   (declare (type colormap colormap)
 	   (ignore depth))
   (printing-object (colormap stream)
-    (prin1 (colormap-id colormap) stream)
     (when (colormap-visual-info colormap)
-      (princ " " stream)
-      (princ (visual-info-class (colormap-visual-info colormap)) stream))))
+      (princ (visual-info-class (colormap-visual-info colormap)) stream)
+      (princ " " stream))
+    (princ (display-host (colormap-display colormap)) stream)
+    (princ ":" stream)
+    (princ (display-display (colormap-display colormap)) stream)
+    (princ " " stream)
+    (prin1 (colormap-id colormap) stream)))
 
 (def-clx-class (cursor (:copier nil) (:print-function print-cursor))
   (id 0 :type resource-id)
@@ -603,6 +617,10 @@
   (declare (type cursor cursor)
 	   (ignore depth))
   (printing-object (cursor stream)
+    (princ (display-host (cursor-display cursor)) stream)
+    (princ ":" stream)
+    (princ (display-display (cursor-display cursor)) stream)
+    (princ " " stream)
     (prin1 (cursor-id cursor) stream)))
 
 ; Atoms are accepted as strings or symbols, and are always returned as keywords.
@@ -700,6 +718,10 @@
   (declare (type gcontext gcontext)
 	   (ignore depth))
   (printing-object (gcontext stream)
+    (princ (display-host (gcontext-display gcontext)) stream)
+    (princ ":" stream)
+    (princ (display-display (gcontext-display gcontext)) stream)
+    (princ " " stream)
     (prin1 (gcontext-id gcontext) stream)))
 
 (defconstant *event-mask-vector*
@@ -829,6 +851,13 @@
   (declare (type screen screen)
 	   (ignore depth))
   (printing-object (screen stream)
+    (let ((display (drawable-display (screen-root screen))))
+      (princ (display-host display) stream)
+      (princ ":" stream)
+      (princ (display-display display) stream)
+      (princ "." stream)
+      (princ (position screen (display-roots display)) stream))
+    (princ " " stream)
     (prin1 (screen-width screen) stream)
     (princ "x" stream)
     (prin1 (screen-height screen) stream)
@@ -880,7 +909,11 @@
   (printing-object (font stream)
     (if (font-name font)
 	(princ (font-name font) stream)
-      (princ '|(gcontext)| stream))
+      (princ "(gcontext)" stream))
+    (princ " " stream)
+    (princ (display-host (font-display font)) stream)
+    (princ ":" stream)
+    (princ (display-display (font-display font)) stream)
     (when (font-id-internal font)
       (princ " " stream)
       (prin1 (font-id font) stream))))

@@ -401,6 +401,7 @@
 			(buffer-input display buffer-bbuf 0 24)
 			(let ((visual (make-visual-info
 					:id (card32-get 0)
+					:display display
 					:class (member8-get 4 :static-gray :gray-scale
 							    :static-color :pseudo-color
 							    :true-color :direct-color)
