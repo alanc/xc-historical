@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.100 89/07/27 17:50:48 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.32 89/08/14 14:43:25 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -55,6 +55,7 @@ typedef struct _AsciiSinkData {
     Pixmap insertCursorOn;
     XawTextInsertState laststate;
     int tab_count;
+    short cursor_x, cursor_y;	/* Cursor Location. */
     Position *tabs;
 } AsciiSinkData, *AsciiSinkPtr;
 
@@ -197,6 +198,27 @@ Screen *s;
         insertCursor_bits, insertCursor_width, insertCursor_height));
 }
 
+/*	Function Name: GetCursorBounds
+ *	Description: Returns the size and location of the cursor.
+ *	Arguments: w - the text widget.
+ * RETURNED        rect - an X rectangle to return the cursor bounds in.
+ *	Returns: none.
+ */
+
+static void
+GetCursorBounds(w, rect)
+Widget w;
+XRectangle * rect;
+{
+    XawTextSink sink = ((TextWidget)w)->text.sink;
+    AsciiSinkData *data = (AsciiSinkData *) sink->data;
+  
+    rect->width = (unsigned short) insertCursor_width;
+    rect->height = (unsigned short) insertCursor_height;
+    rect->x = data->cursor_x - (short) (rect->width / 2);
+    rect->y = data->cursor_y - (short) rect->height;
+}
+
 /*
  * The following procedure manages the "insert" cursor.
  */
@@ -208,20 +230,17 @@ static AsciiInsertCursor (w, x, y, state)
 {
     XawTextSink sink = ((TextWidget)w)->text.sink;
     AsciiSinkData *data = (AsciiSinkData *) sink->data;
+    XRectangle rect;
 
-/*
-    XCopyArea(sink->dpy,
-	      (state == XawisOn) ? data->insertCursorOn : data->insertCursorOff,
-	      w, data->normgc, 0, 0, insertCursor_width, insertCursor_height,
-	      x - (insertCursor_width >> 1), y - (insertCursor_height));
-*/
+    data->cursor_x = x;
+    data->cursor_y = y;
 
-    if (state != data->laststate && XtIsRealized(w)) {
-	XCopyPlane(XtDisplay(w),
-		  data->insertCursorOn, XtWindow(w),
-		  data->xorgc, 0, 0, insertCursor_width, insertCursor_height,
-		  x - (insertCursor_width >> 1), y - (insertCursor_height), 1);
-    }
+    GetCursorBounds(w, &rect);
+    if (state != data->laststate && XtIsRealized(w)) 
+        XCopyPlane(XtDisplay(w),
+		   data->insertCursorOn, XtWindow(w), data->xorgc,
+		   0, 0, (unsigned int) rect.width, (unsigned int) rect.height,
+		   (int) rect.x, (int) rect.y, 1);
     data->laststate = state;
 }
 
@@ -433,6 +452,7 @@ XawTextSink XawAsciiSinkCreate (parent, args, num_args)
     sink->MaxLines = AsciiMaxLinesForHeight;
     sink->MaxHeight = AsciiMaxHeightForLines;
     sink->SetTabs = AsciiSetTabs;
+    sink->GetCursorBounds = GetCursorBounds;
     data = XtNew(AsciiSinkData);
     sink->data = (caddr_t)data;
 

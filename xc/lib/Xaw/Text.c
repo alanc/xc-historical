@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.100 89/07/27 17:50:48 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.101 89/08/14 14:43:09 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -1179,7 +1179,8 @@ Position left, right;
 				  local_width, FALSE, &pos1, &width, &height);
 
   if (right >= (Position) lt->textWidth - ctx->text.margin.left) 
-    if ( IsValidLine(ctx, line + 1) )
+    if ( (IsValidLine(ctx, line + 1)) &&
+	 (ctx->text.lt.info[line + 1].position <= ctx->text.lastPos) )
       pos2 = (*src->Scan) (src, (lt + 1)->position, XawstPositions, 
 			   XawsdLeft, 1, TRUE);
     else 
@@ -2009,7 +2010,45 @@ Cardinal	*num_params;
     _XawTextSetSelection(ctx, ctx->text.s.left, ctx->text.s.right,
 			 params, *num_params);
 }
- 
+
+/*	Function Name: RectanglesOverlap
+ *	Description: Returns TRUE if two rectangles overlap.
+ *	Arguments: rect1, rect2 - the two rectangles to check.
+ *	Returns: TRUE iff these rectangles overlap.
+ */
+
+static Boolean
+RectanglesOverlap(rect1, rect2)
+XRectangle *rect1, *rect2;
+{
+  return ( (rect1->x + rect1->width <= rect2->x) ||
+	   (rect1->x >= rect2->x + rect2->width) ||
+	   (rect1->y + rect1->height <= rect2->y) ||
+	   (rect1->y >= rect2->y + rect2->height) );
+}
+
+/*	Function Name: UpdateTextInRectangle.
+ *	Description: Updates the text in a rectangle.
+ *	Arguments: ctx - the text widget.
+ *                 rect - the rectangle to update.
+ *	Returns: none.
+ */
+
+static void
+UpdateTextInRectangle(ctx, rect)
+TextWidget ctx;
+XRectangle * rect;
+{
+  XawTextLineTableEntry *info = ctx->text.lt.info;
+  int line, x = rect->x, y = rect->y;
+  int right = rect->width + x, bottom = rect->height + y;
+
+  for (line = 0;( (line < ctx->text.lt.lines) &&
+		 IsValidLine(ctx, line) && (info->y < bottom)); line++, info++)
+    if ( (info + 1)->y >= y ) 
+      UpdateTextInLine(ctx, line, x, right);
+}
+
 /*
  * This routine processes all "expose region" XEvents. In general, its job
  * is to the best job at minimal re-paint of the text, displayed in the
@@ -2022,17 +2061,22 @@ Widget w;
 XEvent *event;
 {
   TextWidget ctx = (TextWidget) w;
-  int line, x = event->xexpose.x, y = event->xexpose.y;
-  int right = event->xexpose.width + x, bottom = event->xexpose.height + y;
-  XawTextLineTableEntry *info = ctx->text.lt.info;
-  
+  XRectangle expose, cursor;
+
+  expose.x = event->xexpose.x;
+  expose.y = event->xexpose.y;
+  expose.width = event->xexpose.width;
+  expose.height = event->xexpose.height;
+
   _XawTextPrepareToUpdate(ctx);
-
-  for (line = 0;( (line < ctx->text.lt.lines) &&
-		 IsValidLine(ctx, line) && (info->y < bottom)); line++, info++)
-    if ( (info + 1)->y >= y ) 
-      UpdateTextInLine(ctx, line, x, right);
-
+  UpdateTextInRectangle(w, &expose);
+  (*ctx->text.sink->GetCursorBounds)(w, &cursor);
+  if (RectanglesOverlap(&cursor, &expose)) {
+    (*ctx->text.sink->ClearToBackground)(w, (int) cursor.x, (int) cursor.y,
+					 (unsigned int) cursor.width,
+					 (unsigned int) cursor.height);
+    UpdateTextInRectangle(w, &cursor);
+  }
   _XawTextExecuteUpdate(ctx);
 }
 

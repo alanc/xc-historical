@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.10 89/07/24 14:52:13 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.11 89/08/14 14:43:22 kit Exp $
 */
 
 
@@ -65,6 +65,7 @@ typedef struct _XawTextSink {
     int (*MaxLines)();
     int (*MaxHeight)();
     void (*SetTabs)();		/* widget, offset, tab_count, *tabs */
+    void (*GetCursorBounds)();	/* widget, rectangle */
     caddr_t data;
     };
 
