@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.162 92/07/23 19:18:37 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.163 92/07/24 17:34:55 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -23,7 +23,7 @@ without express or implied warranty.
 #define NEED_EVENTS
 #define NEED_REPLIES
 
-#include <X11/Xlibint.h>
+#include "Xlibint.h"
 #include <X11/Xos.h>
 #include "Xlibnet.h"
 #include <stdio.h>
@@ -95,8 +95,6 @@ static char *_XAsyncReply();
  * return anything.  Whenever possible routines that create objects return
  * the object they have created.
  */
-
-extern _XQEvent *_qfree;
 
 static int padlength[4] = {0, 3, 2, 1};
     /* lookup table for adding padding bytes to data that is read from
@@ -983,9 +981,9 @@ _XEnq (dpy, event)
 	register _XQEvent *qelt;
 
 /*NOSTRICT*/
-	if (qelt = _qfree) {
-		/* If _qfree is non-NULL do this, else malloc a new one. */
-		_qfree = qelt->next;
+	if (qelt = dpy->qfree) {
+		/* If dpy->qfree is non-NULL do this, else malloc a new one. */
+		dpy->qfree = qelt->next;
 	}
 	else if ((qelt = 
 	    (_XQEvent *) Xmalloc((unsigned)sizeof(_XQEvent))) == NULL) {
@@ -996,6 +994,7 @@ _XEnq (dpy, event)
 	qelt->next = NULL;
 	/* go call through display to find proper event reformatter */
 	if ((*dpy->event_vec[event->u.u.type & 0177])(dpy, &qelt->event, event)) {
+	    qelt->qserial_num = dpy->next_event_serial_num++;
 	    if (dpy->tail)	dpy->tail->next = qelt;
 	    else 		dpy->head = qelt;
     
@@ -1003,10 +1002,33 @@ _XEnq (dpy, event)
 	    dpy->qlen++;
 	} else {
 	    /* ignored, or stashed away for many-to-one compression */
-	    qelt->next = _qfree;
-	    _qfree = qelt;
+	    qelt->next = dpy->qfree;
+	    dpy->qfree = qelt;
 	}
 }
+
+/*
+ * _XDeq - Remove event packet from the display's queue.
+ */
+_XDeq (dpy, prev, qelt)
+    register Display *dpy;
+    register _XQEvent *prev;	/* element before qelt */
+    register _XQEvent *qelt;	/* element to be unlinked */
+{
+    if (prev) {
+	if ((prev->next = qelt->next) == NULL)
+	    dpy->tail = prev;
+    } else {
+	/* no prev, so removing first elt */
+	if ((dpy->head = qelt->next) == NULL)
+	    dpy->tail = NULL;
+    }
+    qelt->qserial_num = 0;
+    qelt->next = dpy->qfree;
+    dpy->qfree = qelt;
+    dpy->qlen--;
+}
+
 /*
  * EventToWire in separate file in that often not needed.
  */
@@ -1840,24 +1862,6 @@ Data32 (dpy, data, len)
 
 #endif /* WORD64 */
 
-
-
-/*
- * _XFreeQ - free the queue of events, called by XCloseDisplay
- */
-
-void _XFreeQ ()
-{
-    register _XQEvent *qelt = _qfree;
-  
-    while (qelt) {
-	register _XQEvent *qnxt = qelt->next;
-	Xfree ((char *) qelt);
-	qelt = qnxt;
-    }
-    _qfree = NULL;
-    return;
-}
 
 /* Make sure this produces the same string as DefineLocal/DefineSelf in xdm.
  * Otherwise, Xau will not be able to find your cookies in the Xauthority file.
