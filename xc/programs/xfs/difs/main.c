@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.7 91/07/16 20:23:35 keith Exp $ */
+/* $XConsortium: main.c,v 1.8 91/07/18 18:29:13 rws Exp $ */
 /*
  * Font server main routine
  */
@@ -56,7 +56,6 @@ extern void InitExtensions();
 extern void ProcessCmdLine();
 static Bool create_connection_block();
 
-extern int  serverNum;
 extern int  ListenSock;
 extern ClientPtr currentClient;
 char       *configfilename;
@@ -71,7 +70,6 @@ main(argc, argv)
     argcGlobal = argc;
     argvGlobal = argv;
 
-    serverNum = 0;
     configfilename = DEFAULT_CONFIG_FILE;
 
     /* init stuff */
