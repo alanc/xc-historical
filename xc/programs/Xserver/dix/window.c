@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.230 89/03/18 14:45:59 rws Exp $ */
+/* $XConsortium: window.c,v 1.231 89/03/18 16:20:32 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -1101,8 +1101,8 @@ DeleteWindow(pWin, wid)
             pWin->nextSib->prevSib = pWin->prevSib;
         if (pWin->prevSib) 
             pWin->prevSib->nextSib = pWin->nextSib;
-	xfree(pWin);
     }
+    xfree(pWin);
 }
 
 /*ARGSUSED*/
