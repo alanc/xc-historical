@@ -1,4 +1,5 @@
 STARTFONT 2.1
+COMMENT $XConsortium$
 COMMENT  
 COMMENT  Copyright 1989 Dale Schumacher, dal@syntel.mn.org
 COMMENT                 399 Beacon Ave.
@@ -15,7 +16,7 @@ COMMENT  permission.  Dale Schumacher makes no representations about the
 COMMENT  suitability of this software for any purpose.  It is provided "as
 COMMENT  is" without express or implied warranty.
 COMMENT  
-FONT -Schumacher-Clean-Bold-R-Normal--10-100-75-75-C-60-ISO8859-1
+FONT -Schumacher-Clean-Bold-R-Normal--10-100-75-75-C-60-ISO646.1991-IRV
 SIZE 10 75 75
 FONTBOUNDINGBOX 6 10 0 -2
 STARTPROPERTIES 19
@@ -32,8 +33,8 @@ RESOLUTION_X 75
 RESOLUTION_Y 75
 SPACING "C"
 AVERAGE_WIDTH 60
-CHARSET_REGISTRY "ISO8859"
-CHARSET_ENCODING "1"
+CHARSET_REGISTRY "ISO646.1991"
+CHARSET_ENCODING "IRV"
 FONT_ASCENT 8
 FONT_DESCENT 2
 DEFAULT_CHAR 0

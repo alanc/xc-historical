@@ -1,6 +1,7 @@
 STARTFONT 2.1
+COMMENT $XConsortium$
 COMMENT  Copyright 1989 Massachusetts Institute of Technology
-COMMENT  $XConsortium$
+COMMENT  $XConsortium: 6x9.bdf,v 1.2 94/04/08 19:08:38 gildea Exp $
 COMMENT  
 COMMENT  Permission to use, copy, modify, and distribute this software
 COMMENT  and its documentation for any purpose and without fee is
@@ -25,7 +26,7 @@ COMMENT  OF THIS SOFTWARE.
 COMMENT  
 COMMENT  Author:  Jim Fulton, MIT X Consortium
 COMMENT  
-FONT -Misc-Fixed-Medium-R-Normal--9-90-75-75-C-60-ISO8859-1
+FONT -Misc-Fixed-Medium-R-Normal--9-90-75-75-C-60-ISO646.1991-IRV
 SIZE 9 75 75
 FONTBOUNDINGBOX 6 9 0 -2
 STARTPROPERTIES 19
@@ -42,8 +43,8 @@ RESOLUTION_X 75
 RESOLUTION_Y 75
 SPACING "C"
 AVERAGE_WIDTH 60
-CHARSET_REGISTRY "ISO8859"
-CHARSET_ENCODING "1"
+CHARSET_REGISTRY "ISO646.1991"
+CHARSET_ENCODING "IRV"
 FONT_ASCENT 7
 FONT_DESCENT 2
 DEFAULT_CHAR 0
