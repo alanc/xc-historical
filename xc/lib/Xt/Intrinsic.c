@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.140 89/10/11 15:48:22 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.141 89/10/17 12:59:56 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -863,10 +863,6 @@ String XtResolvePathname(dpy, type, filename, suffix, path, predicate)
     int bytesAllocd, bytesLeft;
     char *ch, *result;
     extern char* getenv();
-
-#ifndef XFILESEARCHPATHDEFAULT
-#define XFILESEARCHPATHDEFAULT "/usr/lib/X11/%L/%T/%N%S:/usr/lib/X11/%l/%T/%N%S:/usr/lib/X11/%T/%N%S"
-#endif
 
     if (path == NULL) {
 #ifndef VMS
