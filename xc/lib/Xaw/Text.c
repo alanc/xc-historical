@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.56 88/09/15 12:38:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.57 88/09/16 12:38:45 swick Exp $";
 #endif
 
 
@@ -2467,7 +2467,6 @@ static void InsertFile(w, event)
 	{XtNsaveUnder, True},
     };
     Arg args[2];
-    XtCallbackRec callbacks[];
     int x, y;
     Window j;
 
@@ -2519,6 +2518,7 @@ static void InsertFile(w, event)
 	XtMoveWidget(popup = dialog->widget->core.parent, x, y);
     }
     else {
+	XtCallbackRec callbacks[2];
 	dialog = XtNew(struct _dialog);
 	if (prev)
 	    prev->next = dialog; /* add to end of list to make visual */
