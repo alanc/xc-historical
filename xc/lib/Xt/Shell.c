@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.103 91/06/11 20:14:34 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.105 91/06/20 18:02:44 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1223,7 +1223,7 @@ static void _popup_set_prop(w)
 	    XFree((XPointer)icon_name.value);
 
 	if (XtWidgetToApplicationContext((Widget)w)->langProcRec.proc) {
-	    char *locale = locale = setlocale(LC_CTYPE, (char *)NULL);
+	    char *locale = setlocale(LC_CTYPE, (char *)NULL);
 	    if (locale)
 		XChangeProperty(XtDisplay((Widget)w), XtWindow((Widget)w),
 				XInternAtom(XtDisplay((Widget)w),
@@ -1907,6 +1907,7 @@ static Boolean WMSetValues(old, ref, new, args, num_args)
 
 	if (nwmshell->wm.title != owmshell->wm.title) {
 	    XtFree(owmshell->wm.title);
+	    if (! nwmshell->wm.title) nwmshell->wm.title = "";
 	    nwmshell->wm.title = XtNewString(nwmshell->wm.title);
 	    title_changed = True;
 	} else
@@ -1919,8 +1920,7 @@ static Boolean WMSetValues(old, ref, new, args, num_args)
 	    XTextProperty title;
 	    Boolean copied = False;
 
-            if (nwmshell->wm.title &&
-		nwmshell->wm.title_encoding == None &&
+            if (nwmshell->wm.title_encoding == None &&
 		XmbTextListToTextProperty(XtDisplay(new),
 					  (char**)&nwmshell->wm.title,
 					  1, XStdICCTextStyle,
@@ -1999,6 +1999,7 @@ static Boolean TopLevelSetValues(oldW, refW, newW, args, num_args)
 
     if (old->topLevel.icon_name != new->topLevel.icon_name) {
 	XtFree((XtPointer)old->topLevel.icon_name);
+	if (! new->topLevel.icon_name) new->topLevel.icon_name = "";
 	new->topLevel.icon_name = XtNewString(new->topLevel.icon_name);
 	name_changed = True;
     } else
