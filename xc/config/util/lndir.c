@@ -1,4 +1,4 @@
-/* $XConsortium: lndir.c,v 1.12 94/03/27 01:24:41 rws Exp $ */
+/* $XConsortium: lndir.c,v 1.13 94/04/17 20:10:42 rws Exp kaleb $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -228,6 +228,8 @@ int rel;			/* if true, prepend "../" to fn before using */
 		if (!strcmp (dp->d_name, "RCS"))
 		    continue;
 		if (!strcmp (dp->d_name, "SCCS"))
+		    continue;
+		if (!strcmp (dp->d_name, "CVS"))
 		    continue;
 		if (!strcmp (dp->d_name, "CVS.adm"))
 		    continue;

@@ -1,4 +1,4 @@
-/* $XConsortium: imakemdep.h,v 1.78 94/11/30 20:46:35 kaleb Exp kaleb $ */
+/* $XConsortium: imakemdep.h,v 1.79 94/12/03 12:08:36 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -326,64 +326,25 @@ char *cpp_argv[ARGUMENTS] = {
 # endif
 #endif /* MOTOROLA */
 #ifdef i386
-# ifdef SVR4
-	"-Di386",
-	"-DSVR4",
-# endif
-# ifdef ISC
-	"-Di386",
-	"-DISC",
-#  ifdef ISC40
-	"-DISC40",       /* ISC 4.0 */
-#  else
-#   ifdef ISC202
-	"-DISC202",      /* ISC 2.0.2 */
-#   else
-#    ifdef ISC30
-	"-DISC30",       /* ISC 3.0 */
-#    else
-	"-DISC22",       /* ISC 2.2.1 */
-#    endif
-#   endif
-#  endif
-# endif
-# ifdef SCO
-	"-Di386",
-	"-DSCO",
-#  ifdef SCO324
-	"-DSCO324",
-#  endif
-# endif
-# ifdef ESIX
-	"-Di386",
-	"-DESIX",
-# endif
-# ifdef ATT
-	"-Di386",
-	"-DATT",
-# endif
-# ifdef DELL
-	"-Di386",
-	"-DDELL",
-# endif
-#endif
-#ifdef SYSV386           /* System V/386 folks, obsolete */
 	"-Di386",
 # ifdef SVR4
 	"-DSVR4",
 # endif
-# ifdef ISC
+# ifdef SYSV
+	"-DSYSV",
+#  ifdef ISC
 	"-DISC",
-#  ifdef ISC40
+#   ifdef ISC40
 	"-DISC40",       /* ISC 4.0 */
-#  else
-#   ifdef ISC202
-	"-DISC202",      /* ISC 2.0.2 */
 #   else
-#    ifdef ISC30
-	"-DISC30",       /* ISC 3.0 */
+#    ifdef ISC202
+	"-DISC202",      /* ISC 2.0.2 */
 #    else
+#     ifdef ISC30
+	"-DISC30",       /* ISC 3.0 */
+#     else
 	"-DISC22",       /* ISC 2.2.1 */
+#     endif
 #    endif
 #   endif
 #  endif
@@ -404,6 +365,43 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DDELL",
 # endif
 #endif
+#ifdef SYSV386		/* System V/386 folks, obsolete */
+	"-Di386",
+# ifdef SVR4
+	"-DSVR4",
+# endif
+# ifdef SYSV
+	"-DSYSV",
+#  ifdef ISC
+	"-DISC",
+#   ifdef ISC40
+	"-DISC40",       /* ISC 4.0 */
+#   else
+#    ifdef ISC202
+	"-DISC202",      /* ISC 2.0.2 */
+#    else
+#     ifdef ISC30
+	"-DISC30",       /* ISC 3.0 */
+#     else
+	"-DISC22",       /* ISC 2.2.1 */
+#     endif
+#    endif
+#   endif
+#  endif
+# endif
+# ifdef SCO
+	"-DSCO",
+#  ifdef SCO324
+	"-DSCO324",
+#  endif
+# endif
+# ifdef ESIX
+	"-DESIX",
+# endif
+# ifdef ATT
+	"-DATT",
+# endif
+# ifdef DELL
 #ifdef __osf__
 	"-D__osf__",
 # ifdef __mips__
