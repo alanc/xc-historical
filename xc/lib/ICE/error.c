@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.11 94/03/18 15:59:14 mor Exp $ */
+/* $XConsortium: error.c,v 1.12 94/03/30 19:08:55 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -161,9 +161,13 @@ char	*reason;
 
 {
     char *pBuf, *pStart;
-    int bytes = STRING_BYTES (reason);
+    int bytes;
     int severity = (offendingMinor == ICE_ConnectionSetup) ?
 	IceFatalToConnection : IceFatalToProtocol;
+
+    if (!reason)
+	reason = "";
+    bytes = STRING_BYTES (reason);
 
     IceErrorHeader (iceConn,
 	0, offendingMinor,
@@ -189,7 +193,11 @@ char	*reason;
 
 {
     char *pBuf, *pStart;
-    int bytes = STRING_BYTES (reason);
+    int bytes;
+
+    if (!reason)
+	reason = "";
+    bytes = STRING_BYTES (reason);
 
     IceErrorHeader (iceConn,
 	0, offendingMinor,
@@ -215,7 +223,11 @@ char	*reason;
 
 {
     char *pBuf, *pStart;
-    int bytes = STRING_BYTES (reason);
+    int bytes;
+
+    if (!reason)
+	reason = "";
+    bytes = STRING_BYTES (reason);
 
     IceErrorHeader (iceConn,
 	0, offendingMinor,
@@ -240,7 +252,11 @@ char	*protocolName;
 
 {
     char *pBuf, *pStart;
-    int bytes = STRING_BYTES (protocolName);
+    int bytes;
+
+    if (!protocolName)
+	protocolName = "";
+    bytes = STRING_BYTES (protocolName);
 
     IceErrorHeader (iceConn,
 	0, ICE_ProtocolSetup,
@@ -286,7 +302,11 @@ char	*protocolName;
 
 {
     char *pBuf, *pStart;
-    int bytes = STRING_BYTES (protocolName);
+    int bytes;
+
+    if (!protocolName)
+	protocolName = "";
+    bytes = STRING_BYTES (protocolName);
 
     IceErrorHeader (iceConn,
 	0, ICE_ProtocolSetup,
