@@ -5,10 +5,6 @@
 BOOTSTRAPCFLAGS = 
         CHECKFN = $(UTILSRC)/checkfn
 
-#if MakeContributed
-    CONTRIBDIRS = $(CONTRIBSRC)
-#endif
-
 #
 # Preserve this order: include comes first, clients, demos, contrib come last.
 #
@@ -24,8 +20,7 @@ SERVERDIRSTOMAKE = \
 CLIENTDIRSTOMAKE = \
 		$(CLIENTSRC) \
 		$(DEMOSRC) \
-		$(EXAMPLESRC) \
-		$(CONTRIBDIRS)
+		$(EXAMPLESRC)
      DIRSTOMAKE = \
 		$(LIBDIRSTOMAKE) \
 		$(SERVERDIRSTOMAKE) \
