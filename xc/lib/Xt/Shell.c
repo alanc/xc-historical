@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.120 91/12/06 16:06:28 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.120 91/12/06 16:16:40 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1766,12 +1766,12 @@ static XtGeometryResult RootGeometryManager(gw, request, reply)
 	_SetWMSizeHints((WMShellWidget)w);
     }
 
-    if (w->shell.override_redirect) return XtGeometryDone;
+    if (w->shell.override_redirect) return XtGeometryYes;
 
     /* If no non-stacking bits are set, there's no way to tell whether
        or not this worked, so assume it did */
 
-    if (!(mask & ~(CWStackMode | CWSibling))) return XtGeometryDone;
+    if (!(mask & ~(CWStackMode | CWSibling))) return XtGeometryYes;
 
     if (wm && ((WMShellWidget)w)->wm.wait_for_wm == FALSE) {
 	    /* the window manager is sick
@@ -1818,7 +1818,7 @@ static XtGeometryResult RootGeometryManager(gw, request, reply)
 		    w->shell.client_specified |= _XtShellPositionValid;
 		}
 		else w->shell.client_specified &= ~_XtShellPositionValid;
-		return XtGeometryDone;
+		return XtGeometryYes;
 	    }
 	} else if (!wm ||
 		   (event.type == ClientMessage &&
@@ -1830,7 +1830,7 @@ static XtGeometryResult RootGeometryManager(gw, request, reply)
 	    w->core.x = event.xclient.data.s[0];
 	    w->core.y = event.xclient.data.s[1];
 	    w->shell.client_specified |= _XtShellPositionValid;
-	    return XtGeometryDone;
+	    return XtGeometryYes;
 	} else XtAppWarningMsg(XtWidgetToApplicationContext((Widget)w),
 			       "internalError", "shell", XtCXtToolkitError,
 			       "Shell's window manager interaction is broken",
