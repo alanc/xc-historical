@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.59 92/08/21 19:30:27 rws Exp $ */
+/* $XConsortium: misc.h,v 1.60 93/07/12 09:45:01 dpw Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*
@@ -44,7 +44,9 @@ extern unsigned long serverGeneration;
 #endif
 #endif
 
+#ifndef MAXSCREENS
 #define MAXSCREENS	3
+#endif
 #define MAXCLIENTS	128
 #define MAXFORMATS	8
 #define MAXVISUALS_PER_SCREEN 50
@@ -89,7 +91,7 @@ typedef struct _Client *ClientPtr; /* also in dix.h */
 #define USE_BORDER_PIXEL 3
 
 
-/* byte swap a long literal */
+/* byte swap a 32-bit literal */
 #define lswapl(x) ((((x) & 0xff) << 24) |\
 		   (((x) & 0xff00) << 8) |\
 		   (((x) & 0xff0000) >> 8) |\
@@ -139,7 +141,7 @@ typedef struct _Client *ClientPtr; /* also in dix.h */
 #define SwapRestL(stuff) \
     SwapLongs((CARD32 *)(stuff + 1), LengthRestL(stuff))
 
-/* byte swap a long */
+/* byte swap a 32-bit value */
 #define swapl(x, n) n = ((char *) (x))[0];\
 		 ((char *) (x))[0] = ((char *) (x))[3];\
 		 ((char *) (x))[3] = n;\
@@ -152,7 +154,7 @@ typedef struct _Client *ClientPtr; /* also in dix.h */
 		 ((char *) (x))[0] = ((char *) (x))[1];\
 		 ((char *) (x))[1] = n
 
-/* copy long from src to dst byteswapping on the way */
+/* copy 32-bit value from src to dst byteswapping on the way */
 #define cpswapl(src, dst) \
                  ((char *)&(dst))[0] = ((char *) &(src))[3];\
                  ((char *)&(dst))[1] = ((char *) &(src))[2];\
