@@ -10,17 +10,19 @@
    XDMCONFIGDIR = XdmConfigurationSubdirectory
         SUBDIRS = $(XDMCONFIGDIR)
 
-LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
-          SRCS1 = buf.c daemon.c display.c displaylist.c dm.c error.c \
+LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(TOP)/lib/Xau/libXau.a
+          SRCS1 = auth.c buf.c daemon.c display.c displaylist.c dm.c error.c \
 		  file.c greet.c pseudoreset.c resource.c \
-		  session.c socket.c verify.c Login.c
-          OBJS1 = buf.o daemon.o display.o displaylist.o dm.o error.o \
+		  session.c socket.c util.c verify.c Login.c
+          OBJS1 = auth.o buf.o daemon.o display.o displaylist.o dm.o error.o \
 		  file.o greet.o pseudoreset.o resource.o \
-		  session.o socket.o verify.o Login.o
+		  session.o socket.o util.o verify.o Login.o
           SRCS2 = xdmshell.c 
           OBJS2 = xdmshell.o 
-       PROGRAMS = xdm xdmshell
-        DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" 
+          SRCS3 = xdmauthgen.c
+          OBJS3 = xdmauthgen.o
+       PROGRAMS = xdm xdmshell xdmauthgen
+        DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" ConnectionFlags
 
 /**/#
 /**/# Special definitions for compiling default resources; these parameters
@@ -41,10 +43,13 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 secure $(DEF_SERVER) :0"' \
 		  '-DDEF_SYSTEM_PATH="$(DEF_SYSTEM_PATH)"' \
 		  '-DDEF_SYSTEM_SHELL="$(BOURNE_SHELL)"' \
 		  '-DDEF_FAILSAFE_CLIENT="$(BINDIR)/xterm"' \
-		  '-DDEF_XDM_CONFIG="$(XDMDIR)/xdm-config"'
+		  '-DDEF_XDM_CONFIG="$(XDMDIR)/xdm-config"' \
+		  '-DDEF_XDM_AUTH_GEN="$(XDMDIR)/xdmauthgen"' \
+		  '-DDEF_AUTH_FILE="$(XDMDIR)/auth-server"'
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),)
 SingleProgramTarget(xdmshell,$(OBJS2),,)
+SingleProgramTarget(xdmauthgen,$(OBJS3),$(LOCAL_LIBRARIES),)
 
 SpecialObjectRule(resource.o, $(ICONFIGFILES), $(RES_DEFINES))
 
