@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.34 94/02/07 11:21:09 gildea Exp $ */
+/* $XConsortium: fserve.c,v 1.35 94/02/07 14:49:28 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -1589,6 +1589,9 @@ fs_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont,
     FSBlockDataPtr blockrec;
     FSBlockedFontPtr blockedfont;
     int         err;
+
+    /* libfont interface expects ImageRectMin glyphs */
+    format = format & ~BitmapFormatImageRectMask | BitmapFormatImageRectMin;
 
     *alias = (char *) 0;
     /* XX if we find the blockrec for the font */
