@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.137 88/02/09 17:52:35 rws Exp $ */
+/* $Header: Xlib.h,v 11.138 88/02/14 09:25:33 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -20,8 +20,7 @@
 /*
  *	Xlib.h - Header definition and support file for the C subroutine
  *	interface library (Xlib) to the X Window System Protocol (V11).
- *	Corresponds to the Beta test release.  Structures and symbols
- *	starting with "_" are private to the library.
+ *	Structures and symbols starting with "_" are private to the library.
  */
 #ifndef _XLIB_H_
 #define _XLIB_H_
@@ -466,8 +465,8 @@ typedef struct _XDisplay {
 	 * list to find the right procedure for each event might be
 	 * expensive if many extensions are being used.
 	 */
-	int (*event_vec[128])();/* vector for wire to event */
-	int (*wire_vec[128])();	/* vector for event to wire */
+	Bool (*event_vec[128])();  /* vector for wire to event */
+	Status (*wire_vec[128])(); /* vector for event to wire */
 } Display;
 
 #ifndef _XEVENT_
@@ -484,12 +483,7 @@ typedef struct _XDisplay {
  */
 
 /*
- * Definitions of specific events.  If new event types are defined here in
- * the future, the Xlibint.h file union for XBiggestEvent should also have
- * the event type added, to make sure that Xlib maintains enough space for
- * the largest event.  We are trying to avoid fragmentation of the malloc
- * pool by keeping the space allocated the same size for all events, even
- * if the actual information is much smaller.
+ * Definitions of specific events.
  */
 typedef struct {
 	int type;		/* of event */
@@ -908,6 +902,7 @@ typedef union _XEvent {
 	XMappingEvent xmapping;
 	XErrorEvent xerror;
 	XKeymapEvent xkeymap;
+	long pad[24];
 } XEvent;
 /*
  * _QEvent datatype for use in input queueing.
@@ -1024,8 +1019,10 @@ KeySym XStringToKeysym();
 XExtCodes *XInitExtension();
 int (*XESetCreateGC())(), (*XESetCopyGC())(), (*XESetFlushGC())(),
     (*XESetFreeGC())(), (*XESetCreateFont())(), (*XESetFreeFont())(), 
-    (*XESetCloseDisplay())(), (*XESetWireToEvent())(), (*XESetEventToWire())(),
+    (*XESetCloseDisplay())(),
     (*XESetError())(), (*XESetErrorString())();
+Bool (*XESetWireToEvent())();
+Status (*XESetEventToWire())();
 
 /* these are routines for which there are also macros */
 Window XRootWindow(), XDefaultRootWindow(), XRootWindowOfScreen();
