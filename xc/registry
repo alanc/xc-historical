@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.65 92/03/03 17:36:36 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.66 92/04/03 17:51:46 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -345,6 +345,7 @@ Name						Reference
 "WM_STATE"					[16]
 "WM_TRANSIENT_FOR"				[16]
 "WM_ZOOM_HINTS"					[17], [18]
+"_MIT_OBJ_CLASS"				[94]
 "_NCD_WM_RUNNING"				[66]
 "_RATIONAL_ROSE_TAG"				[88]
 "_RATIONAL_ROSE_MSG"				[88]
@@ -1229,3 +1230,8 @@ REFERENCES
 	Suite 200
 	1351 Harbor Bay Parkway
 	Alameda, CA 94501
+
+[94]	Bob Scheifler
+	MIT X Consortium
+	545 Technology Square
+	Cambridge, MA 02139
