@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# X Window System Build Parameters
-/**/# $XConsortium: Project.tmpl,v 1.42 89/10/09 17:27:21 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.43 89/10/11 18:55:03 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -309,7 +309,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 /**/###########################################################################
 /**/# X Window System make variables; this need to be coordinated with rules
-/**/# $XConsortium: Project.tmpl,v 1.42 89/10/09 17:27:21 jim Exp $
+/**/# $XConsortium: Project.tmpl,v 1.43 89/10/11 18:55:03 jim Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
@@ -376,7 +376,7 @@ Berklib.c: sysV/Berklib.c					@@\
            DOCSRC = $(TOP)/doc
            RGBSRC = $(TOP)/rgb
         DEPENDSRC = DependDir
-         IMAKESRC = $(UTILSRC)/imake
+         IMAKESRC = $(CONFIGSRC)
          XAUTHSRC = $(LIBSRC)/Xau
           XLIBSRC = $(LIBSRC)/X
            XMUSRC = $(LIBSRC)/Xmu

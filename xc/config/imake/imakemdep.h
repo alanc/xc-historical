@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: imakemdep.h,v 1.1 89/10/16 11:50:22 jim Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -40,9 +40,7 @@
 #endif
 
 #else /* not CCIMAKE */
-
-
-
+#ifndef MAKEDEPEND
 /*
  * Step 2:  dup2
  *     If your OS doesn't have a dup2() system call to duplicate one file
@@ -122,5 +120,62 @@ char *cpp_argv[ARGUMENTS] = {
 	"-Daix",	/* AIX instead of AOS */
 #endif
 };
+#else /* else MAKEDEPEND */
+/*
+ * Step 6:  predefs
+ *     If your compiler and/or preprocessor define any specific symbols, add
+ *     them to the the following table.  The definition of struct symtab is
+ *     in util/makedepend/main.c.
+ */
+struct symtab	predefs[] = {
+#ifdef apollo
+	{"apollo", NULL},
+#endif
+#ifdef ibm032
+	{"ibm032", NULL},
+#endif
+#ifdef sun
+	{"sun", NULL},
+#endif
+#ifdef hpux
+	{"hpux", NULL},
+#endif
+#ifdef vax
+	{"vax", NULL},
+#endif
+#ifdef VMS
+	{"VMS", NULL},
+#endif
+#ifdef cray
+	{"cray", NULL},
+#endif
+#ifdef CRAY
+	{"CRAY", NULL},
+#endif
+#ifdef att
+	{"att", NULL},
+#endif
+#ifdef mips
+	{"mips", NULL},
+#endif
+#ifdef ultrix
+	{"ultrix", NULL},
+#endif
+#ifdef mc68000
+	{"mc68000", NULL},
+#endif
+#ifdef mc68020
+	{"mc68020", NULL},
+#endif
+#ifdef __GNUC__
+	{"__GNUC__", NULL},
+#endif
+#ifdef __STDC__
+	{"__STDC__", NULL},
+#endif
+	/* add any additional symbols before this line */
+	{NULL, NULL}
+};
 
+#endif /* MAKEDEPEND */
 #endif /* CCIMAKE */

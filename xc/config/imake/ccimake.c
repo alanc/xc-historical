@@ -1,41 +1,21 @@
 /*
- * Put any special flags that will be necessary to get imake.c to compile.  Do
- * not include the value of BOOTSTRAPCFLAGS as it will be passed to imake.c
- * automatically.
+ * $XConsortium$
+ * 
+ * Warning:  This file must be kept as simple as posible so that it can 
+ * compile without any special flags on all systems.  Do not touch it unless
+ * you *really* know what you're doing.  Make changes in imakemdep.h, not here.
  */
 
-#ifdef hpux
-#define ccflags "-Wc,-Nd4000,-Ns3000 -DSYSV"
-#endif /* hpux */
+#define CCIMAKE			/* only get imake_ccflags definitions */
+#include "imakemdep.h"		/* things to set when porting imake */
 
-#ifdef macII
-#define ccflags "-DSYSV"
-#endif /* macII */
-
-#ifdef att
-#define ccflags "-DSYSV -DUSG"
-#endif /* att */
-
-#ifdef aix
-#define ccflags "-Daix"
+#ifndef imake_ccflags
+#define imake_ccflags "-O"
 #endif
-
-#ifdef CRAY
-#define ccflags "-DSYSV"
-#endif /* CRAY */
-
-#ifdef umips
-#ifdef SYSTYPE_SYSV
-#define ccflags "-DSYSV -I../../lib/X/mips -I/usr/include/bsd ../../lib/X/mips/mipssysvc.c -lbsd"
-#endif
-#endif
-
-#ifndef ccflags
-#define ccflags "-O"
-#endif /* ccflags */
 
 main()
 {
-	write(1, ccflags, sizeof(ccflags) - 1);
+	write(1, imake_ccflags, sizeof(imake_ccflags) - 1);
 	exit(0);
 }
+

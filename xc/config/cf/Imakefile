@@ -1,12 +1,27 @@
 /*
- * $XConsortium: Imakefile,v 1.3 89/03/14 12:17:56 jim Exp $
+ * $XConsortium: Imakefile,v 1.4 89/08/28 13:51:09 jim Exp $
+ * 
+ * This is used to recreate imake.  Makefile.ini is used to generate imake
+ * the first time.
  */
 
-CONFIG_FILES = Imake.rules Imake.tmpl Project.tmpl site.def *.bac *.cf 
+DEPLIBS = 
+HEADERS = imakemdep.h 
+CFFILES = $(HEADERS) Imake.rules Imake.tmpl Project.tmpl site.def *.bac *.cf
 
-all::
+
+#undef ImakeDependency
+#define ImakeDependency() @@\
+Makefile::  imake
+
+SimpleProgramTarget(imake)
+
+BuildIncludes($(HEADERS),config,..)
 
 MakeDirectories(install,$(CONFIGDIR))
-InstallMultipleDestFlags(install,$(CONFIG_FILES),$(CONFIGDIR),$(INSTDATFLAGS))
+InstallMultipleDestFlags(install,$(CFFILES),$(CONFIGDIR),$(INSTDATFLAGS))
 
 depend::
+
+clean::
+	$(RM) ccimake
