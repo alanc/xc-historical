@@ -1,5 +1,5 @@
 /*
- * $XConsortium: menu.c,v 1.3 89/09/27 19:15:12 converse Exp $
+ * $XConsortium: menu.c,v 1.4 89/10/06 15:02:56 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -20,27 +20,10 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * Author:  Donna Converse, MIT X Consortium
  */
 
 #include "xmh.h"
 #include "bboxint.h"
-
- 
-void CreateMenu(button, dynamic)
-    Button	button;		/* parent data structure */
-    Boolean	dynamic;	/* whether menu size will change dynamically */
-{
-    Cardinal	i;
-    Arg		args[3];
-
-    i = 0;
-    if (dynamic) {
-	XtSetArg(args[i], XtNallowShellResize, True);	i++;
-    }
-    button->menu = XtCreatePopupShell("menu", simpleMenuWidgetClass,
-				      button->widget, args, i);
-}
 
 
 void AttachMenuToButton(button, menu, menu_name)
