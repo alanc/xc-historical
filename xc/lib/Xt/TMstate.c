@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.132 91/01/30 21:33:44 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.133 91/02/03 15:09:37 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1752,12 +1752,14 @@ static XtTranslations MergeTranslations(widget, oldXlations, newXlations,
     for (i = 0, numNew = 0; i < 2; i++) {
 	if (bindPair[i].xlations)
 	  for (j = 0; j < bindPair[i].xlations->numStateTrees; j++, numNew++) {
-	      if (bindPair[i].xlations->
-		  stateTreeTbl[j]->simple.isAccelerator) 
-		{
-		    newBindings[numNew].widget = source;
-		    newBindings[numNew].aXlations = 
-		      bindPair[i].xlations;
+	      if (bindPair[i].xlations->stateTreeTbl[j]->simple.isAccelerator) {
+		  if (bindPair[i].bindings)
+		    newBindings[numNew] = bindPair[i].bindings[j];
+		  else {
+		      newBindings[numNew].widget = source;
+		      newBindings[numNew].aXlations = 
+			bindPair[i].xlations;
+		  }
 		}
 	  }
     }
