@@ -1,4 +1,4 @@
-.TH XSET 1 "1 August 1987" "X Version 11"
+.TH XSET 1 "1 March 1988" "X Version 11"
 .SH NAME
 xset - X window system user setup program
 .SH SYNOPSIS
@@ -72,12 +72,11 @@ These settings will be reset to default values when you log out.
 .PP
 Note that not all X implementations are guaranteed to honor all of these
 options.
-.SH AUTHOR
-Copyright (c) 1985, 1986, 1987 by Massachusetts Institute of Technology.
-.br
-See \fIX(1)\fP for a full copyright notice.
-.br
-Bob Scheifler, MIT Laboratory for Computer Science
-David Krikorian, MIT Project Athena (X11 version)
 .SH "SEE ALSO"
 X(8C)
+.SH AUTHOR
+Copyright (c) 1988 by Massachusetts Institute of Technology.
+.br
+Bob Scheifler, MIT Laboratory for Computer Science
+.br
+David Krikorian, MIT Project Athena (X11 version)
