@@ -1,4 +1,4 @@
-/* $XConsortium: ar_ops.c,v 5.3 91/03/29 10:47:04 rws Exp $ */
+/* $XConsortium: ar_ops.c,v 5.4 91/04/04 15:19:31 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -409,8 +409,8 @@ Ar_handle     arh;
  
     /* Remove the EOA element.  This is written by pclosearfile. */
 
-#ifdef UTEKV
-    /* The Tektronix machine, running System V Release 3.2, doesn't define
+#if defined(UTEKV) || (defined(SYSV) && defined(SYSV386))
+    /* Losing machines running System V Release 3.2 don't define
        the function ftruncate(), although both BSD and System V Release 4
        systems do.  Thus we take a more twisted approach on such systems
      */
@@ -445,7 +445,11 @@ Ar_handle     arh;
 	/* Get the mode on the old file and set the new file to be of that
 	   mode */
 	fstat(fd, &stat_val);
+#ifdef UTEKV
 	fchmod(new_fd, stat_val.st_mode);
+#else
+	chmod(tmp_file, stat_val.st_mode);
+#endif
 
 	close(new_fd);
 	close(fd);
@@ -458,13 +462,13 @@ Ar_handle     arh;
 	lseek(fd, (off_t)0, L_XTND);	            /* ...goto the end of the file */
     }
        
-#else /* !UTEKV */
+#else /* !losing */
 
     /* This is the way it should be !! */
     if (ftruncate(fd, (long)nbytes)) 
 	return(1);
     
-#endif /* UTEKV */
+#endif /* losing */
 
     return(0);
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: ut_path.c,v 5.4 91/05/09 12:26:26 rws Exp $ */
+/* $XConsortium: ut_path.c,v 5.5 91/06/19 10:47:58 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -25,6 +25,10 @@ SOFTWARE.
 ******************************************************************/
 
 #include "phg.h"		/* includes Intrinsic.h and Xos.h */
+
+#if defined(SYSV) && defined(SYSV386)
+#include <net/errno.h>
+#endif
 
 #ifndef X_NOT_STDC_ENV
 #include <stdlib.h>

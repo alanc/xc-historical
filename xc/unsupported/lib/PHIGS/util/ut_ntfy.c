@@ -1,4 +1,4 @@
-/* $XConsortium: ut_ntfy.c,v 5.3 91/04/14 13:00:49 rws Exp $ */
+/* $XConsortium: ut_ntfy.c,v 5.4 91/05/14 17:28:37 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -183,7 +183,7 @@ unsigned long	usecs;		    /* when alarm should go off */
 	
 	/** Remove signal handler if none left on list **/
 	if (!timer_list_array[which])
-#ifndef AIXrt
+#if !defined(AIXrt) && !(defined(SYSV) && defined(SYSV386))
 	    if (which == ITIMER_REAL)
 		(void)signal(SIGALRM, SIG_DFL);
 	    else
@@ -231,7 +231,7 @@ unsigned long	usecs;		    /* when alarm should go off */
 	
 	/** (Re)install the signal handler if only one on list **/
 	if (timer_list_array[which]->next == NULL)
-#ifndef AIXrt
+#if !defined(AIXrt) && !(defined(SYSV) && defined(SYSV386))
 	    if (which == ITIMER_REAL)
 		(void)signal(SIGALRM, timer_dispatcher);
 	    else
