@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.54 88/02/05 21:22:05 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.55 88/02/14 14:53:25 rws Exp $";
 #endif lint
 
 /*
@@ -404,8 +404,8 @@ static void DispatchEvent(event, widget, mask)
 	while (XPending(event->xmotion.display)) {
 	    XPeekEvent(event->xmotion.display, &nextEvent);
 	    if (nextEvent.type == MotionNotify &&
-		    event->xcrossing.window == nextEvent.xcrossing.window &&
-		    event->xcrossing.subwindow == nextEvent.xcrossing.subwindow) {
+		    event->xmotion.window == nextEvent.xmotion.window &&
+		    event->xmotion.subwindow == nextEvent.xmotion.subwindow) {
 		/* replace the current event with the next one */
 		XNextEvent(event->xmotion.display, event);
 	    } else break;
