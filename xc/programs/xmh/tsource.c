@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tsource.c,v 2.14 89/05/11 19:24:21 converse Exp $";
+    "$XConsortium: tsource.c,v 2.15 89/07/07 18:25:57 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -290,6 +290,15 @@ Boolean include;
     return index;
 }
 
+static XawTextPosition Search(widget, direction, block)
+    Widget			widget;
+    XawTextScanDirection	direction;
+    XawTextBlock		block;
+{
+    return XawTextSearchError;
+}
+
+
 static Boolean GetSelection(source, left, right)
 XawTextSource source;
 XawTextPosition *left, *right; 
@@ -341,28 +350,25 @@ XawTextPosition left, right;
 XawTextSource TSourceCreate(toc)
   Toc toc;
 {
-    XawTextSource source;
-    source = XtNew(XawTextSourceRec);
-    source->data = (caddr_t) toc;
-#ifdef notdef /* Donna Converse 7/7/89 - fields no longer exist %%% */
-    source->AddWidget = AddWidget;
-    source->RemoveWidget = RemoveWidget;
-#endif /*notdef*/
+    XawTextSource source = XtNew(XawTextSourceRec);
+
     source->Read = Read;
     source->Replace = Replace;
     source->Scan = Scan;
-#ifdef notdef
-    source->GetSelection = GetSelection;
-    source->SetSelection = SetSelection;
-#else
+    source->Search = NULL;
     source->SetSelection = NULL;
-#endif 
     source->ConvertSelection = NULL;
+    source->SetValuesHook = NULL;
+    source->GetValuesHook = NULL;
+    source->widget = NULL;		/* see TULoadTocFile */
     source->edit_mode = XawtextRead;
+    source->data = (caddr_t) toc;
+
     toc->numwidgets = 0;
     toc->widgets = XtNew(TextWidget);
     toc->hasselection = FALSE;
     toc->left = toc->right = 0;
+
     return source;
 }
 
