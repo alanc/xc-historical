@@ -1,8 +1,8 @@
 /*
  * xmodmap - program for loading keymap definitions into server
  *
- * $Source: /u1/X11/clients/xmodmap/RCS/handle.c,v $
- * $Header: handle.c,v 1.1 88/02/08 18:34:03 jim Locked $
+ * $Source: /usr/expo.lcs.mit.edu/X/src/clients/xmodmap/RCS/handle.c,v $
+ * $Header: handle.c,v 1.2 88/02/09 09:27:47 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -297,7 +297,7 @@ static int do_keycode (line, len)
 	return (-1);
     }
 
-    if (*line == '0') line++, len--;
+    if (*line == '0') line++, len--, fmt = "%o";
     if (*line == 'x' || *line == 'X') line++, len--, fmt = "%x";
 
     dummy = 0;
