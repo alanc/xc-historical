@@ -1,6 +1,6 @@
 #include <X/copyright.h>
 
-/* $Header: $ */
+/* $Header: AsciiText.c,v 1.1 87/12/23 16:38:54 swick Locked $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #include <X/Intrinsic.h>
@@ -117,10 +117,10 @@ static void StringInitialize(request, new, args, num_args)
     /* superclass Initialize can't set the following,
      * as it didn't know the source or sink when it was called */
     if (request->core.height == DEFAULTVALUE)
-        w->core.height += (*w->text.sink->maxHeight)(new, 1);
+        w->core.height += (*w->text.sink->MaxHeight)(new, 1);
 
     w->text.lastPos = /* GETLASTPOS */
-      (*w->text.source->scan) ( w->text.source, 0, XtstFile,
+      (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
 			        XtsdRight, 1, TRUE );
 
     ForceBuildLineTable( (TextWidget)new );
@@ -170,10 +170,10 @@ static void DiskInitialize(request, new, args, num_args)
     /* superclass Initialize can't set the following,
      * as it didn't know the source or sink when it was called */
     if (request->core.height == DEFAULTVALUE)
-        w->core.height += (*w->text.sink->maxHeight)(new, 1);
+        w->core.height += (*w->text.sink->MaxHeight)(new, 1);
 
     w->text.lastPos = /* GETLASTPOS */
-      (*w->text.source->scan) ( w->text.source, 0, XtstFile,
+      (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
 			        XtsdRight, 1, TRUE );
 
     ForceBuildLineTable( (TextWidget)new );
