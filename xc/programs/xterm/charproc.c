@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.45 88/08/08 12:49:42 jim Exp $
+ * $XConsortium: charproc.c,v 1.51 88/09/02 09:30:49 swick Exp $
  */
 
 
@@ -362,6 +362,28 @@ VTparse()
 		parsestate = groundtable;
 	for( ; ; )
 		switch(parsestate[c = doinput()]) {
+		 case CASE_PRINT:
+			/* printable characters */
+			top = bcnt > TEXT_BUF_SIZE ? TEXT_BUF_SIZE : bcnt;
+			cp = bptr;
+			*--bptr = c;
+			while(top > 0 && isprint(*cp)) {
+				top--;
+				bcnt--;
+				cp++;
+			}
+			if(screen->curss) {
+				dotext(screen, term->flags,
+				 screen->gsets[screen->curss], bptr, bptr + 1);
+				screen->curss = 0;
+				bptr++;
+			}
+			if(bptr < cp)
+				dotext(screen, term->flags,
+				 screen->gsets[screen->curgl], bptr, cp);
+			bptr = cp;
+			break;
+
 		 case CASE_GROUND_STATE:
 			/* exit ignore mode */
 			parsestate = groundtable;
@@ -875,28 +897,6 @@ VTparse()
 		 case CASE_XTERM_RESTORE:
 			restoremodes(term);
 			parsestate = groundtable;
-			break;
-
-		 case CASE_PRINT:
-			/* printable characters */
-			top = bcnt > TEXT_BUF_SIZE ? TEXT_BUF_SIZE : bcnt;
-			cp = bptr;
-			*--bptr = c;
-			while(top > 0 && isprint(*cp)) {
-				top--;
-				bcnt--;
-				cp++;
-			}
-			if(screen->curss) {
-				dotext(screen, term->flags,
-				 screen->gsets[screen->curss], bptr, bptr + 1);
-				screen->curss = 0;
-				bptr++;
-			}
-			if(bptr < cp)
-				dotext(screen, term->flags,
-				 screen->gsets[screen->curgl], bptr, cp);
-			bptr = cp;
 			break;
 		}
 }
