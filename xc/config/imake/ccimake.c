@@ -16,6 +16,10 @@
 #define ccflags "-DSYSV -DUSG"
 #endif /* att */
 
+#ifdef aix
+#define ccflags "-Daix"
+#endif
+
 #ifdef CRAY
 #define ccflags "-DSYSV"
 #endif /* CRAY */
