@@ -1,4 +1,4 @@
-/* "$XConsortium: XKBCvt.c,v 1.6 93/09/29 10:35:59 rws Exp $"; */
+/* "$XConsortium: XKBCvt.c,v 1.7 93/09/29 20:29:31 rws Exp $"; */
 
 /*
  * Copyright 1988, 1989 by the Massachusetts Institute of Technology
@@ -364,8 +364,14 @@ Strcmp(str1, str2)
     char *str1, *str2;
 {
     char str[256];
+    char c, *s;
 
-    _XcmsCopyISOLatin1Lowered(str, str1);
+    for (s = str; c = *str1++; ) {
+	if (isupper(c))
+	    c = tolower(c);
+	*s++ = c;
+    }
+    *s = '\0';
     return (strcmp(str, str2));
 }
 
@@ -399,7 +405,7 @@ _XkbGetConverters(charset, cvt_rtrn)
 	     *cvt_rtrn = cvt_X0201;
 	else if (Strcmp(charset, "kana")==0)
 	     *cvt_rtrn = cvt_kana;
-/* other codesets go here */
+	/* other codesets go here */
 	else *cvt_rtrn = cvt_latin1;
 	return 1;
     }
@@ -416,8 +422,9 @@ _XkbGetCharset(locale)
     char *locale;
 {
     static char buf[100];
+    char lang[256];
     char *start,*tmp,*end,*next,*set;
-    char *lang,*country,*charset;
+    char *country,*charset;
     int	 len;
 
     if ( locale == NULL ) {
@@ -429,10 +436,10 @@ _XkbGetCharset(locale)
     if ( locale == NULL )
 	return NULL;
 
-    lang = Xmalloc(strlen(locale) + 1);
-    if (!lang)
-	return NULL;
-    _XcmsCopyISOLatin1Lowered(lang, locale);
+    for (tmp = lang; *tmp = *locale++; tmp++) {
+	if (isupper(*tmp))
+	    *tmp = tolower(*tmp);
+    }
     country = strchr( lang, '_');
     if ( country ) {
 	*country++ = '\0';
@@ -441,7 +448,6 @@ _XkbGetCharset(locale)
 	if ( charset ) {
 	    strncpy(buf,charset,99);
 	    buf[99] = '\0';
-	    free(lang);
 	    return buf;
 	}
     }
@@ -455,13 +461,15 @@ _XkbGetCharset(locale)
 	tmp = start;
     } else {
 	struct stat sbuf;
-	if ( (stat(CHARSET_FILE,&sbuf)==0) && (sbuf.st_mode&S_IFREG) ) {
-	    FILE *file = fopen(CHARSET_FILE,"r");
+	FILE *file;
+	if ( (stat(CHARSET_FILE,&sbuf)==0) && (sbuf.st_mode&S_IFREG) &&
+	    (file = fopen(CHARSET_FILE,"r")) ) {
 	    tmp = Xmalloc(sbuf.st_size+1);
 	    if (tmp!=NULL) {
 		sbuf.st_size = fread(tmp,1,sbuf.st_size,file);
 		tmp[sbuf.st_size] = '\0';
 	    }
+	    fclose(file);
 	}
     }
 
@@ -485,7 +493,6 @@ _XkbGetCharset(locale)
 		strncpy(buf,set,100);
 		buf[99] = '\0';
 		Xfree(start);
-		Xfree(lang);
 		return buf;
 	    }
 	    tmp = end;
@@ -493,7 +500,6 @@ _XkbGetCharset(locale)
 	tmp = next;
     } while ( tmp && *tmp );
     Xfree(start);
-    Xfree(lang);
     return NULL;
 }
 
