@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.32 88/01/08 08:20:50 swick Locked $";
+static char rcsid[] = "$Header: Resources.c,v 6.24 88/01/29 16:25:36 asente Exp $";
 #endif lint
 
 /*
@@ -28,26 +28,16 @@ static char rcsid[] = "$Header: Resources.c,v 1.32 88/01/08 08:20:50 swick Locke
 
 /* XtResourceList.c -- compile and process resource lists. */
 
-#ifndef VMS
 #include <stdio.h>
-#else
-#include <descrip.h>
-#include "VMSutil.h"
-#include stdio
-#endif
-#include "Intrinsic.h"
+#include "IntrinsicI.h"
+#include "Shell.h"
 #include "Resource.h"
 #include "Atoms.h"
-
-extern void _XrmGetSearchResource();
-extern void _XrmConvert();
 
 #ifdef reverseVideoHack
 static XrmName	QreverseVideo;
 #endif
 static XrmClass	QBoolean, QString;
-
-extern void bcopy();
 
 static void CopyFromArg(src, dst, size)
     XtArgVal src, dst;
@@ -55,10 +45,10 @@ static void CopyFromArg(src, dst, size)
 {
     if (size == sizeof(XtArgVal))
 	*(XtArgVal *)dst = src;
+#ifdef BIGENDIAN
     else if (size == sizeof(short)) 
 	*(short *)dst = (short)src;
-    else if (size == sizeof(char))
-        *(char *)dst = (char)src;
+#endif BIGENDIAN
     else if (size < sizeof(XtArgVal))
 	bcopy((char *) &src, (char *) dst, (int) size);
     else
@@ -70,12 +60,16 @@ static void CopyToArg(src, dst, size)
     XtArgVal src, *dst;
     register unsigned int size;
 {
+    /* ||| Old semantics are yucky, but keep as long as NULL value */
+    if (*dst != NULL) 
+	dst = *(XtArgVal **)dst;
+
     if (size == sizeof(XtArgVal))
 	*dst = *(XtArgVal *)src;
+#ifdef BIGENDIAN
     else if (size == sizeof(short)) 
 	*dst = (XtArgVal) *((short *) src);
-    else if (size == sizeof(char))
-        *dst = (XtArgVal) *((char *) src);
+#endif BIGENDIAN
     else if (size < sizeof(XtArgVal))
 	bcopy((char *) src, (char *) dst, (int) size);
     else
@@ -83,7 +77,7 @@ static void CopyToArg(src, dst, size)
 
 }
 
-#ifdef notdef
+#ifndef lint
 static void PrintResourceList(list, count)
     register XtResourceList list;
     register int count;
@@ -108,7 +102,7 @@ static Cardinal GetNamesAndClasses(w, names, classes)
 
     for (length = 0; w != NULL; w = (Widget) w->core.parent) {
 	names[length] = w->core.xrm_name;
-	classes[length] = w->core.widget_class->core_class.xrm_class;
+	classes[length] = XtClass(w)->core_class.xrm_class;
 	length++;
      }
     /* They're in backwards order, flop them around */
@@ -129,8 +123,7 @@ static Cardinal GetNamesAndClasses(w, names, classes)
 /* All atoms are replaced by quarks, and offsets are -offset-1 to	*/
 /* indicate that this list has been compiled already			*/
 
-
-extern void  XtCompileResourceList(resources, num_resources)
+void  XrmCompileResourceList(resources, num_resources)
     register XtResourceList resources;
     	     Cardinal	  num_resources;
 {
@@ -143,74 +136,68 @@ extern void  XtCompileResourceList(resources, num_resources)
     	xrmres->xrm_name	 = StringToName(resources->resource_name);
     	xrmres->xrm_class	 = StringToClass(resources->resource_class);
     	xrmres->xrm_type	 = StringToQuark(resources->resource_type);
-	xrmres->xrm_size	 = resources->resource_size;
+/*	xrmres->xrm_size	 = resources->resource_size; */
         xrmres->xrm_offset	 = -resources->resource_offset - 1;
     	xrmres->xrm_default_type = StringToQuark(resources->default_type);
-	xrmres->xrm_default_addr = resources->default_addr;
+/*	xrmres->xrm_default_addr = resources->default_addr; */
     }
 
-} /* XtCompileResourceList */
+} /* XrmCompileResourceList */
 
-/* ||| References to display should be references to screen */
-
-void _XrmGetResources(
-    screen, base, names, classes, length, resources, num_resources, args, num_args)
-
-    Screen	  *screen;	   /* The widget's screen pointer         */
-    caddr_t	  base;		   /* Base address of memory to write to  */
-    register XrmNameList names;	   /* Full inheritance name of widget  	  */
-    register XrmClassList classes; /* Full inheritance class of widget 	  */
-    Cardinal	  length;	   /* Number of entries in names, classes */
-    XtResourceList  resources;	   /* The list of resources required. 	  */
-    Cardinal	  num_resources;   /* number of items in resource list    */
-    ArgList 	  args;		   /* ArgList to override resources	  */
-    Cardinal	  num_args;	   /* number of items in arg list	  */
+static void XrmGetResources(widget, base, names, classes, length, 
+	resources, num_resources, quark_args, args, num_args)
+    Widget	    widget;	    /* Widget resources are associated with */
+    caddr_t	    base;	    /* Base address of memory to write to   */
+    register XrmNameList names;     /* Full inheritance name of widget      */
+    register XrmClassList classes;  /* Full inheritance class of widget     */
+    Cardinal	    length;	    /* Number of entries in names, classes  */
+    XtResourceList  resources;      /* The list of resources required.      */
+    Cardinal	    num_resources;  /* number of items in resource list     */
+    XrmQuarkList    quark_args;     /* Arg names quarkified		    */
+    ArgList	    args;	    /* ArgList to override resources	    */
+    Cardinal	    num_args;       /* number of items in arg list	    */
 {
     register 	ArgList		arg;
     register 	XrmName		argName;
 		XrmResourceList	xrmres;
     register 	XrmResourceList	res;
-    		XrmValue	val, defaultVal;
+    		XrmValue	value, defaultValue;
     register 	int		j;
     		int		i;
     		XrmHashTable	searchList[100];
-    static	Boolean		found[1000];
-
+		Boolean		found[400];
+		XrmQuark	rawType;
+		XrmValue	rawValue;
 #ifdef reverseVideoHack
+    /* ||| */
 		Boolean		reverseVideo, getReverseVideo;
 
     reverseVideo    = FALSE;
     getReverseVideo = TRUE;
 #endif
 
-    /* ||| This should be passed a compiled arg list, too, but such has to
-       be allocated dynamically */
-
-    /* ||| Should be warnings? or error? */
     if ((args == NULL) && (num_args != 0)) {
-    	XtError("argument count > 0 on NULL argument list");
+    	XtWarning("argument count > 0 on NULL argument list");
 	num_args = 0;
     }
     if ((resources == NULL) && (num_resources != 0)) {
-    	XtError("resource count > 0 on NULL resource list");
+    	XtWarning("resource count > 0 on NULL resource list");
 	return;
     }
 
     if (num_resources != 0) {
 	/* Compile resource list if needed */
-	if (((int)resources->resource_offset) >= 0) {
-	    XtCompileResourceList(resources, num_resources);
+	if (((int) resources->resource_offset) >= 0) {
+	    XrmCompileResourceList(resources, num_resources);
 	}
 	xrmres = (XrmResourceList) resources;
 
 	/* Mark each resource as not found on arg list */
-	for (j = 0; j < num_resources; j++) {
-	    found[j] = FALSE;
-    	}
+	bzero((char *) found, (int) (num_resources * sizeof(Boolean)));
 
 	/* Copy the args into the resources, mark each as found */
 	for (arg = args, i = 0; i < num_args; i++, arg++) {
-	    argName = StringToName(arg->name);
+	    argName = quark_args[i];
 #ifdef reverseVideoHack
 	    if (argName == QreverseVideo) {
 		reverseVideo = (Boolean) arg->value;
@@ -235,15 +222,20 @@ void _XrmGetResources(
     classes[length+1] = NULLQUARK;
 
 #ifdef reverseVideoHack
-    if (CellsOfScreen(screen) > 2) {
+    if (XDisplayCells(dpy, DefaultScreen(dpy)) > 2) {
     	/* Color box, ignore ReverseVideo */
 	reverseVideo = FALSE;
     } else if (getReverseVideo) {
 	names[length] = QreverseVideo;
 	classes[length] = QBoolean;
-	XrmGetResource(screen, names, classes, QBoolean, &val);
-	if (val.addr)
-	    reverseVideo = *((Boolean *) val.addr);
+	if (XrmQGetResource(XtDefaultDB, names, classes, &rawType, &rawValue) &&
+		rawType != QBoolean) {
+	    _XtConvert(NULL, rawType, &rawValue, QBoolean, &value);
+	} else {
+	    value = rawValue;
+	}
+	if (value.addr)
+	    reverseVideo = *((Boolean *) value.addr);
     }
     /* ||| Nothing is done w/reverseVideo now, but something should be! */
 #endif
@@ -256,100 +248,138 @@ void _XrmGetResources(
 	/* Ask resource manager for a list of database levels that we can
 	   do a single-level search on each resource */
 
-	XrmGetSearchList(XtDefaultDB,names, classes, searchList);
+	XrmQGetSearchList(XtDefaultDB, names, classes, searchList);
 	
 	/* go to the resource manager for those resources not found yet */
 	/* if it's not in the resource database use the default value   */
     
 	for (res = xrmres, j = 0; j < num_resources; j++, res++) {
 	    if (! found[j]) {
-		XrmGetSearchResource(screen, searchList, res->xrm_name,
-		 res->xrm_class,XrmQuarkToAtom(res->xrm_type), &val);
-/*
-		if (val.addr == NULL && res->xrm_default_addr != NULL) {
-*/
-		if (val.addr == NULL) {
-		    /* Convert default value to proper type */
-		    defaultVal.addr = res->xrm_default_addr;
-		    defaultVal.size = sizeof(caddr_t);
-		    _XrmConvert(screen, res->xrm_default_type, &defaultVal, 
-		    	res->xrm_type, &val);
+		if (XrmQGetSearchResource(searchList,
+			res->xrm_name, res->xrm_class, &rawType, &rawValue)
+			&& rawType != res->xrm_type) {
+		    _XtConvert(widget,
+			rawType, &rawValue, res->xrm_type, &value);
+		} else {
+		    value = rawValue;
 		}
-		if (val.addr) {
+		if (value.addr == NULL && res->xrm_default_addr != NULL) {
+		    /* Convert default value to proper type */
+		    defaultValue.addr = res->xrm_default_addr;
+		    if (res->xrm_default_type == QString) {
+			if (defaultValue.addr == NULL) {
+			    defaultValue.size = 0;
+			} else {
+			    defaultValue.size =
+				strlen((char *) res->xrm_default_addr) + 1;
+			}
+		    } else {
+			defaultValue.size = sizeof(caddr_t);
+		    }
+		    if (res->xrm_default_type != res->xrm_type)
+			_XtConvert(widget, res->xrm_default_type, &defaultValue,
+			    res->xrm_type, &value);
+		    else
+			value = defaultValue;
+		}
+		if (value.addr) {
 		    if (res->xrm_type == QString) {
-			*((caddr_t *)(base - res->xrm_offset - 1)) = val.addr;
-/* ||| Why? casts should be handled by string to short, etc. conversions
- *     XtArgVals are, however, always sizeof(caddr_t), and this keeps
- *     things consistent, having conversion procs produce the same size. */
+		       *((caddr_t *)(base - res->xrm_offset - 1)) = value.addr;
+#ifdef BIGENDIAN
+/* ||| Why? This should be handled by string to short, etc. conversions */
           	    } else if (res->xrm_size == sizeof(short)) {
 		        *(short *) (base - res->xrm_offset - 1) =
-				(short)*((int *)val.addr);
-          	    } else if (res->xrm_size == sizeof(char)) {
-		        *(char *) (base - res->xrm_offset - 1) =
-				(char)*((int *)val.addr);
+				(short)*((int *)value.addr);
+#endif BIGENDIAN
 		    } else {
-		        bcopy(
-			    (char *) val.addr,
-			    (char *) (base - res->xrm_offset - 1), 
-			    (int) res->xrm_size);
+			XtBCopy(value.addr, base - res->xrm_offset - 1,
+			    res->xrm_size);
 		    }
-		} else if (res->xrm_default_addr != NULL) {
-		    bcopy(
-			(char *) res->xrm_default_addr,
-			(char *) (base - res->xrm_offset - 1),
-			(int) res->xrm_size);
 		} else {
-		   /* didn't find a default value, initialize to NULL... */
-		   bzero(
-		       (char *) (base - res->xrm_offset - 1),
-		       (int) res->xrm_size);
+		    /* didn't find a default value, initialize to NULL... */
+		    XtBZero(base - res->xrm_offset - 1, res->xrm_size);
 		}
 	    }
 	}
     }
 }
 
-static void GetResources(widgetClass, w, names, classes, length, args, num_args)
+static void GetResources(
+	widgetClass, w, names, classes, length, quark_args, args, num_args)
     WidgetClass	  widgetClass;
     Widget	  w;
     XrmNameList	  names;
     XrmClassList  classes;
     Cardinal	  length;
+    XrmQuarkList  quark_args;
     ArgList	  args;
     Cardinal	  num_args;
 {
     /* First get resources for superclasses */
     if (widgetClass->core_class.superclass != NULL) {
         GetResources(widgetClass->core_class.superclass,
-	    w, names, classes, length, args, num_args);
+	    w, names, classes, length, quark_args, args, num_args);
     }
     /* Then for this class */
-    _XrmGetResources(XtScreen(w), (caddr_t) w, names, classes, length,
-        widgetClass->core_class.resources, widgetClass->core_class.num_resources,
-	args, num_args);
+    XrmGetResources(w, (caddr_t) w, names, classes, length,
+	widgetClass->core_class.resources,
+	widgetClass->core_class.num_resources,
+	quark_args, args, num_args);
 } /* GetResources */
 
-static void GetConstraintResources(widgetClass, w, names, classes, length, args, num_args)
-    WidgetClass	  widgetClass;
+static void ConstraintGetResources(
+	widgetClass, w, names, classes, length, quark_args, args, num_args)
+    ConstraintWidgetClass   widgetClass;
     Widget	  w;
     XrmNameList	  names;
     XrmClassList  classes;
     Cardinal	  length;
+    XrmQuarkList  quark_args;
     ArgList	  args;
     Cardinal	  num_args;
 {
     /* First get resources for superclasses */
-    if (widgetClass != constraintWidgetClass) {
-        GetConstraintResources(widgetClass->core_class.superclass,
-	    w, names, classes, length, args, num_args);
+    if ((WidgetClass) widgetClass != constraintWidgetClass) {
+	if (widgetClass == NULL) 
+	    XtError(
+		"Subclass of Constraint required in ConstraintGetResources");
+        ConstraintGetResources(
+	    (ConstraintWidgetClass) (widgetClass->core_class.superclass),
+	    w, names, classes, length, quark_args, args, num_args);
     }
     /* Then for this class */
-    _XrmGetResources(XtScreen(w), (caddr_t)(w->core.constraints),
-         names, classes, length,
-       ((ConstraintWidgetClass) widgetClass)->constraint_class.resources,
-       ((ConstraintWidgetClass) widgetClass)->constraint_class.num_resources,
-	args, num_args);
-} /* GetConstraintResources */
+    XrmGetResources(w, w->core.constraints, names, classes, length,
+	widgetClass->constraint_class.resources,
+	widgetClass->constraint_class.num_resources,
+	quark_args, args, num_args);
+} /* ConstraintGetResources */
+
+
+
+static void CacheArgs(args, num_args, quark_cache, num_quarks, pQuarks)
+    ArgList	    args;
+    Cardinal	    num_args;
+    XrmQuarkList    quark_cache;
+    Cardinal	    num_quarks;
+    XrmQuarkList    *pQuarks;       /* RETURN */
+{
+    register XrmQuarkList   quarks;
+    register Cardinal       i;
+
+    if (num_quarks < num_args) {
+	quarks = (XrmQuarkList) XtMalloc(num_args * sizeof(XrmQuark));
+    } else {
+	quarks = quark_cache;
+    }
+    *pQuarks = quarks;
+
+    for (i = 0; i < num_args; i++, quarks++, args++) {
+	*quarks = StringToQuark(args->name);
+    }
+}
+
+#define FreeCache(cache, pointer) \
+	  if (cache != pointer) XtFree((char *)pointer)
 
 
 void XtGetResources(w, args, num_args)
@@ -357,36 +387,41 @@ void XtGetResources(w, args, num_args)
     		ArgList	  args;
     		Cardinal  num_args;
 {
-    XrmName	names[100];
-    XrmClass	classes[100];
-    Cardinal	length;
+    XrmName	    names[100];
+    XrmClass	    classes[100];
+    Cardinal	    length;
+    XrmQuark	    quark_cache[100];
+    XrmQuarkList    quark_args;
 
     /* Make sure xrm_class, xrm_name are valid */
-    if (w->core.widget_class->core_class.xrm_class == NULLQUARK) {
-        w->core.widget_class->core_class.xrm_class =
-	    StringToClass(w->core.widget_class->core_class.class_name);
+    if (XtClass(w)->core_class.xrm_class == NULLQUARK) {
+        XtClass(w)->core_class.xrm_class =
+	    StringToClass(XtClass(w)->core_class.class_name);
     }
     w->core.xrm_name = StringToName(w->core.name);
 
     /* Get names, classes for widget on up */
     length = GetNamesAndClasses(w, names, classes);
    
+    /* Compile arg list into quarks */
+    CacheArgs(args, num_args, quark_cache, XtNumber(quark_cache), &quark_args);
     /* Get resources starting at CorePart on down to this widget */
-    GetResources(w->core.widget_class, w, names, classes, length,
-        args, num_args);
+    GetResources(XtClass(w), w, names, classes, length,
+	quark_args, args, num_args);
     if (w->core.constraints != NULL) 
-      GetConstraintResources(w->core.parent->core.widget_class, w,
-                             names, classes, length,args, num_args);
+	ConstraintGetResources((ConstraintWidgetClass) XtClass(w->core.parent),
+	    w, names, classes, length, quark_args, args, num_args);
+    FreeCache(quark_cache, quark_args);
 } /* XtGetResources */
 
 
 void XtGetSubresources
 	(w, base, name, class, resources, num_resources, args, num_args)
-    Widget	  w;		  /* Widget "parent" of subobject */
-    caddr_t	  base;		  /* Base address to write to     */
-    String	  name;		  /* name of subobject		  */
-    String	  class;	  /* class of subobject		  */
-    XtResourceList  resources;	  /* resource list for subobject  */
+    Widget	  w;		  /* Widget "parent" of subobject   */
+    caddr_t	  base;		  /* Base address to write to       */
+    String	  name;		  /* name of subobject		    */
+    String	  class;	  /* class of subobject		    */
+    XtResourceList resources;	  /* resource list for subobject    */
     Cardinal	  num_resources;
     ArgList	  args;		  /* arg list to override resources */
     Cardinal	  num_args;
@@ -394,6 +429,8 @@ void XtGetSubresources
     XrmName	  names[100];
     XrmClass	  classes[100];
     Cardinal	  length;
+    XrmQuark	  quark_cache[100];
+    XrmQuarkList  quark_args;
 
     /* Get full name, class of subobject */
     length = GetNamesAndClasses(w, names, classes);
@@ -401,13 +438,43 @@ void XtGetSubresources
     classes[length] = StringToClass(class);
     length++;
 
+    /* Compile arg list into quarks */
+    CacheArgs(args, num_args, quark_cache, XtNumber(quark_cache), &quark_args);
     /* Fetch resources */
-    _XrmGetResources(XtScreen(w), base, names, classes, length,
-        resources, num_resources, args, num_args);
+    XrmGetResources(w, base, names, classes, length,
+        resources, num_resources, quark_args, args, num_args);
+    FreeCache(quark_cache, quark_args);
 }
 
 
-static void XrmGetValues(base, resources, num_resources, args, num_args)
+void XtGetApplicationResources
+	(w, base, resources, num_resources, args, num_args)
+    Widget	    w;		  /* Application shell widget       */
+    caddr_t	    base;	  /* Base address to write to       */
+    XtResourceList  resources;	  /* resource list for subobject    */
+    Cardinal	    num_resources;
+    ArgList	    args;	  /* arg list to override resources */
+    Cardinal	    num_args;
+{
+    XrmName	    names[100];
+    XrmClass	    classes[100];
+    Cardinal	    length;
+    XrmQuark	    quark_cache[100];
+    XrmQuarkList    quark_args;
+
+    /* Get full name, class of subobject */
+    length = GetNamesAndClasses(w, names, classes);
+
+    /* Compile arg list into quarks */
+    CacheArgs(args, num_args, quark_cache, XtNumber(quark_cache), &quark_args);
+    /* Fetch resources */
+    XrmGetResources(w, base, names, classes, length,
+        resources, num_resources, quark_args, args, num_args);
+    FreeCache(quark_cache, quark_args);
+}
+
+
+void XtGetSubvalues(base, resources, num_resources, args, num_args)
   caddr_t		base;		/* Base address to fetch values from */
   register XtResourceList resources;	/* The current resource values.      */
   register Cardinal	num_resources;	/* number of items in resources      */
@@ -451,28 +518,70 @@ static void GetValues(widgetClass, w, args, num_args)
         GetValues(widgetClass->core_class.superclass, w, args, num_args);
     }
     /* Then for this class */
-    XrmGetValues(
+    XtGetSubvalues(
 	(caddr_t) w,
-        widgetClass->core_class.resources,
+	widgetClass->core_class.resources,
 	widgetClass->core_class.num_resources,
 	args, num_args);
 } /* GetValues */
 
+static void ConstraintGetValues(widgetClass, w, args, num_args)
+    ConstraintWidgetClass widgetClass;
+    Widget	  w;
+    ArgList	  args;
+    Cardinal	  num_args;
+{
+    /* First get resource values for superclass */
+    if (widgetClass != (ConstraintWidgetClass)constraintWidgetClass) {
+        if (widgetClass == NULL)
+           XtError("Subclass of Constraint required in ConstraintGetValues");
+        ConstraintGetValues(
+	    (ConstraintWidgetClass) (widgetClass->core_class.superclass),
+            w, args, num_args);
+    }
+    /* Then for this class */
+    XtGetSubvalues(
+	w->core.constraints,
+	widgetClass->constraint_class.resources,
+        widgetClass->constraint_class.num_resources,
+        args, num_args);
+} /* ConstraintGetValues */
+
+static void CallGetValuesHook(widgetClass, w, args, num_args)
+    WidgetClass	  widgetClass;
+    Widget	  w;
+    ArgList	  args;
+    Cardinal	  num_args;
+{
+    if (widgetClass->core_class.superclass != NULL) {
+	CallGetValuesHook
+	    (widgetClass->core_class.superclass, w, args, num_args);
+    }
+    if (widgetClass->core_class.get_values_hook != NULL) {
+	(*(widgetClass->core_class.get_values_hook)) (w, args, &num_args);
+    }
+}
+
+
 void XtGetValues(w, args, num_args)
-    	 	Widget	  w;
-    		ArgList	  args;
-    		Cardinal  num_args;
+    register Widget   w;
+    register ArgList  args;
+    register Cardinal num_args;
 {
     if (num_args == 0) return;
     if ((args == NULL) && (num_args != 0)) {
-	XtError("argument count > 0 on NULL argument list");
-	return;
+	XtError("Argument count > 0 on NULL argument list in XtGetValues");
     }
     /* Get resource values starting at CorePart on down to this widget */
-    GetValues(w->core.widget_class, w, args, num_args);
+    GetValues(XtClass(w), w, args, num_args);
+    if (w->core.constraints != NULL)
+	ConstraintGetValues(
+	    (ConstraintWidgetClass) XtClass(w->core.parent), w, args, num_args);
+    /* Notify any class procedures that we've performed a "get_values" */
+    CallGetValuesHook(XtClass(w), w, args, num_args);
 } /* XtGetValues */
  
-static void XrmSetValues(base, resources, num_resources, args, num_args)
+void XtSetSubvalues(base, resources, num_resources, args, num_args)
   caddr_t		base;		/* Base address to write values to   */
   register XtResourceList resources;	/* The current resource values.      */
   register Cardinal	num_resources;	/* number of items in resources      */
@@ -502,7 +611,7 @@ static void XrmSetValues(base, resources, num_resources, args, num_args)
 	    }
 	}
     }
-} /* XrmSetValues */
+} /* XtSetSubvalues */
 
 static void SetValues(widgetClass, w, args, num_args)
     WidgetClass	  widgetClass;
@@ -515,74 +624,217 @@ static void SetValues(widgetClass, w, args, num_args)
         SetValues(widgetClass->core_class.superclass, w, args, num_args);
     }
     /* Then for this class */
-    XrmSetValues((caddr_t) w,
+    XtSetSubvalues((caddr_t) w,
         widgetClass->core_class.resources,
 	widgetClass->core_class.num_resources,
 	args, num_args);
 } /* SetValues */
 
-static Boolean RecurseSetValues (current, request, new, last, class)
-    Widget current, request, new;
-    Boolean last;
-    WidgetClass class;
+
+
+static void ConstraintSetValues(widgetClass, w, args, num_args)
+    ConstraintWidgetClass widgetClass;
+    Widget	  w;
+    ArgList	  args;
+    Cardinal	  num_args;
 {
-   Boolean redisplay = FALSE;
-    if (class->core_class.superclass!=NULL)
-        redisplay = RecurseSetValues (current, request, new, FALSE,
-            class->core_class.superclass);
-    if (class->core_class.set_values!=NULL)
-        redisplay |= (*class->core_class.set_values) (current, request, new,
-           last);
+    /* First set resource values for superclass */
+    if (widgetClass != (ConstraintWidgetClass)constraintWidgetClass) {
+	if (widgetClass == NULL)
+           XtError("Subclass of Constraint required in ConstraintSetValues");
+	ConstraintSetValues(
+	    (ConstraintWidgetClass) (widgetClass->core_class.superclass),
+	    w, args, num_args);
+    }
+    /* Then for this class */
+    XtSetSubvalues(
+	w->core.constraints,
+	widgetClass->constraint_class.resources,
+        widgetClass->constraint_class.num_resources,
+	args, num_args);
+} /* ConstraintSetValues */
+
+
+static Boolean CallSetValues (class, current, request, new, args, num_args)
+    WidgetClass class;
+    Widget      current, request, new;
+    ArgList     args;
+    Cardinal    num_args;
+{
+    Boolean redisplay = FALSE;
+
+    if (class->core_class.superclass != NULL)
+        redisplay = CallSetValues(
+	  class->core_class.superclass, current, request, new, args, num_args);
+    if (class->core_class.set_values != NULL)
+        redisplay |=
+	    (*class->core_class.set_values) (current, request, new);
+    if (class->core_class.set_values_hook != NULL)
+	redisplay |= 
+	    (*class->core_class.set_values_hook) (current, args, &num_args);
     return (redisplay);
 }
 
+static Boolean CallConstraintSetValues (class, current, request, new)
+    ConstraintWidgetClass class;
+    Widget      current, request, new;
+{
+    Boolean redisplay = FALSE;
+
+    if ((WidgetClass)class != constraintWidgetClass) {
+	if (class == NULL)
+	 XtError("Subclass of Constraint required in CallConstraintSetValues");
+	redisplay = CallConstraintSetValues(
+	    (ConstraintWidgetClass) (class->core_class.superclass),
+	    current, request, new);
+    }
+    if (class->constraint_class.set_values != NULL)
+        redisplay |=
+	  (*class->constraint_class.set_values) (current, request, new);
+    return (redisplay);
+}
 
 void XtSetValues(w, args, num_args)
-    Widget   w;
+    register Widget   w;
     ArgList  args;
     Cardinal num_args;
 {
-    Widget	newWidget, requestWidget;
-    Cardinal	widgetSize;
-    Boolean redisplay;
-
+    register Widget newWidget, requestWidget;
+    char	    newWidgetCache[500], requestWidgetCache[500];
+    char	    newConstraintCache[100], requestConstraintCache[100];
+    Cardinal	    widgetSize, constraintSize;
+    Dimension	    saveHeight, saveWidth;
+    Boolean redisplay, resize;
+    XtGeometryResult result;
+    XtWidgetGeometry geometryRequest, geometryReply;
     if (num_args == 0) return;
-     if ((args == NULL) && (num_args != 0)) {
-        XtError("argument count > 0 on NULL argument list");
-        return;
+    if ((args == NULL) && (num_args != 0)) {
+        XtError("Argument count > 0 on NULL argument list in XtSetValues");
     }
 
     /* Allocate and copy current widget into newWidget */
-    widgetSize = w->core.widget_class->core_class.widget_size;
-    requestWidget = (Widget) XtMalloc (widgetSize);
-    newWidget = (Widget) XtMalloc(widgetSize);
-    bcopy((char *) w, (char *) requestWidget, widgetSize);
+    widgetSize = XtClass(w)->core_class.widget_size;
+    requestWidget = (Widget) XtStackAlloc (widgetSize, requestWidgetCache);
+    newWidget = (Widget) XtStackAlloc(widgetSize, newWidgetCache);
+    bcopy((char *) w, (char *) requestWidget, (int) widgetSize);
 
     /* Set resource values starting at CorePart on down to this widget */
-    SetValues(w->core.widget_class, requestWidget, args, num_args);
-    bcopy ((char *) requestWidget, (char *) newWidget, widgetSize);
+    SetValues(XtClass(w), requestWidget, args, num_args);
+    bcopy ((char *) requestWidget, (char *) newWidget, (int) widgetSize);
 
-    /* Inform widget of changes and deallocate newWidget */
-    redisplay = RecurseSetValues (w, requestWidget, newWidget, TRUE,
-        w->core.widget_class);   
+    if (w->core.constraints != NULL) {
+	/* Allocate and copy current constraints into newWidget */
+	constraintSize = ((ConstraintWidgetClass) XtClass(w->core.parent))->
+	    constraint_class.constraint_size;
+	requestWidget->core.constraints =
+	    (caddr_t) XtStackAlloc(constraintSize, requestConstraintCache);
+	newWidget->core.constraints =
+	    (caddr_t) XtStackAlloc(constraintSize, newConstraintCache);
+	bcopy((char *) w->core.constraints,
+	      (char *) requestWidget->core.constraints,
+	      (int) constraintSize);
 
-    /* If a SetValues proc made a successful geometry request,
-       then "w" contains the new, correct x, y, width, height fields.
-       Make sure not to smash them when copying "new" back into "w". */
+	/* Set constraint values starting at CorePart on down to parent */
+	ConstraintSetValues(
+	    (ConstraintWidgetClass) XtClass(w->core.parent),
+	    requestWidget, args, num_args);
+	bcopy((char *) requestWidget->core.constraints,
+	      (char *) newWidget->core.constraints, (int) constraintSize);
+    }
 
-    newWidget->core.x = w->core.x;
-    newWidget->core.y = w->core.y;
-    newWidget->core.width = w->core.width;
-    newWidget->core.height = w->core.height;
-    newWidget->core.border_width = w->core.border_width;
+    /* If the widget is a shell widget, we have to cache old dimensions
+       in order to tell whether to call the resize proc or not */
 
-    bcopy ((char *) newWidget, (char *) w, widgetSize);
-    XtFree((char *) requestWidget);
-    XtFree((char *) newWidget);
+    if  (XtIsSubclass(w, shellWidgetClass)) {
+	saveWidth = w->core.width;
+	saveHeight = w->core.height;
+    }
 
-    if (redisplay && XtIsRealized(w))
-       /* repaint background of window, and force a full exposure event */
-       XClearArea (XtDisplay(w), XtWindow(w), 0, 0, 0, 0, TRUE);
+    /* Inform widget of changes, then inform parent of changes */
+    redisplay =
+       CallSetValues (XtClass(w), w, requestWidget, newWidget, args, num_args);
+    if (w->core.constraints != NULL) {
+	redisplay |= CallConstraintSetValues(
+	    (ConstraintWidgetClass) XtClass(w->core.parent),
+	    w, requestWidget, newWidget);
+    }
+
+    /* Now perform geometry request if needed */
+    geometryRequest.request_mode = 0;
+    if (w->core.x != newWidget->core.x)
+	geometryRequest.request_mode |= CWX;
+    if (w->core.y != newWidget->core.y)
+	geometryRequest.request_mode |= CWY;
+    if (w->core.width != newWidget->core.width)
+	geometryRequest.request_mode |= CWWidth;
+    if (w->core.height != newWidget->core.height)
+	geometryRequest.request_mode |= CWHeight;
+    if (w->core.border_width != newWidget->core.border_width)
+	geometryRequest.request_mode |= CWBorderWidth;
+
+    if  (XtIsSubclass(w, shellWidgetClass) &&
+	    (w->core.width != saveWidth || w->core.height != saveHeight)) {
+	resize = TRUE;
+    } else resize = FALSE;
+
+    if (geometryRequest.request_mode != 0) {
+	if (XtIsSubclass(w, shellWidgetClass)) {
+	    XtWarning(
+		"Shell subclass did not take care of geometry in XtSetValues");
+	} else {
+	    geometryRequest.x = newWidget->core.x;
+	    geometryRequest.y = newWidget->core.y;
+	    geometryRequest.width = newWidget->core.width;
+	    geometryRequest.height = newWidget->core.height;
+	    geometryRequest.border_width = newWidget->core.border_width;
+	    for (;;) {
+		result =
+		    XtMakeGeometryRequest(w, &geometryRequest, &geometryReply);
+	    if (result != XtGeometryAlmost) {
+		resize = (result == XtGeometryYes);
+		break;
+	    }
+	    /* An almost reply.  Call widget and let it munge request, reply */
+	    if (XtClass(w)->core_class.set_values_almost == NULL) {
+		XtWarning("set_values_almost procedure should not be NULL");
+		break;
+	    }
+	    (*(XtClass(w)->core_class.set_values_almost))
+		(w, newWidget, &geometryRequest, &geometryReply);
+	    if (geometryRequest.request_mode == 0)
+		break;
+	    } /* loop */
+	}
+	/* "w" contains the correct geometry fields.  Make sure not to smash
+	   them when copying "new" into "w". */
+	newWidget->core.x = w->core.x;
+	newWidget->core.y = w->core.y;
+	newWidget->core.width = w->core.width;
+	newWidget->core.height = w->core.height;
+	newWidget->core.border_width = w->core.border_width;
+    }
+
+    /* Copy newWidget back into w and free all dynamic storage */
+    if (w->core.constraints != NULL) {
+	bcopy((char *) newWidget->core.constraints,
+		(char *) w->core.constraints, (int) constraintSize);
+	XtStackFree((char *) newWidget->core.constraints, newConstraintCache);
+	newWidget->core.constraints = w->core.constraints;
+	XtStackFree((char *) requestWidget->core.constraints,
+	    requestConstraintCache);
+    }
+    bcopy ((char *) newWidget, (char *) w, (int) widgetSize);
+    XtStackFree((char *) newWidget, newWidgetCache);
+    XtStackFree((char *) requestWidget, requestWidgetCache);
+
+    /* call resize proc if we changed size */
+    if (resize && XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
+	(*(XtClass(w)->core_class.resize))(w);
+    /* Redisplay if needed */
+    if (redisplay && XtIsRealized(w)) {
+	XClearArea (XtDisplay(w), XtWindow(w), 0, 0, 0, 0, TRUE);
+	/* ||| Should do XClearArea(...,FALSE), call expose procedure */
+    }
 
 } /* XtSetValues */
  
