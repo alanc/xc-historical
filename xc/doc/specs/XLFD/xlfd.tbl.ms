@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.24 94/01/07 14:32:54 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.25 94/01/07 15:21:05 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -76,8 +76,8 @@ subject to change.
 .ps 11
 .nr PS 11
 .bp 1
-.EH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 6'
-.OH '\fBX Logical Font Description Conventions\fP''\fBX11, Release 6'
+.EH '\fBX Logical Font Description Conventions\fP''\fBPublic Review Draft\fP'
+.OH '\fBX Logical Font Description Conventions\fP''\fBPublic Review Draft\fP'
 .EF ''\fB\\\\n(PN\fP''
 .OF ''\fB\\\\n(PN\fP''
 .NH 1 
