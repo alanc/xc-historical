@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pixmap.c,v 1.1 93/06/24 10:16:47 dpw Exp $ */
 /*
 
 Copyright 1993 by the Massachusetts Institute of Technology
@@ -66,10 +66,10 @@ void
 FreeScratchPixmapHeader(pPixmap)
     PixmapPtr pPixmap;
 {
-    ScreenPtr pScreen = pPixmap->drawable.pScreen;
-
     if (pPixmap)
     {
+	ScreenPtr pScreen = pPixmap->drawable.pScreen;
+
 	if (pScreen->pScratchPixmap)
 	    (*pScreen->DestroyPixmap)(pPixmap);
 	else
