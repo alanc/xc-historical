@@ -1,4 +1,4 @@
-/* $XConsortium: miText.c,v 5.9 92/12/21 13:09:22 mor Exp $ */
+/* $XConsortium: miText.c,v 5.10 92/12/29 17:13:58 mor Exp $ */
 
 
 /***********************************************************
@@ -183,7 +183,10 @@ tx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el,
 	
       mono_enc = (pexMonoEncoding *)ptr;
       ptr += sizeof(pexMonoEncoding);
-	    
+
+      font_handle = fontEntry->fonts[mono_enc->characterSet - 1];
+      font = (miFontHeader *)(font_handle->deviceData);
+
       /* Do for each character within the MONO_ENCODING */
 
       for (charnum = 0; charnum < mono_enc->numChars; charnum++) {
@@ -421,6 +424,9 @@ atx_el_to_path(pRend, pddc, numFragments, pString, numChars, tx_el,
       mono_enc = (pexMonoEncoding *)ptr;
       ptr += sizeof(pexMonoEncoding);
 	    
+      font_handle = fontEntry->fonts[mono_enc->characterSet - 1];
+      font = (miFontHeader *)(font_handle->deviceData);
+
       /* Do for each character within the MONO_ENCODING */
 
       for (charnum = 0; charnum < mono_enc->numChars; charnum++) {
