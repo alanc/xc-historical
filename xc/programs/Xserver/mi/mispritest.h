@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritestr.h,v 1.1 89/06/09 14:53:53 keith Exp $ */
+/* $XConsortium: mispritestr.h,v 5.0 89/06/09 15:00:43 keith Exp $ */
 
 # include   "misprite.h"
 
@@ -20,14 +20,23 @@ typedef struct {
     Bool	    (*CreateWindow)();
     Bool	    (*ChangeWindowAttributes)();
     void	    (*BlockHandler)();
+    void	    (*InstallColormap)();
+    void	    (*StoreColors)();
     CursorPtr	    pCursor;
     int		    x;
     int		    y;
     BoxRec	    saved;
     Bool	    isUp;
     Bool	    shouldBeUp;
+    Bool	    checkPixels;
+    xColorItem	    colors[2];
+    ColormapPtr	    pColormap;
+    VisualPtr	    pVisual;
     miSpriteCursorFuncPtr    funcs;
 } miSpriteScreenRec, *miSpriteScreenPtr;
+
+#define SOURCE_COLOR	0
+#define MASK_COLOR	1
 
 typedef struct {
     WindowFuncs		*wrapFuncs;
