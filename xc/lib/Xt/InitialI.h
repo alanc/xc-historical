@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.74 93/09/08 08:25:20 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.75 93/09/09 10:14:41 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -305,6 +305,7 @@ typedef struct _XtPerDisplayStruct {
     unsigned char isModifier[32];      /* key-is-modifier-p bit table */
     KeySym lock_meaning;	       /* Lock modifier meaning */
     Modifiers mode_switch;	       /* keyboard group modifiers */
+    Modifiers num_lock;		       /* keyboard numlock modifiers */
     Boolean being_destroyed;
     Boolean rv;			       /* reverse_video resource */
     XrmName name;		       /* resolved app name */
