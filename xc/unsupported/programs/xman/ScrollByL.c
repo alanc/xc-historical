@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $Header: ScrollByL.c,v 4.0 88/08/31 22:11:02 kit Exp $
+ * $Header: ScrollByL.c,v 1.1 88/08/31 22:52:21 jim Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -37,7 +37,7 @@
 #include	"ScrollByLP.h"
 #include        <X11/Scroll.h>
 #include	<X11/StringDefs.h>
-#include	<X11/Misc.h>
+#include	<X11/XawMisc.h>
 
 /* Default Translation Table */
 
