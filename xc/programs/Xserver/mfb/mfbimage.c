@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 5.2 89/08/20 16:30:15 rws Exp $ */
+/* $XConsortium: mfbimage.c,v 5.3 89/09/14 16:26:42 rws Exp $ */
 
 #include "X.h"
 
@@ -91,7 +91,7 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     FakePixmap.drawable.y = 0;
     FakePixmap.drawable.width = w+leftPad;
     FakePixmap.drawable.height = h;
-    FakePixmap.devKind = PixmapBytePad(FakePixmap.drawable.width, 1);
+    FakePixmap.devKind = BitmapBytePad(FakePixmap.drawable.width);
     FakePixmap.refcnt = 1;
     FakePixmap.devPrivate.ptr = (pointer)pImage;
     ((mfbPrivGC *)(pGC->devPrivates[mfbGCPrivateIndex].ptr))->fExpose = FALSE;
@@ -139,7 +139,7 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 	FakePixmap.drawable.y = 0;
 	FakePixmap.drawable.width = w;
 	FakePixmap.drawable.height = h;
-	FakePixmap.devKind = PixmapBytePad(w, 1);
+	FakePixmap.devKind = BitmapBytePad(w);
 	FakePixmap.refcnt = 1;
 	FakePixmap.devPrivate.ptr = pdstLine;
         ptSrc.x = sx + pDrawable->x;
@@ -155,6 +155,6 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     }
     else
     {
-	bzero((char *)pdstLine, PixmapBytePad(w, 1) * h);
+	bzero((char *)pdstLine, BitmapBytePad(w) * h);
     }
 }

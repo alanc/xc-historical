@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.4 89/07/27 09:38:11 rws Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.5 89/07/28 11:59:59 rws Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -51,7 +51,7 @@ mfbCreatePixmap (pScreen, width, height, depth)
     if (depth != 1)
 	return NullPixmap;
 
-    size = PixmapBytePad(width, 1);
+    size = BitmapBytePad(width);
     pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec) + (height * size));
     if (!pPixmap)
 	return NullPixmap;
