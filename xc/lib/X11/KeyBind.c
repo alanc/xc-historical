@@ -1,4 +1,4 @@
-/* $XConsortium: KeyBind.c,v 11.70 93/09/13 15:53:45 rws Exp $ */
+/* $XConsortium: KeyBind.c,v 11.71 93/09/27 18:00:16 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -26,11 +26,21 @@ without express or implied warranty.
 #include <X11/keysymdef.h>
 #include <stdio.h>
 
+#ifdef XKB
+#define	XKeycodeToKeysym	_XKeycodeToKeysym
+#define	XKeysymToKeycode	_XKeysymToKeycode
+#define	XLookupKeysym		_XLookupKeysym
+#define	XRefreshKeyboardMapping	_XRefreshKeyboardMapping
+#define	XLookupString		_XLookupString
+#else
+#define	XkbKeysymToModifiers	_XKeysymToModifiers
+#endif
+
 #define AllMods (ShiftMask|LockMask|ControlMask| \
 		 Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask)
 
+void XConvertCase();
 static ComputeMaskFromKeytrans();
-static void XConvertCase();
 
 struct _XKeytrans {
 	struct _XKeytrans *next;/* next on list */
@@ -251,7 +261,7 @@ _XKeyInitialize(dpy)
 }
 
 /*ARGSUSED*/
-static void
+void
 XConvertCase(dpy, sym, lower, upper)
     Display *dpy;
     register KeySym sym;
@@ -337,8 +347,8 @@ XConvertCase(dpy, sym, lower, upper)
     }
 }
 
-static int
-XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
+int
+_XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
     register Display *dpy;
     KeyCode keycode;
     register unsigned int modifiers;
@@ -398,8 +408,8 @@ XTranslateKey(dpy, keycode, modifiers, modifiers_return, keysym_return)
     return 1;
 }
 
-static int
-XTranslateKeySym(dpy, symbol, modifiers, buffer, nbytes)
+int
+_XTranslateKeySym(dpy, symbol, modifiers, buffer, nbytes)
     Display *dpy;
     register KeySym symbol;
     unsigned int modifiers;
@@ -471,15 +481,15 @@ XLookupString (event, buffer, nbytes, keysym, status)
     unsigned int modifiers;
     KeySym symbol;
 
-    if (! XTranslateKey(event->display, event->keycode, event->state,
+    if (! _XTranslateKey(event->display, event->keycode, event->state,
 		  &modifiers, &symbol))
 	return 0;
 
     if (keysym)
 	*keysym = symbol;
     /* arguable whether to use (event->state & ~modifiers) here */
-    return XTranslateKeySym(event->display, symbol, event->state,
-			    buffer, nbytes);
+    return _XTranslateKeySym(event->display, symbol, event->state,
+			     buffer, nbytes);
 }
 
 static void
@@ -550,27 +560,38 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
     return;
 }
 
-/*
- * given a KeySym, returns the first keycode containing it, if any.
- */
-static CARD8
-FindKeyCode(dpy, code)
-    register Display *dpy;
-    register KeySym code;
+unsigned
+_XKeysymToModifiers(dpy,ks)
+    Display *dpy;
+    KeySym ks;
 {
+    CARD8 code,mods;
+    register KeySym *kmax;
+    register KeySym *k;
+    register XModifierKeymap *m;
 
-    register KeySym *kmax = dpy->keysyms + 
-	(dpy->max_keycode - dpy->min_keycode + 1) * dpy->keysyms_per_keycode;
-    register KeySym *k = dpy->keysyms;
-    while (k < kmax) {
-	if (*k == code)
-	    return (((k - dpy->keysyms) / dpy->keysyms_per_keycode) +
-		    dpy->min_keycode);
-	k += 1;
+    if ((! dpy->keysyms) && (! _XKeyInitialize(dpy)))
+	return;
+    kmax = dpy->keysyms + 
+	   (dpy->max_keycode - dpy->min_keycode + 1) * dpy->keysyms_per_keycode;
+    k = dpy->keysyms;
+    m = dpy->modifiermap;
+    mods= 0;
+    while (k<kmax) {
+	if (*k == ks ) {
+	    register int j = m->max_keypermod<<3;
+
+	    code=(((k-dpy->keysyms)/dpy->keysyms_per_keycode)+dpy->min_keycode);
+
+	    while (--j >= 0) {
+		if (code == m->modifiermap[j])
+		    mods|= (1<<(j/m->max_keypermod));
+	    }
 	}
-    return 0;
+	k++;
+    }
+    return mods;
 }
-
 	
 /*
  * given a list of modifiers, computes the mask necessary for later matching.
@@ -584,24 +605,10 @@ ComputeMaskFromKeytrans(dpy, p)
     register struct _XKeytrans *p;
 {
     register int i;
-    register CARD8 code;
-    register XModifierKeymap *m = dpy->modifiermap;
 
     p->state = AnyModifier;
     for (i = 0; i < p->mlen; i++) {
-	/* if not found, then not on current keyboard */
-	if ((code = FindKeyCode(dpy, p->modifiers[i])) == 0)
-		return;
-	/* code is now the keycode for the modifier you want */
-	{
-	    register int j = m->max_keypermod<<3;
-
-	    while ((--j >= 0) && (code != m->modifiermap[j]))
-		;
-	    if (j < 0)
-		return;
-	    p->state |= (1<<(j/m->max_keypermod));
-	}
+	p->state|= XkbKeysymToModifiers(dpy,p->modifiers[i]);
     }
     p->state &= AllMods;
 }
