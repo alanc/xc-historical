@@ -1,4 +1,4 @@
-/* $XConsortium: XSynchro.c,v 11.9 91/01/24 11:10:12 rws Exp $ */
+/* $XConsortium: Synchro.c,v 11.10 91/11/09 15:40:03 keith Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -13,14 +13,26 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
+#define NEED_REPLIES
 #include "Xlibint.h"
-
 
 int _XSyncFunction(dpy)
 register Display *dpy;
 {
-	XSync(dpy,0);
-	return 0;
+    xGetInputFocusReply rep;
+    register xReq *req;
+    int (*func)();
+
+    LockDisplay(dpy);
+    GetEmptyReq(GetInputFocus, req);
+    (void) _XReply (dpy, (xReply *)&rep, 0, xTrue);
+    if (func = dpy->savedsynchandler) {
+	dpy->synchandler = func;
+	dpy->savedsynchandler = NULL;
+    }
+    UnlockDisplay(dpy);
+    if (func) (*func)(dpy);
+    return 0;
 }
 
 #if NeedFunctionPrototypes
@@ -32,11 +44,18 @@ int (*XSynchronize(dpy,onoff))()
 #endif
 {
         int (*temp)();
+	int (*func)() = NULL;
+
+	if (onoff)
+	    func = _XSyncFunction;
 
 	LockDisplay(dpy);
-	temp = dpy->synchandler;
-	if (onoff) dpy->synchandler = _XSyncFunction;
-	else dpy->synchandler = NULL;
+	if (temp = dpy->savedsynchandler) {
+	    dpy->savedsynchandler = func;
+	} else {
+	    temp = dpy->synchandler;
+	    dpy->synchandler = func;
+	}
 	UnlockDisplay(dpy);
 	return (temp);
 }
@@ -63,8 +82,12 @@ int (*XSetAfterFunction(dpy,func))()
         int (*temp)();
 
 	LockDisplay(dpy);
-	temp = dpy->synchandler;
-	dpy->synchandler = func;
+	if (temp = dpy->savedsynchandler) {
+	    dpy->savedsynchandler = func;
+	} else {
+	    temp = dpy->synchandler;
+	    dpy->synchandler = func;
+	}
 	UnlockDisplay(dpy);
 	return (temp);
 }
