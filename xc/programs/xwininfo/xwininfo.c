@@ -26,7 +26,7 @@
 #define FAILURE 0
 
 Window window;
-extern char *window_id_format;
+static char *window_id_format = " 0x%x";
 
 /*
  * Report the syntax for calling xwininfo:
@@ -157,8 +157,6 @@ binding *table;
 /*
  * Routine to display a window id in dec/hex with name if window has one
  */
-
-static char *window_id_format = " 0x%x";
 
 Display_Window_Id(window)
      Window window;
