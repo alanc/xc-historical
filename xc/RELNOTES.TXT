@@ -6,7 +6,7 @@
 
                                 X Consortium
 
-                                 April 1994
+                               April 21, 1994
 
 Copyright (C) 1994 X Consortium
 
@@ -1980,9 +1980,9 @@ member companies.  Each X Window System release is the work of many, many
 people, and this list is surely incomplete.
 
 Fresco
-     Mark Linton (Silicon Graphics); Chuck Price (SunSoft); Steve Churchill
-     (Fujitsu); Steve Tang (Stanford University); Douglas Pan (Fujitsu);
-     Jean-Daniel Fekete (2001 S.A.)
+     Mark Linton (Silicon Graphics); Chuck Price (SunSoft); Charles Brauer
+     (Fujitsu); Steve Churchill (Fujitsu); Steve Tang (Stanford University);
+     Douglas Pan (Fujitsu); Jean-Daniel Fekete (2001 S.A.)
 
 Xlib
      Courtney Loomis (Hewlett-Packard Company); Daniel Dardailler (Open
