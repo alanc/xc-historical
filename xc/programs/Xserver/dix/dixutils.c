@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $Header: dixutils.c,v 1.25 88/02/02 11:41:23 rws Exp $ */
+/* $Header: dixutils.c,v 1.26 88/03/16 10:12:08 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -86,20 +86,16 @@ LookupWindow(rid, client)
     XID rid;
     ClientPtr client;
 {
-    WindowPtr pWin;
-
     client->errorValue = rid;
     if(rid == INVALID)
 	return NULL;
     if (client->lastDrawableID == rid)
     {
-        DrawablePtr pDraw = (DrawablePtr)client->lastDrawable;
-        if (pDraw->type != DRAWABLE_PIXMAP)
+        if (client->lastDrawable->type != DRAWABLE_PIXMAP)
             return ((WindowPtr) client->lastDrawable);
         return (WindowPtr) NULL;
     }
-    pWin = (WindowPtr)LookupID(rid, RT_WINDOW, RC_CORE);
-    return pWin;
+    return (WindowPtr)LookupID(rid, RT_WINDOW, RC_CORE);
 }
 
 
@@ -108,24 +104,16 @@ LookupDrawable(rid, client)
     XID rid;
     ClientPtr client;
 {
-    DrawablePtr pDraw;
+    register DrawablePtr pDraw;
 
     if(rid == INVALID)
-	return NULL;
+	return (pointer) NULL;
     if (client->lastDrawableID == rid)
-    {
-        DrawablePtr pDrawT = client->lastDrawable;
-        if (pDrawT->type == DRAWABLE_WINDOW)
-            return ((pointer) client->lastDrawable);
-        return ((pointer) NULL);
-    }
+	return ((pointer) client->lastDrawable);
     pDraw = (DrawablePtr)LookupID(rid, RT_DRAWABLE, RC_CORE);
-    if (!pDraw)
-        return ((pointer)pDraw);
-    if ((pDraw->type == DRAWABLE_WINDOW) || (pDraw->type == DRAWABLE_PIXMAP))
+    if (pDraw && (pDraw->type != UNDRAWABLE_WINDOW))
         return (pointer)pDraw;		
-    else
-        return (pointer)NULL;
+    return (pointer)NULL;
 }
 
 
