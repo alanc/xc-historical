@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xmu.h,v 1.15 89/03/24 16:34:00 converse Exp $
+ * $XConsortium: Xmu.h,v 1.16 89/03/31 15:41:38 jim Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -67,6 +67,9 @@ typedef enum {XtorientHorizontal, XtorientVertical} XtOrientation;
 #define XtEcenter		"center"
 #define XtEright		"right"
 
+/* display close hook opaque type */
+typedef caddr_t CloseHook;
+
 /*
  * public entry points
  */
@@ -93,9 +96,9 @@ int XmuReadBitmapData(), XmuReadBitmapDataFromFile();
 int XmuPrintDefaultErrorMessage();
 Status XmuStandardColormap( /* Display*, int, Visual*, ... */);
 Status XmuVisualStandardColormaps( /* Display*, int, Visual*, int */);
-caddr_t XmuAddCloseDisplayHook (/* Display *, int (*)(), caddr_t */);
-Bool XmuRemoveCloseDisplayHook (/* Display *, caddr_t, int (*)(), caddr_t */);
-Bool XmuLookupCloseDisplayHook (/* Display *, caddr_t, int (*)(), caddr_t */);
+CloseHook XmuAddCloseDisplayHook (/* Display *, int (*)(), caddr_t */);
+Bool XmuRemoveCloseDisplayHook (/* Display *,CloseHook,int (*)(),caddr_t */);
+Bool XmuLookupCloseDisplayHook (/* Display *,CloseHook,int (*)(),caddr_t */);
 
 
 #ifndef _Atoms_c_
