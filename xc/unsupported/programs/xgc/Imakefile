@@ -8,3 +8,7 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 
 ComplexProgramTarget(xgc)
 
+gram.h gram.c: gram.y
+	yacc -d gram.y
+	$(MV) y.tab.c gram.c
+	$(MV) y.tab.h gram.h
