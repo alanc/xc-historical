@@ -1,4 +1,4 @@
-/* $XConsortium: pexUtils.c,v 5.1 91/02/16 09:56:42 rws Exp $ */
+/* $XConsortium: pexUtils.c,v 5.2 91/04/16 20:31:56 keith Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -180,8 +180,8 @@ static unsigned long obj_array_sizes[] = {
     newmax = obj_array_sizes[plist->type] + plist->maxObj; \
     if (newmax < (atleast)) \
 	newmax = (atleast); \
-    if (plist->pList == (ddPointer) (plist + 1))
-	abort ();
+    if (plist->pList == (ddPointer) (plist + 1)) \
+	abort (); \
     pList = (ddPointer)Xrealloc( (pointer)(plist->pList), 	\
 		(unsigned long)(newmax * obj_struct_sizes[plist->type] ));	\
     if (!pList ) return( BadAlloc );	\
