@@ -72,6 +72,8 @@ Doing a 'make' after this will rebuild ico with the new object information.
 X(1)
 .SH BUGS
 .LP
+Pyramids and tetrahedrons with filled faces do not display correctly.
+.LP
 A separate color cell is allocated for each name in the -colors list,
 even when the same name may be specified twice.
 .SH COPYRIGHT
