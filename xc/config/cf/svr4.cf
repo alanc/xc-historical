@@ -1,4 +1,4 @@
-XCOMM $XConsortium: svr4.cf,v 1.12 95/04/07 19:37:33 kaleb Exp gildea $
+XCOMM $XConsortium: svr4.cf,v 1.13 95/06/09 20:57:00 gildea Exp kaleb $
 /*
  * A default OS name
  */
@@ -88,6 +88,9 @@ XCOMM $XConsortium: svr4.cf,v 1.12 95/04/07 19:37:33 kaleb Exp gildea $
 #ifdef i386Architecture
 #ifndef StandardDefines
 #define StandardDefines		-DSVR4 -Di386
+#endif
+#ifndef ToolkitStringsABIOptions
+#define ToolkitStringsABIOptions -intelabi
 #endif
 #ifndef DefaultCCOptions
 #if HasGcc2
