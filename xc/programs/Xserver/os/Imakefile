@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.68 93/09/26 15:41:14 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.69 93/09/29 18:58:16 gildea Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -105,9 +105,6 @@ SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
 SpecialCObjectRule(WaitFor,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(io,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(utils,$(ICONFIGFILES),$(XDMCP_DEFINES))
-#if HasKrb5
-SpecialCObjectRule(k5auth,$(ICONFIGFILES),$(_NOOP_))
-#endif
 #if defined(SparcArchitecture) && HasGcc && !HasGcc2
 oscolor.o: oscolor.c $(ICONFIGFILES)
 	$(RM) $@
