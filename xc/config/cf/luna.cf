@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.6 91/03/27 09:13:12 rws Exp $
+XCOMM platform:  $XConsortium: luna.cf,v 1.7 91/04/02 19:31:22 rws Exp $
 #ifdef Mc68000Architecture
 #define OSName            UNIOS-B 4.3BSD UNIX: 1.50
 #define OSMajorVersion    1
@@ -13,7 +13,6 @@ XCOMM operating system:  OSName
 
 #define BootstrapCFlags		-Dluna
 #define StandardDefines		-Dluna
-#define StandardCppDefines	-Dluna
 #define HasPutenv		NO
 #define HasBsearch		NO
 #define HasSaberC		NO

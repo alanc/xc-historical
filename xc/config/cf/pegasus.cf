@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.24 91/03/31 12:23:57 rws Exp $
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.25 91/04/03 09:06:45 rws Exp $
 
 #define OSName             UTek 4.0
 XCOMM operating system:  OSName
@@ -15,7 +15,6 @@ XCOMM operating system:  OSName
 
 #define BootstrapCFlags    -DM4310 -DUTEK
 #define StandardDefines    -DM4310 -DUTEK -Dpegasus 
-#define StandardCppDefines -DM4310 -DUTEK -Dpegasus
 
 #define HasGcc         YES		/* XXX comment out in R5 */
 
