@@ -39,7 +39,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbteblt8.c,v 1.3 94/01/06 23:03:33 rob Exp $ */
+/* $XConsortium: cfbteblt8.c,v 1.4 94/01/11 20:43:10 rob Exp $ */
 
 #if PSZ == 8
 
@@ -412,7 +412,11 @@ CFBTEGBLT8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     else
 #endif /* XTHREADS */
     if (!cfb8CheckPixels (pGC->fgPixel, pGC->bgPixel))
+#ifdef XTHREADS
+	cfb8SetPixels (pGC->fgPixel, pGC->bgPixel, pstipple);
+#else
 	cfb8SetPixels (pGC->fgPixel, pGC->bgPixel);
+#endif /* XTHREADS */
 
     leftChar = 0;
 
