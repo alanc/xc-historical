@@ -34,13 +34,13 @@ void InitRects(d, p)
 	    i++;
 	}
     CreatePerfStuff(d, 1, WIDTH, HEIGHT, &w, &whitegc, &blackgc);
-    if (p->stipple) {
+    if (p->fillStyle != FillSolid) {
 	Pixmap  stipple;
 	XGCValues gcv;
 
 	stipple = XCreateBitmapFromData(d, w, bitmap, 8, 8);
 	gcv.stipple = stipple;
-	gcv.fill_style = FillStippled;
+	gcv.fill_style = p->fillStyle;
 	XChangeGC(d, blackgc, GCFillStyle | GCStipple, &gcv);
 	XChangeGC(d, whitegc, GCFillStyle | GCStipple, &gcv);
 	XFreePixmap(d, stipple);
