@@ -18,7 +18,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: cfbrctstp8.c,v 1.6 89/09/19 15:36:34 keith Exp $ */
+/* $XConsortium: cfbrctstp8.c,v 1.8 89/11/02 13:46:45 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -59,8 +59,8 @@ cfb8FillBoxOpaqueStippled32 (pDrawable, nBox, pBox, stipple, fg, bg)
     int srcy;				/* current stipple position */
 
     unsigned long *pbits;/* pointer to start of pixmap */
-    unsigned long pixels;	/* bits to write */
-    unsigned long bits;	/* bits from stipple */
+    register unsigned long pixels;	/* bits to write */
+    register unsigned long bits;	/* bits from stipple */
     int		  firstStart, lastStop;
     int		    i;
 
@@ -145,7 +145,7 @@ void
 cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
     DrawablePtr	    pDrawable;
     int		    nBox;	/* number of boxes to fill */
-    register BoxPtr pBox;	/* pointer to list of boxes to fill */
+    BoxPtr 	    pBox;	/* pointer to list of boxes to fill */
     PixmapPtr	    stipple;	/* rotated, expanded stipple */
     unsigned long   fg;		/* pixel value */
 {
@@ -165,9 +165,9 @@ cfb8FillBoxTransparentStippled32 (pDrawable, nBox, pBox, stipple, fg)
     int srcy;				/* current stipple position */
 
     unsigned long *pbits;/* pointer to start of pixmap */
-    unsigned long pixels;	/* bits to write */
-    unsigned long bits;	/* bits from stipple */
-    unsigned long   mask;
+    register unsigned long pixels;	/* bits to write */
+    register unsigned long bits;	/* bits from stipple */
+    register unsigned long   mask;
     int		  firstStart, lastStop;
     int		    i, maxi;
 
