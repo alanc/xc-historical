@@ -163,7 +163,7 @@ This action ends a text selection that began with the
 the selection or selections specified.  A \fIname\fP can be
 a selection (e.g. \fBPRIMARY\fP) or a cut buffer (e.g
 \fBCUT_BUFFER0\fP).  Note that case is important.  If no
-names are given, no selection is asserted.
+names are given, PRIMARY is asserted.
 .IP extend-start(\|) 2.0i
 This action finds the nearest end of the current selection, and moves
 it to the location in which the event occurred.  If this event is bound
@@ -177,7 +177,8 @@ This action ends a text selection that began with the
 \fIextend-start\fP action, and asserts ownership of
 the selection or selections specified.  A \fIname\fP can be
 a selection (e.g. \fBPRIMARY\fP) or a cut buffer (e.g
-\fBCUT_BUFFER0\fP).  Note that case is important.  
+\fBCUT_BUFFER0\fP).  Note that case is important.  If no
+names are given, PRIMARY is asserted.
 .IP insert-selection(\fIname\fP[,\fIname\fP,...]) 2.0i
 Retrieves the value of the first (left-most) named selection that
 exists or the cut buffer that is not empty and inserts it into the
