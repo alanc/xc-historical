@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: phgtype.h,v 5.1 91/02/16 09:49:10 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -67,8 +67,6 @@ SOFTWARE.
 
 #define PHG_ZERO_MAG( s) \
     ((s) < PHG_ZERO_TOLERANCE)
-
-#define PHG_DEFAULT_PEXAPIDIR	"/usr/lib/X11/PEX"
 
 #ifndef Malloc
 #define Malloc( _size )	malloc((unsigned)(_size))
