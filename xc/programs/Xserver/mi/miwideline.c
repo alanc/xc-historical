@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.19 89/11/08 18:16:23 rws Exp $
+ * $XConsortium: miwideline.c,v 1.21 89/11/13 17:10:32 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -570,6 +570,8 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths,
     double radius, x0, y0, el, er, yk, xlk, xrk, k;
     int xbase, ybase, y, boty, xl, xr, xcl, xcr;
     int ymin, ymax;
+    Bool edge1IsMin, edge2IsMin;
+    int ymin1, ymin2;
 
     pts = points;
     wids = widths;
@@ -594,12 +596,14 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths,
     ybase -= y;
     ymin = ybase;
     ymax = 65536;
+    edge1IsMin = FALSE;
+    ymin1 = edgey1;
     if (edge1->dy >= 0)
     {
     	if (!edge1->dy)
     	{
 	    if (edgeleft1)
-	    	ymin = edgey1;
+	    	edge1IsMin = TRUE;
 	    else
 	    	ymax = edgey1;
 	    edgey1 = 65536;
@@ -607,15 +611,17 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths,
     	else
     	{
 	    if ((edge1->signdx < 0) == edgeleft1)
-	    	ymin = edgey1;
+	    	edge1IsMin = TRUE;
     	}
     }
+    edge2IsMin = FALSE;
+    ymin2 = edgey2;
     if (edge2->dy >= 0)
     {
     	if (!edge2->dy)
     	{
 	    if (edgeleft2)
-	    	ymin = edgey2;
+	    	edge2IsMin = TRUE;
 	    else
 	    	ymax = edgey2;
 	    edgey2 = 65536;
@@ -623,9 +629,16 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths,
     	else
     	{
 	    if ((edge2->signdx < 0) == edgeleft2)
-	    	ymin = edgey2;
+	    	edge2IsMin = TRUE;
     	}
     }
+    if (edge1IsMin)
+    {
+	ymin = ymin1;
+	if (edge2IsMin && ymin1 < ymin2)
+	    ymin = ymin2;
+    } else if (edge2IsMin)
+	ymin = ymin2;
     el = radius * radius - ((y + y0) * (y + y0)) - (x0 * x0);
     er = el + xrk;
     xl = 1;
@@ -708,6 +721,54 @@ miLineArcD (pDraw, pGC, xorg, yorg, points, widths,
     return (pts - points);
 }
 
+miRoundJoinFace (face, edge, leftEdge)
+    LineFacePtr	face;
+    PolyEdgePtr	edge;
+    Bool	*leftEdge;
+{
+    int	    y;
+    int	    dx, dy;
+    double  xa, ya;
+    Bool	left;
+
+    dx = -face->dy;
+    dy = face->dx;
+    xa = face->xa;
+    ya = face->ya;
+    left = 1;
+    if (ya > 0)
+    {
+	ya = 0.0;
+	xa = 0.0;
+    }
+    if (dy < 0 || dy == 0 && dx > 0)
+    {
+	dx = -dx;
+	dy = -dy;
+	left = !left;
+    }
+    if (dx == 0 && dy == 0)
+	dy = 1;
+    if (dy == 0)
+    {
+	y = ICEIL (face->ya) + face->y;
+	edge->x = -32767;
+	edge->stepx = 0;
+	edge->signdx = 0;
+	edge->e = -1;
+	edge->dy = 0;
+	edge->dx = 0;
+	edge->height = 0;
+    }
+    else
+    {
+	y = miPolyBuildEdge (xa, ya, 0.0, dx, dy, face->x, face->y, !left, edge);
+	edge->height = 32767;
+    }
+    *leftEdge = !left;
+    return y;
+}
+
 miRoundJoinClip (pLeft, pRight, edge1, edge2, y1, y2, left1, left2)
     LineFacePtr	pLeft, pRight;
     PolyEdgePtr	edge1, edge2;
@@ -724,19 +785,15 @@ miRoundJoinClip (pLeft, pRight, edge1, edge2, y1, y2, left1, left2)
     {
 	pLeft->xa = -pLeft->xa;
 	pLeft->ya = -pLeft->ya;
-	pLeft->dx = -pLeft->dx;
-	pLeft->dy = -pLeft->dy;
     }
     else
     {
 	swapslopes = 1;
 	pRight->xa = -pRight->xa;
 	pRight->ya = -pRight->ya;
-	pRight->dx = -pRight->dx;
-	pRight->dy = -pRight->dy;
     }
-    *y1 = miRoundCapClip (pLeft, TRUE, edge1, left1);
-    *y2 = miRoundCapClip (pRight, FALSE, edge2, left2);
+    *y1 = miRoundJoinFace (pLeft, edge1, left1);
+    *y2 = miRoundJoinFace (pRight, edge2, left2);
 }
 
 miRoundCapClip (face, isInt, edge, leftEdge)
