@@ -176,7 +176,7 @@ static void GetGC(lw)
     values.foreground	= lw->label.foreground;
     values.font		= lw->label.font->fid;
 
-    lw->label.gc = XtGetGC(lw->core.display, lw->core.window,
+    lw->label.gc = XtGetGC(XtDisplay(lw), XtWindow(lw),
     	GCForeground | GCFont, &values);
 }
 
@@ -221,7 +221,7 @@ void Realize(w, valueMask, attributes)
     
     w->core.window =
 	  XCreateWindow(
-		w->core.display, w->core.parent->core.window,
+		XtDisplay(w), w->core.parent->core.window,
 		w->core.x, w->core.y,
 		w->core.width, w->core.height, w->core.border_width,
 		0, InputOutput, (Visual *)CopyFromParent,
@@ -240,7 +240,7 @@ static void Redisplay(w)
    LabelWidget lw = (LabelWidget) w;
 
    XDrawString(
-	w->core.display, w->core.window, lw->label.gc,
+	XtDisplay(w), XtWindow(w), lw->label.gc,
 	lw->label.labelX, lw->label.labelY,
 	lw->label.label, lw->label.labelLen);
 }
@@ -353,7 +353,7 @@ void SetValues(old, new)
 	GetGC(newlw);
     }
 
-    XClearWindow(oldlw->core.display, oldlw->core.window);
+    XClearWindow(XtDisplay(oldlw), XtWindow(oldlw));
     *oldlw = *newlw;
     Redisplay(oldlw);
 }
