@@ -353,6 +353,7 @@ OBJS3 = \
 	XICWrap.o \
 	XIMWrap.o \
 	XlcWrap.o \
+	XmbWMProps.o \
 	XmbWrap.o \
 	XwcWrap.o \
 	XFilterEv.o \
@@ -400,13 +401,17 @@ LCSRCS = \
 	XlcDefLd.c \
 	XlcLoad.c \
 	XmbDeGlyph.c \
+	XmbPrpText.c \
 	XmbText.c \
 	XmbTextExt.c \
 	XmbTextPer.c \
+	XmbTextPrp.c \
 	XwcDeGlyph.c \
+	XwcPrpText.c \
 	XwcText.c \
 	XwcTextExt.c \
-	XwcTextPer.c
+	XwcTextPer.c \
+	XwcTextPrp.c
 
 LCOBJS = \
 	ProtoFlt.o \
@@ -433,13 +438,17 @@ LCOBJS = \
 	XlcDefLd.o \
 	XlcLoad.o \
 	XmbDeGlyph.o \
+	XmbPrpText.o \
 	XmbText.o \
 	XmbTextExt.o \
 	XmbTextPer.o \
+	XmbTextPrp.o \
 	XwcDeGlyph.o \
+	XwcPrpText.o \
 	XwcText.o \
 	XwcTextExt.o \
-	XwcTextPer.o
+	XwcTextPer.o \
+	XwcTextPrp.o
 
 #define LCRules()							@@\
 LinkSourceFile(XIMlibint.h,Xsi)						@@\
@@ -475,13 +484,17 @@ LinkSourceFile(XlcAccess.c,Xsi)						@@\
 LinkSourceFile(XlcDefLd.c,Xsi)						@@\
 LinkSourceFile(XlcLoad.c,Xsi)						@@\
 LinkSourceFile(XmbDeGlyph.c,Xsi)					@@\
+LinkSourceFile(XmbPrpText.c,Xsi)					@@\
 LinkSourceFile(XmbText.c,Xsi)						@@\
 LinkSourceFile(XmbTextExt.c,Xsi)					@@\
 LinkSourceFile(XmbTextPer.c,Xsi)					@@\
+LinkSourceFile(XmbTextPrp.c,Xsi)					@@\
 LinkSourceFile(XwcDeGlyph.c,Xsi)					@@\
+LinkSourceFile(XwcPrpText.c,Xsi)					@@\
 LinkSourceFile(XwcText.c,Xsi)						@@\
 LinkSourceFile(XwcTextExt.c,Xsi)					@@\
 LinkSourceFile(XwcTextPer.c,Xsi)					@@\
+LinkSourceFile(XwcTextPrp.c,Xsi)					@@\
 SpecialLibObjectRule(XConnIM.o,$(ICONFIGFILES),$(CONN_DEFINES))		@@\
 SpecialLibObjectRule(XlcLoad.o,$(ICONFIGFILES),$(NLS_DEFINES))		@@\
 SpecialLibObjectRule(XLocalIM.o,$(ICONFIGFILES),$(NLS_DEFINES))
