@@ -1,4 +1,4 @@
-/* $XConsortium: connect.c,v 1.20 93/12/07 11:04:05 mor Exp $ */
+/* $XConsortium: connect.c,v 1.21 93/12/28 11:44:58 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -19,18 +19,10 @@ Author: Ralph Mor, X Consortium
 
 #include <X11/ICE/ICElib.h>
 #include <X11/ICE/ICElibint.h>
+#include <X11/Xtrans.h>
 #include "globals.h"
 
-#include <stdio.h>
-
-#ifdef WIN32
-#undef close
-#define close closesocket
-#endif
-
-#define ICE_CONNECTION_RETRIES 5
-
-static int  ConnectToPeer();
+static XtransConnInfo ConnectToPeer();
 
 
 IceConn
@@ -132,8 +124,8 @@ char *errorStringRet;
      * Open a network connection with the peer client.
      */
 
-    if ((iceConn->fd = ConnectToPeer (networkIdsList,
-	&iceConn->connection_string)) < 0)
+    if ((iceConn->trans_conn = ConnectToPeer (networkIdsList,
+	&iceConn->connection_string)) == NULL)
     {
 	free ((char *) iceConn);
 	strncpy (errorStringRet, "Could not open network socket", errorLength);
@@ -366,145 +358,85 @@ char *errorStringRet;
  *                            local routines                                 *
  * ------------------------------------------------------------------------- */
 
-static int
+#define ICE_CONNECTION_RETRIES 5
+
+
+static XtransConnInfo
 ConnectToPeer (networkIdsList, actualConnectionRet)
 
 char *networkIdsList;
 char **actualConnectionRet;
 
 {
-    char hostname[256];
-    char portnum[20];
-    char objname[20];
-    char pathname[256];
-    char *ptr, *delim;
-    char *saveptr, *endptr;
+    char address[256];
+    char *ptr, *endptr, *delim;
     int  madeConnection = 0;
-    char *peer_addr = NULL;
-    int  peer_addrlen = 0;
-    int  fd = -1;
+    int  len, retry;
+    int  connect_stat;
+    XtransConnInfo trans_conn = NULL;
 
     *actualConnectionRet = NULL;
 
     ptr = networkIdsList;
     endptr = networkIdsList + strlen (networkIdsList);
 
-    while (ptr && ptr < endptr && !madeConnection)
+    while (ptr < endptr && !madeConnection)
     {
-	saveptr = ptr;
+	if ((delim = (char *) strchr (ptr, ',')) == NULL)
+	    delim = endptr;
 
-	if (strncmp (ptr, "local/", 6) == 0)
+	len = delim - ptr;
+	strncpy (address, ptr, len);
+	address[len] = '\0';
+
+	ptr = delim + 1;
+
+	for (retry = ICE_CONNECTION_RETRIES; retry >= 0; retry--)
 	{
-	    ptr += 6;
-	    if ((delim = (char *) strchr (ptr, ':')) != NULL)
+	    if ((trans_conn = _ICETransOpenCOTSClient (address)) == NULL)
 	    {
-		strncpy (hostname, ptr, delim - ptr);
-		hostname[delim - ptr] = '\0';
-		ptr = delim + 1;
-		if ((delim = (char *) strchr (ptr, ',')) == 0)
-		    delim = (char *) strchr (ptr, '\0');
-
-		strncpy (pathname, ptr, delim - ptr);
-		pathname[delim - ptr] = '\0';
-		ptr = delim + 1;
+		break;
 	    }
-	    else if ((ptr = (char *) strchr (ptr, ',')) != NULL)
-		ptr++;
-#ifdef UNIXCONN
-	    fd = _MakeConnection ("Unix", 0, pathname,
-	        ICE_CONNECTION_RETRIES, &peer_addrlen, &peer_addr);
 
-	    if (fd >= 0)
+	    if ((connect_stat = _ICETransConnect (trans_conn, address)) < 0)
+	    {
+		_ICETransClose (trans_conn);
+
+		if (connect_stat == TRANS_TRY_CONNECT_AGAIN)
+		{
+		    sleep(1);
+		    continue;
+		}
+		else
+		    break;
+	    }
+	    else
 	    {
 		madeConnection = 1;
-
-#if 0
-		peer_addrlen = _GetHostname (tmpbuf, sizeof (tmpbuf));
-		peer_addr = malloc (peer_addrlen + 1);
-		strcpy (peer_addr, tmpbuf);
-#endif
-
+		break;
 	    }
-#endif
 	}
-	else if (strncmp (ptr, "tcp/", 4) == 0)
-	{
-	    ptr += 4;
-	    if ((delim = (char *) strchr (ptr, ':')) != NULL)
-	    {
-		strncpy (hostname, ptr, delim - ptr);
-		hostname[delim - ptr] = '\0';
-		ptr = delim + 1;
-		if ((delim = (char *) strchr (ptr, ',')) == 0)
-		    delim = (char *) strchr (ptr, '\0');
-
-		strncpy (portnum, ptr, delim - ptr);
-		portnum[delim - ptr] = '\0';
-		ptr = delim + 1;
-	    }
-	    else if ((ptr = (char *) strchr (ptr, ',')) != NULL)
-		ptr++;
-
-#ifdef TCPCONN
-	    fd = _MakeConnection ("TCP", hostname, portnum,
-	        ICE_CONNECTION_RETRIES, &peer_addrlen, &peer_addr);
-
-	    if (fd >= 0)
-		madeConnection = 1;
-#endif
-	}
-	else if (strncmp (ptr, "decnet/", 7) == 0)
-	{
-	    ptr += 7;
-	    if ((delim = (char *) strchr (ptr, ':')) != NULL)
-	    {
-		delim++;  /* skip 2nd : */
-		strncpy (hostname, ptr, delim - ptr);
-		hostname[delim - ptr] = '\0';
-		ptr = delim + 1;
-		if ((delim = (char *) strchr (ptr, ',')) == 0)
-		    delim = (char *) strchr (ptr, '\0');
-
-		strncpy (objname, ptr, delim - ptr);
-		objname[delim - ptr] = '\0';
-		ptr = delim + 1;
-	    }
-	    else if ((ptr = (char *) strchr (ptr, ',')) != NULL)
-		ptr++;
-
-#ifdef DNETCONN
-
-	    fd = _MakeConnection ("DECnet", peerbuf, objname,
-		ICE_CONNECTION_RETRIES, &peer_addrlen, &peer_addr);
-
-	    if (fd >= 0)
-		madeConnection = 1;
-#endif
-	}
-	else if ((ptr = (char *) strchr (ptr, ',')) != NULL)
-	    ptr++;
     }
 
 
-    if (!madeConnection)
+    if (madeConnection)
     {
-	if (fd >= 0)
-	    (void) close (fd);
-	return (-1);
+	/*
+	 * We need to return the actual network connection string
+	 */
+
+	*actualConnectionRet = (char *) malloc (strlen (address) + 1);
+	strcpy (*actualConnectionRet, address);
+
+	
+	/*
+	 * Return the file descriptor
+	 */
+
+	return (trans_conn);
     }
-
-
-    /*
-     * We need to return the actual network connection string
-     */
-
-    *actualConnectionRet = (char *) malloc (ptr - saveptr);
-    strncpy (*actualConnectionRet, saveptr, ptr - saveptr);
-    (*actualConnectionRet)[ptr - saveptr - 1] = '\0';
-
-    /*
-     * Return the file descriptor
-     */
-
-    return (fd);
+    else
+    {
+	return (NULL);
+    }
 }
