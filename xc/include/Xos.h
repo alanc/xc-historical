@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.48 92/05/07 17:43:36 eswu Exp $
+ * $XConsortium: Xos.h,v 1.49 92/10/18 16:29:27 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -97,7 +97,11 @@
 #ifdef SYSV386
 #include <unistd.h>
 #endif /* SYSV386 */
+#ifdef WIN32
+#include <X11/Xw32defs.h>
+#else
 #include <sys/file.h>
+#endif
 #else /* X_NOT_POSIX */
 #if !defined(_POSIX_SOURCE) && defined(macII)
 #define _POSIX_SOURCE
@@ -143,7 +147,16 @@ struct timezone {
 #include <sys/time.h>
 #define _POSIX_SOURCE
 #else
+#ifdef WIN32
+#ifndef _WINSOCKAPI_
+struct timeval {
+    long    tv_sec;         /* seconds */
+    long    tv_usec;        /* and microseconds */
+};
+#endif
+#else
 #include <sys/time.h>
+#endif
 #endif
 
 #endif /* SYSV */
