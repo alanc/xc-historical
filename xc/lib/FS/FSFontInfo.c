@@ -1,4 +1,4 @@
-/* $XConsortium: FSFontInfo.c,v 1.4 92/05/13 15:41:58 gildea Exp $ */
+/* $XConsortium: FSFontInfo.c,v 1.5 92/11/18 21:31:21 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -63,7 +63,7 @@ FSListFontsWithXInfo(svr, pattern, maxNames, count, info, pprops, offsets, prop_
 	    if (status != 0  &&  reply.nameLength == 0)	/* got last reply */
 		break;
 	    if (status)
-		_FSRead(svr, (char *) &reply.nReplies,
+		_FSRead(svr, ((char *) &reply) + SIZEOF(fsGenericReply),
 			SIZEOF(fsListFontsWithXInfoReply) -
 			SIZEOF(fsGenericReply));
 	} else {
