@@ -307,7 +307,7 @@ Setup_Mapping()
 	 * grok WM_STATE for debugging window and session managers
 	 */
 	if (wm_state != None) {
-	    Add_Mapping (wm_state, "32ix", ":\n\
+	    Add_Mapping (wm_state, "32cx", ":\n\
 \t\twindow state: ?$0=0(Withdrawn)?$0=1(Normal)?$0=3(Iconic)\n\
 \t\ticon window: $1\n");
 	}
