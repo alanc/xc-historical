@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.10 88/01/28 08:08:37 swick Locked $
+* $Header: TextP.h,v 1.11 88/02/05 23:06:46 swick Locked $
 */
 
 /*
@@ -49,6 +49,10 @@
 #define EditDone 0
 #define EditError 1
 #define PositionError 2
+
+/* constants that subclasses may want to know */
+#define DEFAULT_TEXT_HEIGHT ~0
+#define  yMargin 2
 
 typedef enum {XtsdLeft, XtsdRight} XtTextScanDirection;
 typedef enum {XtstPositions, XtstWhiteSpace, XtstEOL, XtstParagraph, XtstAll}
