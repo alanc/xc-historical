@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.4 90/02/12 14:58:02 jim Exp $
+ * $XConsortium: Panner.c,v 1.5 90/02/12 15:30:03 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -222,9 +222,9 @@ static void check_knob (pw, knob)
 
     if (knob) {
 	pw->panner.slider_x = (Position) (((float) pw->panner.knob_x) /
-					  pw->panner.haspect);
+					  pw->panner.haspect + 0.5);
 	pw->panner.slider_y = (Position) (((float) pw->panner.knob_y) /
-					  pw->panner.vaspect);
+					  pw->panner.vaspect + 0.5);
 	pw->panner.last_x = pw->panner.last_y = PANNER_OUTOFRANGE;
     }
 }
@@ -611,14 +611,18 @@ static void ActionNotify (gw, event, params, num_params)
     if (pw->panner.shadow) move_shadow (pw);
 
     pw->panner.slider_x = (Position) (((float) pw->panner.knob_x) /
-				      pw->panner.haspect);
+				      pw->panner.haspect + 0.5);
     pw->panner.slider_y = (Position) (((float) pw->panner.knob_y) /
-				      pw->panner.vaspect);
+				      pw->panner.vaspect + 0.5);
 
     if (pw->panner.last_x != pw->panner.knob_x ||
 	pw->panner.last_y != pw->panner.knob_y) {
+	XawPannerReport rep;
+
 	Redisplay (gw, (XEvent*) NULL, (Region) NULL);
-	/* call callback */
+	rep.x = pw->panner.slider_x;
+	rep.y = pw->panner.slider_y;
+	XtCallCallbackList (gw, pw->panner.callbacks, (caddr_t) &rep);
     }
 }
 

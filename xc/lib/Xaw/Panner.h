@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.4 90/02/12 14:58:05 jim Exp $
+ * $XConsortium: Panner.h,v 1.5 90/02/12 15:30:06 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -84,5 +84,9 @@ extern WidgetClass pannerWidgetClass;
 
 typedef struct _PannerClassRec *PannerWidgetClass;
 typedef struct _PannerRec      *PannerWidget;
+
+typedef struct {
+    Position x, y;
+} XawPannerReport;
 
 #endif /* _XawPanner_h */
