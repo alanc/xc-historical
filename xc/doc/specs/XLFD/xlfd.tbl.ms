@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.40 94/04/18 12:42:07 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.41 94/04/18 12:44:36 gildea Exp $
 .nr sM 4		\" section on Matrix Transformations
 .nr sS 5		\" section on Scalable fonts
 .nr sP 6		\" section on Polymorphic font support
@@ -897,6 +897,7 @@ For example,
 	-misc-fixed-medium-r-normal--0-0-0-0-c-0-iso8859-1[65 70 80_90]
 .NL
 .ft P
+.br
 tells the font source that the client is interested only in characters
 65, 70, and 80\-90.
 .NH 3
@@ -1913,7 +1914,7 @@ have been defined (see sections 3.1.2.9 and 3.1.2.10).
 X clients are encouraged to discontinue use of the RESOLUTION property
 and are encouraged to use the appropriate X,Y resolution properties,
 as required.
-.NE			\" Note End
+.NE                     \" Note End
 .NH 3
 FONT
 .XS
@@ -2572,7 +2573,7 @@ Sample derived instance:
 	-Adobe-Myriad MM-412-R-575--*-120-100-100-P-*-ISO8859-1
 .ft P
 .NL
-.DE			\" display end
+.DE                     \" display end
 .LP
 The Adobe Minion MM Italic font program has width, weight, and optical
 size axes.
