@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium:$";
+    "$XConsortium: Varargs.c,v 1.1 89/11/08 17:47:41 swick Exp $";
 #endif
 /*
 
@@ -293,13 +293,13 @@ _XtVaToArgList(widget, args_return, num_args_return, var)
     Cardinal		*num_args_return;
     va_list     	var;
 {
-    WidgetClass         widget_class;
     String		attr;
     int			count = 0, total_count = 0, typed_count = 0;
     ArgList		args = (ArgList)NULL;
     XtTypedArg		typed_arg;
     XtResourceList	resources = (XtResourceList)NULL;
-    Cardinal		num_resources;
+    Cardinal		num_resources = 0;
+    Boolean		fetched_resource_list = False;
 
     _XtCountVaList(var, &total_count, &typed_count);
 
@@ -312,10 +312,6 @@ _XtVaToArgList(widget, args_return, num_args_return, var)
 
     args = (ArgList)XtMalloc((unsigned)(total_count * sizeof(Arg)));
 
-    if (widget != NULL) {
-	widget_class = XtClass(widget);
-    }
-
     for(attr = va_arg(var, String) ; attr != NULL;
 			attr = va_arg(var, String)) {
 	if (StringToQuark(attr) == XtQVaTypedArg) {
@@ -326,13 +322,18 @@ _XtVaToArgList(widget, args_return, num_args_return, var)
 
 	    /* if widget is NULL, typed args are ignored */
 	    if (widget != NULL) {
-		XtGetResourceList(widget_class, &resources, &num_resources);
-
+		if (!fetched_resource_list) {
+		    XtGetResourceList(XtClass(widget), &resources, &num_resources);
+		    fetched_resource_list = True;
+		}
 		count += _XtTypedArgToArg(widget, &typed_arg, &args[count],
 			     resources, num_resources);
 	    }
 	} else if (StringToQuark(attr) == XtQVaNestedList) {
-	    XtGetResourceList(widget_class, &resources, &num_resources);
+	    if (widget != NULL || !fetched_resource_list) {
+		XtGetResourceList(XtClass(widget), &resources, &num_resources);
+		fetched_resource_list = True;
+	    }
 
 	    count += _XtNestedArgtoArg(widget, va_arg(var, XtTypedArgList),
 			&args[count], resources, num_resources);
