@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.33 89/06/07 18:33:38 jim Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.34 89/07/06 13:34:47 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -550,7 +550,7 @@ tags::									@@\
 #define ImakeDependency(target)						@@\
 target:: $(IMAKE)							@@\
 									@@\
-$(IMAKE):								@@\
+$(IMAKE)::								@@\
 	@(cd $(IMAKESRC); if [ -f Makefile ]; then \			@@\
 	echo "making $@ with $(IMAKESRC)/Makefile"; $(MAKE) all; else \	@@\
 	echo "bootstrapping $@ with $(IMAKESRC)/Makefile.ini"; \	@@\
