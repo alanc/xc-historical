@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.85 88/10/18 08:06:43 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.86 88/10/18 09:10:52 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -1058,12 +1058,18 @@ static void HandleFocus(widget, client_data, event)
 static void AddForwardingHandler(w, descendant)
     Widget w, descendant;
 {
-    Window win, root, child;
+    Window root, child;
     int root_x, root_y, win_x, win_y;
     int left, right, top, bottom;
     unsigned int mask;
     EventMask eventMask;
 
+    /* %%%
+       Until we implement a mechanism for propagating keyboard event
+       interest to all ancestors for which the descendant may be the
+       focus target, the following optimization requires
+       XtSetKeyboardFocus calls to be executed from the inside out.
+     */
     eventMask = XtBuildEventMask(descendant);
     eventMask &= KeyPressMask | KeyReleaseMask;
     if (eventMask != 0) {
@@ -1103,6 +1109,11 @@ static void AddForwardingHandler(w, descendant)
 	    SendFocusNotify( descendant, FocusIn );
 	}
     }
+    else {
+	/* in case a previous focus widget was registered... */
+	RemoveEventHandler(w, XtAllEvents, True,
+			   ForwardEvent, NULL, FALSE, FALSE);
+    }
 }
 
 /* ARGSUSED */
@@ -1112,9 +1123,14 @@ static void QueryEventMask(widget, client_data, event)
     XEvent *event;
 {
     if (event->type == MapNotify) {
-	AddForwardingHandler((Widget) client_data, widget);
+	/* make sure ancestor still wants focus set here */
+	register XtEventRec* p = ((Widget)client_data)->core.event_table;
+	register XtEventHandler proc = HandleFocus; /* compiler bug */
+	while (p != NULL && p->proc != proc) p = p->next;
+	if (p != NULL && p->closure == (caddr_t)widget)
+	    AddForwardingHandler((Widget) client_data, widget);
 	RemoveEventHandler(widget, XtAllEvents, True,
-		QueryEventMask, client_data, FALSE, FALSE);
+			   QueryEventMask, client_data, FALSE, FALSE);
     }
 }
 
@@ -1126,6 +1142,8 @@ void XtSetKeyboardFocus(widget, descendant)
 
     if (descendant == (Widget)None) {
 	RemoveEventHandler(widget, XtAllEvents, True, HandleFocus, NULL,
+			   FALSE, FALSE); /* not raw, don't check closure */
+	RemoveEventHandler(widget, XtAllEvents, True, ForwardEvent, NULL,
 			   FALSE, FALSE); /* not raw, don't check closure */
 	RemoveGrab(widget, True);
 	return;
