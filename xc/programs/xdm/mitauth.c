@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: mitauth.c,v 1.3 89/12/06 19:40:18 keith Exp $
+ * $XConsortium: mitauth.c,v 1.4 89/12/13 15:22:21 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -55,9 +55,9 @@ MitGetAuth (namelen, name)
 	return (Xauth *) 0;
     new->family = FamilyWild;
     new->address_length = 0;
-    new->address = "";
+    new->address = 0;
     new->number_length = 0;
-    new->number = "";
+    new->number = 0;
 
     new->data = (char *) malloc (AUTH_DATA_LEN);
     if (!new->data)
