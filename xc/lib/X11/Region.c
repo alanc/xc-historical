@@ -1,4 +1,4 @@
-/* $XConsortium: Region.c,v 11.37 93/09/07 21:32:31 rws Exp $ */
+/* $XConsortium: Region.c,v 11.38 93/11/05 11:13:11 kaleb Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -63,7 +63,6 @@ SOFTWARE.
 
 typedef void (*voidProcp)();
 
-extern char *_XAllocScratch();
 static void miRegionOp();
 /*	Create a new empty region	*/
 Region
@@ -188,9 +187,10 @@ XSetRegion( dpy, gc, r )
     register int i;
     register XRectangle *xr, *pr;
     register BOX *pb;
+    unsigned long total;
     LockDisplay (dpy);
-    if (xr = (XRectangle *)
-	_XAllocScratch(dpy, (unsigned long) (r->numRects * sizeof (XRectangle)))) {
+    total = r->numRects * sizeof (XRectangle);
+    if (xr = (XRectangle *) _XAllocTemp(dpy, total)) {
 	for (pr = xr, pb = r->rects, i = r->numRects; --i >= 0; pr++, pb++) {
 	    pr->x = pb->x1;
 	    pr->y = pb->y1;
@@ -200,6 +200,8 @@ XSetRegion( dpy, gc, r )
     }
     if (xr || !r->numRects)
 	_XSetClipRectangles(dpy, gc, 0, 0, xr, r->numRects, YXBanded);
+    if (xr)
+	_XFreeTemp(dpy, (char *)xr, total);
     UnlockDisplay(dpy);
     SyncHandle();
 }
