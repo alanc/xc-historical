@@ -1,6 +1,6 @@
 /**/###########################################################################
 /**/# Imake rules for building libraries, programs, scripts, and data files
-/**/# rules:  $XConsortium: Imake.rules,v 1.21 89/04/20 08:53:04 rws Exp $
+/**/# rules:  $XConsortium: Imake.rules,v 1.22 89/04/26 12:25:27 jim Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -62,7 +62,9 @@
  *      NamedDependSubdirs                       (name,dirs)
  *      InstallSubdirs                           (dirs)
  *      InstallManSubdirs                        (dirs)
+ *      NamedCleanSubdirs                        (name,dirs)
  *      CleanSubdirs                             (dirs)
+ *      NamedTagSubdirs                          (name,dirs)
  *      TagSubdirs                               (dirs)
  *      MakeLintSubdirs                          (dirs,target,subtarget)
  *      LintSubdirs                              (dirs)
@@ -899,24 +901,29 @@ install.man::								@@\
 /*
  * CleanSubdirs - generate rules to recursively clean out garbage files.
  */
-#ifndef CleanSubdirs
-#define CleanSubdirs(dirs)						@@\
-clean::									@@\
+#ifndef NamedCleanSubdirs
+#define NamedCleanSubdirs(name,dirs)					@@\
+name::									@@\
 	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
 	for i in dirs ;\						@@\
 	do \								@@\
 		(cd $$i ; echo "cleaning in $(CURRENT_DIR)/$$i"; \	@@\
 			$(MAKE) $(MFLAGS) RM_CMD='$(RM_CMD)' clean ); \	@@\
 	done
-#endif /* CleanSubdirs */
+#endif /* NamedCleanSubdirs */
+
+#ifndef CleanSubdirs
+#define CleanSubdirs(dirs) \						@@\
+NamedCleanSubdirs(clean,dirs)
+#endif
 
 
 /*
  * TagSubdirs - generate rules to recursively create tags files.
  */
-#ifndef TagSubdirs
-#define TagSubdirs(dirs)						@@\
-tags::									@@\
+#ifndef NamedTagSubdirs
+#define NamedTagSubdirs(name,dirs)					@@\
+name::									@@\
 	@case '${MFLAGS}' in *[ik]*) set +e;; esac; \			@@\
 	for i in dirs ;\						@@\
 	do \								@@\
@@ -925,6 +932,10 @@ tags::									@@\
 	done
 #endif /* TagSubdirs */
 
+#ifndef TagSubdirs
+#define TagSubdirs(dirs) \						@@\
+NamedTagSubdirs(tags,dirs)
+#endif
 
 /*
  * MakeLintSubdirs - generate rules to recursively lint directories as part 
