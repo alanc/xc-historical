@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[]=
-    "$XConsortium: popup.c,v 2.17 89/09/05 16:29:26 converse Exp $";
+    "$XConsortium: popup.c,v 2.18 89/09/15 16:15:54 converse Exp $";
 #endif
 
 /*
@@ -131,8 +131,8 @@ static void InsureVisibility(popup, popup_child, x, y)
 /*ARGSUSED*/
 static void DestroyPopupPrompt(widget, client_data, call_data)
     Widget		widget;		/* unused */
-    caddr_t		client_data;
-    caddr_t		call_data;	/* unused */
+    XtPointer		client_data;
+    XtPointer		call_data;	/* unused */
 {
     Widget		popup = (Widget) client_data;
     XtPopdown(popup);
@@ -143,8 +143,8 @@ static void DestroyPopupPrompt(widget, client_data, call_data)
 /*ARGSUSED*/
 static void TellPrompt(okayButton, client_data, call_data)
     Widget		okayButton;	/* unused */
-    caddr_t		client_data;
-    caddr_t		call_data;	/* unused */
+    XtPointer		client_data;
+    XtPointer		call_data;	/* unused */
 {
     /* call the affirmative callback with the string typed in by the user */
 
@@ -156,7 +156,7 @@ static void TellPrompt(okayButton, client_data, call_data)
 }
 
 
-#define OkayButtonName "okay"
+#define OKAY_BUTTON_NAME "okay"
 
 /*ARGSUSED*/
 void XmhPromptOkayAction(w, event, params, num_params)
@@ -165,27 +165,27 @@ void XmhPromptOkayAction(w, event, params, num_params)
     String	*params;	/* unused */
     Cardinal	*num_params;	/* unused */
 {
-    XtCallCallbacks(XtNameToWidget(XtParent(w), OkayButtonName), XtNcallback,
-		    (caddr_t) NULL);
+    XtCallCallbacks(XtNameToWidget(XtParent(w), OKAY_BUTTON_NAME), XtNcallback,
+		    (XtPointer) NULL);
 }
 
 
 void PopupPrompt(question, okayCallback)
     char		*question;		/* the prompting string */
-    XtCallbackProc	okayCallback;		/* CreateNewFolder() */
+    XtCallbackProc	okayCallback;		/* DoCreateFolder() */
 {
     Arg			args[2];
     Widget		popup;
     Widget		dialog;
     Position		x, y;
     static XtCallbackRec ok_callbacks[] = {
-	{(XtCallbackProc) TellPrompt,		(caddr_t) NULL},
-	{(XtCallbackProc) DestroyPopupPrompt,	(caddr_t) NULL},
-	{(XtCallbackProc) NULL,			(caddr_t) NULL}
+	{(XtCallbackProc) TellPrompt,		(XtPointer) NULL},
+	{(XtCallbackProc) DestroyPopupPrompt,	(XtPointer) NULL},
+	{(XtCallbackProc) NULL,			(XtPointer) NULL}
     };
     static XtCallbackRec tell_prompt_closure[] = {
-	{(XtCallbackProc) NULL,			(caddr_t) NULL},
-	{(XtCallbackProc) NULL,			(caddr_t) NULL}
+	{(XtCallbackProc) NULL,			(XtPointer) NULL},
+	{(XtCallbackProc) NULL,			(XtPointer) NULL}
     };
     static String text_translations = "<Key>Return: XmhPromptOkayAction()\n";
 
@@ -204,13 +204,13 @@ void PopupPrompt(question, okayCallback)
 			   XtParseTranslationTable(text_translations));
 
     tell_prompt_closure[0].callback = okayCallback;
-    tell_prompt_closure[0].closure = (caddr_t) dialog;
-    ok_callbacks[0].closure = (caddr_t) tell_prompt_closure;
-    ok_callbacks[1].closure = (caddr_t) popup;
+    tell_prompt_closure[0].closure = (XtPointer) dialog;
+    ok_callbacks[0].closure = (XtPointer) tell_prompt_closure;
+    ok_callbacks[1].closure = (XtPointer) popup;
     XtSetArg(args[0], XtNcallback, ok_callbacks);
-    XtCreateManagedWidget(OkayButtonName, commandWidgetClass, dialog, args,
+    XtCreateManagedWidget(OKAY_BUTTON_NAME, commandWidgetClass, dialog, args,
 			  ONE);
-    XawDialogAddButton(dialog, "cancel", DestroyPopupPrompt, (caddr_t) popup);
+    XawDialogAddButton(dialog, "cancel", DestroyPopupPrompt, (XtPointer)popup);
 
     XtRealizeWidget(popup);
     InsureVisibility(popup, dialog, x, y);
@@ -218,7 +218,7 @@ void PopupPrompt(question, okayCallback)
     XtPopup(popup, XtGrabNone);
 }
 
-#undef OkayButtonName
+#undef OKAY_BUTTON_NAME
 
 /* ARGSUSED */
 static void FreePopupStatus( w, closure, call_data )
@@ -272,7 +272,8 @@ void PopupNotice( message, callback, closure )
     /* The text area of the dialog box will not be editable. */
 
     XtSetArg( args[0], XtNeditType, XawtextRead);
-    XtSetValues( XtNameToWidget(dialog, "value"), args, ONE);
+    XtSetArg( args[1], XtNdisplayCaret, False);
+    XtSetValues( XtNameToWidget(dialog, "value"), args, TWO);
 
     XawDialogAddButton( dialog, "confirm",
 		       (callback != (XtCallbackProc)NULL)
@@ -311,8 +312,8 @@ void PopupConfirm(question, affirm_callbacks, negate_callbacks)
     Widget	button;
     Position	x, y;
     static XtCallbackRec callbacks[] = {
-	{DestroyPopupConfirm,	(caddr_t) NULL},
-	{(XtCallbackProc) NULL,	(caddr_t) NULL}
+	{DestroyPopupConfirm,	(XtPointer) NULL},
+	{(XtCallbackProc) NULL,	(XtPointer) NULL}
     };
 
     DeterminePopupPosition(&x, &y);
@@ -326,7 +327,7 @@ void PopupConfirm(question, affirm_callbacks, negate_callbacks)
     dialog = XtCreateManagedWidget("dialog", dialogWidgetClass, popup, args,
 				   ONE);
     
-    callbacks[0].closure = (caddr_t) popup;
+    callbacks[0].closure = (XtPointer) popup;
     XtSetArg(args[0], XtNcallback, callbacks);
     button = XtCreateManagedWidget("yes", commandWidgetClass, dialog, 
 				   args, ONE);
@@ -336,7 +337,7 @@ void PopupConfirm(question, affirm_callbacks, negate_callbacks)
 
     button = XtCreateManagedWidget("no", commandWidgetClass, dialog, 
 				   args, ZERO);
-    XtAddCallback(button, XtNcallback, DestroyPopupConfirm, (caddr_t) popup);
+    XtAddCallback(button, XtNcallback, DestroyPopupConfirm, (XtPointer) popup);
     if (negate_callbacks)
 	XtAddCallbacks(button, XtNcallback, negate_callbacks);
 
@@ -368,15 +369,15 @@ void PopupError(message)
     Widget	dialog;
     Position	x, y;
     static XtCallbackRec callbacks[] = {
-	{DestroyPopupConfirm,	(caddr_t) NULL},
-	{(XtCallbackProc) NULL,	(caddr_t) NULL}
+	{DestroyPopupConfirm,	(XtPointer) NULL},
+	{(XtCallbackProc) NULL,	(XtPointer) NULL}
     };
 
     DeterminePopupPosition(&x, &y);
 
     if (error_popup != NULL)
-	DestroyPopupError((Widget) NULL, (caddr_t) error_popup,
-			  (caddr_t) NULL);
+	DestroyPopupError((Widget) NULL, (XtPointer) error_popup,
+			  (XtPointer) NULL);
 
     XtSetArg(args[0], XtNallowShellResize, True);
     XtSetArg(args[1], XtNinput, True);
@@ -387,10 +388,10 @@ void PopupError(message)
     XtSetArg(args[0], XtNlabel, message);
     dialog = XtCreateManagedWidget("dialog", dialogWidgetClass, error_popup,
 				   args, ONE);
-    callbacks[0].closure = (caddr_t) error_popup;
+    callbacks[0].closure = (XtPointer) error_popup;
     XtSetArg(args[0], XtNcallback, callbacks);
     XawDialogAddButton(dialog, "OK", DestroyPopupError,
-		       (caddr_t)error_popup);
+		       (XtPointer) error_popup);
     
     XtRealizeWidget(error_popup);
     InsureVisibility(error_popup, dialog, x, y);

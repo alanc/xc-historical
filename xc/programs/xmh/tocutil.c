@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: tocutil.c,v 2.29 89/09/01 17:36:48 kit Exp $";
+    "$XConsortium: tocutil.c,v 2.30 89/09/15 16:16:31 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -204,7 +204,8 @@ void TURedisplayToc(scrn)
 	    CheckSeqButtons(toc);
 	    toc->needsrepaint = FALSE;
 	} else {
-	    XawTextSetSource(scrn->tocwidget, NullSource, (XawTextPosition) 0);
+	    XawTextSetSource(scrn->tocwidget, PNullSource,
+			     (XawTextPosition) 0);
 	}
     }
 }

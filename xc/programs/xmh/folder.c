@@ -1,9 +1,9 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: folder.c,v 2.16 89/08/31 19:10:19 converse Exp $";
+    "$XConsortium: folder.c,v 2.17 89/09/15 16:15:20 converse Exp $";
 #endif
 /*
- *			  COPYRIGHT 1987
+ *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -36,6 +36,7 @@ static char rcs_id[] =
 #include <X11/Xaw/Cardinals.h>
 #include "xmh.h"
 #include "bboxint.h"
+#include "tocintrnl.h"
 
 typedef struct {	/* client data structure for callbacks */
     Scrn	scrn;		/* the xmh scrn of action */
@@ -44,13 +45,17 @@ typedef struct {	/* client data structure for callbacks */
 } DeleteDataRec, *DeleteData;
 
 
+void CreateFolderMenu();
+void AddFolderMenuEntry();
+void DeleteFolderMenuEntry();
+
 /* Close this toc&view scrn.  If this is the last toc&view, quit xmh. */
 
 /*ARGSUSED*/
 void DoClose(widget, client_data, call_data)
     Widget	widget;
-    caddr_t	client_data;
-    caddr_t	call_data;
+    XtPointer	client_data;
+    XtPointer	call_data;
 {
     Scrn	scrn = (Scrn) client_data;
     register int i, count;
@@ -65,9 +70,9 @@ void DoClose(widget, client_data, call_data)
 	    count++;
 
     confirm_callbacks[0].callback = (XtCallbackProc) DoClose;
-    confirm_callbacks[0].closure = (caddr_t) scrn;
+    confirm_callbacks[0].closure = (XtPointer) scrn;
     confirm_callbacks[1].callback = (XtCallbackProc) NULL;
-    confirm_callbacks[1].closure = (caddr_t) NULL;
+    confirm_callbacks[1].closure = (XtPointer) NULL;
 
     if (count <= 1) {
 
@@ -84,15 +89,15 @@ void DoClose(widget, client_data, call_data)
 				    (XtCallbackList) NULL))
 		return;
 	}
-/*	if (MsgSetScrn((Msg) NULL, scrn))  I think this can be deleted.
-	    return;
-*/
-/*	for (i = 0; i < numFolders; i++) {
-	    toc = folderList[i];
-	    if (toc->scanfile && toc->curmsg)
-		CmdSetSequence(toc, "cur", MakeSingleMsgList(toc->curmsg));
-	}
-*/
+/* 	if (MsgSetScrn((Msg) NULL, scrn))
+ *	    return;
+ * %%%
+ *	for (i = 0; i < numFolders; i++) {
+ *	    toc = folderList[i];
+ *	    if (toc->scanfile && toc->curmsg)
+ *		CmdSetSequence(toc, "cur", MakeSingleMsgList(toc->curmsg));
+ *	}
+ */
 	dpy = XtDisplay(scrn->parent);
 	XtUnmapWidget(scrn->parent);
 	XCloseDisplay(dpy);
@@ -114,7 +119,7 @@ void XmhClose(w, event, params, num_params)
     Cardinal	*num_params;	/* unused */
 {
     Scrn scrn = ScrnFromWidget(w);
-    DoClose(w, (caddr_t) scrn, (caddr_t) NULL);
+    DoClose(w, (XtPointer) scrn, (XtPointer) NULL);
 }
 
 /* Open the selected folder in this screen. */
@@ -172,7 +177,7 @@ void XmhOpenFolderInNewWindow(w, event, params, num_params)
 
 /* Create a new folder with the given name. */
 
-void CreateNewFolder(name)
+void DoCreateFolder(name)
     char	*name;
 {
     Toc		toc;
@@ -202,7 +207,7 @@ void CreateNewFolder(name)
 		button = BBoxFindButtonNamed(scrnList[i]->folderbuttons,
 					     name);
 		c[0] = '/';
-		if (button) MenuAddEntry(button, name);
+		if (button) AddFolderMenuEntry(button, name);
 	    }
 	    else
 		BBoxAddButton(scrnList[i]->folderbuttons, name,
@@ -220,15 +225,15 @@ void XmhCreateFolder(w, event, params, num_params)
     String	*params;	/* unused */
     Cardinal	*num_params;	/* unused */
 {
-    PopupPrompt("Create folder named:", CreateNewFolder);
+    PopupPrompt("Create folder named:", DoCreateFolder);
 }
 
 
 /*ARGSUSED*/
 void CancelDeleteFolder(widget, client_data, call_data)
     Widget	widget;		/* unused */
-    caddr_t	client_data;
-    caddr_t	call_data;	/* unused */
+    XtPointer	client_data;
+    XtPointer	call_data;	/* unused */
 {
     DeleteData	deleteData = (DeleteData) client_data;
 
@@ -250,8 +255,8 @@ void CancelDeleteFolder(widget, client_data, call_data)
 /*ARGSUSED*/
 void CheckAndConfirmDeleteFolder(widget, client_data, call_data)
     Widget	widget;		/* unreliable; sometimes NULL */
-    caddr_t	client_data;	/* data structure */
-    caddr_t	call_data;	/* unused */
+    XtPointer	client_data;	/* data structure */
+    XtPointer	call_data;	/* unused */
 {
     DeleteData  deleteData = (DeleteData) client_data;
     Scrn	scrn = deleteData->scrn;
@@ -263,13 +268,13 @@ void CheckAndConfirmDeleteFolder(widget, client_data, call_data)
     void CheckAndDeleteFolder();
 
     static XtCallbackRec yes_callbacks[] = {
-	{CheckAndDeleteFolder,	(caddr_t) NULL},
-	{(XtCallbackProc) NULL,	(caddr_t) NULL}
+	{CheckAndDeleteFolder,	(XtPointer) NULL},
+	{(XtCallbackProc) NULL,	(XtPointer) NULL}
     };
 
     static XtCallbackRec no_callbacks[] = {
-	{CancelDeleteFolder,	(caddr_t) NULL},
-	{(XtCallbackProc) NULL,	(caddr_t) NULL}
+	{CancelDeleteFolder,	(XtPointer) NULL},
+	{(XtCallbackProc) NULL,	(XtPointer) NULL}
     };
 
     /* Display the toc of the folder to be deleted. */
@@ -283,12 +288,12 @@ void CheckAndConfirmDeleteFolder(widget, client_data, call_data)
     confirms[0].callback = (XtCallbackProc) CheckAndConfirmDeleteFolder;
     confirms[0].closure = client_data;
     confirms[1].callback = (XtCallbackProc) NULL;
-    confirms[1].closure = (caddr_t) NULL;
+    confirms[1].closure = (XtPointer) NULL;
     
     cancels[0].callback = (XtCallbackProc) CancelDeleteFolder;
     cancels[0].closure = client_data;
     cancels[1].callback = (XtCallbackProc) NULL;
-    cancels[1].closure = (caddr_t) NULL;
+    cancels[1].closure = (XtPointer) NULL;
 
     if (TocConfirmCataclysm(toc, confirms, cancels) ==	NEEDS_CONFIRMATION)
 	return;
@@ -306,8 +311,8 @@ void CheckAndConfirmDeleteFolder(widget, client_data, call_data)
 /*ARGSUSED*/
 void CheckAndDeleteFolder(widget, client_data, call_data)
     Widget	widget;		/* unused */
-    caddr_t	client_data;	/* data structure */
-    caddr_t	call_data;	/* unused */
+    XtPointer	client_data;	/* data structure */
+    XtPointer	call_data;	/* unused */
 {
     DeleteData  deleteData = (DeleteData) client_data;
     Scrn	scrn = deleteData->scrn;
@@ -322,12 +327,12 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
     confirms[0].callback = (XtCallbackProc) CheckAndConfirmDeleteFolder;
     confirms[0].closure = client_data;
     confirms[1].callback = (XtCallbackProc) NULL;
-    confirms[1].closure = (caddr_t) NULL;
+    confirms[1].closure = (XtPointer) NULL;
     
     cancels[0].callback = (XtCallbackProc) CancelDeleteFolder;
     cancels[0].closure = client_data;
     cancels[1].callback = (XtCallbackProc) NULL;
-    cancels[1].closure = (caddr_t) NULL;
+    cancels[1].closure = (XtPointer) NULL;
     
     if (TocConfirmCataclysm(toc, confirms, cancels) == NEEDS_CONFIRMATION)
 	return;
@@ -339,16 +344,15 @@ void CheckAndDeleteFolder(widget, client_data, call_data)
     TocDeleteFolder(toc);
     for (i=0 ; i<numScrns ; i++)
 	if (scrnList[i]->folderbuttons) {
-	    char	*p;
 
-	    if (p = index(foldername, '/')) {
+	    if (IsSubfolder(foldername)) {
 		char	parentfolder[300];
 		(void) strcpy(parentfolder, foldername);
-		p = index(parentfolder, '/');
-		*p = '\0';
+		*(index(parentfolder, '/')) = '\0';
 
-		DeleteMenuEntry(BBoxFindButtonNamed(scrnList[i]->folderbuttons,
-						    parentfolder), foldername);
+		DeleteFolderMenuEntry
+		    (BBoxFindButtonNamed(scrnList[i]->folderbuttons,
+					 parentfolder), foldername);
 	    }
 	    else {
 		Boolean	reset;
@@ -400,7 +404,7 @@ void XmhDeleteFolder(w, event, params, num_params)
     if (deleteData->original_toc == toc)
 	deleteData->original_toc = (Toc) NULL;
 
-    CheckAndConfirmDeleteFolder(w, (caddr_t) deleteData, (caddr_t) NULL);
+    CheckAndConfirmDeleteFolder(w, (XtPointer) deleteData, (XtPointer) NULL);
 }
 
 
@@ -467,82 +471,81 @@ static void SelectFolder(w, closure, data)
 }
 
 
-/* Function name:	MenuAddEntry
+/* Function name:	AddFolderMenuEntry
  * Description:	
  *	Add an entry to a menu.  If the menu is not already created,
  *	create it, including the (already existing) new subfolder directory.
  * 	If the menu is already created,	add the new entry.
  */
 
-void MenuAddEntry(button, entryname)
+static void AddFolderMenuEntry(button, entryname)
     Button	button;		/* the corresponding menu button */
     char	*entryname;	/* the new entry, relative to MailDir */
 {
-    int		n = 0;
+    Cardinal	n = 0;
     Arg		args[3];
-    extern void MenuCreate();
+    char *	name;
+    MenuButtonData menu_button_data;
     static XtCallbackRec callbacks[] = {
-        {SelectFolder, NULL},
-        {NULL, NULL},
+	{ SelectFolder,			(XtPointer) NULL },
+	{ (XtCallbackProc) NULL,	(XtPointer) NULL}
     };
 
-    if (button->menu == NULL || button->menu == NoMenuForButton)
-	/* creating a subfolder before the menu has been created */
-	MenuCreate(button);
-    else {
-	char *name;
-	MenuButtonData menu_button_data = XtNew(MenuButtonDataRec);
+    /* The menu must be created before we can add an entry to it. */
 
-	name = menu_button_data->foldername = XtNewString(entryname);
-	menu_button_data->button = button;
-	callbacks[0].closure = (XtPointer) menu_button_data;
-	XtSetArg(args[n], XtNcallback, (XtArgVal) callbacks);	n++;
-
-	if (IsSubFolder(entryname)) {
-	    char	*parent_folder = MakeParentFolderName(entryname);
-	    char	*sub_folder = MakeSubFolderName(entryname);
-
-	    if (strcmp(parent_folder, sub_folder) == 0) {
-		/* subfolder name identical to parent folder name */
-		char	temp[200];
-		temp[0] = '_';
-		(void) strcpy(temp + 1, sub_folder);
-		name = XtNewString(temp);
-		XtSetArg(args[n], XtNlabel, sub_folder);	n++;
-	    }
-	    else name = sub_folder;
-	    XtFree(parent_folder);
-	}
-	AddMenuEntry(button, name, SelectFolder, (XtPointer) menu_button_data,
-		     True);
-/*
-	XawSimpleMenuAddEntry(button->menu, name, args, n);
-*/
+    if (button->menu == NULL || button->menu == NoMenuForButton) {
+	CreateFolderMenu(button);
+	return;
     }
+
+    menu_button_data = XtNew(MenuButtonDataRec);
+    name = menu_button_data->foldername = XtNewString(entryname);
+    menu_button_data->button = button;
+    callbacks[0].closure = (XtPointer) menu_button_data;
+    XtSetArg(args[n], XtNcallback, callbacks);			n++;
+
+    /* When a subfolder and its parent folder have identical names,
+     * we create a label for the subfolder to distinguish it.
+     */
+
+    if (IsSubfolder(entryname)) {
+	char	*parent = MakeParentFolderName(entryname);
+	char	*subfolder = MakeSubfolderName(entryname);
+
+	if (strcmp(parent, subfolder) == 0) {
+	    XtSetArg(args[n], XtNlabel, MakeSubfolderLabel(subfolder));	n++;
+	    XtFree(subfolder);
+	}
+	else name = subfolder;
+	XtFree(parent);
+    }
+
+    XawSimpleMenuAddEntry(button->menu, name, args, n);
 }
 
 
-/* Function name:	MenuCreate
+
+/* Function name:	CreateFolderMenu
  * Description:	
- *	This is a menu button action routine.  Menus are created for folder
+ *	Menus are created for folder
  *	buttons if the folder has at least one subfolder.  For the directory
  *	given by the concatentation of app_resources.mailDir, '/', and the
- *	name of the button, MenuCreate creates the menu whose entries are
+ *	name of the button, CreateFolderMenu creates the menu whose entries are
  *	the subdirectories which do not begin with '.' and do not have
  *	names which are all digits, and do not have names which are a '#'
  *	followed by all digits.  The first entry is always the name of the
  *	parent folder.  Remaining entries are alphabetized.
  */
 
-void MenuCreate(button)
+static void CreateFolderMenu(button)
     Button	button;
 {
-    Arg		args[3];
     struct direct **namelist;
     register int i, n, length;
     extern	alphasort();
     char	directory[500];
 
+    DEBUG1("Building menu for %s...", button->name);
     n = strlen(app_resources.mailDir);
     (void) strncpy(directory, app_resources.mailDir, n);
     directory[n++] = '/';
@@ -551,18 +554,20 @@ void MenuCreate(button)
     (void) strcpy(filename, directory);
     n = scandir(directory, &namelist, IsFolder, alphasort);
     if (n <= 0) {
+	DEBUG(" no entries.\n");
 	/* no subfolders, therefore no menu */
 	button->menu = NoMenuForButton;
 	return;
     }
 
     /* Create the menu widget, allowing the menu to show entry changes. */
-
+    /* %%% memory leak.  We don't free entry callback closures when
+     * the entire menu is destroyed; there should be a destroy callback. */
     CreateMenu(button, True);
 	
     /* The first entry is always the parent folder */
 
-    MenuAddEntry(button, button->name);
+    AddFolderMenuEntry(button, button->name);
 
     /* Build the menu by adding all the current entries to the new menu. */
 
@@ -572,12 +577,43 @@ void MenuCreate(button)
     for (i=0; i < n; i++) {
 	(void) strcpy(directory + length, namelist[i]->d_name);
 	XtFree((char *) namelist[i]);
-	MenuAddEntry(button, directory);
+	AddFolderMenuEntry(button, directory);
     }
     XtFree((char *) namelist);
-
-    DEBUG1("Built menu for %s.\n", button->name);
+    DEBUG(" done.\n");
 }
+
+
+/* Function:	DeleteFolderMenuEntry
+ * Description:	Remove a subfolder from a menu.
+ */
+
+static void DeleteFolderMenuEntry(button, foldername)
+    Button	button;
+    char	*foldername;	/* guaranteed to be a subfolder */
+{
+
+    /* %%% memory leak on the entry's callback closure */
+
+    if (XawSimpleMenuEntryCount(button->menu, XawMenuTextMask) <= 2) {
+	XtDestroyWidget(button->menu);	
+	button->menu = NoMenuForButton;
+    }
+    else {
+	char *subfolder = MakeSubfolderName(foldername);
+
+	if (strcmp(button->name, subfolder) == 0) {
+	    char * label = MakeSubfolderLabel(subfolder);
+	    XawSimpleMenuRemoveEntry(button->menu, label);
+	    XtFree(label);
+	}
+	else
+	    XawSimpleMenuRemoveEntry(button->menu, subfolder);
+	XtFree(subfolder);
+    }
+    SetCurrentFolderName(button->buttonbox->scrn, button->name);
+}
+
 
 /*---------------------- %%% hack to get action procedures --------------*/
 
@@ -628,10 +664,13 @@ void XmhPopupFolderMenu(w, event, vector, count)
     Button	button;
     Scrn	scrn;
 
-    if (! XtIsSubclass(w, menuButtonWidgetClass)) return;
+    if (! XtIsSubclass(w, menuButtonWidgetClass))
+	return;
     scrn = ScrnFromWidget(w);
-    if ((button = BBoxFindButton(scrn->folderbuttons, w)) == NULL) return;
-    if (button->menu == NULL) MenuCreate(button);
+    if ((button = BBoxFindButton(scrn->folderbuttons, w)) == NULL)
+	return;
+    if (button->menu == NULL)
+	CreateFolderMenu(button);
 
     if (button->menu == NoMenuForButton)
 	LastMenuButtonPressed = w;
@@ -713,37 +752,3 @@ void XmhOpenFolderFromMenu(w, event, vector, count)
 
     XmhOpenFolder(w, event, vector, count);
 }
-
-
-/* Function:	DeleteMenuEntry
- * Description:	Remove a subfolder from a menu.
- */
-
-void DeleteMenuEntry(button, foldername)
-    Button	button;
-    char	*foldername;	/* guaranteed to be a subfolder */
-{
-
-    if (XawSimpleMenuEntryCount(button->menu, XawMenuTextMask) <= 2) {
-	XtDestroyWidget(button->menu);	
-	button->menu = NoMenuForButton;
-    }
-    else {
-	char *subfolder = MakeSubFolderName(foldername);
-	if (strcmp(button->name, subfolder) == 0) {
-	    char name[200];
-	    name[0] = '_';
-	    strcpy(name + 1, subfolder);
-	    XawSimpleMenuRemoveEntry(button->menu, name);
-	}
-	else
-	    XawSimpleMenuRemoveEntry(button->menu, subfolder);
-	XtFree(subfolder);
-    }
-    SetCurrentFolderName(button->buttonbox->scrn, button->name);
-}
-
-
-
-
-

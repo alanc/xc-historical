@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: init.c,v 2.32 89/08/23 18:00:02 converse Exp $";
+    "$XConsortium: init.c,v 2.33 89/09/15 16:15:24 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -334,11 +334,13 @@ char **argv;
     IconInit();
     BBoxInit();
 
+
     XtAddActions(actions, XtNumber(actions));
 
     DEBUG("Making screen ... ")
 
     scrn = CreateNewScrn(STtocAndView);
+    InitWaitCursor();
 
     DEBUG(" setting toc ... ")
 

@@ -1,9 +1,9 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: command.c,v 2.25 89/06/30 15:22:34 swick Exp $";
+    "$XConsortium: command.c,v 2.26 89/07/21 18:56:36 converse Exp $";
 #endif
 /*
- *			  COPYRIGHT 1987
+ *			  COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -76,6 +76,8 @@ typedef struct _CommandStatus {
 typedef char* Pointer;
 static void FreeStatus();
 
+static Window	busy_window = NULL;	/* InputOnly window with cursor */
+
 static void SystemError(text)
     char* text;
 {
@@ -101,7 +103,7 @@ static char *FullPathOfCommand(str)
 
 /*ARGSUSED*/
 static void ReadStdout(closure, fd, id)
-    caddr_t closure;
+    XtPointer closure;
     int *fd;
     XtInputId *id;	/* unused */
 {
@@ -112,7 +114,7 @@ static void ReadStdout(closure, fd, id)
 
 /*ARGSUSED*/
 static void ReadStderr(closure, fd, id)
-    caddr_t closure;
+    XtPointer closure;
     int *fd;
     XtInputId *id;	/* unused */
 {
@@ -174,8 +176,8 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	    (void) dup2(status->output_pipe[1], fileno(stdout));
 	    FD_SET(status->output_pipe[0], &fds);
 	    status->output_inputId =
-		XtAddInput( status->output_pipe[0], (caddr_t)XtInputReadMask,
-			    ReadStdout, (caddr_t)status
+		XtAddInput( status->output_pipe[0], (XtPointer)XtInputReadMask,
+			    ReadStdout, (XtPointer)status
 			   );
 	    status->output_buffer = NULL;
 	    status->output_buf_size = 0;
@@ -196,8 +198,8 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	(void) dup2(status->error_pipe[1], fileno(stderr));
 	FD_SET(status->error_pipe[0], &fds);
 	status->error_inputId =
-	    XtAddInput( status->error_pipe[0], (caddr_t)XtInputReadMask,
-		        ReadStderr, (caddr_t)status
+	    XtAddInput( status->error_pipe[0], (XtPointer)XtInputReadMask,
+		        ReadStderr, (XtPointer)status
 		       );
     }
 
@@ -421,6 +423,8 @@ DoCommand(argv, inputfile, outputfile)
     int fd_in, fd_out;
     int status;
 
+    XMapWindow(theDisplay, busy_window);
+
     if (inputfile != NULL) {
 	FILEPTR file = FOpenAndCheck(inputfile, "r");
 	fd_in = dup(fileno(file));
@@ -441,6 +445,7 @@ DoCommand(argv, inputfile, outputfile)
 				    (int *) NULL );
     if (fd_in != -1) close(fd_in);
     if (fd_out != -1) close(fd_out);
+    XUnmapWindow(theDisplay, busy_window);
     return status;
 }
 
@@ -452,9 +457,11 @@ char ** argv;
 {
     char *result = NULL;
     int len = 0;
+    XMapWindow(theDisplay, busy_window);
     _DoCommandToFileOrPipe( argv, -1, -2, &result, &len );
     if (result == NULL) result = XtMalloc(1);
     result[len] = '\0';
+    XUnmapWindow(theDisplay, busy_window);
     DEBUG1("('%s')\n", result)
     return result;
 }
@@ -468,11 +475,35 @@ char *DoCommandToFile(argv)
     char *name;
     FILEPTR file;
     int fd;
+    XMapWindow(theDisplay, busy_window);
     name = MakeNewTempFileName();
     file = FOpenAndCheck(name, "w");
     fd = dup(fileno(file));
     myfclose(file);
     _DoCommandToFileOrPipe(argv, -1, fd, (char **) NULL, (int *) NULL);
     close(fd);
+    XUnmapWindow(theDisplay, busy_window);
     return name;
+}
+
+
+/* Create an input-only window with a busy-wait cursor. */
+
+#include <X11/cursorfont.h>
+
+void InitWaitCursor()
+{
+    unsigned long		valuemask;
+    XSetWindowAttributes	attributes;
+
+    valuemask = (CWDontPropagate | CWCursor);
+    attributes.do_not_propagate_mask = (KeyPressMask | KeyReleaseMask |
+					ButtonPressMask | ButtonReleaseMask |
+					PointerMotionMask);
+    attributes.cursor = XCreateFontCursor(theDisplay, XC_watch);
+    
+    busy_window = XCreateWindow(theDisplay, XtWindow(toplevel), 0, 0,
+				rootwidth, rootheight, (unsigned int) 0,
+				CopyFromParent, InputOnly, CopyFromParent,
+				valuemask, &attributes);
 }

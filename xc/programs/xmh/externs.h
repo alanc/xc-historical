@@ -1,9 +1,9 @@
 /*
- * $XConsortium: externs.h,v 2.20 89/09/01 17:36:35 kit Exp $
+ * $XConsortium: externs.h,v 2.21 89/09/15 16:10:25 converse Exp $
  */
 
 /*
- *			  COPYRIGHT 1987
+ *		       COPYRIGHT 1987, 1989
  *		   DIGITAL EQUIPMENT CORPORATION
  *		       MAYNARD, MASSACHUSETTS
  *			ALL RIGHTS RESERVED.
@@ -34,6 +34,7 @@ extern char *getenv();
 
 extern char *	DoCommandToFile();
 extern char *	DoCommandToString();
+extern void	InitWaitCursor();
 
 	/* from compfuncs.c */
 
@@ -49,8 +50,6 @@ extern void 	XmhOpenFolder();
 extern void	XmhOpenFolderInNewWindow();
 extern void	XmhCreateFolder();
 extern void	XmhDeleteFolder();
-extern void 	MenuAddEntry();		/* crap-o-la */
-extern void	DeleteMenuEntry();
 extern void	XmhPopupFolderMenu();
 extern void	XmhSetCurrentFolder();
 extern void	XmhLeaveFolderButton();
@@ -63,6 +62,7 @@ extern void	IconInit();
 	/* from menu.c */
 extern void	CreateMenu();
 extern void 	AddMenuEntry();
+extern void	SendMenuEntryEnableMsg();
 
 	/* from msg.c */
 
@@ -152,9 +152,10 @@ extern void	DeleteFileAndCheck();
 extern void	CopyFileAndCheck();
 extern void	RenameAndCheck();
 extern char *	CreateGeometry();
-extern Boolean	IsSubFolder();
+extern Boolean	IsSubfolder();
 extern char *	MakeParentFolderName();
-extern char *	MakeSubFolderName();
+extern char *	MakeSubfolderName();
+extern char *	MakeSubfolderLabel();
 extern void 	SetCurrentFolderName();
 extern void	ChangeLabel();
 extern Widget	CreateTextSW();

@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.23 89/09/01 17:36:22 kit Exp $
+ *  $XConsortium: globals.h,v 2.24 89/09/15 16:10:27 converse Exp $
  */
 
 /*
@@ -91,3 +91,6 @@ ext struct _LastInput {
 } lastInput;
 
 ext Boolean	subProcessRunning; /* interlock for DoCommand/CheckMail */
+
+#define PNullSource (NullSource != NULL ? NullSource : (Widget) \
+ 		     CreateFileSource(scrn->viewlabel, "/dev/null", False))

@@ -1,6 +1,6 @@
 #if !defined(lint) && !defined(SABER)
 static char rcs_id[] =
-    "$XConsortium: screen.c,v 2.46 89/09/05 19:34:56 converse Exp $";
+    "$XConsortium: screen.c,v 2.47 89/09/15 16:16:10 converse Exp $";
 #endif
 /*
  *			  COPYRIGHT 1987
@@ -71,27 +71,36 @@ Scrn scrn;
     if (value) BBoxEnable(BBoxFindButtonNamed(buttonbox, name)); \
     else BBoxDisable(BBoxFindButtonNamed(buttonbox, name));
 
+
 void EnableProperButtons(scrn)
 Scrn scrn;
 {
     static void EnableCallback();
     int value, changed, reapable;
+    Button	button;
 
     if (scrn) {
 	switch (scrn->kind) {
 	  case STtocAndView:
-#if 0 /* %%% to be re-written */
-	    SetButton(scrn->tocbuttons, "inc", TocCanIncorporate(scrn->toc));
+
+	    button = BBoxFindButtonNamed(scrn->tocbuttons, "tocOps");
+	    value = TocCanIncorporate(scrn->toc);
+	    SendMenuEntryEnableMsg(button, "inc", value);
+
+	    button = BBoxFindButtonNamed(scrn->tocbuttons, "sequenceOps");
 	    value = TocHasSequences(scrn->toc);
-	    SetButton(scrn->tocbuttons, "openSeq", value);
-	    SetButton(scrn->tocbuttons, "addToSeq", value);
-	    SetButton(scrn->tocbuttons, "removeFromSeq", value);
-	    SetButton(scrn->tocbuttons, "deleteSeq", value);
+	    SendMenuEntryEnableMsg(button, "openSeq", value);
+	    SendMenuEntryEnableMsg(button, "addToSeq", value);
+	    SendMenuEntryEnableMsg(button, "removeFromSeq", value);
+	    SendMenuEntryEnableMsg(button, "deleteSeq", value);
+
+	    button = BBoxFindButtonNamed(scrn->tocbuttons, "viewedMsgOps");
 	    value = (scrn->msg != NULL && !MsgGetEditable(scrn->msg));
-	    SetButton(scrn->viewbuttons, "edit", value);
-	    SetButton(scrn->viewbuttons, "save", scrn->msg != NULL && !value);
-#endif
+	    SendMenuEntryEnableMsg(button, "edit", value);
+	    SendMenuEntryEnableMsg(button, "save",
+				   scrn->msg != NULL && !value);
 	    break;
+
 	  case STview:
 	    value = (scrn->msg != NULL && !MsgGetEditable(scrn->msg));
 	    SetButton(scrn->viewbuttons, "edit", value);

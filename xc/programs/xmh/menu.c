@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: menu.c,v 1.1 89/09/15 16:15:27 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -71,3 +71,14 @@ void AddMenuEntry(button, name, callback_proc, callback_data, sensitive)
     XawSimpleMenuAddEntry(button->menu, name, args, i);
 }
 
+
+void SendMenuEntryEnableMsg(button, entry_name, value)
+    Button	button;
+    char *	entry_name;
+    int		value;
+{
+    static Arg	args[] = { XtNsensitive, (XtArgVal) NULL };
+    args[0].value = ((value == 0) ? (XtArgVal) False : (XtArgVal) True);
+    XawSimpleMenuSetEntryValues(button->menu, entry_name, args, (Cardinal) 1);
+}
+    
