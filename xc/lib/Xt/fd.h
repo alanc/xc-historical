@@ -1,5 +1,5 @@
 /*
-* $Header: fd.h,v 1.3 87/10/09 13:12:13 chow BL5 $
+* $Header: fd.h,v 6.1 87/11/30 16:21:09 haynes Exp $
 */
 
 /*
