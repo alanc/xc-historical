@@ -1,5 +1,5 @@
 static char rcsid[] =
-	"$XConsortium: Lookup.c,v 1.1 88/10/10 09:45:21 rws Exp $";
+	"$XConsortium: Lookup.c,v 1.2 88/10/11 18:40:49 rws Exp $";
 
 /* 
  * Copyright 1988 by the Massachusetts Institute of Technology
@@ -115,7 +115,7 @@ int XmuLookupArabic (event, buffer, nbytes, keysym, status)
     return XmuLookupString(event, buffer, nbytes, keysym, status, 5);
 }
 
-int XmuLookupCryllic (event, buffer, nbytes, keysym, status)
+int XmuLookupCyrillic (event, buffer, nbytes, keysym, status)
     register XKeyEvent *event;
     char *buffer;
     int nbytes;
