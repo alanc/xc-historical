@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.4 89/10/05 10:35:09 keith Exp $ */
+/* $XConsortium: multibuf.c,v 1.5 89/10/08 19:25:13 keith Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -879,6 +879,8 @@ SProcGetBufferInfo (client)
     REQUEST (xMbufGetBufferInfoReq);
 
     swaps (&stuff->length, n);
+    REQUEST_SIZE_MATCH (xMbufGetBufferInfoReq);
+    swapl (&stuff->drawable, n);
     return ProcGetBufferInfo (client);
 }
 
