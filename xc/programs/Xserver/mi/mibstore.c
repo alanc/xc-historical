@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.57 93/07/12 09:28:42 dpw Exp $ */
+/* $XConsortium: mibstore.c,v 5.58 93/09/03 08:07:12 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -203,7 +203,10 @@ static void	    miBSPolyFillRect(),	miBSPolyFillArc();
 static int	    miBSPolyText8(),	miBSPolyText16();
 static void	    miBSImageText8(),	miBSImageText16();
 static void	    miBSImageGlyphBlt(),miBSPolyGlyphBlt();
-static void	    miBSPushPixels(),	miBSLineHelper();
+static void	    miBSPushPixels();
+#ifdef NEED_LINEHELPER
+static void	    miBSLineHelper();
+#endif
 
 static GCOps miBSGCOps = {
     miBSFillSpans,	miBSSetSpans,	    miBSPutImage,	
@@ -212,7 +215,10 @@ static GCOps miBSGCOps = {
     miBSPolyArc,	miBSFillPolygon,    miBSPolyFillRect,
     miBSPolyFillArc,	miBSPolyText8,	    miBSPolyText16,
     miBSImageText8,	miBSImageText16,    miBSImageGlyphBlt,
-    miBSPolyGlyphBlt,	miBSPushPixels,	    miBSLineHelper,
+    miBSPolyGlyphBlt,	miBSPushPixels
+#ifdef NEED_LINEHELPER
+    , miBSLineHelper
+#endif
 };
 
 #define FUNC_PROLOGUE(pGC, pPriv) \
@@ -321,6 +327,7 @@ miInitializeBackingStore (pScreen, funcs)
 
 static Bool
 miBSCloseScreen (i, pScreen)
+    int		i;
     ScreenPtr	pScreen;
 {
     miBSScreenPtr   pScreenPriv;
@@ -346,7 +353,7 @@ miBSGetImage (pDrawable, sx, sy, w, h, format, planemask, pdstLine)
     int		    sx, sy, w, h;
     unsigned int    format;
     unsigned long   planemask;
-    pointer	    pdstLine;
+    char	    *pdstLine;
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
     BoxRec		    bounds;
@@ -524,7 +531,7 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     DDXPointPtr	ppt;
     int		*pwidth;
     int		nspans;
-    unsigned int *pdstStart;
+    char	*pdstStart;
 {
     ScreenPtr		    pScreen = pDrawable->pScreen;
     BoxRec		    bounds;
@@ -601,8 +608,8 @@ miBSGetSpans (pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 		ppt[i].x += dx;
 		ppt[i].y += dy;
 	    }
-	    (*pScreen->GetSpans) ((DrawablePtr) pPixmap,
-				  wMax, ppt, pwidth, nspans, pdstStart);
+	    (*pScreen->GetSpans) ((DrawablePtr) pPixmap, wMax, ppt, pwidth,
+				  nspans, pdstStart);
 	    break;
 	case rgnOUT:
 	    (*pScreen->GetSpans) (pDrawable, wMax, ppt, pwidth, nspans,
@@ -659,7 +666,7 @@ miBSCreateGC (pGC)
 
     SCREEN_PROLOGUE (pScreen, CreateGC);
     
-    if (ret = (*pScreen->CreateGC) (pGC))
+    if ( (ret = (*pScreen->CreateGC) (pGC)) )
     {
     	pGC->devPrivates[miBSGCIndex].ptr = (pointer) pGC->funcs;
     	pGC->funcs = &miBSCheapGCFuncs;
@@ -914,7 +921,7 @@ static void
 miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
     DrawablePtr		pDrawable;
     GCPtr		pGC;
-    unsigned int	*psrc;
+    char		*psrc;
     register DDXPointPtr ppt;
     int			*pwidth;
     int			nspans;
@@ -933,8 +940,8 @@ miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	copyData(ppt, pptCopy, nspans, MoreCopy0);
 	memmove((char *)pwidthCopy,(char *)pwidth,nspans*sizeof(int));
 
-	(* pGC->ops->SetSpans)(pDrawable, pGC, (unsigned int *)psrc,
-			       ppt, pwidth, nspans, fSorted);
+	(* pGC->ops->SetSpans)(pDrawable, pGC, psrc, ppt, pwidth,
+			       nspans, fSorted);
 	if (pGC->miTranslate)
 	{
 	    int	dx, dy;
@@ -952,7 +959,7 @@ miBSSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	    }
 	}
 	(* pBackingGC->ops->SetSpans)(pBackingDrawable, pBackingGC,
-		 (unsigned int *)psrc, pptCopy, pwidthCopy, nspans, fSorted);
+				psrc, pptCopy, pwidthCopy, nspans, fSorted);
     }
     if (pwidthCopy) DEALLOCATE_LOCAL(pwidthCopy);
     if (pptCopy) DEALLOCATE_LOCAL(pptCopy);
@@ -981,6 +988,7 @@ miBSPutImage(pDrawable, pGC, depth, x, y, w, h, leftPad, format, pBits)
     int	    	  y;
     int	    	  w;
     int	    	  h;
+    int		  leftPad;
     int	    	  format;
     char    	  *pBits;
 {
@@ -2043,7 +2051,7 @@ miBSImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    char * 	pglyphBase;	/* start of array of glyphs */
+    pointer 	pglyphBase;	/* start of array of glyphs */
 {
     SETUP_BACKING (pDrawable, pGC);
     PROLOGUE(pGC);
@@ -2075,7 +2083,7 @@ miBSPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int 	x, y;
     unsigned int nglyph;
     CharInfoPtr *ppci;		/* array of character info */
-    char 	*pglyphBase;	/* start of array of glyphs */
+    pointer	pglyphBase;	/* start of array of glyphs */
 {
     SETUP_BACKING (pDrawable, pGC);
     PROLOGUE(pGC);
@@ -2117,6 +2125,7 @@ miBSPushPixels(pGC, pBitMap, pDst, w, h, x, y)
     EPILOGUE (pGC);
 }
 
+#ifdef NEED_LINEHELPER
 /*-
  *-----------------------------------------------------------------------
  * miBSLineHelper --
@@ -2132,6 +2141,7 @@ miBSLineHelper()
 {
     FatalError("miBSLineHelper called\n");
 }
+#endif
 
 /*-
  *-----------------------------------------------------------------------
