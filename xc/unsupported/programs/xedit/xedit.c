@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: xedit.c,v 1.22 89/10/07 14:59:45 kit Exp $";
+static char Xrcsid[] = "$XConsortium: xedit.c,v 1.23 89/12/07 19:19:17 kit Exp $";
 #endif /* lint && SABER */
  
 /*
@@ -57,9 +57,9 @@ char **argv;
   String filename = NULL;
   static void makeButtonsAndBoxes();
 
-  top = XtInitialize( "xedit", "Xedit", NULL, 0, &argc, argv);
+  top = XtInitialize( "xedit", "Xedit", NULL, 0, (Cardinal *) &argc, argv);
   
-  XtGetApplicationResources(top, &app_resources, resources,
+  XtGetApplicationResources(top, (XtPointer) &app_resources, resources,
 			    XtNumber(resources), NULL, 0);
 
   CurDpy = XtDisplay(top);
