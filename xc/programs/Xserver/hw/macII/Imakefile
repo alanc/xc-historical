@@ -1,10 +1,7 @@
 SRCS =	\
 	macIIInit.c \
-	macIIInitC.c \
-	macIIInitS.c \
 	macIIMono.c \
 	macIIMonoz.c \
-	macIIColor.c \
 	macIICrsr.c \
 	macIIIo.c \
 	macIIKbd.c \
@@ -12,17 +9,15 @@ SRCS =	\
 	macIIUtils.c \
 	macIIGC.c \
 	macIIKMap.c \
-	slotmgr.s \
 	Xrepair.c \
-	X11R2 \
+	X11R3 \
 	def.x11start
 
-OFILES = macIIInit.o macIIInitC.o macIIInitS.o slotmgr.o
+OFILES = macIIInit.o 
 
 OBJS = \
 	macIIMono.o \
 	macIIMonoz.o \
-	macIIColor.o \
 	macIICrsr.o \
 	macIIIo.o \
 	macIIKbd.o \
@@ -47,7 +42,7 @@ NormalLibraryTarget(macII,$(OBJS))
 NormalLintTarget($(SRCS))
 SingleProgramTarget(Xrepair, Xrepair.o,,)
 InstallProgram(Xrepair,$(BINDIR))
-InstallProgram(X11R2,$(BINDIR))
+InstallProgram(X11R3,$(BINDIR))
 InstallProgram(def.x11start,$(LIBDIR)/.x11start)
 InstallMultiple(xterm.tic xterms.tic,$(LIBDIR))
 DependTarget()
