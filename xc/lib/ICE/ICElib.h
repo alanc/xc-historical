@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.7 93/09/12 16:22:10 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.8 93/09/13 16:32:59 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -468,7 +468,7 @@ extern Bool IceCheckShutdownNegotiation (
 #endif
 );
 
-extern void IceCloseConnection (
+extern Status IceCloseConnection (
 #if NeedFunctionPrototypes
     IceConn		/* iceConn */
 #endif

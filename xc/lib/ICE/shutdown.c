@@ -1,4 +1,4 @@
-/* $XConsortium: shutdown.c,v 1.3 93/09/12 16:22:23 mor Exp $ */
+/* $XConsortium: shutdown.c,v 1.4 93/09/13 16:51:52 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -91,7 +91,7 @@ IceConn     iceConn;
 
 
 
-void
+Status
 IceCloseConnection (iceConn)
 
 IceConn     iceConn;
@@ -109,7 +109,7 @@ IceConn     iceConn;
 	iceConn->connection_status != IceConnectAccepted)
     {
 	_IceFreeConnection (iceConn, False);
-	return;
+	return (1);
     }
 
 
@@ -123,20 +123,34 @@ IceConn     iceConn;
     if (iceConn->open_ref_count > 0)
 	iceConn->open_ref_count--;
 
-    if (iceConn->open_ref_count == 0 && iceConn->proto_ref_count == 0)
+    if (iceConn->open_ref_count == 0)
     {
-	if (iceConn->skip_want_to_close)
+	if (iceConn->proto_ref_count > 0)
 	{
-	    _IceFreeConnection (iceConn, False);
+	    /*
+	     * Bad status - this is the last required IceCloseConnection,
+	     * but not all of the protocols have been shut down.
+	     */
+
+	    return (0);
 	}
 	else
 	{
-	    IceSimpleMessage (iceConn, 0, ICE_WantToClose);
-	    IceFlush (iceConn);
+	    if (iceConn->skip_want_to_close)
+	    {
+		_IceFreeConnection (iceConn, False);
+	    }
+	    else
+	    {
+		IceSimpleMessage (iceConn, 0, ICE_WantToClose);
+		IceFlush (iceConn);
 
-	    iceConn->want_to_close = 1;
+		iceConn->want_to_close = 1;
+	    }
 	}
     }
+
+    return (1);
 }
 
 
