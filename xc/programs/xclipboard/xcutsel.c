@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.13 91/01/10 16:06:17 gildea Exp $
+ * $XConsortium: xcutsel.c,v 1.14 91/02/16 21:52:14 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.21 91/01/10 15:30:53 gildea Exp $
+ * $XConsortium: xclipboard.c,v 1.22 91/02/16 21:52:29 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.21 91/01/10 15:30:53 gildea Exp $ */
+/* $XConsortium: xclipboard.c,v 1.22 91/02/16 21:52:29 dave Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
