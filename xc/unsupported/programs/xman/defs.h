@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: defs.h,v 1.9 89/02/15 16:06:40 kit Exp $
+ * $XConsortium: defs.h,v 1.10 89/02/15 17:53:42 kit Exp $
  * $Athena: defs.h,v 4.8 89/01/06 15:56:19 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -83,7 +83,7 @@
 #ifdef macII
 #define FORMAT "pcat"		              /* The format command. */
 #else
-#define FORMAT "| neqn | nroff -Tcrt -man"    /* The format command. */
+#define FORMAT "| neqn | nroff -man"          /* The format command. */
 #endif
 #define TBL "tbl"
 
