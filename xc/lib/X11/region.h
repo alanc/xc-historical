@@ -1,4 +1,4 @@
-/* $XConsortium: region.h,v 11.9 88/07/25 20:43:06 toddb Exp $ */
+/* $XConsortium: region.h,v 11.10 88/09/06 16:08:15 jim Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -65,10 +65,10 @@ typedef struct _XRegion {
  *  Remember, x2 and y2 are not in the region 
  */
 #define EXTENTCHECK(r1, r2) \
-      (! ( ((r1)->x2 <= (r2)->x1)) || \
-        ( ((r1)->x1 >= (r2)->x2)) || \
-        ( ((r1)->y2 <= (r2)->y1)) || \
-        ( ((r1)->y1 >= (r2)->y2)) )
+	((r1)->x2 > (r2)->x1 && \
+	 (r1)->x1 < (r2)->x2 && \
+	 (r1)->y2 > (r2)->y1 && \
+	 (r1)->y1 < (r2)->y2)
 
 /*
  *  update region extents
