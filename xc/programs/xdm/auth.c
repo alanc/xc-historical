@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.49 94/01/14 19:40:07 gildea Exp $
+ * $XConsortium: auth.c,v 1.50 94/01/18 17:29:14 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -585,8 +585,10 @@ writeAuth (file, auth)
     FILE	*file;
     Xauth	*auth;
 {
+#if 0 /* too verbose */
         Debug ("writeAuth: doWrite = %d\n", doWrite);
 	dumpAuth (auth);	/* does Debug only */
+#endif
 	if (doWrite)
 	    XauWriteAuth (file, auth);
 }
