@@ -1,4 +1,4 @@
-.\" $XConsortium: xdm.man,v 1.35 94/07/26 18:45:28 gildea Exp $
+.\" $XConsortium: xdm.man,v 1.36 94/07/26 19:46:05 gildea Exp gildea $
 .\" Copyright (c) 1988, 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -1207,13 +1207,13 @@ user authorization file where \fIxdm\fP stores keys for clients to read
 .I <XRoot>/lib/X11/xdm/chooser
 the default chooser
 .TP 20
-.I <XRoot>/bin/X11/xrdb
+.I <XRoot>/bin/xrdb
 the default resource database loader
 .TP 20
-.I <XRoot>/bin/X11/X
+.I <XRoot>/bin/X
 the default server
 .TP 20
-.I <XRoot>/bin/X11/xterm
+.I <XRoot>/bin/xterm
 the default session program and failsafe client
 .TP 20
 .I <XRoot>/lib/X11/xdm/A<display>\-<suffix>
