@@ -66,6 +66,10 @@
 
 XClipboard.geometry:		300x200
 *ShapeStyle:			oval
+XClipboard.baseTranslations: #augment\n\
+			<Message>WM_PROTOCOLS: WMProtocols()\n
+*TransientShell.baseTranslations: #augment\n\
+			<Message>WM_PROTOCOLS: WMProtocols()\n
 
 *fileDialog.label:			Save to file:
 *fileDialogShell.allowShellResize:	true
