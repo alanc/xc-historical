@@ -1,4 +1,4 @@
-/* $XConsortium: greet.c,v 1.39 94/04/04 14:47:23 gildea Exp $ */
+/* $XConsortium: greet.c,v 1.40 94/04/17 20:03:54 gildea Exp converse $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -211,23 +211,24 @@ CloseGreet (d)
 {
     Boolean	    allow;
     Arg	    arglist[1];
+    Display *dpy = XtDisplay(toplevel);
 
     if (pingTimeout)
     {
 	XtRemoveTimeOut (pingTimeout);
 	pingTimeout = 0;
     }
-    UnsecureDisplay (d, XtDisplay (toplevel));
+    UnsecureDisplay (d, dpy);
     XtSetArg (arglist[0], XtNallowAccess, (char *) &allow);
     XtGetValues (login, arglist, 1);
     if (allow)
     {
 	Debug ("Disabling access control\n");
-	XSetAccessControl (XtDisplay (toplevel), DisableAccess);
+	XSetAccessControl (dpy, DisableAccess);
     }
     XtDestroyWidget (toplevel);
-    ClearCloseOnFork (XConnectionNumber (XtDisplay (toplevel)));
-    XCloseDisplay (XtDisplay (toplevel));
+    ClearCloseOnFork (XConnectionNumber (dpy));
+    XCloseDisplay (dpy);
     Debug ("Greet connection closed\n");
 }
 
