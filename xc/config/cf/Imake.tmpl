@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.191 93/09/11 09:52:28 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.192 93/09/12 16:42:43 rws Exp $
 XCOMM
 
 /*
@@ -227,11 +227,7 @@ _NULLCMD_ = @ echo -n
 #endif
 #endif
 #ifndef ShLibDir
-#ifdef OSF1Architecture
-#define ShLibDir /usr/shlib
-#else
 #define ShLibDir UsrLibDir
-#endif
 #endif
 #ifndef IncRoot
 #ifdef ProjectRoot
