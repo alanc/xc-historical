@@ -4,6 +4,9 @@
 	red green blue name
    where red/green/blue are decimal values, and inserts them in a database.
  */
+#ifndef lint
+static char *rcsid_rgb_c = "$Header$;
+#endif
 
 #include <dbm.h>
 #undef NULL
