@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.149 93/08/18 10:16:47 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.150 93/08/18 14:19:54 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -215,7 +215,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.149 93/08/18 10:16:47 rws Exp $
 #endif /* _UseCat */
 
 #ifndef ProgramTargetName
-#define ProgramTargetName(target) target
+#define ProgramTargetName(target)target
 #endif
 
 #ifndef RunProgram
@@ -478,11 +478,11 @@ PurifyLinkTarget(Concat(load,server),server,$(CDEBUGFLAGS) $(CCOPTIONS) objects 
 #endif
 
 #ifndef LibraryTargetName
-#define LibraryTargetName(libname) Concat(lib,libname.a)
+#define LibraryTargetName(libname)Concat(lib,libname.a)
 #endif
 
 #ifndef LibraryTargetNameSuffix
-#define LibraryTargetNameSuffix(libname,suffix) Concat3(lib,libname,suffix.a)
+#define LibraryTargetNameSuffix(libname,suffix)Concat3(lib,libname,suffix.a)
 #endif
 
 /*
