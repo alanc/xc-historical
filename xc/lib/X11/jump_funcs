@@ -1,4 +1,4 @@
-# $XConsortium: jump_funcs,v 1.2 94/12/07 10:48:04 kaleb Exp kaleb $
+# $XConsortium: jump_funcs,v 1.3 94/12/31 21:23:40 kaleb Exp kaleb $
 # $XFree86: xc/lib/X11/jump_funcs,v 3.1 1994/05/04 14:56:09 dawes Exp $
 #
 00000000 T _XSaveContext        libX11         Context
@@ -424,7 +424,7 @@
 00000000 T _XFree               libX11         XlibInt
 00000000 T __XGetHostname       libX11         XlibInt
 00000000 T __XScreenOfWindow    libX11         XlibInt
-00000000 T __XANYSET            libX11         XlibInt
+00000000 U _XANYSET             libX11         XlibInt
 00000000 T __XAllocIDs          libX11       XlibInt
 00000000 T __XAllocTemp         libX11       XlibInt
 00000000 T __XFreeTemp          libX11       XlibInt
@@ -1097,5 +1097,9 @@
 00000000 T __IceTransGetHostname libICE         transport
 00000000 T __IceTransGetMyNetworkId libICE         transport
 00000000 T __IceTransGetPeerNetworkId libICE         transport
-00000000 T __XimLcctstombs      libX11         imLcLkup
-00000000 T __XimLcctstowcs      libX11         imLcLkup
+00000000 T __XimLcctstombs      libXdmcp         imLcLkup
+00000000 T __XimLcctstowcs      libXdmcp         imLcLkup
+00000000 T _XdmcpWrap           libXdmcp         Wrap
+00000000 T __XdmcpWrapperToOddParity libXdmcp         Wrap
+00000000 T __XdmcpAuthSetup     libXdmcp         Wraphelp
+00000000 T __XdmcpAuthDoIt      libXdmcp         Wraphelp
