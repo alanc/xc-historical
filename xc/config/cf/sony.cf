@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.58 94/10/07 14:06:04 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: sony.cf,v 1.59 94/11/02 16:03:30 kaleb Exp kaleb $
 
 #ifdef SonyBsdArchitecture
 
@@ -39,10 +39,10 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.58 94/10/07 14:06:04 kaleb Exp kaleb 
 
 #else
 
-#define OSName			NEWS-OS 6.0.3
+#define OSName			NEWS-OS 6.1.0
 #define OSMajorVersion		6
-#define OSMinorVersion		0
-#define OSTeenyVersion		3
+#define OSMinorVersion		1
+#define OSTeenyVersion		0
 #define BootstrapCFlags		-Dsony
 #define SystemV4		YES
 #define HasVFork		NO
