@@ -4,6 +4,7 @@
           OBJS = dashlist.o planemask.o getfilename.o tests.o text.o choice.o \
                  main.o interpret.o record.o testfrac.o
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+  SYS_LIBRARIES = -lm
 
 ComplexProgramTarget(xgc)
 
