@@ -1,4 +1,4 @@
-/* $XConsortium: difsutils.c,v 1.4 91/05/11 14:06:05 rws Exp $ */
+/* $XConsortium: difsutils.c,v 1.5 91/07/16 20:23:24 keith Exp $ */
 /*
  * misc utility routines
  */
@@ -465,10 +465,10 @@ ProcessWorkQueue()
 }
 
 Bool
-QueueWorkProc(function, client, closure)
+QueueWorkProc(function, client, data)
     Bool        (*function) ();
     ClientPtr   client;
-    pointer     closure;
+    pointer     data;
 {
     WorkQueuePtr q;
 
@@ -477,7 +477,7 @@ QueueWorkProc(function, client, closure)
 	return FALSE;
     q->function = function;
     q->client = client;
-    q->closure = closure;
+    q->closure = data;
     q->next = NULL;
     *workQueueLast = q;
     workQueueLast = &q->next;
@@ -502,10 +502,10 @@ typedef struct _SleepQueue {
 static SleepQueuePtr sleepQueue = NULL;
 
 Bool
-ClientSleep(client, function, closure)
+ClientSleep(client, function, data)
     ClientPtr   client;
     Bool        (*function) ();
-    pointer     closure;
+    pointer     data;
 {
     SleepQueuePtr q;
 
@@ -517,7 +517,7 @@ ClientSleep(client, function, closure)
     q->next = sleepQueue;
     q->client = client;
     q->function = function;
-    q->closure = closure;
+    q->closure = data;
     sleepQueue = q;
     return TRUE;
 }
