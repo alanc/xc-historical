@@ -1,4 +1,4 @@
-/* $XConsortium: CompositeP.h,v 1.14 90/03/13 10:18:12 swick Exp $ */
+/* $XConsortium: CompositeP.h,v 1.15 91/10/24 13:20:18 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -67,6 +67,7 @@ typedef struct {
     long version;		/* must be XtCompositeExtensionVersion */
     Cardinal record_size;	/* sizeof(CompositeClassExtensionRec) */
     Boolean accepts_objects;
+    Boolean allows_change_managed_set;
 } CompositeClassExtensionRec, *CompositeClassExtension;
 
 
@@ -77,7 +78,7 @@ typedef struct _CompositeClassRec {
 
 externalref CompositeClassRec compositeClassRec;
 
-#define XtCompositeExtensionVersion 1L
+#define XtCompositeExtensionVersion 2L
 #define XtInheritGeometryManager ((XtGeometryHandler) _XtInherit)
 #define XtInheritChangeManaged ((XtWidgetProc) _XtInherit)
 #define XtInheritInsertChild ((XtWidgetProc) _XtInherit)
