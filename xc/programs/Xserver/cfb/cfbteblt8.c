@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.2 89/09/14 17:04:55 rws Exp $ */
+/* $XConsortium: cfbteblt8.c,v 1.2 89/10/29 00:16:48 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -35,6 +35,79 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #if (PPW == 4)
 
+/* another ugly giant macro */
+#define SwitchEm    switch (ew) \
+		    { \
+		    case 0: \
+		    	break; \
+		    case 1: \
+		    	while (hTmp--) { \
+			    GetBits \
+			    StoreBits0 \
+			    Loop \
+		    	} \
+		    	break; \
+		    case 2: \
+		    	while (hTmp--) { \
+			    GetBits \
+			    StoreBits0 Step StoreBits(1) \
+			    Loop \
+		    	} \
+		    	break; \
+		    case 3: \
+		    	while (hTmp--) { \
+			    GetBits \
+			    StoreBits0 Step StoreBits(1) Step StoreBits(2) \
+			    Loop \
+		    	} \
+		    	break; \
+		    case 4: \
+		    	while (hTmp--) { \
+			    GetBits \
+			    StoreBits0 Step StoreBits(1) Step \
+ 			    StoreBits(2) Step StoreBits(3) \
+			    Loop \
+		    	} \
+		    	break; \
+		    case 5: \
+		    	while (hTmp--) { \
+			    GetBits \
+			    StoreBits0 Step StoreBits(1) Step \
+ 			    StoreBits(2) Step StoreBits(3) Step \
+			    StoreBits(4) \
+			    Loop \
+		    	} \
+		    	break; \
+		    case 6: \
+		    	while (hTmp--) { \
+			    GetBits \
+			    StoreBits0 Step StoreBits(1) Step \
+ 			    StoreBits(2) Step StoreBits(3) Step \
+			    StoreBits(4) Step StoreBits(5) \
+			    Loop \
+		    	} \
+		    	break; \
+		    case 7: \
+		    	while (hTmp--) { \
+			    GetBits \
+			    StoreBits0 Step StoreBits(1) Step \
+ 			    StoreBits(2) Step StoreBits(3) Step \
+			    StoreBits(4) Step StoreBits(5) Step \
+			    StoreBits(6) \
+			    Loop \
+		    	} \
+		    	break; \
+		    case 8: \
+		    	while (hTmp--) { \
+			    GetBits \
+			    StoreBits0 Step StoreBits(1) Step \
+ 			    StoreBits(2) Step StoreBits(3) Step \
+			    StoreBits(4) Step StoreBits(5) Step \
+			    StoreBits(6) Step StoreBits(7) \
+			    Loop \
+		    	} \
+		    	break; \
+		    }
 
 extern void miImageGlyphBlt();
 
@@ -50,8 +123,8 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     register unsigned long  c;
     register unsigned long  *dst;
     register int	    ewTmp;
-    register int	    xoff;
-    register unsigned long  *rightChar;
+    register int	    xoff1, xoff2, xoff3, xoff4;
+    register unsigned long  *char1, *char2, *char3, *char4;
     register unsigned long  leftMask, rightMask;
 
     CharInfoPtr		pci;
@@ -69,6 +142,7 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     BoxRec		bbox;		/* for clipping */
     int			lshift;
     int			widthDiff;
+    int			widthGlyph4;
 
     pci = &pfi->maxbounds;
     widthGlyph = pci->metrics.characterWidth;
@@ -107,127 +181,113 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
+    widthGlyph4 = widthGlyph << 2;
     pdstBase += y * widthDst;
-    while (nglyph--)
+    while (nglyph)
     {
-	xoff = x & 0x3;
-	oldRightChar = rightChar = (unsigned long *) (pglyphBase + (*ppci++)->byteOffset);
+	xoff1 = x & 0x3;
+	char1 = (unsigned long *) (pglyphBase + (*ppci++)->byteOffset);
 	hTmp = h;
 	dstLine = pdstBase + (x >> 2);
-	if (xoff)
+	if (nglyph > 3 && xoff1 + widthGlyph4 - widthGlyph < 32)
 	{
-	    if (!leftChar)
+	    nglyph -= 4;
+	    xoff2 = xoff1 + widthGlyph;
+	    xoff3 = xoff2 + widthGlyph;
+	    xoff4 = xoff3 + widthGlyph;
+	    char2 = (unsigned long *) (pglyphBase + (*ppci++)->byteOffset);
+	    char3 = (unsigned long *) (pglyphBase + (*ppci++)->byteOffset);
+	    char4 = (unsigned long *) (pglyphBase + (*ppci++)->byteOffset);
+	    oldRightChar = char4;
+	    dst = dstLine;
+	    if (xoff1)
 	    {
-		leftMask = cfbendtab[xoff];
-		rightMask = cfbstarttab[xoff];
-		dst = dstLine;
-		ew = (widthGlyph - (4 - xoff)) >> 2;
-		switch (ew)
- 		{
-		case 0:
-		    while (hTmp--) {
-			c = BitRight (*rightChar++, xoff);
-			*dst = (*dst & leftMask) |
-			       (GetFourPixels(c) & rightMask);
-			dst += widthDst;
-		    }
-		    break;
-		case 1:
-		    while (hTmp--) {
-			c = BitRight (*rightChar++, xoff);
-			*dst = (*dst & leftMask) |
-			       (GetFourPixels (c) & rightMask);
-			NextFourBits(c);
-			dst[1] = GetFourPixels(c);
-			dst += widthDst;
-		    }
-		    break;
-		case 2:
-		    while (hTmp--) {
-			c = BitRight (*rightChar++, xoff);
-			*dst = (*dst & leftMask) |
-			       (GetFourPixels (c) & rightMask);
-			NextFourBits(c);
-			dst[1] = GetFourPixels(c);
-			NextFourBits(c);
-			dst[2] = GetFourPixels(c);
-			dst += widthDst;
-		    }
-		    break;
-		case 3:
-		    while (hTmp--) {
-			c = BitRight (*rightChar++, xoff);
-			*dst = (*dst & leftMask) |
-			       (GetFourPixels (c) & rightMask);
-			NextFourBits(c);
-			dst[1] = GetFourPixels(c);
-			NextFourBits(c);
-			dst[2] = GetFourPixels(c);
-			NextFourBits(c);
-			dst[3] = GetFourPixels(c);
-			dst += widthDst;
-		    }
-		    break;
-		default:
-		    widthDiff = widthDst - ew;
-		    dst -= widthDiff;
-		    while (hTmp--) {
-			c = BitRight (*rightChar++, xoff);
-			dst += widthDiff;
-			*dst = (*dst & leftMask) |
-			       (GetFourPixels (c) & rightMask);
-			ewTmp = ew;
-			while (ewTmp--) {
-			    dst++;
-			    NextFourBits(c);
-			    *dst = GetFourPixels (c);
-			}
-		    }
-		    break;
-		}
+		ew = ((widthGlyph4 - (4 - xoff1)) >> 2) + 1;
+	    	if (!leftChar)
+	    	{
+		    leftMask = cfbendtab[xoff1];
+		    rightMask = cfbstarttab[xoff1];
+
+#define StoreBits(o)	dst[o] = GetFourPixels(c);
+#define Step		NextFourBits(c);
+#define Loop		dst += widthDst;
+    
+#define StoreBits0	dst[0] = dst[0] & leftMask | GetFourPixels(c) & rightMask;
+#define GetBits	    c = BitRight (*char1++, xoff1) | \
+			BitRight (*char2++, xoff2) | \
+			BitRight (*char3++, xoff3) | \
+			BitRight (*char4++, xoff4);
+
+		    SwitchEm
+
+#undef GetBits
+#undef StoreBits0
+
+	    	}
+	    	else
+	    	{
+		    lshift = widthGlyph - xoff1;
+
+#define StoreBits0  StoreBits(0)
+#define GetBits	    c = BitLeft  (*leftChar++, lshift) | \
+			BitRight (*char1++, xoff1) | \
+			BitRight (*char2++, xoff2) | \
+			BitRight (*char3++, xoff3) | \
+			BitRight (*char4++, xoff4);
+		    SwitchEm
+#undef GetBits
+
+	    	}
 	    }
 	    else
 	    {
-		ew = ((widthGlyph - (4 - xoff)) >> 2) + 1;
-		lshift = widthGlyph - xoff;
-		dst = dstLine;
-		switch (ew) {
-		case 1:
-		    while (hTmp--) {
-		    	c = BitLeft (*leftChar++, lshift) |
-			    BitRight (*rightChar++, xoff);
-			dst[0] = GetFourPixels(c);
-		    	dst += widthDst;
-		    }
-		    break;
-		case 2:
-		    while (hTmp--) {
-		    	c = BitLeft (*leftChar++, lshift) |
-			    BitRight (*rightChar++, xoff);
-			dst[0] = GetFourPixels(c);
-			NextFourBits(c);
-			dst[1] = GetFourPixels(c);
-		    	dst += widthDst;
-		    }
-		    break;
-		case 3:
-		    while (hTmp--) {
-		    	c = BitLeft (*leftChar++, lshift) |
-			    BitRight (*rightChar++, xoff);
-			dst[0] = GetFourPixels(c);
-			NextFourBits(c);
-			dst[1] = GetFourPixels(c);
-			NextFourBits(c);
-			dst[2] = GetFourPixels(c);
-		    	dst += widthDst;
-		    }
-		    break;
-		default:
+	    	ew = widthGlyph;    /* widthGlyph4 >> 2 */
+
+#define GetBits	    c = *char1++ | \
+			BitRight (*char2++, xoff2) | \
+			BitRight (*char3++, xoff3) | \
+			BitRight (*char4++, xoff4);
+	    	SwitchEm
+#undef GetBits
+
+	    }
+	    x += widthGlyph4;
+	}
+	else
+	{
+	    oldRightChar = char1;
+	    nglyph--;
+	    if (xoff1)
+	    {
+	    	if (!leftChar)
+	    	{
+		    leftMask = cfbendtab[xoff1];
+		    rightMask = cfbstarttab[xoff1];
+		    ew = ((widthGlyph - (4 - xoff1)) >> 2);
 		    widthDiff = widthDst - ew;
-		    dst = dst - widthDiff;
+		    dst = dstLine - widthDiff;
 		    while (hTmp--) {
-		    	c = BitLeft (*leftChar++, lshift) |
-			    BitRight(*rightChar++,xoff);
+		    	c = BitRight (*char1++, xoff1);
+		    	dst += widthDiff;
+		    	*dst = (*dst & leftMask) |
+			       (GetFourPixels (c) & rightMask);
+		    	ewTmp = ew;
+		    	while (ewTmp--) {
+			    dst++;
+			    NextFourBits(c);
+			    *dst = GetFourPixels (c);
+		    	}
+		    }
+	    	}
+	    	else
+	    	{
+		    ew = ((widthGlyph - (4 - xoff1)) >> 2) + 1;
+		    widthDiff = widthDst - ew;
+		    dst = dstLine - widthDiff;
+		    lshift = widthGlyph - xoff1;
+		    while (hTmp--) {
+		    	c = BitLeft (*leftChar++ , lshift) |
+			    BitRight(*char1++, xoff1);
 		    	dst += widthDiff;
 		    	ewTmp = ew;
 		    	while (ewTmp--) {
@@ -236,48 +296,15 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 			    NextFourBits(c);
 		    	}
 		    }
-		}
+	    	}
 	    }
-	}
-	else
-	{
-	    ew = widthGlyph >> 2;
-	    dst = dstLine;
-	    switch (ew) {
-	    case 0:
-		break;
-	    case 1:
+	    else
+	    {
+	    	ew = widthGlyph >> 2;
+	    	widthDiff = widthDst - ew;
+	    	dst = dstLine - widthDiff;
 	    	while (hTmp--) {
-		    c = *rightChar++;
-		    dst[0] = GetFourPixels(c);
-		    dst += widthDst;
-	    	}
-		break;
-	    case 2:
-	    	while (hTmp--) {
-		    c = *rightChar++;
-		    dst[0] = GetFourPixels(c);
-		    NextFourBits(c);
-		    dst[1] = GetFourPixels(c);
-		    dst += widthDst;
-	    	}
-		break;
-	    case 3:
-	    	while (hTmp--) {
-		    c = *rightChar++;
-		    dst[0] = GetFourPixels(c);
-		    NextFourBits(c);
-		    dst[1] = GetFourPixels(c);
-		    NextFourBits(c);
-		    dst[2] = GetFourPixels(c);
-		    dst += widthDst;
-	    	}
-		break;
-	    default:
-		widthDiff = widthDst - ew;
-		dst = dst - widthDiff;
-	    	while (hTmp--) {
-		    c = *rightChar++;
+		    c = *char1++;
 		    dst += widthDiff;
 		    ewTmp = ew;
 		    while (ewTmp--) {
@@ -286,19 +313,19 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		    }
 	    	}
 	    }
+	    x += widthGlyph;
 	}
 	leftChar = oldRightChar;
-	x += widthGlyph;
     }
     /*
      * draw the tail of the last character
      */
-    xoff = x & 3;
-    if (xoff)
+    xoff1 = x & 3;
+    if (xoff1)
     {
-	rightMask = cfbstarttab[xoff];
-	leftMask = cfbendtab[xoff];
-	lshift = widthGlyph - xoff;
+	rightMask = cfbstarttab[xoff1];
+	leftMask = cfbendtab[xoff1];
+	lshift = widthGlyph - xoff1;
 	dst = pdstBase + (x >> 2);
 	hTmp = h;
 	while (hTmp--)
