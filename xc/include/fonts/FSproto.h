@@ -1,4 +1,4 @@
-/* $XConsortium: FSproto.h,v 1.8 92/11/18 21:31:32 gildea Exp $ */
+/* $XConsortium: FSproto.h,v 1.9 94/02/04 09:15:56 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -26,7 +26,6 @@
 #define _FS_PROTO_H_
 
 #include	"FS.h"
-#include	<X11/Xmd.h>
 
 #define sz_fsPropOffset 20
 #define sz_fsPropInfo 8
