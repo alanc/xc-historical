@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.6 91/07/16 22:19:50 gildea Exp $
+ * $XConsortium: choose.c,v 1.7 91/07/18 18:54:31 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -42,7 +42,7 @@
 
 static
 FormatBytes (data, length, buf, buflen)
-    char    *data;
+    unsigned char *data;
     int	    length;
     char    *buf;
     int	    buflen;
@@ -144,9 +144,9 @@ FormatChooserArgument (buf, len)
     char    *buf;
     int	    len;
 {
-    char	    addr_buf[1024];
+    unsigned char   addr_buf[1024];
     int		    addr_len = sizeof (addr_buf);
-    char	    result_buf[1024];
+    unsigned char   result_buf[1024];
     int		    result_len = 0;
     int		    netfamily;
 
@@ -169,7 +169,7 @@ FormatChooserArgument (buf, len)
 	    result_buf[2] = port[0];
 	    result_buf[3] = port[1];
 	    localAddress = getLocalAddress ();
-	    bcopy (localAddress->data, result_buf+4, 4);
+	    bcopy ((char *)localAddress->data, (char *)result_buf+4, 4);
 	    result_len = 8;
 	}
 	break;
@@ -276,6 +276,7 @@ RegisterIndirectChoice (clientAddress, connectionType, choice)
     return 1;
 }
 
+#ifdef notdef
 static
 RemoveIndirectChoice (clientAddress, connectionType)
     ARRAY8Ptr	clientAddress;
@@ -301,6 +302,7 @@ RemoveIndirectChoice (clientAddress, connectionType)
 	prev = c;
     }
 }
+#endif
 
 /*ARGSUSED*/
 static
