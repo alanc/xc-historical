@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.53 90/02/13 10:56:44 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.54 90/02/13 14:04:09 jim Exp $";
 #endif /* lint */
 
 
@@ -281,17 +281,15 @@ static Boolean SetValues(current, request, new)
     ViewportWidget w = (ViewportWidget)new;
     ViewportWidget cw = (ViewportWidget)current;
 
-    if (w->viewport.forcebars != cw->viewport.forcebars) {
-	if (w->viewport.forcebars) {
-	    if (w->viewport.allowhoriz && w->viewport.horiz_bar == (Widget)NULL)
-		(void) CreateScrollbar( w, True );
-	    if (w->viewport.allowvert && w->viewport.vert_bar == (Widget)NULL)
-		(void) CreateScrollbar( w, False );
-	}
+    if ( (w->viewport.forcebars != cw->viewport.forcebars) ||
+	 (w->viewport.allowvert != cw->viewport.allowvert) ||
+	 (w->viewport.allowhoriz != cw->viewport.allowhoriz) ||
+	 (w->viewport.useright != cw->viewport.useright) ||
+	 (w->viewport.usebottom != cw->viewport.usebottom) ) 
+    {
+	(*w->core.widget_class->core_class.resize)(new); /* Recompute layout.*/
     }
 
-    /* take care of bars, &tc. */
-    (*w->core.widget_class->core_class.resize)( new );
     return False;
 }
 
@@ -654,13 +652,21 @@ int *clip_width, *clip_height;
  * Thus if needsvert is set it MUST have a scrollbar.
  */
 
-    if (w->viewport.allowvert)
-        *clip_width -= w->viewport.vert_bar->core.width +
-                      w->viewport.vert_bar->core.border_width;
+    if (w->viewport.allowvert) {
+	if (w->viewport.vert_bar == NULL) 
+	    w->viewport.vert_bar = CreateScrollbar(w, False);
 
-    if (w->viewport.allowhoriz)
+	*clip_width -= w->viewport.vert_bar->core.width +
+		       w->viewport.vert_bar->core.border_width;
+    }
+
+    if (w->viewport.allowhoriz) {
+	if (w->viewport.horiz_bar == NULL) 
+	    w->viewport.horiz_bar = CreateScrollbar(w, True);
+
         *clip_height -= w->viewport.horiz_bar->core.height +
 		       w->viewport.horiz_bar->core.border_width;
+    }
 
     AssignMax( *clip_width, 1 );
     AssignMax( *clip_height, 1 );
