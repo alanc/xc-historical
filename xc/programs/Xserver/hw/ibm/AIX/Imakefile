@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 92/08/10 17:49:34 eswu Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 93/09/04 17:31:05 rws Exp $
 #include <Server.tmpl>
 
 OSDEP_SRC = AIXV3.c AIXinit.c aixMsg.c aixError.c aixWrap.c
@@ -22,7 +22,8 @@ LIBOBJS =	aixCursor.o	\
 
 OBJS =		$(OTHROBJS) $(LIBOBJS)
 
-STD_DEFINES = ServerDefines -DXTESTEXT1
+EXT_DEFINES = ExtensionOSDefines
+DEPEND_DEFINES = $(EXT_DEFINES)
 
 #if ibmSpecialMalloc
 DEFINES = -DIBM_SPECIAL_MALLOC
@@ -56,6 +57,7 @@ all::	$(OTHROBJS)
 all:: hft.o
 
 SpecialCObjectRule(AIXinit,$(ICONFIGFILES),$(SOCK_DEFINES))
+SpecialCObjectRule(aixEvents,$(ICONFIGFILES),$(EXT_DEFINES))
 
 hft.o:	
 	cp hft.exp hft.o
