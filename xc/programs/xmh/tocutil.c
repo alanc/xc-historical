@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.49 91/04/02 19:28:44 gildea Exp $
+ * $XConsortium: tocutil.c,v 2.50 91/06/14 18:17:51 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -558,9 +558,13 @@ void TUGetFullFolderInfo(toc)
   Toc toc;
 {
     char str[500];
-    if (toc->path == NULL) {
-	(void) sprintf(str, "%s/%s", app_resources.mail_path, toc->foldername);
-	toc->path = XtNewString(str);
+    if (! toc->scanfile) {
+	if (! toc->path) {
+	    /* usually preset by TocFolderExists */
+	    (void) sprintf(str, "%s/%s", app_resources.mail_path,
+			   toc->foldername);
+	    toc->path = XtNewString(str);
+	}
 	(void) sprintf(str, "%s/.xmhcache", toc->path);
 	toc->scanfile = XtNewString(str);
 	toc->lastreaddate = LastModifyDate(toc->scanfile);
