@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.64 92/11/18 14:12:45 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.65 92/11/20 19:02:39 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -54,8 +54,7 @@ XCOMM site:  $XConsortium: site.def,v 1.64 92/11/18 14:12:45 rws Exp $
 #endif
 #if defined(SunArchitecture) && defined(SVR4)
 #define PreIncDir /opt/cygnus/lib/gcc-lib/sparc-sun-solaris2/cygnus-2.0.2/include
-#undef OptimizedCDebugFlags
-#define OptimizedCDebugFlags /* as nothing, gcc -fpic broken */
+#define SharedLibObjCompile(options) LibObjCompile(shared,options $(SHLIBDEF) $(SHAREDCODEDEF) $(PICFLAGS))
 #endif
 #endif
 
