@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 1.47 88/09/06 14:53:38 jim Exp $ */
+/* $XConsortium: mfbpixmap.c,v 1.48 89/03/18 12:31:47 rws Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -69,7 +69,6 @@ mfbCreatePixmap (pScreen, width, height, depth)
 	xfree(pPixmap);
 	return NullPixmap;
     }
-    bzero((char *)pPixmap->devPrivate, size);
     return pPixmap;
 }
 

@@ -142,7 +142,6 @@ cfbCreatePixmap (pScreen, width, height, depth)
 	xfree(pPixmap);
 	return NullPixmap;
     }
-    bzero((char *)pPixmap->devPrivate, size);
     return pPixmap;
 }
 
