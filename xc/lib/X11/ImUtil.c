@@ -1,14 +1,20 @@
 #include "copyright.h"
 
-/* $XConsortium: XImUtil.c,v 11.36 89/11/08 17:06:57 converse Exp $ */
+/* $XConsortium: XImUtil.c,v 11.37 89/12/09 19:14:41 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 #include "Xutil.h"
 #include <stdio.h>
 
-static char _lomask[0x09] = { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
-static char _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x00 };
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
+static char Const _lomask[0x09] = { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
+static char Const _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x00 };
 
 /* These two convenience routines return the scanline_pad and bits_per_pixel 
 	associated with a specific depth of ZPixmap format image for a 
@@ -318,7 +324,7 @@ static int _XDestroyImage (ximage)
  *
  */
 
-static unsigned long low_bits_table[] = {
+static unsigned long Const low_bits_table[] = {
     0x00000000, 0x00000001, 0x00000003, 0x00000007,
     0x0000000f, 0x0000001f, 0x0000003f, 0x0000007f,
     0x000000ff, 0x000001ff, 0x000003ff, 0x000007ff,

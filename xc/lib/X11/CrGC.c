@@ -1,11 +1,17 @@
 #include "copyright.h"
 
-/* $XConsortium: XCrGC.c,v 11.30 89/07/18 11:06:17 jim Exp $ */
+/* $XConsortium: XCrGC.c,v 11.31 89/11/08 17:06:30 converse Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
-static XGCValues initial_GC = {
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
+
+static XGCValues Const initial_GC = {
     GXcopy, 	/* function */
     AllPlanes,	/* plane_mask */
     0L,		/* foreground */
