@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.215 94/02/04 15:58:32 kaleb Exp $";
+static char *rid="$XConsortium: main.c,v 1.216 94/02/04 17:12:25 kaleb Exp $";
 #endif /* lint */
 
 /*
@@ -123,7 +123,7 @@ static Bool IsPts = False;
 #undef TIOCLSET				/* defined, but not useable */
 #endif
 
-#ifdef SYSV
+#ifdef SYSV /* { */
 #ifdef USE_USG_PTYS			/* AT&T SYSV has no ptyio.h */
 #include <sys/stream.h>			/* get typedef used in ptem.h */
 #include <sys/stropts.h>		/* for I_PUSH */
@@ -172,14 +172,15 @@ static Bool IsPts = False;
 #define USE_SYSV_UTMP
 #define HAS_UTMP_UT_HOST
 #endif
-#endif /* SYSV */
-
-#ifndef SYSV				/* BSD systems */
+#else /* } !SYSV { */			/* BSD systems */
 #include <sgtty.h>
 #include <sys/resource.h>
 #define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS
-#endif	/* !SYSV */
+#ifdef __osf__
+#define setpgrp setpgid
+#endif
+#endif	/* } !SYSV */
 
 #ifdef _POSIX_SOURCE
 #define USE_POSIX_WAIT
@@ -294,10 +295,6 @@ extern char *ttyname();
 extern char *ptsname();
 #endif
 
-#ifdef __osf__
-#define setpgrp setpgid
-#endif
-
 extern char *strindex ();
 extern void HandlePopupMenu();
 
@@ -401,7 +398,7 @@ extern void endutent();
 extern void utmpname();
 #endif /* !SVR4 */
 
-#ifndef SYSV386			/* could remove paragraph unconditionally? */
+#ifdef X_NOT_POSIX		/* could remove paragraph unconditionally? */
 extern struct passwd *getpwent();
 extern struct passwd *getpwuid();
 extern struct passwd *getpwnam();
@@ -2458,12 +2455,10 @@ spawn ()
 #endif /* USE_HANDSHAKE */
 
 #ifdef USE_SYSV_ENVVARS
-#ifndef TIOCSWINSZ		/* window size not stored in driver? */
 		sprintf (numbuf, "%d", screen->max_col + 1);
 		Setenv("COLUMNS=", numbuf);
 		sprintf (numbuf, "%d", screen->max_row + 1);
 		Setenv("LINES=", numbuf);
-#endif /* TIOCSWINSZ */
 #ifdef UTMP
 		if (pw) {	/* SVR4 doesn't provide these */
 		    if (!getenv("HOME"))
