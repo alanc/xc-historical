@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.61 92/02/06 18:11:35 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.62 92/02/26 14:23:59 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -45,6 +45,7 @@ Name						Reference
 "VIT"						[46]
 "WYSE"						[68]
 "X3D"						[8]
+"Xerox"						[91]
 "XUG"						[31]
 
 
@@ -202,9 +203,12 @@ WYXK_Setup		0x1006FF00		[68]
 
 ncdXK_Setup		0x1006FF00		[66]
 
-xrxXK_Button1		0x10070001		[91]
-xrxXK_Button2		0x10070002		[91]
-xrxXK_Button3		0x10070003		[91]
+XeroxXK_PointerButton1	0x10070001		[91]
+XeroxXK_PointerButton2	0x10070002		[91]
+XeroxXK_PointerButton3	0x10070003		[91]
+XeroxXK_PointerButton4	0x10070004		[91]
+XeroxXK_PointerButton5	0x10070005		[91]
+
 
 3. AUTHORIZATION PROTOCOL NAMES
 
@@ -1196,8 +1200,8 @@ REFERENCES
 	2-6-9, Higashi Kanda, Chiyoda-ku,
 	Tokyo 101 Japan
 
-[91]	Christian Jacobi
-	Xerox Corporation
+[91]	Bill Janssen
+	Xerox PARC
 	3333 Coyote Hill Rd.
 	Palo Alto, CA 94304
 
