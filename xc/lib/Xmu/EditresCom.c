@@ -1,5 +1,5 @@
 /*
- * $XConsortium: EditResCom.c,v 1.13 90/06/28 12:18:58 kit Exp $
+ * $XConsortium: EditresCom.c,v 1.14 90/06/28 14:17:45 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -32,7 +32,7 @@
 
 #include <X11/Xatom.h>
 #include <X11/Xaw/Cardinals.h>
-#include <X11/Xaw/EditRes.h>
+#include <X11/Xmu/Editres.h>
 
 #define _EresInsertBool _EresInsert8	
 #define _EresInsertResourceType _EresInsert8
