@@ -1,4 +1,4 @@
-/* $XConsortium: Toggle.c,v 1.23 91/06/20 16:15:19 converse Exp $ */
+/* $XConsortium: Toggle.c,v 1.24 91/07/25 14:07:48 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -136,7 +136,7 @@ ToggleClassRec toggleClassRec = {
   },  /* LabelClass fields initialization */
   {
     0                                     /* field not used    */
-  },  /* CommmandClass fields initialization */
+  },  /* CommandClass fields initialization */
   {
       NULL,			        /* Set Procedure. */
       NULL,			        /* Unset Procedure. */
