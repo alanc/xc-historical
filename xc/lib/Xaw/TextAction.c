@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.40 91/05/14 15:20:51 gildea Exp $ */
+/* $XConsortium: TextAction.c,v 1.41 91/07/01 18:59:01 converse Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -1369,6 +1369,10 @@ XawTextPosition from, to;
 
   if ((to = StripOutOldCRs(ctx, from, to)) == XawReplaceError)
       return XawReplaceError;
+  /* insure that the insertion point is within legal bounds */
+  if (ctx->text.insertPos >
+      SrcScan(ctx->text.source, 0, XawstAll, XawsdRight, 1, TRUE))
+      ctx->text.insertPos = to;
   InsertNewCRs(ctx, from, to);
   _XawTextBuildLineTable(ctx, ctx->text.lt.top, TRUE);
   return XawEditDone;
