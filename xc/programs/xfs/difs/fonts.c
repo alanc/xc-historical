@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.10 92/03/17 18:55:15 eswu Exp $ */
+/* $XConsortium: fonts.c,v 1.12 92/05/13 15:41:55 gildea Exp $ */
 /*
  * font control
  */
@@ -845,6 +845,9 @@ ListFonts(client, length, pattern, maxnames)
     return FSSuccess;
 }
 
+static int padlength[4] = {0, 3, 2, 1};
+static char padding[3];
+
 do_list_fonts_with_info(client, c)
     ClientPtr   client;
     LFWXIclosurePtr c;
@@ -976,23 +979,24 @@ do_list_fonts_with_info(client, c)
 	    reply->nReplies = numFonts;
 	    reply->header = hdr;
 	    WriteReplyToClient(client, sizeof(fsListFontsWithXInfoReply), reply);
-	    if (client->major_version == 1)
-		(void) WriteToClient(client, namelen, name);
-
 	    if (client->swapped)
 		SwapPropInfo(prop_info);
 	    if (client->major_version > 1)
-		(void) WriteToClientUnpadded(client, lenpropdata, (char *) prop_info);
-	    else
+	    {
+		(void)WriteToClientUnpadded(client, lenpropdata, (char *) prop_info);
+		(void)WriteToClientUnpadded(client, namelen, name);
+		(void)WriteToClientUnpadded(client,
+					    padlength[(lenpropdata+namelen)&3],
+					    padding);
+	    } else {
+		(void) WriteToClient(client, namelen, name);
 		(void) WriteToClient(client, lenpropdata, (char *) prop_info);
+	    }
 	    if (pFontInfo == &fontInfo) {
 		fsfree(fontInfo.props);
 		fsfree(fontInfo.isStringProp);
 	    }
 	    fsfree(prop_info);
-
-	    if (client->major_version != 1)
-		(void) WriteToClient(client, namelen, name);
 
 	    --c->current.max_names;
 	    if (c->current.max_names < 0)
