@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.49 92/05/15 17:02:12 keith Exp $
+ * $XConsortium: miwideline.c,v 1.50 92/07/28 16:38:52 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -988,7 +988,9 @@ miLineArc (pDraw, pGC, pixel, spanData, leftFace, rightFace, xorg, yorg, isInt)
     }
     edgey1 = 65536;
     edgey2 = 65536;
+    edge1.x = 0; /* not used, keep memory checkers happy */
     edge1.dy = -1;
+    edge2.x = 0; /* not used, keep memory checkers happy */
     edge2.dy = -1;
     edgeleft1 = FALSE;
     edgeleft2 = FALSE;
