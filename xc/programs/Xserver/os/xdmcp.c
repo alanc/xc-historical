@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.29 94/03/26 17:23:51 rws Exp $ */
+/* $XConsortium: xdmcp.c,v 1.30 94/03/31 13:56:50 dpw Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -27,6 +27,10 @@
 #include "input.h"
 #include "dixstruct.h"
 #include "opaque.h"
+
+#ifdef STREAMSCONN
+#include <tiuser.h>
+#endif
 
 #ifdef XDMCP
 #undef REQUEST
@@ -890,6 +894,12 @@ get_xdmcp_sock()
 {
     int soopts = 1;
 
+#ifdef STREAMSCONN
+    if ((xdmcpSocket = t_open("/dev/udp", O_RDWR, 0)) < 0)
+	XdmcpWarning("t_open() of /dev/udp failed");
+    if( t_bind(xdmcpSocket,NULL,NULL) < 0 )
+	t_error("t_bind(xdmcpSocket) failed" );
+#else
     if ((xdmcpSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	XdmcpWarning("UDP socket creation failed");
 #ifdef SO_BROADCAST
@@ -897,6 +907,7 @@ get_xdmcp_sock()
 	sizeof(soopts)) < 0)
 	    XdmcpWarning("UDP set broadcast socket-option failed");
 #endif /* SO_BROADCAST */
+#endif /* STREAMSCONN */
 }
 
 static void
