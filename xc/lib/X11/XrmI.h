@@ -1,4 +1,4 @@
-/* $XConsortium: XrmI.h,v 1.4 90/07/21 17:37:38 rws Exp $ */
+/* $XConsortium: XrmI.h,v 1.5 90/08/23 09:48:35 rws Exp $ */
 /*
 
 Copyright 1990 by the Massachusetts Institute of Technology
@@ -17,16 +17,16 @@ without express or implied warranty.
 
 #define NUM_CHARS 256
 
-#define _EOF   	((unsigned short) (1 << 0))
-#define SPACE 	((unsigned short) (1 << 1))
-#define SEP 	((unsigned short) (1 << 2))
-#define TIGHT 	((unsigned short) (1 << 3))
-#define LOOSE 	((unsigned short) (1 << 4))
-#define EOL	((unsigned short) (1 << 5))
-#define COMMENT	((unsigned short) (1 << 6))
-#define ODIGIT	((unsigned short) (1 << 7))
-#define BSLASH  ((unsigned short) (1 << 8))
-#define N	((unsigned short) (1 << 9))
+#define XrmBits unsigned char
+
+#define _EOF   	((XrmBits) (1 << 0))
+#define SPACE 	((XrmBits) (1 << 1))
+#define SEP 	((XrmBits) (1 << 2))
+#define TIGHT 	((XrmBits) (1 << 3))
+#define LOOSE 	((XrmBits) (1 << 4))
+#define EOL	((XrmBits) (1 << 5))
+#define ODIGIT	((XrmBits) (1 << 6))
+#define BSLASH  ((XrmBits) (1 << 7))
 
 #define A_NEW_LINE 	('\n')
 #define BACKSLASH 	('\\')
@@ -42,12 +42,10 @@ without express or implied warranty.
 #define xrm_is_tight(bits)		((bits) & TIGHT)
 #define xrm_is_loose(bits)		((bits) & LOOSE)
 #define xrm_is_tight_or_loose(bits)     ((bits) & (TIGHT|LOOSE))
-#define xrm_is_comment(bits)		((bits) & COMMENT)
 #define xrm_is_odigit(bits)		((bits) & ODIGIT)
 #define xrm_is_separator(bits) 		((bits) & (SEP|SPACE|_EOF|EOL))
 #define xrm_is_real_separator(bits) 	((bits) & SEP)
 #define xrm_is_end_of_value(bits) 	((bits) & (EOL|_EOF))
-#define xrm_is_n(bits)			((bits) & N)
 #define xrm_is_backslash(bits)		((bits) & BSLASH)
 #define xrm_is_backslash_or_EOV(bits)   ((bits) & (EOL|_EOF|BSLASH))
 
