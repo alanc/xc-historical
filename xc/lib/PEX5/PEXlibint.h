@@ -1,4 +1,4 @@
-/* $XConsortium: PEXlibint.h,v 1.3 92/05/26 16:22:55 mor Exp $ */
+/* $XConsortium: PEXlibint.h,v 1.4 92/05/27 16:59:11 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -427,12 +427,12 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
 
 #define GetColorSize(_type) \
     ((_type) == PEXColorTypeIndexed ? (sizeof (pexTableIndex) * 2) : \
-    ((_type) == PEXColorTypeRGB8 ? sizeof (pexRgb8Colour) : \
-    ((_type) == PEXColorTypeRGB16 ? sizeof (pexRgb16Colour) : \
-	sizeof (pexRgbFloatColour))))
+    ((_type) == PEXColorTypeRGB8 ? sizeof (pexRgb8Color) : \
+    ((_type) == PEXColorTypeRGB16 ? sizeof (pexRgb16Color) : \
+	sizeof (pexRgbFloatColor))))
 
 /*
- * Return the number of words in a colour.  Note that all the PEX color
+ * Return the number of words in a color.  Note that all the PEX color
  * types are padded to end on a word boundary
  */
 
@@ -448,7 +448,7 @@ extern PEXDisplayInfo *PEXDisplayInfoHeader;
  */
 
 #define AdjustSizeFromType(_type) \
-    (sizeof (pexColour) - GetColorSize (_type))
+    (sizeof (pexColor) - GetColorSize (_type))
 
 
 /* 
@@ -553,9 +553,9 @@ typedef struct {
 
 #define MAX_PICK_CACHE_SIZE 2048
 
-extern PEXPickPath	*PickCache;
-extern unsigned int	PickCacheSize;
-extern int		PickCacheInUse;
+extern PEXPickPath	*PEXPickCache;
+extern unsigned int	PEXPickCacheSize;
+extern int		PEXPickCacheInUse;
 
 
 /*
