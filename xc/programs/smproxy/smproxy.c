@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.14 94/07/07 15:18:09 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.15 94/07/11 15:38:51 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -50,6 +50,8 @@ int proxy_count = 0;
 int die_count = 0;
 
 Bool ok_to_die = 0;
+
+Bool caught_error = 0;
 
 int Argc;
 char **Argv;
@@ -373,6 +375,18 @@ WinInfo *winInfo;
 
 
 int
+MyErrorHandler (display, event)
+
+Display *display;
+XErrorEvent *event;
+
+{
+    caught_error = 1;
+}
+
+
+
+int
 AddNewWindow (window)
 
 Window window;
@@ -407,9 +421,39 @@ Window window;
 
 
 void
-HandleCreate (event)
+RemoveWindow (index)
+
+int index;
+
+{
+    if (win_list[index].client_id)
+	free (win_list[index].client_id);
+
+    if (win_list[index].wm_command)
+	XFreeStringList (win_list[index].wm_command);
+
+    if (win_list[index].wm_name)
+	XFree (win_list[index].wm_name);
+
+    if (win_list[index].class.res_name)
+	XFree (win_list[index].class.res_name);
+
+    if (win_list[index].class.res_class)
+	XFree (win_list[index].class.res_class);
+
+    if (index < win_count - 1)
+	win_list[index] = win_list[win_count - 1];
+
+    win_count--;
+}
+
+
+
+void
+HandleCreate (event, errorCheck)
 
 XCreateWindowEvent *event;
+Bool errorCheck;
 
 {
     Atom actual_type;
@@ -425,6 +469,19 @@ XCreateWindowEvent *event;
 
     if ((index = AddNewWindow (event->window)) < 0)
 	return;
+
+
+    /*
+     * Right after the window was created, it might have ben destroyed,
+     * so the following Xlib calls might fail.  Need to catch the error
+     * by installing an error handler.
+     */
+
+    if (errorCheck)
+    {
+	caught_error = 0;
+	XSetErrorHandler (MyErrorHandler);
+    }
 
 
     /*
@@ -482,6 +539,18 @@ XCreateWindowEvent *event;
 	    ConnectClientToSM (&win_list[index]);
 	}
     }
+
+    if (errorCheck)
+    {
+	XSync (disp, 0);
+	XSetErrorHandler (NULL);
+
+	if (caught_error)
+	{
+	    caught_error = 0;
+	    RemoveWindow (index);
+	}
+    }
 }
 
 
@@ -505,32 +574,14 @@ XDestroyWindowEvent *event;
 		XtRemoveInput (win_list[i].input_id);
 	    }
 
+	    RemoveWindow (i);
+
 	    if (debug)
 	    {
 		printf ("Removed window (window = 0x%x)\n",
 		    win_list[i].window);
 		printf ("\n");
 	    }
-
-	    if (win_list[i].client_id)
-		free (win_list[i].client_id);
-
-	    if (win_list[i].wm_command)
-		XFreeStringList (win_list[i].wm_command);
-
-	    if (win_list[i].wm_name)
-		XFree (win_list[i].wm_name);
-
-	    if (win_list[i].class.res_name)
-		XFree (win_list[i].class.res_name);
-
-	    if (win_list[i].class.res_class)
-		XFree (win_list[i].class.res_class);
-
-	    if (i < win_count - 1)
-		win_list[i] = win_list[win_count - 1];
-
-	    win_count--;
 	    break;
 	}
     }
@@ -864,19 +915,6 @@ char *previous_id;
 
 
 
-int
-my_error (display, event)
-
-Display *display;
-XErrorEvent *event;
-
-{
-    fprintf (stderr, "protocol error!!!!!!!!!!!!\n");
-    exit (1);
-}
-
-
-
 void
 CheckFirst ()
 
@@ -884,6 +922,15 @@ CheckFirst ()
     Window dontCare1, dontCare2, *children, client_window;
     unsigned int nchildren, i;
     XCreateWindowEvent event;
+
+    /*
+     * We query the root tree for all windows created thus far.
+     * Since a window can be deleted after the query, we grab the
+     * server to make sure this doesn't happen.  The alternative
+     * is to catch bad window errors by installing an error handler.
+     * This would require many XSyncs, so I'm not sure if this is
+     * better than doing a grab.
+     */
 
     XGrabServer (disp);
     XSync (disp, 0);
@@ -893,14 +940,15 @@ CheckFirst ()
     for (i = 0; i < nchildren; i++)
     {
 	event.window = children[i];
-	HandleCreate (&event);
+
+	HandleCreate (&event, 0 /* don't error check, we did a grab */);
 
 	client_window = XmuClientWindow (disp, children[i]);
 
 	if (client_window != children[i])
 	{
 	    event.window = client_window;
-	    HandleCreate (&event);
+	    HandleCreate (&event, 0);
 	}
     }
     
@@ -963,10 +1011,6 @@ char **argv;
 	exit (1);
     }
 
-#if 0
-    XSetErrorHandler (my_error);
-#endif
-
     if (restore_filename)
 	ReadProxyFile (restore_filename);
 
@@ -992,7 +1036,7 @@ char **argv;
 	switch (event.type)
 	{
 	case CreateNotify:
-	    HandleCreate (&event.xcreatewindow);
+	    HandleCreate (&event.xcreatewindow, 1 /* error check */);
 	    break;
 
 	case DestroyNotify:
