@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.164 93/09/10 11:57:03 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.165 93/09/10 12:35:04 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1458,7 +1458,7 @@ FRC:
  */
 #ifndef InstallSubdirs
 #define InstallSubdirs(dirs) \
-NamedTargetSubdirs(install,dirs,"installing",DESTDIR='$(DESTDIR)',install)
+NamedTargetSubdirs(install,dirs,"installing",DESTDIR=$(DESTDIR),install)
 #endif /* InstallSubdirs */
 
 
@@ -1467,7 +1467,7 @@ NamedTargetSubdirs(install,dirs,"installing",DESTDIR='$(DESTDIR)',install)
  */
 #ifndef InstallManSubdirs
 #define InstallManSubdirs(dirs) \
-NamedTargetSubdirs(install.man,dirs,"installing man pages",DESTDIR='$(DESTDIR)',install.man)
+NamedTargetSubdirs(install.man,dirs,"installing man pages",DESTDIR=$(DESTDIR),install.man)
 #endif /* InstallManSubdirs */
 
 
@@ -1513,7 +1513,7 @@ NamedTagSubdirs(tags,dirs)
  */
 #ifndef MakeLintSubdirs
 #define MakeLintSubdirs(dirs,target,subtarget) \
-NamedTargetSubdirs(target,dirs,"linting" for target and subtarget,DESTDIR='$(DESTDIR)' LINTOPTS='$(LINTOPTS)',subtarget)
+NamedTargetSubdirs(target,dirs,"linting" for target and subtarget,DESTDIR=$(DESTDIR) LINTOPTS='$(LINTOPTS)',subtarget)
 #endif /* MakeLintSubdirs */
 
 
