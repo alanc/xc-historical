@@ -1,4 +1,4 @@
-/* $XConsortium: GetValues.c,v 1.7 90/12/04 10:04:03 rws Exp $ */
+/* $XConsortium: GetValues.c,v 1.1 91/01/09 19:21:32 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -42,12 +42,10 @@ static void GetValues(base, res, num_resources, args, num_args)
     register int 		i;
     register XrmName		argName;
     register XrmResourceList*   xrmres;
-    static XrmQuark QCallback = NULLQUARK, QTranslations;
+    static XrmQuark QCallback = NULLQUARK;
 
-    if (QCallback == NULLQUARK) {
+    if (QCallback == NULLQUARK)
 	QCallback = XrmPermStringToQuark(XtRCallback);
-	QTranslations = XrmPermStringToQuark(XtRTranslationTable);
-    }
 
     /* Resource lists should be in compiled form already  */
 
@@ -66,14 +64,6 @@ static void GetValues(base, res, num_resources, args, num_args)
 			      (base - (*xrmres)->xrm_offset - 1));
 		    _XtCopyToArg(
 			      (char*)&callback, &arg->value,
-			      (*xrmres)->xrm_size);
-		}
-		else if ((*xrmres)->xrm_type == QTranslations) {
-		    XtTranslations translations =
-			_XtCondCopyTranslations(
-			     *(XtTranslations*)(base-(*xrmres)->xrm_offset-1));
-		    _XtCopyToArg(
-			      (char*)&translations, &arg->value,
 			      (*xrmres)->xrm_size);
 		}
 		else {

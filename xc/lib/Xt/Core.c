@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.43 90/12/30 12:43:25 rws Exp $ */
+/* $XConsortium: Core.c,v 1.1 91/01/09 19:21:02 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -167,8 +167,6 @@ externaldef (WidgetClass) WidgetClass coreWidgetClass = &widgetClassRec;
 static void CoreClassPartInitialize(wc)
     register WidgetClass wc;
 {
-    extern Opaque _CompileActionTable();
-
     /* We don't need to check for null super since we'll get to object
        eventually, and it had better define them!  */
 
@@ -197,7 +195,7 @@ static void CoreClassPartInitialize(wc)
 
     if (wc->core_class.actions != NULL) {
 	/* Compile the action table into a more efficient form */
-        wc->core_class.actions = (XtActionList) _CompileActionTable(
+        wc->core_class.actions = (XtActionList) _XtInitializeActionData(
 	    wc->core_class.actions, wc->core_class.num_actions);
     }
 }
@@ -220,20 +218,7 @@ static void CoreInitialize(requested_widget, new_widget, args, num_args)
     save = new_widget->core.tm.translations;
     new_widget->core.tm.translations =
 	(XtTranslations)new_widget->core.widget_class->core_class.tm_table;
-    if (save!= NULL) {
-        switch ((int)(save->stateTable->operation)) {
-               case XtTableReplace:
-                  new_widget->core.tm.translations = save;
-                  break;
-               case XtTableAugment:
-                  XtAugmentTranslations(new_widget,save);
-                  break;
-               case XtTableOverride:
-                  XtOverrideTranslations(new_widget,save);
-                  break;
-        }
-     }
-
+    _XtMergeTranslations(new_widget, save);
 }
 
 static void CoreRealize(widget, value_mask, attributes)
@@ -249,11 +234,7 @@ static void CoreDestroy (widget)
      Widget    widget;
 {
     _XtFreeEventTable(&widget->core.event_table);
-    XtFree((char *) widget->core.tm.proc_table);
-    if (widget->core.tm.translations &&
-        widget->core.tm.translations->accProcTbl) {
-	  _XtUninstallAccelerators(widget);
-    }
+    _XtDestroyTMData(widget);
     _XtUnregisterWindow(widget->core.window, widget);
 
     if (widget->core.popup_list != NULL)
@@ -274,18 +255,9 @@ static Boolean CoreSetValues(old, reference, new, args, num_args)
 
     redisplay = FALSE;
     if  (old->core.tm.translations != new->core.tm.translations) {
-        switch (new->core.tm.translations->stateTable->operation) {
-            case XtTableAugment:
-                save = new->core.tm.translations;
-                new->core.tm.translations = old->core.tm.translations;
-                XtAugmentTranslations(new,save);
-                break;
-            case XtTableOverride:
-                save = new->core.tm.translations;
-                new->core.tm.translations = old->core.tm.translations;
-                XtOverrideTranslations(new,save);
-                break;
-        }
+	save = new->core.tm.translations;
+	new->core.tm.translations = old->core.tm.translations;
+	_XtMergeTranslations(new,save);
     }       
 
     /* Check everything that depends upon window being realized */
@@ -347,18 +319,6 @@ static Boolean CoreSetValues(old, reference, new, args, num_args)
 	    new->core.mapped_when_managed = !mapped_when_managed;
 	    XtSetMappedWhenManaged(new, mapped_when_managed);
 	} 
-
-	/* Translation table and state */
-	if (old->core.tm.translations != new->core.tm.translations) {
-	    XtTranslations translations = new->core.tm.translations;
-	    new->core.tm.translations = old->core.tm.translations;
-	    XtUninstallTranslations((Widget)new);
-	    new->core.tm.translations = translations;
-	    _XtBindActions(new, &new->core.tm);
-	    _XtInstallTranslations((Widget) new);
-	    _XtRegisterGrabs(new, False);
-	    if (translations->accProcTbl) _XtRegisterAccRemoveCallbacks(new);
-	}
     } /* if realized */
 
     return redisplay;

@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.43 91/01/08 15:05:26 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.1 91/01/09 19:20:31 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -236,7 +236,7 @@ typedef struct _XtPerDisplayStruct {
     String language;		       /* XPG language string */
     Time last_timestamp;	       /* from last event dispatched */
     int multi_click_time;	       /* for XtSetMultiClickTime */
-    struct _TMContext* tm_context;     /* for XtGetActionKeysym */
+    struct _TMKeyContextRec* tm_context;     /* for XtGetActionKeysym */
     InternalCallbackList mapping_callbacks;  /* special case for TM */
     XtPerDisplayInputRec pdi;	       /* state for modal grabs & kbd focus */
     struct _WWTable *WWtable;	       /* window to widget table */

@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.158 90/12/28 14:52:05 gildea Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.1 91/01/09 19:21:34 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -207,8 +207,6 @@ static void RealizeWidget(widget)
 
     if (!XtIsWidget(widget) || XtIsRealized(widget)) return;
 
-    if (widget->core.tm.proc_table == NULL)
-	_XtBindActions(widget, &widget->core.tm);
     _XtInstallTranslations(widget);
 
     ComputeWindowAttributes (widget, &value_mask, &values);
@@ -232,7 +230,7 @@ static void RealizeWidget(widget)
 #ifdef notdef
     _XtRegisterAsyncHandlers(widget);
 #endif
-    _XtRegisterGrabs(widget, False);
+    _XtRegisterGrabs(widget);
     _XtRegisterWindow (window, widget);
 
     if (XtIsComposite (widget)) {

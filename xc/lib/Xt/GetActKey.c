@@ -1,4 +1,6 @@
-/* $XConsortium: GetActKey.c,v 1.2 89/09/29 12:12:29 swick Exp $ */
+/* $XConsortium: GetActKey.c,v 1.1 91/01/09 19:21:29 converse Exp $ */
+
+/*LINTLIBRARY*/
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,7 +32,7 @@ KeySym XtGetActionKeysym(event, modifiers_return)
     XEvent *event;
     Modifiers *modifiers_return;
 {
-    TMContext tm_context = _XtGetPerDisplay(event->xany.display)->tm_context;
+    TMKeyContext tm_context= _XtGetPerDisplay(event->xany.display)->tm_context;
     Modifiers modifiers;
     KeySym keysym;
 
