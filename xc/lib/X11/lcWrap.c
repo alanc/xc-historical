@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlcWrap.c,v 11.2 91/04/07 22:54:32 rws Exp $
+ * $XConsortium: XlcWrap.c,v 11.3 91/04/07 23:02:46 rws Exp $
  */
 
 /*
@@ -81,9 +81,9 @@ XSupportsLocale()
     return _XlcCurrentLC() != (XLCd)NULL;
 }
 
-Bool _XlcValidModSyntax(mods, valid)
+Bool _XlcValidModSyntax(mods, valid_mods)
     char *mods;
-    char **valid;
+    char **valid_mods;
 {
     int i;
     char **ptr;
@@ -92,7 +92,7 @@ Bool _XlcValidModSyntax(mods, valid)
 	mods++;
 	if (*mods == '@')
 	    break;
-	for (ptr = valid; *ptr; ptr++) {
+	for (ptr = valid_mods; *ptr; ptr++) {
 	    i = strlen(*ptr);
 	    if (strncmp(mods, *ptr, i) || (mods[i] != '='))
 		continue;
