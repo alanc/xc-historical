@@ -146,6 +146,8 @@ saber_src_sun:
 	#make saber_src
 	#cd ../../fonts/mkfontdir
 	#make saber_src_server
+	#cd ../../lib/Xau
+	#make saber_src
 	#cd ../../server
 	#load /usr/lib/libm.a
 	#load /usr/lib/libdbm.a
