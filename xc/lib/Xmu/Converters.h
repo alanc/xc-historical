@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.h,v 1.13 91/07/22 23:45:33 converse Exp $
+/* $XConsortium: Converters.h,v 1.14 91/07/22 23:51:43 converse Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -94,7 +94,9 @@ extern Boolean XmuCvtStringToColorCursor(
  */
 typedef int XtGravity;
 
+#ifndef XtRGravity
 #define XtRGravity "Gravity"
+#endif
 #define XtEForget "forget"
 #define XtENorthWest "northwest"
 #define XtENorth "north"
