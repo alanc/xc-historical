@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.116 93/04/12 20:04:50 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.117 93/04/12 21:04:11 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -686,7 +686,14 @@ reset_mapping()
 	meta = 0;
 	break;
     }
-#ifdef MSDOS
+#ifndef MSDOS
+    if (meta) {
+	for (c = 0; c < 128; c++) {
+	    keycodes[c + 128] = keycodes[c];
+	    modifiers[c + 128] = modifiers[c] | modsmask;
+	}
+    }
+#else
     for (i = 0, c = 128; i < sizeof(pc_keys) / sizeof(KeyBindingRec); i++) {
 	pc_keys[i].c = ' ';
 	if (!pc_keys[i].keysym ||
@@ -712,13 +719,6 @@ reset_mapping()
 	if (modifiers[c] & Meta)
 	    modifiers[c] = (modifiers[c] & ~Meta) | modsmask;
 	c++;
-    }
-#else
-    if (meta) {
-	for (c = 0; c < 128; c++) {
-	    keycodes[c + 128] = keycodes[c];
-	    modifiers[c + 128] = modifiers[c] | modsmask;
-	}
     }
 #endif
     if (bs_is_del) {
@@ -2820,9 +2820,20 @@ main(argc, argv)
     if (!init_display(dname))
 	quit(1);
     if (!undofile) {
-	if (s = getenv("HOME"))
+	if (s = getenv("HOME")) {
 	    strcpy(fbuf, s);
-	strcat(fbuf, "/.a2x");
+#ifndef MSDOS
+	    strcat(fbuf, "/");
+#else
+	    strcat(fbuf, "\\");
+#endif
+	} else
+	    fbuf[0] = '\0';
+#ifndef MSDOS
+	strcat(fbuf, ".a2x");
+#else
+	strcat(fbuf, "a2x.un");
+#endif
 	undofile = fbuf;
     }
     get_undofile();
