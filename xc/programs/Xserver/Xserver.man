@@ -1,51 +1,45 @@
-.\" $XConsortium: Xserver.man,v 1.49 94/01/14 17:33:22 gildea Exp $
-.TH XSERVER 1 "Release 5"  "X Version 11"
+.\" $XConsortium: Xserver.man,v 1.50 94/02/04 19:33:11 dpw Exp $
+.TH XSERVER 1 "Release 6"  "X Version 11"
 .SH NAME
-Xserver \- X Window System server
+Xserver \- X Window System display server
 .SH SYNOPSIS
 .B X
-[:displaynumber] [\-option ...] [ttyname]
+[option ...]
 .SH DESCRIPTION
 .I X
-is the generic name for the X Window System server.  It is frequently a link
-or a copy of the appropriate server binary for driving the most frequently
-used server on a given machine.
+is the generic name for the X Window System display server.  It is
+frequently a link or a copy of the appropriate server binary for
+driving the most frequently used server on a given machine.
 .SH "STARTING THE SERVER"
-The server is usually started from the X Display Manager program \fIxdm\fP.
+The X server is usually started from the X Display Manager program \fIxdm(1)\fP.
 This utility is run from the system boot files and takes care of keeping
 the server running, prompting for usernames and passwords, and starting up
-the user sessions.  It is easily configured for sites that wish to provide
-nice, consistent interfaces for novice users (loading convenient sets of
-resources, starting up a window manager, clock, and nice selection of 
-terminal emulator windows).
+the user sessions.
 .PP
-Installations that run more than one window system will still need to use the
-\fIxinit\fP utility.  However, \fIxinit\fP is to be considered a tool for
-building startup scripts and is not intended for use by end users.  Site
-administrators are \fBstrongly\fP urged to use \fIxdm\fP,
-or build other interfaces for novice users.
+Installations that run more than one window system may need to use the
+\fIxinit(1)\fP utility instead of \fIxdm\fP.  However, \fIxinit\fP is
+to be considered a tool for building startup scripts and is not
+intended for use by end users.  Site administrators are \fBstrongly\fP
+urged to use \fIxdm\fP, or build other interfaces for novice users.
 .PP
-When the X server starts up, it takes over the display.  If you 
-are running on a workstation whose console is the display, you cannot log into
-the console while the server is running.
-.SH "NETWORK CONNECTIONS"
-The X server supports connections made using the following reliable
-byte-streams:
-.TP 4
-.I TCP\/IP
-.br
-The server listens on port 6000+\fIn\fP, where \fIn\fP is the display number.
-.TP 4
-.I "Unix Domain"
-The X server uses \fI/tmp/.X11-unix/X\fBn\fR as the filename for 
-the socket, where \fIn\fP is the display number.
-.TP 4
-.I "DECnet"
-.br
-The server responds to connections to object \fIX$X\fBn\fR, where \fIn\fP
-is the display number.  This is not supported in all environments.
+The X server may also be started directly by the user, though this
+method is usually reserved for testing and is not recommended for
+normal operation.  On some platforms, the user must have special
+permission to start the X server, often because access to certain
+devices (e.g. /dev/mouse) is restricted.
+.PP
+When the X server starts up, it typically takes over the display.  If
+you are running on a workstation whose console is the display, you may
+not be able to log into the console while the server is running.
 .SH OPTIONS
 All of the X servers accept the following command line options:
+.TP 8
+.B :\fIdisplaynumber\fP
+the X server runs as the given \fIdisplaynumber\fP, which by default is 0.
+If multiple X servers are to run simultaneously on a host, each must have
+a unique display number.  See the DISPLAY
+NAMES section of the \fIX(1)\fP manual page to learn how to specify
+which display number clients should try to use.
 .TP 8
 .B \-a \fInumber\fP
 sets pointer acceleration (i.e. the ratio of how much is reported to how much
@@ -88,13 +82,13 @@ The class numbers are as specified in the X protocol.
 Not obeyed by all servers.
 .TP 8
 .B \-co \fIfilename\fP
-sets name of RGB color database.
+sets name of RGB color database.  The default is /usr/X11R6/lib/X11/rgb.
 .TP 8
 .B \-config \fIfilename\fP
 reads more options from the given file.  Options in the file may be separated
 by newlines if desired.  If a '#' character appears on a line, all characters
 between it and the next newline are ignored, providing a simple commenting
-facility.  The \-config option itself may appear in the file.
+facility.  The \fB\-config\fP option itself may appear in the file.
 .TP 8
 .B \-core
 causes the server to generate a core dump on fatal errors.
@@ -118,8 +112,8 @@ sets default cursor font.
 sets the default font.
 .TP 8
 .B \-fp \fIfontPath\fP
-sets the search path for fonts.  This path is a comma separated list of
-directories which the X server searches for font databases.
+sets the search path for fonts.  This path is a comma separated list
+of directories which the X server searches for font databases.
 .TP 8
 .B \-help
 prints a usage message.
@@ -127,38 +121,16 @@ prints a usage message.
 .B \-I
 causes all remaining command line arguments to be ignored.
 .TP 8
-.B \-ld \fIkilobytes\fP
-sets the data space limit of the server to the specified number of kilobytes.
-A value of zero makes the data size as large as possible.  The default value
-of \-1 leaves the data space limit unchanged.  This option is not available in
-all operating systems.
-.TP 8
-.B \-lf \fIfiles\fP
-sets the number-of-open-files limit of the server to the specified number.
-A value is zero makes the limit as large as possible.  The default value
-of \-1 leaves the limit unchanged.  This option is not available in
-all operating systems.
-.TP 8
-.B \-ls \fIkilobytes\fP
-sets the stack space limit of the server to the specified number of kilobytes.
-A value of zero makes the stack size as large as possible.  The default value
-of \-1 leaves the stack space limit unchanged.  This option is not available in
-all operating systems.
-.TP 8
-.B \-logo
-turns on the X Window System logo display in the screen-saver.
-There is currently no way to change this from a client.
-.TP 8
-.B nologo
-turns off the X Window System logo display in the screen-saver.
-There is currently no way to change this from a client.
+.B \-kb
+disables the XKEYBOARD extension if present.
 .TP 8
 .B \-p \fIminutes\fP
 sets screen-saver pattern cycle time in minutes.
 .TP 8
 .B \-pn
 permits the server to continue running if it fails to establish all of
-its well-known sockets, but establishes at least one.
+its well-known sockets (connection points for clients), but
+establishes at least one.
 .TP 8
 .B \-r
 turns off auto-repeat.
@@ -195,20 +167,48 @@ sets video-off screen-saver preference.
 sets video-on screen-saver preference.
 .TP 8
 .B \-wm
-forces the default backing-store of all windows to be WhenMapped;
-a cheap trick way of getting backing-store to apply to all windows.
+forces the default backing-store of all windows to be WhenMapped.  This
+is a backdoor way of getting backing-store to apply to all windows.
+Although all mapped windows will have backing store, the backing store
+attribute value reported by the server for a window will be the last
+value established by a client.  If it has never been set by a client,
+the server will report the default value, NotUseful.  This behavior is
+required by the X protocol, which allows the server to exceed the
+client's backing store expectations but does not provide a way to tell
+the client that it is doing so.
 .TP 8
 .B \-x \fIextension\fP
 loads the specified extension at init.
-Not supported in most implementations.
+This is a no-op for most implementations.
 .PP
-You can also have the X server connect to \fIxdm\fP using XDMCP.
-Although this is not typically useful as it does not allow \fIxdm\fP
-to manage the server process,
-it can be used to debug XDMCP implementations, and serves as a sample
-implementation of the server side of XDMCP.  For more information on this
-protocol, see the \fIX Display Manager Control Protocol\fP specification.
-The following options control the behavior of XDMCP.
+Some X servers accept the following options:
+.TP 8
+.B \-ld \fIkilobytes\fP
+sets the data space limit of the server to the specified number of kilobytes.
+A value of zero makes the data size as large as possible.  The default value
+of \-1 leaves the data space limit unchanged.
+.TP 8
+.B \-lf \fIfiles\fP
+sets the number-of-open-files limit of the server to the specified number.
+A value is zero makes the limit as large as possible.  The default value
+of \-1 leaves the limit unchanged.
+.TP 8
+.B \-ls \fIkilobytes\fP
+sets the stack space limit of the server to the specified number of kilobytes.
+A value of zero makes the stack size as large as possible.  The default value
+of \-1 leaves the stack space limit unchanged.
+.TP 8
+.B \-logo
+turns on the X Window System logo display in the screen-saver.
+There is currently no way to change this from a client.
+.TP 8
+.B nologo
+turns off the X Window System logo display in the screen-saver.
+There is currently no way to change this from a client.
+.PP
+X servers that support XDMCP have the following options.
+See the \fIX Display Manager Control Protocol\fP specification for more
+information.
 .TP 8
 .B \-query \fIhost-name\fP
 Enable XDMCP and send Query packets to the specified host.
@@ -238,40 +238,48 @@ data (not that it is very private, being on the command line!).
 Yet another XDMCP specific value, this one allows the display manager to
 identify each display so that it can locate the shared key.
 .PP
+X servers that support the XKEYBOARD extension accept the following options:
+.TP 8
+.B \-xkbdir \fIdirectory\fP
+base directory for keyboard layout files
+.TP 8
+.B \-xkbmap \fIfilename\fP
+keyboard description to load on startup
+.TP 8
+.B [+-]accessx
+enable(+) or disable(-) AccessX key sequences
+.TP 8
+.B \-ar1
+set keyboard autorepeat delay
+.TP 8
+.B \-ar2
+set keyboard autorepeat interval
+.PP
 Many servers also have device-specific command line options.  See the
 manual pages for the individual servers for more details.
+.SH "NETWORK CONNECTIONS"
+The X server supports client connections via a platform-dependent subset of
+the following transport types: TCP\/IP, Unix Domain sockets, DECnet,
+and several varieties of SVR4 local connections.  See the DISPLAY
+NAMES section of the \fIX(1)\fP manual page to learn how to specify
+which transport type clients should try to use.
 .SH SECURITY
+The X server implements a platform-dependent subset of the following
+authorization protocols: MIT-MAGIC-COOKIE-1, XDM-AUTHORIZATION-1,
+SUN-DES-1, and MIT-KERBEROS-5.  See the \fIXsecurity(1)\fP manual page
+for information on the operation of these protocols.
 .PP
-The X server implements a simplistic authorization protocol,
-MIT-MAGIC-COOKIE-1 which uses data private to authorized clients and the
-server.  This is a rather trivial scheme; if the client passes authorization
-data which is the same as the server has, it is allowed access.  This scheme
-is worse than the host-based access control mechanisms in environments with
-unsecure networks as it allows any host to connect, given that it has
-discovered the private key.  But in many environments, this level of
-security is better than the host-based scheme as it allows access control
-per-user instead of per-host.
-.PP
-In addition, the server provides support for a DES-based authorization
-scheme, XDM-AUTHORIZATION-1, which is more secure (given a secure key
-distribution mechanism).  This authorization scheme can be used in
-conjunction with XDMCP's authentication scheme (XDM-AUTHENTICATION-1)
-or in isolation.
-.PP
-The authorization data is passed to the server in a private file named with
-the \fB\-auth\fP command line option.  Each time the server is about to
-accept the first connection after a reset (or when the server is starting),
-it reads this file.  If this file contains any authorization records, the
-local host is not automatically allowed access to the server, and only
-clients which send one of the authorization records contained in the file in
-the connection setup information will be allowed access.  See the \fIXau\fP
-manual page for a description of the binary format of this file.
-Maintenance of this file, and distribution of its contents to remote sites
-for use there is left as an exercise for the reader.
-.PP
-The server also provides support for SUN-DES-1, using Sun's Secure RPC.
-It involves encrypting data with the X server's public key.
-See the \fIXsecurity\fP manual page for more information.
+Authorization data required by the above protocols is passed to the
+server in a private file named with the \fB\-auth\fP command line
+option.  Each time the server is about to accept the first connection
+after a reset (or when the server is starting), it reads this file.
+If this file contains any authorization records, the local host is not
+automatically allowed access to the server, and only clients which
+send one of the authorization records contained in the file in the
+connection setup information will be allowed access.  See the
+\fIXau\fP manual page for a description of the binary format of this
+file.  Maintenance of this file, and distribution of its contents to
+remote sites for use there is left as an exercise for the reader.
 .PP
 The X server also uses a host-based access control list for deciding
 whether or not to accept connections from clients on a particular machine.
@@ -298,7 +306,7 @@ control using the \fIxhost\fP command from the same machine as the server.
 The X protocol intrinsically does not have any notion of window operation
 permissions or place any restrictions on what a client can do; if a program can
 connect to a display, it has full run of the screen.  Sites that have better
-authentication and authorization systems (such as Kerberos) might wish to make
+authentication and authorization systems might wish to make
 use of the hooks in the libraries and the server to provide additional
 security models.
 .SH SIGNALS
@@ -322,105 +330,74 @@ its parent process after it has set up the various connection schemes.
 \fIXdm\fP uses this feature to recognize when connecting to the server
 is possible.
 .SH FONTS
-Fonts are usually stored as individual files in directories.  The X server
+The X server
 can obtain fonts from directories and/or from font servers.
 The list of directories and font servers
 the X server uses when trying to open a font is controlled
-by the \fIfont path\fP.  Although most sites will choose to have the X server
-start up with the appropriate font path (using the \fI\-fp\fP option mentioned
-above), it can be overridden using the \fIxset\fP program.
-.PP
-The default font path for the X server contains four directories:
-.TP 8
-.I /usr/lib/X11/fonts/misc
-This directory contains many miscellaneous bitmap fonts that are useful on all
-systems.  It contains a family of fixed-width fonts,
-a family of fixed-width fonts from Dale Schumacher,
-several Kana fonts from Sony Corporation,
-two JIS Kanji fonts,
-two Hangul fonts from Daewoo Electronics,
-two Hebrew fonts from Joseph Friedman,
-the standard cursor font, two cursor fonts from
-Digital Equipment Corporation, and cursor and glyph fonts
-from Sun Microsystems.
-It also has various font name aliases for the fonts, including
-\fBfixed\fP and \fBvariable\fP.
-.TP 8
-.I /usr/lib/X11/fonts/Speedo
-This directory contains outline fonts for Bitstream's Speedo rasterizer.
-A single font face, in normal, bold, italic, and bold italic, is provided,
-contributed by Bitstream, Inc.
-.TP 8
-.I /usr/lib/X11/fonts/75dpi
-This directory contains bitmap fonts contributed by Adobe Systems, Inc.,
-Digital Equipment Corporation, Bitstream, Inc.,
-Bigelow and Holmes, and Sun Microsystems, Inc.
-for 75 dots per inch displays.  An integrated selection of sizes, styles, 
-and weights are provided for each family.
-.TP 8
-.I /usr/lib/X11/fonts/100dpi
-This directory contains 100 dots per inch versions of some of the fonts in the 
-\fI75dpi\fP directory.  
-.PP
-Font databases are created by running the \fImkfontdir\fP program in the
-directory containing the compiled versions of the fonts (the \fI.pcf\fP files).
-Whenever fonts are added to a directory, \fImkfontdir\fP should be rerun
-so that the server can find the new fonts.  \fBIf \fImkfontdir\fP is not
-run, the server will not be able to find any fonts in the directory.\fR
-.SH DIAGNOSTICS
-Too numerous to list them all.
-If run from \fIinit(8)\fP, errors are typically logged
-in the file \fI/usr/adm/X*msgs\fP,
+by the \fIfont path\fP.  
+The default is
+"/usr/X11R6/lib/X11/fonts/misc/,
+/usr/X11R6/lib/X11/fonts/Speedo/,
+/usr/X11R6/lib/X11/fonts/Type1/,
+/usr/X11R6/lib/X11/fonts/75dpi/,
+/usr/X11R6/lib/X11/fonts/100dpi/\" .
+The font path can be set with the \fB\-fp\fP option or by \fIxset(1)\fP
+after the server has started.
 .SH FILES
 .TP 30
-/etc/X*.hosts
-Initial access control list
+/etc/X\fBn\fP.hosts
+Initial access control list for display number \fBn\fP
 .TP 30
-/usr/lib/X11/fonts/misc, /usr/lib/X11/fonts/75dpi, /usr/lib/X11/fonts/100dpi 
+/usr/X11R6/lib/X11/fonts/misc, /usr/X11R6/lib/X11/fonts/75dpi, /usr/X11R6/lib/X11/fonts/100dpi 
 Bitmap font directories
 .TP 30
-/usr/lib/X11/fonts/Speedo
+/usr/X11R6/lib/X11/fonts/Speedo, /usr/X11R6/lib/X11/fonts/Type1
 Outline font directories
 .TP 30
-/usr/lib/X11/fonts/PEX
+/usr/X11R6/lib/X11/fonts/PEX
 PEX font directories
 .TP 30
-/usr/lib/X11/rgb.txt
+/usr/X11R6/lib/X11/rgb.txt
 Color database
 .TP 30
-/tmp/.X11-unix/X*
-Unix domain socket
+/tmp/.X11-unix/X\fBn\fP
+Unix domain socket for display number \fBn\fP
 .TP 30
-/tmp/rcX*
-Kerberos 5 replay cache
+/tmp/rcX\fBn\fP
+Kerberos 5 replay cache for display number \fBn\fP
 .TP 30
-/usr/adm/X*msgs
-Error log file
+/usr/adm/X\fBn\fPmsgs
+Error log file for display number \fBn\fP if run from \fIinit(8)\fP
 .SH "SEE ALSO"
-X(1), bdftopcf(1), mkfontdir(1), fs(1), xauth(1), xdm(1), xhost(1),
-xinit(1), xset(1), xsetroot(1), xterm(1),
-Xdec(1), Xibm(1), XmacII(1), Xmips(1),
-Xqdss(1), Xqvss(1), Xsun(1), Xtek(1), X386(1)
+General information: X(1)
+.PP
+Protocols:
 .I "X Window System Protocol,"
+.I "The X Font Service Protocol,"
+.I "X Display Manager Control Protocol"
+.PP
+Fonts: bdftopcf(1), mkfontdir(1), xfs(1), xlsfonts(1), xfontsel(1), xfd(1),
+.I "X Logical Font Description Conventions"
+.PP
+Security: Xsecurity(1), xauth(1), Xau(1), xdm(1), xhost(1)
+.PP
+Starting the server: xdm(1), xinit(1)
+.PP
+Controlling the server once started: xset(1), xsetroot(1), xhost(1)
+.PP
+Server-specific man pages: 
+Xdec(1), XmacII(1), Xsun(1), Xnest(1), Xvfb(1),
+XF86_Acc(1), XF86_Mono(1), XF86_SVGA(1), XF86_VGA16(1), XFree86(1)
+.PP
+Server internal documentation:
 .I "Definition of the Porting Layer for the X v11 Sample Server,"
 .I "Strategies for Porting the X v11 Sample Server,"
 .I "Godzilla's Guide to Porting the X V11 Sample Server"
-.SH BUGS
-The option syntax is inconsistent with itself and \fIxset(1)\fP.
-.PP
-The acceleration option should take a numerator and a denominator like the
-protocol.
-.PP
-If
-.I X
-dies before its clients, new clients won't be able to connect until all
-existing connections have their TCP TIME_WAIT timers expire.
-.PP
-The color database is missing a large number of colors.
-.PP
 .SH COPYRIGHT
 Copyright 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991
 Massachusetts Institute of Technology.
+.br
+Copyright 1994 X Consortium, Inc.
 .br
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHORS
