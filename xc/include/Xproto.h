@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: Xproto.h,v 1.86 92/10/18 16:33:19 rws Exp $
+ *	$XConsortium: Xproto.h,v 1.87 93/07/12 09:40:37 dpw Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */
@@ -250,7 +250,7 @@ typedef struct {
     CARD16	majorVersion B16, minorVersion B16;
     CARD16	nbytesAuthProto B16;	/* Authorization protocol */
     CARD16	nbytesAuthString B16;	/* Authorization string */
-    CARD16	pad2;
+    CARD16	pad2 B16;
 } xConnClientPrefix;
 
 typedef struct {
