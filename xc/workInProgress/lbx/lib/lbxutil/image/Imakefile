@@ -1,10 +1,10 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/09/13 17:22:36 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 94/09/13 17:25:53 mor Exp mor $
 
 #include <Library.tmpl>
 
-SRCS = imageutil.c
+SRCS = dfaxg42d.c dpackbits.c efaxg42d.c epackbits.c misc.c
 
-OBJS = imageutil.o
+OBJS = dfaxg42d.o dpackbits.o efaxg42d.o epackbits.o misc.o
 
 INCLUDES = -I$(INCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/include -I../../../include/extensions
 
