@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMstate.c,v 1.35 87/10/29 16:54:12 joel BL5 $";
+static char rcsid[] = "$Header: TMstate.c,v 1.35 87/10/29 16:54:12 swick Locked $";
 #endif lint
 
 /*
@@ -643,15 +643,42 @@ void _XtInstallTranslations(widget, stateTable)
     EventMask	eventMask = 0;
     Boolean	nonMaskable = FALSE;
     Cardinal	i;
+    static struct {
+        unsigned long	modifier;
+	EventMask	mask;
+      } buttonMotionMask[] = {
+	{Button1Mask, Button1MotionMask}, 
+	{Button2Mask, Button2MotionMask}, 
+	{Button3Mask, Button3MotionMask}, 
+	{Button4Mask, Button4MotionMask}, 
+	{Button5Mask, Button5MotionMask},
+      };
 
     widget->core.translations = stateTable;
     if (stateTable == NULL) return;
 
     for (i = 0; i < stateTable->numEvents; i++) {
-	EventMask mask = EventToMask(&stateTable->eventObjTbl[i]);
+        EventObjPtr eventObj = &stateTable->eventObjTbl[i];
+	EventMask mask = EventToMask(eventObj);
+	unsigned long modifiers = eventObj->event.modifiers;
+
+	if ((eventObj->event.eventType == MotionNotify)
+	    && !(modifiers & ~AnyButtonModifier)) {
+	    /* optimize traffic when PointerMotion only with button down */
+	    if (modifiers == AnyButtonModifier)
+	        mask = ButtonMotionMask;
+	    else {
+	        int mod;
+	        mask = 0;
+		for (mod = 0; mod < XtNumber(buttonMotionMask); mod++) {
+		    if (modifiers & buttonMotionMask[mod].modifier)
+		        mask |= buttonMotionMask[mod].mask;
+		}
+	    }
+	}
 
 	eventMask |= mask;
-	nonMaskable |= (mask != 0);
+	nonMaskable |= (mask == 0);
     }
 
     /* double click needs to make sure that you have selected on both
