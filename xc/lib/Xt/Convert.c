@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.40 90/06/04 15:06:37 kit Exp $ */
+/* $XConsortium: Convert.c,v 1.41 90/07/26 09:59:07 swick Exp $ */
 
 /*LINTLIBRARY*/
 
@@ -604,7 +604,7 @@ _XtCallConverter(dpy, converter,
 
     if (cP == NULL
      || ((cP->cache_type == XtCacheNone) && (cP->destructor == nullProc))) {
-	char* closure;
+	XtPointer closure;
 	if (cache_ref_return != NULL) *cache_ref_return = NULL;
 	return (*(XtTypeConverter)converter)
 	    (dpy, args, &num_args, from, to, &closure);
@@ -657,7 +657,7 @@ _XtCallConverter(dpy, converter,
     /* No cache entry, call converter procedure and enter result in cache */
     {
 	Heap *heap;
-	char* closure;
+	XtPointer closure;
 	XtCacheType cache_type = cP->cache_type & 0xff;
 	int ref_flags =
 	    ((cP->cache_type & XtCacheRefCount) && (cache_ref_return != NULL))
