@@ -1,5 +1,5 @@
 /*
- * $XConsortium: handler.c,v 1.15 91/02/20 10:18:54 dave Exp $
+ * $XConsortium: handler.c,v 1.16 91/02/20 10:20:00 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -117,7 +117,7 @@ XtPointer client_data, call_data;
 				   widget not a rect_obj. */
 }
 
-#ifdef SEV_VALUES_POPUP
+#ifdef SET_VALUES_POPUP
 /*	Function Name: InitSetValues
  *	Description: This function pops up the setvalues dialog
  *	Arguments: w - the widget caused this action.
@@ -137,7 +137,7 @@ XtPointer call_data, client_data;
 
     PopupSetValues(w, NULL);
 }
-#endif /* SEV_VALUES_POPUP */
+#endif /* SET_VALUES_POPUP */
 
 /*	Function Name: TreeSelect
  *	Description: Selects all widgets.

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: svpopup.c,v 1.8 90/06/28 15:16:25 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -62,7 +62,7 @@
 
 #include "editresP.h"
 
-#ifdef SEV_VALUES_POPUP
+#ifdef SET_VALUES_POPUP
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
