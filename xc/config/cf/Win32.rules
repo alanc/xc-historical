@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.5 93/08/14 17:14:43 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.6 93/08/15 13:03:47 rws Exp $
 
 #define ProgramTargetName(target) target.exe
 
@@ -10,7 +10,7 @@ XCOMM platform:  $XConsortium: Win32.rules,v 1.5 93/08/14 17:14:43 rws Exp $
 .SUFFIXES:								@@\
 									@@\
 all: files								@@\
-	!if exist $$** $(RM) $$**					@@\
+	!for %%i in ( Avoid.Err $$** ) do if exist %%i $(RM) %%i	@@\
 									@@\
 files:									@@\
 <<
