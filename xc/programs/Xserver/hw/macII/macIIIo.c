@@ -149,7 +149,8 @@ ProcessInputEvents ()
         return;
     }
 
-    if (autoRepeatKeyDown && autoRepeatReady && n <= 0) {
+    if (autoRepeatKeyDown && autoRepeatReady && 
+	kbdPriv->ctrl->autoRepeat == AutoRepeatModeOn && n <= 0) {
         /* fake a macII kbd event */
         n = sizeof macIIevents[0];
         *me = AUTOREPEAT_EVENTID;

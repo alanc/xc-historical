@@ -45,7 +45,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef	lint
 static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #endif
-
+
+
 #define NEED_EVENTS
 #include "macII.h"
 #include <stdio.h>
@@ -53,14 +54,13 @@ static char sccsid[] = "%W %G Copyright 1987 Sun Micro";
 #include "keysym.h"
 #include "inputstr.h"
 
-extern CARD16 keyModifiersList[];
-
 typedef struct {
     int	    	  trans;          	/* Original translation form */
 } macIIKbPrivRec, *macIIKbPrivPtr;
 
 extern CARD8 *macIIModMap[];
 extern KeySymsRec macIIKeySyms[];
+extern CARD16 keyModifiersList[];
 
 static void 	  macIIBell();
 static void 	  macIIKbdCtrl();
@@ -72,26 +72,7 @@ int	  	  autoRepeatReady;
 static int	  autoRepeatFirst;
 long 		  autoRepeatLastKeyDownTv;
 long 		  autoRepeatDeltaTv;
-
-#ifdef notdef
-static struct timeval autoRepeatLastKeyDownTv;
-static struct timeval autoRepeatDeltaTv;
-#define	tvminus(tv, tv1, tv2) 	/* tv = tv1 - tv2 */ \
-		if ((tv1).tv_usec < (tv2).tv_usec) { \
-		    (tv1).tv_usec += 1000000; \
-		    (tv1).tv_sec -= 1; \
-		} \
-		(tv).tv_usec = (tv1).tv_usec - (tv2).tv_usec; \
-		(tv).tv_sec = (tv1).tv_sec - (tv2).tv_sec;
-#define tvplus(tv, tv1, tv2) 	/* tv = tv1 + tv2 */ \
-		(tv).tv_sec = (tv1).tv_sec + (tv2).tv_sec; \
-		(tv).tv_usec = (tv1).tv_usec + (tv2).tv_usec; \
-		if ((tv).tv_usec > 1000000) { \
-			(tv).tv_usec -= 1000000; \
-			(tv).tv_sec += 1; \
-		}
-#endif notdef
-
+static KeybdCtrl  sysKbCtrl;
 
 static macIIKbPrivRec	macIIKbPriv;  
 static KbPrivRec  	sysKbPriv = {
@@ -103,6 +84,7 @@ static KbPrivRec  	sysKbPriv = {
     (pointer)&macIIKbPriv,	/* Private to keyboard device */
     (Bool)0,			/* Mapped queue */
     0,				/* offset for device keycodes */
+    &sysKbCtrl,                 /* Initial full duration = .25 sec. */
 };
 
 extern int consoleFd;
@@ -127,11 +109,14 @@ extern int consoleFd;
  *-----------------------------------------------------------------------
  */
 
+#define       TR_UNDEFINED (TR_NONE-1)
 int
 macIIKbdProc (pKeyboard, what)
     DevicePtr	  pKeyboard;	/* Keyboard to manipulate */
     int	    	  what;	    	/* What to do to it */
 {
+    static int          deviceOffKbdState = TR_UNDEFINED;
+
     switch (what) {
 	case DEVICE_INIT:
 	    if (pKeyboard != LookupKeyboardDevice()) {
@@ -151,8 +136,10 @@ macIIKbdProc (pKeyboard, what)
 	     * itself which couldn't be filled in before.
 	     */
 	    pKeyboard->devicePrivate = (pointer)&sysKbPriv;
-
 	    pKeyboard->on = FALSE;
+	    sysKbCtrl = defaultKeyboardControl;
+	    sysKbPriv.ctrl = &sysKbCtrl;
+
 	    /*
 	     * ensure that the keycodes on the wire are >= MIN_KEYCODE
 	     */
@@ -305,7 +292,8 @@ macIIKbdSetUp(fd, openClose)
  *	Ring the terminal/keyboard bell
  *
  * Results:
- *	None.
+ *    Ring the keyboard bell for an amount of time proportional to
+ *    "loudness."
  *
  * Side Effects:
  *	None, really...
@@ -317,15 +305,23 @@ macIIBell (loudness, pKeyboard)
     int	    	  loudness;	    /* Percentage of full volume */
     DevicePtr	  pKeyboard;	    /* Keyboard to ring */
 {
-#ifdef notdef
+    KbPrivPtr   pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
     struct strioctl ctl;
 
-    ctl.ic_len = 0;
+    if (loudness == 0) {
+      return;
+    }
+
+    /*
+     * Leave the bell on for a while == duration (ms) proportional to
+     * loudness desired with a 10 thrown in to convert from ms to usecs.
+     */
+    ctl.ic_len = sizeof(long);
+    ctl.ic_data = (long)(pPriv->ctrl->bell_duration * 1000);
     ctl.ic_cmd = VIDEO_BELL;
     if (ioctl(consoleFd, I_STR, &ctl) < 0) {
-	    FatalError("Failed to ioctl I_STR VIDEO_BELL.\n");
+	    ErrorF("Failed to ioctl I_STR VIDEO_BELL.\n");
     }
-#endif
 }
 
 /*-
@@ -342,9 +338,12 @@ macIIBell (loudness, pKeyboard)
  *-----------------------------------------------------------------------
  */
 static void
-macIIKbdCtrl (pKeyboard)
+macIIKbdCtrl (pKeyboard, ctrl)
     DevicePtr	  pKeyboard;	    /* Keyboard to alter */
+    KeybdCtrl     *ctrl;
 {
+    KbPrivPtr   pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
+    *pPriv->ctrl = *ctrl;
 }
 
 /*-
@@ -383,13 +382,21 @@ macIIKbdProcessEvent(pKeyboard,me)
 {   
     xEvent		xE;
     PtrPrivPtr	  	ptrPriv;
+    KbPrivPtr           pPriv;
     int                 delta;
     static xEvent       autoRepeatEvent;
     BYTE		key;
+    CARD16              keyModifiers;
 
     ptrPriv = (PtrPrivPtr) LookupPointerDevice()->devicePrivate;
 
     if (autoRepeatKeyDown && *me == AUTOREPEAT_EVENTID) {
+       pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
+       if (pPriv->ctrl->autoRepeat != AutoRepeatModeOn) {
+               autoRepeatKeyDown = 0;
+               return;
+       }
+
 	/*
 	 * Generate auto repeat event.	XXX one for now.
 	 * Update time & pointer location of saved KeyPress event.
@@ -398,9 +405,8 @@ macIIKbdProcessEvent(pKeyboard,me)
 	    ErrorF("macIIKbdProcessEvent: autoRepeatKeyDown = %d\n",
 			autoRepeatKeyDown);
 
-	delta = autoRepeatDeltaTv >> 1;
-	if (autoRepeatFirst == TRUE)
-		autoRepeatFirst = FALSE;
+	delta = autoRepeatDeltaTv;
+	autoRepeatFirst = FALSE;
 
 	/*
 	 * Fake a key up event and a key down event
@@ -412,7 +418,6 @@ macIIKbdProcessEvent(pKeyboard,me)
 	autoRepeatEvent.u.u.type = KeyRelease;
 	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard);
 
-	autoRepeatEvent.u.keyButtonPointer.time += delta;
 	autoRepeatEvent.u.u.type = KeyPress;
 	(* pKeyboard->processInputProc) (&autoRepeatEvent, pKeyboard);
 
@@ -423,8 +428,7 @@ macIIKbdProcessEvent(pKeyboard,me)
     }
 
     key = KEY_DETAIL(*me) + sysKbPriv.offset;
-    if (!keyModifiersList[key])
-    {
+    if ((keyModifiers = keyModifiersList[key]) == 0) {
         /*
          * Kill AutoRepeater on any real Kbd event.
          */
@@ -439,16 +443,17 @@ macIIKbdProcessEvent(pKeyboard,me)
     xE.u.u.type = (KEY_UP(*me) ? KeyRelease : KeyPress);
     xE.u.u.detail = key;
 
-    if (keyModifiersList[key] & LockMask)
-    {
+#ifdef notdef
+    if (keyModifiers & LockMask) {
 	if (xE.u.u.type == KeyRelease)
 	    return; /* this assumes autorepeat is not desired */
 	if (((DeviceIntPtr)pKeyboard)->down[key>>3] & (1 << (key & 7)))
 	    xE.u.u.type = KeyRelease;
     }
+#endif
 
-    if (!KEY_UP(*me) && !keyModifiersList[key]) 
-    {   /* turn on AutoRepeater */
+    if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
+	  /* initialize new AutoRepeater event & mark AutoRepeater on */
         if (autoRepeatDebug)
             ErrorF("macIIKbdProcessEvent: KEY_DOWN\n");
         autoRepeatEvent = xE;
@@ -467,6 +472,8 @@ LegalModifier(key)
     return (TRUE);
 }
 
+static KeybdCtrl *pKbdCtrl = (KeybdCtrl *) 0;
+
 #include <sys/time.h>
 /*ARGSUSED*/
 void
@@ -476,20 +483,23 @@ macIIBlockHandler(nscreen, pbdata, pptv, pReadmask)
     struct timeval **pptv;
     pointer pReadmask;
 {
-    static struct timeval artv; /* autorepeat timeval */
-    static sec1 = 0;                    /* tmp for patching */
-    static sec2 = AUTOREPEAT_INITIATE;
-    static sec3 = AUTOREPEAT_DELAY;
+    static struct timeval artv = { 0, 0 };    /* autorepeat timeval */
 
     if (!autoRepeatKeyDown)
         return;
 
-    artv.tv_sec = sec1;
+    if (pKbdCtrl == (KeybdCtrl *) 0)
+      pKbdCtrl = ((KbPrivPtr) LookupKeyboardDevice()->devicePrivate)->ctrl;
+
+    if (pKbdCtrl->autoRepeat != AutoRepeatModeOn)
+      return;
+
     if (autoRepeatFirst == TRUE)
-        artv.tv_usec = 1000 * sec2;
+        artv.tv_usec = 1000 * AUTOREPEAT_INITIATE;
     else
-        artv.tv_usec = 1000 * sec3;
+        artv.tv_usec = 1000 * AUTOREPEAT_DELAY;
     *pptv = &artv;
+
     if (autoRepeatDebug)
         ErrorF("macIIBlockHandler(%d,%d): \n", artv.tv_sec, artv.tv_usec);
 
@@ -509,6 +519,12 @@ macIIWakeupHandler(nscreen, pbdata, err, pReadmask)
     if (autoRepeatDebug)
         ErrorF("macIIWakeupHandler(ar=%d, err=%d):\n", autoRepeatKeyDown, err);
 
+    if (pKbdCtrl == (KeybdCtrl *) 0)
+      pKbdCtrl = ((KbPrivPtr) LookupKeyboardDevice()->devicePrivate)->ctrl;
+    
+    if (pKbdCtrl->autoRepeat != AutoRepeatModeOn)
+      return;
+
     if (autoRepeatKeyDown) {
         now = times(&tms) << 4;
         autoRepeatDeltaTv = now - autoRepeatLastKeyDownTv;
@@ -522,4 +538,3 @@ macIIWakeupHandler(nscreen, pbdata, err, pReadmask)
     autoRepeatReady = 0;
 
 }
-
