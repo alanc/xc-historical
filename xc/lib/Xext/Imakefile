@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.36 92/01/25 16:12:44 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.37 92/03/13 14:18:37 keith Exp $
 #define DoNormalLib NormalLibXext
 #define DoSharedLib SharedLibXext
 #define DoDebugLib DebugLibXext
@@ -16,7 +16,7 @@ REQUIREDLIBS = $(XLIBSRC)/libX11.a
       XINPUTDIRS = xinput
 #endif
 #if BuildPexClients
-      PEXDIRS = PEX
+      PEXDIRS = PEXlib PEX
 #endif
 #if BuildXTrapLib
       XTRAPDIRS = xtrap
