@@ -1,3 +1,4 @@
+    STD_DEFINES = LibraryDefines
     CDEBUGFLAGS = LibraryCDebugFlags
        INCLUDES = -I. -I$(TOP) -I$(INCLUDESRC)
         DEFINES = ConnectionFlags
@@ -8,7 +9,7 @@
 #endif
            SRCS = *.c $(AIDSRCS)
         HEADERS = Xlib.h Xutil.h
-       LINTLIBS = -lc
+       LINTLIBS =
 
 OBJS =\
 	Context.o \
