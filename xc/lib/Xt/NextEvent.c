@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.146 95/04/05 19:58:01 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 1.147 95/06/06 21:00:38 kaleb Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -210,6 +210,7 @@ typedef struct {
     int nfds;
 #else
     struct pollfd* fdlist;
+    struct pollfd* stack;
     int fdlistlen, num_dpys;
 #endif
 } wait_fds_t, *wait_fds_ptr_t;
@@ -221,6 +222,7 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
     wait_fds_ptr_t wf;
 {
     int ii;
+    app->rebuild_fdlist = FALSE;
 #ifndef USE_POLL
     wf->nfds = app->fds.nfds;
     if( !ignoreInputs ) {
@@ -235,6 +237,27 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
 	    FD_SET (ConnectionNumber(app->list[ii]), &wf->rmask);
 	}
 #else
+    if (!ignoreEvents)
+	wf->fdlistlen = wf->num_dpys = app->count;
+    else
+	wf->fdlistlen = wf->num_dpys = 0;
+
+    if (!ignoreInputs && app->input_list != NULL) {
+	int ii;
+	for (ii = 0; ii < (int) app->input_max; ii++)
+	    if (app->input_list[ii] != NULL)
+		wf->fdlistlen++;
+    }
+
+    if (!wf->fdlist || wf->fdlist == wf->stack) {
+	wf->fdlist = (struct pollfd*)
+	    XtStackAlloc (sizeof (struct pollfd) * wf->fdlistlen, wf->stack);
+    } else {
+	wf->fdlist = (struct pollfd*)
+	    XtRealloc ((char*) wf->fdlist, 
+		       sizeof (struct pollfd) * wf->fdlistlen);
+    }
+
     if (wf->fdlistlen) {
 	struct pollfd* fdlp = wf->fdlist;
 	InputEvent* iep;
@@ -538,23 +561,11 @@ int _XtWaitForSomething(app,
     InitTimes (block, howlong, &wt);
 
 #ifdef USE_POLL
-    if (!ignoreEvents)
-	wf.fdlistlen = wf.num_dpys = app->count;
-    else
-	wf.fdlistlen = wf.num_dpys = 0;
-
-    if (!ignoreInputs && app->input_list != NULL) {
-	int ii;
-	for (ii = 0; ii < (int) app->input_max; ii++)
-	    if (app->input_list[ii] != NULL)
-		wf.fdlistlen++;
-    }
-
-    wf.fdlist = (struct pollfd*)
-	XtStackAlloc (sizeof (struct pollfd) * wf.fdlistlen, fdlist);
+    wf.fdlist = NULL;
+    wf.stack = fdlist;
 #endif
 
-    InitFds (app, ignoreEvents, ignoreInputs, &wf);
+    app->rebuild_fdlist = TRUE;
 
     while (1) {
 WaitLoop:
@@ -566,7 +577,20 @@ WaitLoop:
 		 hook != NULL; 
 		 hook = hook->next)
 		(*hook->proc) (hook->closure);
+
+	    if (!ignoreEvents)
+		/* see if the hook(s) generated any protocol */
+		for (dd = 0; dd < app->count; dd++)
+		    if (XEventsQueued(app->list[dd], QueuedAlready)) {
+#if USE_POLL
+			XtStackFree ((XtPointer) wf.fdlist, fdlist);
+#endif
+			return dd;
+		    }
 	}
+
+	if (app->rebuild_fdlist)
+	    InitFds (app, ignoreEvents, ignoreInputs, &wf);
 
 #ifdef XTHREADS /* { */
 	if (drop_lock) {
@@ -973,6 +997,7 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	    app->fds.nfds++;
 #endif
 	app->input_count++;
+	app->rebuild_fdlist = TRUE;
 	UNLOCK_APP(app);
 	return((XtInputId)sptr);
 }
@@ -1035,6 +1060,7 @@ void XtRemoveInput( id )
 	    if (app->input_list[source] == NULL)
 		app->fds.nfds--;
 #endif
+	    app->rebuild_fdlist = TRUE;
 	} else
 	    XtAppWarningMsg(app, "invalidProcedure","inputHandler",
 			    XtCXtToolkitError, 

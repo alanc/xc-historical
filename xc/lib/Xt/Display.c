@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.116 94/06/01 15:34:15 converse Exp $ */
+/* $XConsortium: Display.c,v 1.117 95/06/06 21:00:38 kaleb Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -120,6 +120,7 @@ static void AddToAppContext(d, app)
 	}
 
 	app->list[app->count++] = d;
+	app->rebuild_fdlist = TRUE;
 #ifndef USE_POLL
 	if (ConnectionNumber(d) + 1 > app->fds.nfds) {
 	    app->fds.nfds = ConnectionNumber(d) + 1;
@@ -143,6 +144,7 @@ static void XtDeleteFromAppContext(d, app)
 	    for (i++; i < app->count; i++) app->list[i-1] = app->list[i];
 	    app->count--;
 	}
+	app->rebuild_fdlist = TRUE;
 	app->fds.nfds--;
 }
 
@@ -433,6 +435,7 @@ XtAppContext XtCreateApplicationContext()
 	app->dpy_destroy_count = 0;
 	app->dpy_destroy_list = NULL;
 	app->exit_flag = FALSE;
+	app->rebuild_fdlist = TRUE;
 	UNLOCK_PROCESS;
 	UNLOCK_APP(app);
 	return app;

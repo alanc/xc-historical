@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.83 95/04/05 19:58:05 kaleb Exp $ */
+/* $XConsortium: InitialI.h,v 1.84 95/06/06 21:00:38 kaleb Exp kaleb $ */
 
 /***********************************************************
 
@@ -186,6 +186,7 @@ typedef struct _XtAppStruct {
     Display **dpy_destroy_list;
     int dpy_destroy_count;
     Boolean exit_flag;
+    Boolean rebuild_fdlist;
 #ifdef XTHREADS
     LockPtr lock_info;
     ThreadAppProc lock;
