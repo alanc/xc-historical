@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.6 91/12/28 14:59:31 keith Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.7 92/12/23 17:46:31 rws Exp $ */
 
 /* pixmap management
    written by drewry, september 1986
@@ -30,6 +30,7 @@ SOFTWARE.
 */
 
 #include "Xmd.h"
+#include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "maskbits.h"
 
@@ -38,6 +39,8 @@ SOFTWARE.
 
 #include "servermd.h"
 
+extern PixmapPtr AllocatePixmap();
+
 PixmapPtr
 mfbCreatePixmap (pScreen, width, height, depth)
     ScreenPtr	pScreen;
@@ -45,30 +48,36 @@ mfbCreatePixmap (pScreen, width, height, depth)
     int		height;
     int		depth;
 {
-    register PixmapPtr pPixmap;
-    int size;
+    PixmapPtr pPixmap;
+    int datasize;
+    int paddedWidth;
 
     if (depth != 1)
 	return NullPixmap;
-
-    size = BitmapBytePad(width);
-    pPixmap = (PixmapPtr)xalloc(sizeof(PixmapRec) + (height * size));
+    paddedWidth = BitmapBytePad(width);
+    datasize = height * paddedWidth;
+    pPixmap = AllocatePixmap(pScreen, datasize);
     if (!pPixmap)
 	return NullPixmap;
     pPixmap->drawable.type = DRAWABLE_PIXMAP;
     pPixmap->drawable.class = 0;
     pPixmap->drawable.pScreen = pScreen;
-    pPixmap->drawable.depth = 1;
-    pPixmap->drawable.bitsPerPixel = 1;
+    pPixmap->drawable.depth = depth;
+    pPixmap->drawable.bitsPerPixel = depth;
     pPixmap->drawable.id = 0;
     pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     pPixmap->drawable.x = 0;
     pPixmap->drawable.y = 0;
     pPixmap->drawable.width = width;
     pPixmap->drawable.height = height;
-    pPixmap->devKind = size;
+    pPixmap->devKind = paddedWidth;
     pPixmap->refcnt = 1;
+#ifdef PIXPRIV
+    pPixmap->devPrivate.ptr =  datasize ?
+		(pointer)((char *)pPixmap + pScreen->totalPixmapSize) : NULL;
+#else
     pPixmap->devPrivate.ptr = (pointer)(pPixmap + 1);
+#endif
     return pPixmap;
 }
 
@@ -89,17 +98,14 @@ mfbCopyPixmap(pSrc)
 {
     register PixmapPtr	pDst;
     int		size;
+    ScreenPtr pScreen;
 
     size = pSrc->drawable.height * pSrc->devKind;
-    pDst = (PixmapPtr)xalloc(sizeof(PixmapRec) + size);
+    pScreen = pSrc->drawable.pScreen;
+    pDst = (*pScreen->CreatePixmap) (pScreen, pSrc->drawable.width, 
+				pSrc->drawable.height, pSrc->drawable.depth);
     if (!pDst)
 	return NullPixmap;
-    pDst->drawable = pSrc->drawable;
-    pDst->drawable.id = 0;
-    pDst->drawable.serialNumber = NEXT_SERIAL_NUMBER;
-    pDst->devKind = pSrc->devKind;
-    pDst->refcnt = 1;
-    pDst->devPrivate.ptr = (pointer)(pDst + 1);
     bcopy((char *)pSrc->devPrivate.ptr, (char *)pDst->devPrivate.ptr, size);
     return pDst;
 }
