@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.9 92/10/22 21:33:30 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.11 93/02/23 14:42:24 mor Exp $
 XCOMM
 XCOMM Copyright 1992 by the Massachusetts Institute of Technology
 XCOMM 
@@ -31,8 +31,9 @@ FP_DEFINES = -DNATIVE_FP_FORMAT=$(NATIVE_FP_FORMAT)
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
+  MTX_DEFINES = XlibMTDefines
 
-DEFINES = $(FP_DEFINES) $(ALLOC_DEFINES)
+DEFINES = $(FP_DEFINES) $(ALLOC_DEFINES) $(MTX_DEFINES)
 
 HEADERS = PEXlib.h \
 	  PEXlibint.h \

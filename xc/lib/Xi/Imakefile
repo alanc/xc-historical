@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.11 91/07/24 15:38:57 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.12 92/06/28 17:49:27 rws Exp $
 #define DoNormalLib NormalLibXinput
 #define DoSharedLib SharedLibXinput
 #define DoDebugLib DebugLibXinput
@@ -14,8 +14,12 @@ REQUIREDLIBS = SharedXinputReqs
 #endif
 
 #if Malloc0ReturnsNull
- DEFINES = -DMALLOC_0_RETURNS_NULL
+ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
+
+  MTX_DEFINES = XlibMTDefines
+
+ DEFINES = $(ALLOC_DEFINES) $(MTX_DEFINES)
 INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../../include
 SRCS = XAllowDv.c \
 		  XChgDCtl.c \
