@@ -474,7 +474,8 @@
 ;;;	     COMPONENTS TO THE TEMPORARY GC, ALTER THE GC BEING USED, THEN COPY COMPOMENTS
 ;;;          BACK.
 
-(defmacro with-gcontext ((gcontext &rest options &key clip-ordering &allow-other-keys)
+(defmacro with-gcontext ((gcontext &rest options &key clip-ordering
+				   &allow-other-keys)
 			 &body body)
   ;; "Binds" the gcontext components specified by options within the
   ;; dynamic scope of the body (i.e., indefinite scope and dynamic
@@ -486,10 +487,11 @@
 
   (declare-arglist (gcontext &rest options &key
 			     function plane-mask foreground background
-			     line-width line-style cap-style join-style fill-style fill-rule
-			     arc-mode tile stipple ts-x ts-y font subwindow-mode
-			     exposures clip-x clip-y clip-mask clip-ordering
-			     dash-offset dashes &allow-other-keys)
+			     line-width line-style cap-style join-style
+			     fill-style fill-rule arc-mode tile stipple ts-x
+			     ts-y font subwindow-mode exposures clip-x clip-y
+			     clip-mask clip-ordering dash-offset dashes
+			     &allow-other-keys)
 		   &body body)
   (remf options :clip-ordering)
 
@@ -497,11 +499,10 @@
 	(saved-state (gensym))
 	(temp-gc (gensym))
 	(temp-mask (gensym))
-	(temp-var (gensym))
-	(need-temp-var nil)
+	(temp-vars nil)
 	(setfs nil)
-	(indexes nil)				; List of gcontext field indices
-	(extension-indexes nil)			; List of gcontext extension field indices
+	(indexes nil) ; List of gcontext field indices
+	(extension-indexes nil) ; List of gcontext extension field indices
 	(ts-index (getf *gcontext-indexes* :timestamp)))
 
     (do* ((option options (cddr option))
@@ -511,22 +512,19 @@
       (let ((index (getf *gcontext-indexes* name)))
 	(if index
 	    (push index indexes)
-	  (let ((extension (find name *gcontext-extensions* :key #'gcontext-extension-name)))
+	  (let ((extension (find name *gcontext-extensions*
+				 :key #'gcontext-extension-name)))
 	    (if extension
 		(progn
 		  (push (xintern "Internal-" 'gcontext- name "-State-Index")
 			extension-indexes))
 	      (x-type-error name 'gcontext-key)))))
-      (let ((accessor `(,(xintern 'gcontext- name) ,gc ,@(when (eq name :clip-mask)
-							   `(,clip-ordering)))))
-	(cond ((not (constantp value))
-	       (setq need-temp-var t)
-	       (push `(when (setq ,temp-var ,value) (setf ,accessor ,temp-var))
-		     setfs))
-	      (value
-	       (push `(setf ,accessor ,value) setfs)))))
-    (when need-temp-var
-      (setq setfs `((let (,temp-var) ,@setfs))))
+      (let ((accessor `(,(xintern 'gcontext- name) ,gc
+			,@(when (eq name :clip-mask) `(,clip-ordering))))
+	    (temp-var (gensym)))
+	(when value
+	  (push `(,temp-var ,value) temp-vars)
+	  (push `(setf ,accessor ,temp-var) setfs))))
     (if setfs
 	`(multiple-value-bind (,gc ,saved-state ,temp-mask ,temp-gc)
 	     (copy-gcontext-local-state ,gcontext ',indexes ,@extension-indexes)
@@ -534,9 +532,11 @@
 		    (type gcontext-state ,saved-state)
 		    (type xgcmask ,temp-mask)
 		    (type (or null resource-id) ,temp-gc))
-	   (with-gcontext-bindings (,gc ,saved-state ,(append indexes extension-indexes)
+	   (with-gcontext-bindings (,gc ,saved-state
+					,(append indexes extension-indexes)
 				    ,ts-index ,temp-mask ,temp-gc)
-	     ,@setfs
+	     (let ,temp-vars
+	       ,@setfs)
 	     ,@body))
       `(progn ,@body))))
 
