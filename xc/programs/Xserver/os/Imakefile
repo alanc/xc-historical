@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.52 92/05/22 11:51:32 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.53 92/05/28 12:18:43 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -145,12 +145,6 @@ oscolor.o: $(ICONFIGFILES)
 	cc -c $(DBM_DEFINES) $(CDEBUGFLAGS) $(ALLDEFINES) $*.c
 #else
 SpecialCObjectRule(oscolor,$(ICONFIGFILES),$(DBM_DEFINES))
-#endif
-
-#if HasSaberC
-saber_src:
-	XCOMM load $(CFLAGS) -DADMPATH=\"$(ADMDIR)/X\%smsgs\" $(EXT_DEFINES) \
-		$(FONT_DEFINES) $(SRCS)
 #endif
 
 DependTarget()
