@@ -127,14 +127,14 @@ Everything::
 	@echo ""
 
 
-README.PS::  README.tbl.ms
-	tbl README.tbl.ms | ptroff -t -ms >$@
+RELNOTES.PS::  RELNOTES.ms
+	tbl RELNOTES.ms | ptroff -t -ms >$@
 
-README.lpt:  README.tbl.ms
-	tbl README.tbl.ms | ntroff -ms >$@
+RELNOTES.lpt:  RELNOTES.ms
+	tbl RELNOTES.ms | ntroff -ms >$@
 
-README.txt:  README.tbl.ms
-	tbl README.tbl.ms | ntroff -ms | colcrt >$@
+RELNOTES.txt:  RELNOTES.ms
+	tbl RELNOTES.ms | ntroff -ms | colcrt >$@
 
 
 CHANGES.ALL::
