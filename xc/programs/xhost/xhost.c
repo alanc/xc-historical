@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.47 91/07/19 17:39:34 gildea Exp $ */
+/* $XConsortium: xhost.c,v 11.48 91/07/19 18:41:15 rws Exp $ */
  
 /*
 
@@ -424,7 +424,7 @@ static char *get_hostname (ha)
 #endif
 #ifdef DNETCONN
   struct nodeent *np;
-  static char nodeaddr[16];
+  static char nodeaddr[5 + 2 * DN_MAXADDL];
 #endif /* DNETCONN */
 
 #ifdef TCPCONN
@@ -475,7 +475,9 @@ static char *get_hostname (ha)
   }
 #ifdef DNETCONN
   if (ha->family == FamilyDECnet) {
-    if (np = getnodebyaddr(ha->address, ha->length, AF_DECnet)) {
+    struct dn_naddr *addr_ptr = (struct dn_naddr *) ha->address;
+
+    if (np = getnodebyaddr(addr_ptr->a_addr, addr_ptr->a_len, AF_DECnet)) {
       sprintf(nodeaddr, "%s::", np->n_name);
     } else {
       sprintf(nodeaddr, "%s::", dnet_htoa(ha->address));

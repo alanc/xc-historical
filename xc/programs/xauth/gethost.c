@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.17 93/08/18 15:13:23 rws Exp $
+ * $XConsortium: gethost.c,v 1.18 93/08/18 19:46:33 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -100,7 +100,7 @@ char *get_hostname (auth)
 #endif
 #ifdef DNETCONN
     struct nodeent *np;
-    static char nodeaddr[16];
+    static char nodeaddr[4 + 2 * DN_MAXADDL];
 #endif /* DNETCONN */
 
     if (auth->address_length == 0)
@@ -132,8 +132,9 @@ char *get_hostname (auth)
 #endif
 #ifdef DNETCONN
     if (auth->family == FamilyDECnet) {
-	if (np = getnodebyaddr(auth->address, auth->address_length,
-			       AF_DECnet)) {
+	struct dn_naddr *addr_ptr = (struct dn_naddr *) auth->address;
+
+	if (np = getnodebyaddr(addr_ptr->a_addr, addr_ptr->a_len, AF_DECnet)) {
 	    sprintf(nodeaddr, "%s:", np->n_name);
 	} else {
 	    sprintf(nodeaddr, "%s:", dnet_htoa(auth->address));
