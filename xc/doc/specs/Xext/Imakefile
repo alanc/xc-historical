@@ -1,0 +1,8 @@
+all: shape.PS
+
+shape.PS:
+	$(TROFF) $(MSMACROS) ../util/macros.t shape.ms 2> index.raw > shape.PS
+
+clean::
+	$(RM) index.raw shape.PS
+

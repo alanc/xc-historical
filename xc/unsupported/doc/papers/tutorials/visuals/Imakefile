@@ -1,0 +1,8 @@
+SRCS = vis.nr
+REFS = vis.refs
+REFER = refer
+REFOPTS = -e -n -s -p $(REFS)
+PIC = pic
+
+vis.PS:
+	$(REFER) $(REFOPTS) $(SRCS) | $(EQN) | $(PIC) | $(TROFF) $(MSMACROS) > vis.PS

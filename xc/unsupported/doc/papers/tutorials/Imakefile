@@ -1,0 +1,7 @@
+all: color.PS
+
+color.PS:
+	$(TBL) color.tbl.ms | $(TROFF) $(MSMACROS) > color.PS
+
+clean::
+	$(RM) color.PS
