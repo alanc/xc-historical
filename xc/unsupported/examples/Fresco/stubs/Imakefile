@@ -1,0 +1,31 @@
+XCOMM
+XCOMM Sample client-server
+XCOMM
+
+IXFLAGS = -s BaseObject -m TypeObj -stubclass Stub -env Env
+IXINCLUDES =
+
+XFCCFLAGS = $(CCLDFLAGS) $(CCFLAGS)
+APP_CCLDLIBS = naming-exch.o
+APP_CCDEPLIBS = naming-exch.o
+
+#define Example(ex)                                       		@@\
+all:: ex								@@\
+ex: ex.$(CCSUFFIX) $(CCDEPLIBS)						@@\
+	$(CCDRIVER) $(XFCCFLAGS) ex.$(CCSUFFIX) $(CCLDLIBS) -o ex	@@\
+clean::									@@\
+	$(RM) ex
+
+Use_libFresco()
+
+Example(client)
+Example(server)
+MakeObjectFromSrc(naming-exch)
+
+MakeHeaderFlags(naming,-i '<X11/Fresco/Ox/base.h>')
+EditImpl(client,Interfaces/naming.idl)
+EditImpl(server,Interfaces/naming.idl)
+EditImpl(naming-exch,Interfaces/naming.idl)
+
+depend::
+	$(DEPEND) -o "" -s "# DO NOT DELETE" -- $(DEPEND_CCFLAGS) -- $(SRCS)

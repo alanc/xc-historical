@@ -1,0 +1,50 @@
+XCOMM
+XCOMM Sample programs
+XCOMM
+
+XFCCFLAGS = $(CCLDFLAGS) $(CCFLAGS)
+
+#define Example(ex)                                       		@@\
+all:: ex								@@\
+ex: ex.$(CCSUFFIX) $(CCDEPLIBS)						@@\
+	$(CCDRIVER) $(XFCCFLAGS) ex.$(CCSUFFIX) $(CCLDLIBS) -o ex	@@\
+clean::									@@\
+	$(RM) ex
+
+#if defined(SGIArchitecture) && OSMajorVersion < 5
+XTCCFLAGS = $(CCFLAGS) -DFUNCPROTO -D__STDC__
+#else
+XTCCFLAGS = $(CCLDFLAGS) $(CCFLAGS)
+#endif
+
+XTLIBS = -L$(LIBSRC)/Xtf/$(ARCH) -lXtf -lXaw -lXmu -lXt $(CCLDLIBS)
+
+#define XtExample(ex)                                       		@@\
+all:: ex								@@\
+ex: ex.$(CCSUFFIX) $(CCDEPLIBS) XfDepPath(Xtf)				@@\
+	$(CCDRIVER) $(XTCCFLAGS) ex.$(CCSUFFIX) $(XTLIBS) -o ex		@@\
+clean::									@@\
+	$(RM) ex
+
+Use_libFresco()
+
+Example(barrier)
+Example(box)
+Example(buttons)
+Example(check)
+Example(circle)
+Example(figviewer)
+Example(hello)
+Example(mtcircles)
+Example(narrow)
+Example(styles)
+Example(subpaths)
+
+XtExample(xtf)
+
+SUBDIRS = stubs
+
+MakeInSubdirs($(SUBDIRS))
+
+depend::
+	$(DEPEND) -o "" -s "# DO NOT DELETE" -- $(DEPEND_CCFLAGS) -- $(SRCS)
