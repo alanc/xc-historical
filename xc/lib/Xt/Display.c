@@ -75,6 +75,23 @@ static void XtDeleteFromAppContext(d, app)
 	}
 }
 
+static void
+ComputeAbbrevLen(string, name, len)
+    String string;		/* the variable */
+    String name;		/* the constant */
+    int *len;			/* the current ambiguous length */
+{
+    int string_len = strlen(string);
+    int name_len = strlen(name);
+    int i;
+
+    for (i=0; i<string_len && i<name_len && *string++ == *name++; i++);
+
+    if (i < name_len && i > *len)
+	*len = i;
+}
+
+
 Display *XtOpenDisplay(app, displayName, applName, className,
 		urlist, num_urs, argc, argv)
 	XtAppContext app;
@@ -87,8 +104,13 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 	char  displayCopy[256];
 	int i;
 	char *ptr, *rindex(), *index(), *strncpy();
-	int squish = 0;
 	Display *d;
+#ifdef OLDCOLONDISPLAY
+	int squish = -1;
+	Boolean found_display = FALSE;
+#endif
+	int min_display_len = 0;
+	int min_name_len = 0;
 
 	if (applName == NULL) {
 	    ptr = rindex(argv[0], '/');
@@ -104,24 +126,45 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 
 	displayCopy[0] = 0;
 
+	for (i = 0; i < num_urs; i++) {
+	    ComputeAbbrevLen(urlist[i].option, "-display", &min_display_len);
+	    ComputeAbbrevLen(urlist[i].option, "-name",    &min_name_len);
+	}
+
 	for(i = 1; i < *argc; i++) {
-	    argv[i-squish] = argv[i];
-	    if (!strcmp("-d", argv[i]) || !strcmp("-display", argv[i])) {
+	    int len = strlen(argv[i]);
+#ifdef OLDCOLONDISPLAY
+	    if (!found_display && index(argv[i], ':') != NULL) {
+		(void) strncpy(displayCopy, argv[i], sizeof(displayCopy));
+		squish = i;
+		continue;
+	    }
+#endif
+	    if(len > min_display_len && !strncmp("-display", argv[i], len)) {
 		i++;
 		if (i == *argc) break;
 		(void) strncpy(displayCopy, argv[i], sizeof(displayCopy));
-		squish += 2;
+#ifdef OLDCOLONDISPLAY
+		found_display = TRUE;
+#endif
 		continue;
 	    }
-	    if(!strcmp("-name", argv[i]) || ! strcmp("-n", argv[i])) {
+	    if(len > min_name_len && !strncmp("-name", argv[i], len)) {
 		i++;
 		if (i == *argc) break;
 		applName = argv[i];
-		squish += 2;
 		continue;
 	    }
 	}
-	*argc -= squish;
+
+#ifdef OLDCOLONDISPLAY
+	if(!found_display && squish != -1) {
+	    (*argc)--;
+	    for(i = squish; i < *argc; i++) {
+		argv[i] = argv[i+1];
+	    }
+	}
+#endif
 
 	if (displayName == NULL) displayName = displayCopy;
 	
