@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.8 89/09/28 11:58:05 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.9 89/10/06 19:18:49 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,60 +32,6 @@ SOFTWARE.
 #define BYTELENGTH(length, format) ((length)*((format)>>3))
 #define NUMELEM(bytelength, format) ((bytelength) / ((format)>>3))
 
-/* incremental interface -- lots of these aren't really used. */
-
-typedef void (*XtLoseSelectionIncrProc) (); 
-	/* widget, selection, closure) */
-	/*	Widget	widget,*/
-	/*	Atom	*selection,*/
-	/*	XtPointer closure*/	/* selection owner specified */
-
-typedef void (*XtSelectionDoneIncrProc) ();
-/* widget, selection, target, request_id, closure */
-	/*	Widget	widget,*/
-	/*	Atom	*selection,*/
-	/*	Atom	*target,*/
-	/*	XtRequestId request_id */
-	/*	XtPointer closure */
-
-typedef Boolean (*XtConvertSelectionIncrProc)();
- /* widget, selection, target, type, value, length,
-    format, max_length, closure, request_id */
-	/*	Widget	widget,*/
-	/*	Atom	*selection,*/
-	/*	Atom	*target,*/
-	/*	Atom	*type, */
-	/*	XtPointer	*value, */
-	/*	unsigned long	*length, */
-	/*	int	*format */	 
-	/*	unsigned long	max_length,*/
-	/*	XtPointer	closure,*/
-	/*	XtRequestId	request_id,*/
-
-typedef void (*XtCancelSelectionCallbackProc)();
-/* widget, selection, target, closure */
-	/*	Widget	widget,*/
-	/*	Atom	*selection,*/
-	/*	XtPointer	closure*/
-
-typedef void (*XtCancelConvertSelectionProc)();
-/* widget, selection, target, closure */
-	/*	Widget	widget,*/
-	/*	Atom	*selection,*/
-	/*	Atom	*target, */
-	/*	XtRequestId	request_id*/
-	/*	XtPointer	closure*/
-
-typedef void (*XtSelectionIncrCallbackProc) ();
-/* widget, closure, selection, type, value, length, format */
-	/*	Widget	widget,*/
-	/*	XtPointer	closure, */
-	/*	Atom	*selection,*/
-	/*	Atom	*type,*/
-	/*	XtPointer	value,*/
-	/*	unsigned long	*length,*/
-	/*	int	*format  */
-
 typedef struct _IncrementalRec *Incremental;
 
 typedef struct _IncrementalRec {
@@ -96,7 +42,7 @@ typedef struct _IncrementalRec {
    Incremental next, prev;
    Boolean incr_callback;
    XtConvertSelectionIncrProc convert;
-   XtCancelSelectionCallbackProc owner_cancel;
+   XtCancelConvertSelectionProc owner_cancel;
    XtPointer owner_closure;
    char *value;
    int bytelength;
@@ -113,7 +59,7 @@ typedef struct {
     XtConvertSelectionProc convert;
     XtLoseSelectionProc loses;
     XtSelectionDoneProc notify;
-    XtCancelSelectionCallbackProc owner_cancel;
+    XtCancelConvertSelectionProc owner_cancel;
     Incremental incrList;
     Boolean incremental;
     XtPointer owner_closure;
@@ -133,7 +79,7 @@ typedef struct {
     Time time;
     Select ctx;
     Boolean incremental;
-    XtCancelConvertSelectionProc req_cancel;
+    XtCancelSelectionCallbackProc req_cancel;
 } CallBackInfoRec, *CallBackInfo;
 
 typedef struct {
@@ -160,6 +106,7 @@ typedef struct {
 } SelectionPropRec, *SelectionProp;
 
 typedef struct {
+  Atom incremental_atom, indirect_atom;
   int propCount;
   SelectionProp list;
 } PropListRec, *PropList;
