@@ -6,40 +6,64 @@ X - X Window System server
 [:displaynumber] [-option ...] [ttyname]
 .SH DESCRIPTION
 .I X
-is the window system server.  On operating systems derived from 4.3bsd, it is 
-run automatically by \fIinit(8)\fP, otherwise it is started from the
-\fIxinit(1)\fP program.  The \fIdisplaynumber\fP argument is used
-by clients in their DISPLAY environment variables to indicate which server
-to contact (large machines may have several displays attached).  This
-number is usually in the range of 0-6 and is also used in determining the
-names of various startup files.  The default value is ":0".
-The \fIttyname\fP argument is passed in
-by \fIinit\fP and isn't used.
+is the generic name for the X Window System server.  It is frequently a link
+or a copy of the appropriate server binary for driving the most frequently
+used server on a given machine.  The sample server from MIT supports the
+following platforms:
+.sp
+.ta 1.25in
+.in +4
+.nf
+Xqvss	Digital monochrome vaxstationII or II
+Xqdss	Digital color vaxstationII or II
+Xsun	Sun monochrome or color Sun 2, 3, or 4
+Xhp	HP Topcat 9000s300
+Xapollo	Apollo monochrome (Domain/IX 9.6)
+Xibm	IBM AED, APA, 8514a, megapel, and VGA on PC/RT
+XmacII	Apple monochrome Macintosh II
+Xplx	Parallax color and video graphics controller
+.fi
+.in -4
+.SH "STARTING THE SERVER"
+The server is usually started from the X Display Manager program \fIxdm\fP.
+This utility is run from the system boot files and takes care of keeping
+the server running, prompting for usernames and passwords, and starting up
+the user sessions.  It is easily configured for sites that wish to provide
+nice, consistent interfaces for novice users (loading convenient sets of
+resources, starting up a window manager, clock, and nice selection of 
+terminal emulator windows).
 .PP
-The executable that is invoked when \fIX\fP is run
-is actually one of a collection of programs that depend on the hardware
-that is installed on the machine.  Any additional features are described in
-the documentation for that server.
+Since \fIxdm\fP now handles automatic starting of the server in a portable
+way, the \fI-L\fP option to \fIxterm\fP is now considered obsolete.  Support
+for starting a login window from 4.3bsd-dervied \fI/etc/ttys\fP files
+may not be included in future releases.
 .PP
-The sample server has support for the following protocols:
-.TP 8
-.B TCP\/IP
-.br
-The server listens on port htons(6000+N), where N is the display number.
-.TP 8
-.B "Unix Domain"
-The file name for the socket is X_UNIX_PATH* where X_UNIX_PATH
-is a configuration parameter (/tmp/.X11-unix/X in the standard release) and
-"*" is the display number.
-.TP 8
-.B "DECnet"
-.br
-The server responds to connections to object ``X*'', where "*''
-is the display number.
+Installations that run more than one window system will still need to use the
+\fIxinit\fP utility.  However, \fIxinit\fP is to be considered a tool for
+building startup scripts and is not intended for use by end users.  Site
+adminstrators are \fBstrongly\fP urged to build nicer interfaces for novice
+users.
 .PP
 When the sample server starts up, it takes over the display.  If you 
 are running on a workstation whose console is the display, you cannot log into
 the console while the server is running.
+.SH "NETWORK CONNECTIONS"
+The sample server supports connections made using the following reliable
+byte-streams:
+.TP 4
+.B TCP\/IP
+.br
+The server listens on port htons(6000+n), where n is the display number.
+.TP 4
+.B "Unix Domain"
+The file name for the socket is X_UNIX_PATHn where X_UNIX_PATH
+is a configuration parameter (/tmp/.X11-unix/X in the standard release) and
+"n" is the display number.
+.TP 4
+.B "DECnet"
+.br
+The server responds to connections to object ``X$Xn'', where "n''
+is the display number.
 .SH OPTIONS
 The following options can be given on the command line to any X server, usually
 when it is
@@ -111,56 +135,15 @@ sets the default font
 forces the default backing-store of all windows to be WhenMapped;
 a cheap trick way of getting backing-store to apply to all windows.
 .PP
-Specific implementations may have other command line options.
-.SH "RUNNING FROM INIT"
-.PP
-On operating systems such as 4.3bsd and Ultrix, the server and your login 
-window are normally started automatically by 
-\fIinit(8)\fP.
-.PP
-By convention, the pseudoterminal with the
-highest minor device number (e.g. \fI\/dev\/ttyqf\fP and \fI\/dev\/ptyqf\fP)
-is renamed for
-the lowest display number (e.g. \fI\/dev\/ttyv0\fP and \fI\/dev\/ptyv0\fP).
-Machines that have more than one
-display can repeat this process using \fIttyqe\fP for \fIttyv1\fP, and 
-so on.
-.PP
-With this done, you can set up \fI\/etc\/ttys\fP to run \fIX\fP and 
-\fIxterm\fP.  Although the release will install both the X server and 
-\fIxterm\fP in /usr/bin/X11 by default, many sites choose to make a copy of
-both of these programs on the root partition (usually in /etc) so that they
-may still be used even if the partition containing /usr/bin/X11 isn't mounted.
-For example (the \\'s is to make the lines fit on this 
-manual page, the real entries have to occupy just one line):
-.sp
-.nf
-	ttyv0 "/etc/xterm -L -geometry 80x24+1+1 -display :0" xterm on \\
-		secure window="/etc/Xqvss :0"
-.fi
-.sp
-on the client machine.  Note that the name of the server should correspond to
-the type of display being used.
-.PP
-Important note:  some versions of \fIinit\fP have relatively small
-program name buffer sizes, so you may find that you can't list many 
-\fIxterm\fP options.
-In addition, some \fIinit\fP's will treat the sharp signs that are used in
-specifying colors (such as for window backgrounds) as comments for the whole 
-line.  If you run into problems
-such as this you may want to write a small program that just exec's 
-\fIxterm\fP with the proper arguments and have \fIinit\fP run that instead.
-.PP
-If all else fails, set the display up to be a dumb terminal and use the
-\fIxinit\fP program after logging in.
+Specific servers may have additional command line options.
 .SH "SECURITY"
 .I X
 uses an access control list for deciding whether or not to accept a
 connection from a given cleint.  This list
 initially consists of the machine on which the server is running, and any
 hosts listed in the file
-\fI/etc/X*.hosts\fP
-(where \fI*\fP is the display number).  This file should contain one line
+\fI/etc/Xn.hosts\fP
+(where \fIn\fP is the display number).  This file should contain one line
 per host name, with no white space.  If a name ends in ``::'', it is assumed
 to be a DECnet host, otherwise it is interpreted as an Internet host.
 .PP
@@ -177,19 +160,19 @@ authentication services on connection startup beyond the simple host name
 check, but it is not used in the standard distribution.
 .SH "SIGNALS"
 .I X
-will catch the SIGHUP signal sent by \fIinit(8)\fP
-after the initial process (usually
-the login \fIxterm(1)\fP) started on the display terminates.
-This signal causes all connections to be closed (thereby ``disowning'' the
-terminal), all resources to be freed, and all defaults restored.
+will catch the SIGHUP signal sent by the display manager when the user's main
+program exits.
+This signal causes all connections to be closed,
+all resources to be freed, and all defaults restored.
 .SH "FONTS"
-Fonts are stored in individual files in the directory(ies) named by
-the font search path.  These files may be created by the \fIfc\fP utility.
-The name of the file must correspond to the name of the font in lowercase
-with the suffix ".snf" appended.
-Font files may be stored in \fIcompress\fP(1) format, in which case an
-additional suffix (usually ".Z", defined when the server is built) must
-be appended to the usual filename.
+Fonts are stored in individual files in the directories named by
+the font search path.  These files are created from Bitmap Description Format
+(BDF) textual descriptions using the \fIbdftosnf\fP and \fImkfontdir\fP
+utilities.  Font names are
+translated into file names using the \fIfonts.dir\fP file created by
+\fImkfontdir\fP.  \fBUnlike previous releases, if a directory in the font path
+doesn't have a \fIfonts.dir\fP, the server will not be able to find any fonts
+in that directory.\fP
 .SH DIAGNOSTICS
 Too numerous to list them all.
 If run from \fIinit(8)\fP, errors are logged in the file \fI/usr/adm/X*msgs\fP,
@@ -210,8 +193,9 @@ Unix domain socket
 /usr/adm/X*msgs
 Error log file
 .SH "SEE ALSO"
-X(1), xinit(1), xterm(1), xwm(1), xhost(1), xset(1), xsetroot(1), ttys(5),
-init(8), Xqdss(1), Xqvss(1), Xsun(1), Xapollo(1),
+X(1), xdm(1), mkfontdir(1),
+xinit(1), xterm(1), uwm(1), xhost(1), xset(1), xsetroot(1), 
+ttys(5), init(8), Xqdss(1), Xqvss(1), Xsun(1), Xapollo(1), XmacII(1)
 .I "X Window System Protocol,"
 .I "Definition of the Porting Layer for the X v11 Sample Server,"
 .I "Strategies for Porting the X v11 Sample Server,"
@@ -229,6 +213,10 @@ existing connections have their TCP TIME_WAIT timers expire.
 .PP
 The color database is missing a large number of colors.  However, there
 doesn't seem to be a better one available that can generate RGB values.
+.PP
+The \fIxterm -L\fP method for starting an initial window from \fI/etc/ttys\fP
+is completely inadequate and should be removed.  People should use \fIxdm\fP
+instead.
 .SH COPYRIGHT
 Copyright 1988, Massachusetts Institute of Technology.
 .br
