@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.18 94/04/14 14:44:08 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.19 94/04/17 21:15:21 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -459,7 +459,7 @@ static void CreateMainInterface(ad)
 #ifndef X_NOT_POSIX
 	getcwd((char *)NULL, PATH_MAX),
 #else
-	"unknown-cwd"
+	"unknown-cwd",
 #endif
         XtNfromHoriz, cwdLabel,
         XtNfromVert, quitButton,
