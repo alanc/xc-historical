@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.62 89/06/16 19:34:56 jim Exp $";
+static char Xrcsid[] = "$XConsortium: NextEvent.c,v 1.63 89/06/19 11:38:49 jim Exp $";
 /* $oHeader: NextEvent.c,v 1.4 88/09/01 11:43:27 asente Exp $ */
 #endif /* lint */
 
@@ -601,13 +601,13 @@ void XtAppNextEvent(app, event)
 	for (i = 1; i <= app->count; i++) {
 	    d = (i + app->last) % app->count;
 	    if (d == 0) DoOtherSources(app);
-	    if (XEventsQueued(app->list[d], QueuedAfterFlush) > 0) {
-		XNextEvent(app->list[d], event);
-		app->last = d;
-		if (event->xany.type == MappingNotify)
-		    _RefreshMapping(event);
-		return;
-	    }
+	    if (XEventsQueued(app->list[d], QueuedAfterReading))
+		goto GotEvent;
+	}
+	for (i = 1; i <= app->count; i++) {
+	    d = (i + app->last) % app->count;
+	    if (XEventsQueued(app->list[d], QueuedAfterFlush))
+		goto GotEvent;
 	}
 
 	/* We're ready to wait...if there is a work proc, call it */
@@ -617,8 +617,9 @@ void XtAppNextEvent(app, event)
 				(unsigned long *) NULL, app);
 
 	if (d != -1) {
+	  GotEvent:
 	    XNextEvent (app->list[d], event);
-	    app->last = d;;
+	    app->last = d;
 	    if (event->xany.type == MappingNotify)
 		_RefreshMapping(event);
 	    return;
@@ -679,14 +680,13 @@ void XtAppProcessEvent(app, mask)
 	    if (mask & XtIMXEvent) {
 		for (i = 1; i <= app->count; i++) {
 		    d = (i + app->last) % app->count;
-		    if (XEventsQueued(app->list[d], QueuedAfterFlush) ) {
-			XNextEvent(app->list[d], &event);
-			app->last = d;
-			if (event.xany.type == MappingNotify)
-			    XRefreshKeyboardMapping(&event);
-			XtDispatchEvent(&event);
-			return;
-		    }
+		    if (XEventsQueued(app->list[d], QueuedAfterReading))
+			goto GotEvent;
+		}
+		for (i = 1; i <= app->count; i++) {
+		    d = (i + app->last) % app->count;
+		    if (XEventsQueued(app->list[d], QueuedAfterFlush))
+			goto GotEvent;
 		}
 	    }
 
@@ -702,6 +702,7 @@ void XtAppProcessEvent(app, mask)
 				    (unsigned long *) NULL, app);
 	    
 	    if (mask & XtIMXEvent && d != -1) {
+	      GotEvent:
 		XNextEvent(app->list[d], &event);
 		app->last = d;
 		if (event.xany.type == MappingNotify) {
@@ -731,9 +732,17 @@ XtInputMask XtAppPending(app)
  * Check for pending X events
  */
 	for (d = 0; d < app->count; d++) {
-	    if (XEventsQueued(app->list[d], QueuedAfterFlush)) {
-		ret |= XtIMXEvent;
+	    if (XEventsQueued(app->list[d], QueuedAfterReading)) {
+		ret = XtIMXEvent;
 		break;
+	    }
+	}
+	if (ret == 0) {
+	    for (d = 0; d < app->count; d++) {
+		if (XEventsQueued(app->list[d], QueuedAfterFlush)) {
+		    ret = XtIMXEvent;
+		    break;
+		}
 	    }
 	}
 
@@ -801,11 +810,13 @@ Boolean XtAppPeekEvent(app, event)
 	    for (i = 1; i <= app->count; i++) {
 		d = (i + app->last) % app->count;
 		if (d == 0) foundCall = PeekOtherSources(app);
-		if (XEventsQueued(app->list[d], QueuedAfterFlush) ) {
-		    XPeekEvent(app->list[d], event);
-		    app->last = (d == 0 ? app->count : d) - 1;
-		    return TRUE;
-		}
+		if (XEventsQueued(app->list[d], QueuedAfterReading))
+		    goto GotEvent;
+	    }
+	    for (i = 1; i <= app->count; i++) {
+		d = (i + app->last) % app->count;
+		if (XEventsQueued(app->list[d], QueuedAfterFlush))
+		    goto GotEvent;
 	    }
 
 	    if (foundCall) {
@@ -819,6 +830,7 @@ Boolean XtAppPeekEvent(app, event)
 		    (unsigned long *) NULL, app);
 
 	    if (d != -1) {
+	      GotEvent:
 		XPeekEvent(app->list[d], event);
 		app->last = (d == 0 ? app->count : d) - 1;
 		return TRUE;
