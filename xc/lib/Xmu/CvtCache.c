@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: CvtCache.c,v 1.1 89/08/17 14:06:55 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -31,6 +31,22 @@ extern char *malloc();
 static XmuDisplayQueue *dq = NULL;
 static int _CloseDisplay(), _FreeCCDQ();
 
+
+/*
+ * InitializeCvtCache - fill in the appropriate fields
+ */
+static void InitializeCvtCache (c)
+    register XmuCvtCache *c;
+{
+    c->string_to_bitmap.file_path = NULL;
+    c->string_to_bitmap.try_default_path = True;
+}
+
+
+/*
+ * XmuCCLookupDisplay - return the cache entry for the indicated display;
+ * initialize the cache if necessary
+ */
 XmuCvtCache *XmuCCLookupDisplay (dpy)
     Display *dpy;
 {
@@ -64,8 +80,7 @@ XmuCvtCache *XmuCCLookupDisplay (dpy)
 	/*
 	 * initialize fields in cache
 	 */
-	c->string_to_bitmap.file_path = NULL;
-	c->string_to_bitmap.try_default_path = True;
+	InitializeCvtCache (c);
     }
 
     /*
