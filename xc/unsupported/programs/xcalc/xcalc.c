@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcalc.c,v 1.1 89/05/04 11:44:12 jim Exp $
+ * $XConsortium: xcalc.c,v 1.2 89/05/08 16:23:15 converse Exp $
  *
  * xcalc.c  -  a hand calculator for the X Window system
  * 
@@ -37,10 +37,10 @@
 #include <X11/StringDefs.h>
 #include <X11/Xatom.h>
 #include <X11/Shell.h>
-#include <X11/Form.h>
-#include <X11/Label.h>
-#include <X11/Command.h>
-#include <X11/Toggle.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Label.h>
+#include <X11/Xaw/Command.h>
+#include <X11/Xaw/Toggle.h>
 #include <X11/cursorfont.h>
 #include "xcalc.h"
 #include "actions.h"
@@ -333,7 +333,7 @@ void lose(w, selection)
     Widget	w;
     Atom	*selection;
 {
-    XtToggleUnsetCurrent(LCD);
+    XawToggleUnsetCurrent(LCD);
 }
 
 /*
