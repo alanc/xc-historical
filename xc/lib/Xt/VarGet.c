@@ -133,39 +133,41 @@ _XtGetTypedArg(widget, typed_arg, resources, num_resources)
  	return;
     }
 
-    value = XtMalloc(from_size);
+    value = ALLOCATE_LOCAL(from_size);
+    if (value == NULL) _XtAllocError(NULL);
     XtSetArg(arg, typed_arg->name, value);
     XtGetValues(widget, &arg, 1);
 
-    to_val.addr = NULL;
     from_val.size = from_size;
     from_val.addr = (caddr_t)value;
+    to_val.addr = (caddr_t)typed_arg->value;
+    to_val.size = typed_arg->size;
 
-    XtConvert(widget, from_type, &from_val, typed_arg->type, &to_val);
-
-    if (to_val.addr == NULL) {
-	String params[3];
-	Cardinal num_params = 3;
-	params[0] = from_type;
-	params[1] = typed_arg->type;
-	params[2] = XtName(widget);
-        XtAppWarningMsg(XtDisplayToApplicationContext(XtDisplay(widget)),
-            "conversionFailed", "xtGetTypedArg", "XtToolkitError",
-            "Type conversion (%s to %s) failed for widget '%s'",
-	    params, &num_params);
-	return;
+    if (!XtConvertAndStore(widget, from_type, &from_val,
+			   typed_arg->type, &to_val)) {
+	if (to_val.size > typed_arg->size) {
+	    String params[2];
+	    Cardinal num_params = 2;
+	    params[0] = typed_arg->type;
+	    params[1] = XtName(widget);
+	    XtAppWarningMsg(XtDisplayToApplicationContext(XtDisplay(widget)), 
+		"conversionFailed", "xtGetTypedArg", "XtToolkitError",
+		"Insufficient space for converted type '%s' in widget '%s'",
+		params, &num_params);
+	}
+	else {
+	    String params[3];
+	    Cardinal num_params = 3;
+	    params[0] = from_type;
+	    params[1] = typed_arg->type;
+	    params[2] = XtName(widget);
+	    XtAppWarningMsg(XtDisplayToApplicationContext(XtDisplay(widget)),
+		"conversionFailed", "xtGetTypedArg", "XtToolkitError",
+		"Type conversion (%s to %s) failed for widget '%s'",
+		params, &num_params);
+	}
     }
-
-    if (to_val.size > typed_arg->size) {
-        XtAppWarningMsg(XtDisplayToApplicationContext(XtDisplay(widget)), 
-            "conversionFailed", "xtGetTypedArg", "XtToolkitError",
-            "Insufficient space for converted type", (String *)NULL, 
-	    (Cardinal *)NULL); 
-        return; 
-    }
-
-    bcopy((char *)to_val.addr, (char *)typed_arg->value, (int)to_val.size);
-    XtFree(value);
+    DEALLOCATE_LOCAL(value);
 }
 
 static int
