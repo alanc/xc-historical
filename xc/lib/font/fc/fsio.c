@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.32 94/01/31 12:10:00 mor Exp $ */
+/* $XConsortium: fsio.c,v 1.33 94/02/03 12:08:54 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -459,7 +459,7 @@ int
 _fs_data_ready(conn)
     FSFpePtr    conn;
 {
-    long        readable;
+    BytesReadable_t readable;
 
     if (_FONTTransBytesReadable(conn->trans_conn, &readable) < 0)
 	return -1;
