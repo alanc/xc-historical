@@ -1,4 +1,4 @@
-/* $XConsortium: accept.c,v 1.20 94/03/18 10:55:21 mor Exp $ */
+/* $XConsortium: accept.c,v 1.21 94/03/18 15:59:01 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -63,6 +63,9 @@ IceAcceptStatus	*statusRet;
 
     iceConn->waiting_for_byteorder = True;
     iceConn->connection_status = IceConnectPending;
+    iceConn->io_ok = True;
+    iceConn->dispatch_level = 0;
+    iceConn->context = NULL;
     iceConn->my_ice_version_index = 0;
 
     iceConn->trans_conn = newconn;
@@ -120,6 +123,7 @@ IceAcceptStatus	*statusRet;
 
     iceConn->skip_want_to_close = False;
     iceConn->want_to_close = False;
+    iceConn->free_asap = False;
 
     iceConn->saved_reply_waits = NULL;
     iceConn->ping_waits = NULL;
