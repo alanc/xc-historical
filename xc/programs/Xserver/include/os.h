@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.60 94/03/18 12:25:47 dpw Exp $ */
+/* $XConsortium: os.h,v 1.61 94/04/17 20:25:52 dpw Exp kaleb $ */
 
 #ifndef OS_H
 #define OS_H
@@ -82,18 +82,18 @@ typedef struct _NewClientRec *NewClientPtr;
  */
 #ifdef __HIGHC__
 
+#ifndef NCR
 extern char *alloca();
 
 #if HCVERSION < 21003
 #define ALLOCATE_LOCAL(size)	alloca((int)(size))
-#if defined(NCR)
-#pragma on(alloca);
-#else
 pragma on(alloca);
-#endif
 #else /* HCVERSION >= 21003 */
 #define	ALLOCATE_LOCAL(size)	_Alloca((int)(size))
 #endif /* HCVERSION < 21003 */
+#else /* NCR */
+#define ALLOCATE_LOCAL(size)	alloca(size)
+#endif
 
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 
