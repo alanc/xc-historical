@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibufst.h,v 1.2 89/10/03 13:51:31 jim Exp $
+ * $XConsortium: multibufst.h,v 1.3 89/10/03 17:22:45 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -39,22 +39,6 @@
 	req->reqType = info->codes->major_opcode; \
 	req->mbufReqType = X_/**/name;
 #endif
-
-#define MULTIBUF_PROTOCOL_NAME "Multi-Buffering"
-
-#define BUFFER_MAJOR_VERSION	1	/* current version numbers */
-#define BUFFER_MINOR_VERSION	0
-
-#define X_MbufGetBufferVersion		0
-#define X_MbufCreateImageBuffers	1
-#define X_MbufDestroyImageBuffers	2
-#define X_MbufDisplayImageBuffers	3
-#define X_MbufSetMultiBufferAttributes	4
-#define X_MbufGetMultiBufferAttributes	5
-#define X_MbufSetBufferAttributes	6
-#define X_MbufGetBufferAttributes	7
-#define X_MbufGetBufferInfo		8
-#define X_MbufCreateStereoWindow	9
 
 typedef struct {
 	CARD32	visualID B32;		/* associated visual */
