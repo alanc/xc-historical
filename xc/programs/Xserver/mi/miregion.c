@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.45 89/07/11 09:46:26 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.46 89/07/12 13:45:25 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -1222,6 +1222,7 @@ miRegionAppend(dstrgn, rgn)
 	else
 	    bcopy((char *)REGION_BOXPTR(dstrgn), (char *)new,
 		  dnumRects * sizeof(BoxRec));
+	new = REGION_BOXPTR(dstrgn);
     }
     else
 	new = REGION_BOXPTR(dstrgn) + dnumRects;
