@@ -11,11 +11,12 @@
  *		16-Jun-87
  */
 
+#include <stdio.h>
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/shape.h>
-#include <stdio.h>
+#include <X11/Xmu.h
 
 /* Include routines to handle parsing defaults */
 #include "dsimple.h"
@@ -63,6 +64,8 @@ usage()
 	"    -wm                  print out window manager hints\n");
     fprintf (stderr,
 	"    -shape               print out shape extents\n");
+    fprintf (stderr,
+	"    -frame               don't ignore window manager frames\n");
     fprintf (stderr,
 	"    -english             print out sizes in english units\n");
     fprintf (stderr,
@@ -186,6 +189,7 @@ main(argc, argv)
 {
   register int i;
   int tree = 0, stats = 0, bits = 0, events = 0, wm = 0, size  = 0, shape = 0;
+  int frame = 0;
 
   INIT_NAME;
 
@@ -223,6 +227,10 @@ main(argc, argv)
       wm = 1;
       continue;
     }
+    if (!strcmp(argv[i], "-frame")) {
+      frame = 1;
+      continue;
+    }
     if (!strcmp(argv[i], "-size")) {
       size = 1;
       continue;
@@ -252,6 +260,7 @@ main(argc, argv)
 	  printf("         ==> would like information by clicking the\n");
 	  printf("         ==> mouse in that window.\n");
 	  window = Select_Window(dpy);
+	  if (window && !frame) window = XmuClientWindow (dpy, window);
   }
 
   /*
