@@ -1331,9 +1331,9 @@
 		 (data (make-array (* line-width height)
 				   :element-type '(unsigned-byte 8)))
 		 (number-string (make-string 2))
-		 (line 0)
+		 (line-base 0)
 		 (byte 0))
-	    (declare (type card16 byte-width line-width line byte)
+	    (declare (type card16 byte-width line-width line-base byte)
 		     (type string number-string)
 		     (type (simple-array card8 (*)) data))
 	    (with-vector (data (simple-array card8 (*)))
@@ -1343,11 +1343,11 @@
 		  (loop (when (eql (read-char fstream) #\x) (return)))
 		  (setf (aref number-string 0) (read-char fstream))
 		  (setf (aref number-string 1) (read-char fstream))
-		  (setf (aref data (+ line byte))
+		  (setf (aref data (+ line-base byte))
 			(parse-integer number-string :radix 16. :junk-allowed t))
 		  (incf byte))
 		(setq byte 0
-		      line (+ line line-width)))
+		      line-base (+ line-base line-width)))
 	      (create-image :width width :height height :depth depth
 			    :plist properties :data data
 			    :bit-lsb-first-p t ;; WHY? (sounds like a bug)
