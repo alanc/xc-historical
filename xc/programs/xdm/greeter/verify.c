@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.25 93/09/30 12:07:15 gildea Exp $
+ * $XConsortium: verify.c,v 1.26 94/01/01 14:55:00 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -52,6 +52,31 @@ static char *envvars[] = {
     NULL
 };
 
+static char **
+userEnv (d, useSystemPath, user, home, shell)
+struct display	*d;
+int	useSystemPath;
+char	*user, *home, *shell;
+{
+    char	**env;
+    char	**envvar;
+    char	*str;
+    extern char **defaultEnv (), **setEnv ();
+    
+    env = defaultEnv ();
+    env = setEnv (env, "DISPLAY", d->name);
+    env = setEnv (env, "HOME", home);
+    env = setEnv (env, "USER", user);
+    env = setEnv (env, "PATH", useSystemPath ? d->systemPath : d->userPath);
+    env = setEnv (env, "SHELL", shell);
+    for (envvar = envvars; *envvar; envvar++)
+    {
+	if (str = getenv(*envvar))
+	    env = setEnv (env, *envvar, str);
+    }
+    return env;
+}
+
 Verify (d, greet, verify)
 struct display		*d;
 struct greet_info	*greet;
@@ -62,7 +87,7 @@ struct verify_info	*verify;
 	struct spwd	*sp;
 #endif
 	char		*crypt ();
-	char		**userEnv (), **systemEnv (), **parseArgs ();
+	char		**systemEnv (), **parseArgs ();
 	char		*shell, *home;
 	char		**argv;
 
@@ -118,67 +143,6 @@ struct verify_info	*verify;
 	printEnv (verify->systemEnviron);
 	Debug ("end of environments\n");
 	return 1;
-}
-
-extern char **setEnv ();
-
-char **
-defaultEnv ()
-{
-    char    **env, **exp, *value;
-
-    env = 0;
-    for (exp = exportList; exp && *exp; ++exp)
-    {
-	value = getenv (*exp);
-	if (value)
-	    env = setEnv (env, *exp, value);
-    }
-    return env;
-}
-
-char **
-userEnv (d, useSystemPath, user, home, shell)
-struct display	*d;
-int	useSystemPath;
-char	*user, *home, *shell;
-{
-    char	**env;
-    char	**envvar;
-    char	*str;
-    
-    env = defaultEnv ();
-    env = setEnv (env, "DISPLAY", d->name);
-    env = setEnv (env, "HOME", home);
-    env = setEnv (env, "USER", user);
-    env = setEnv (env, "PATH", useSystemPath ? d->systemPath : d->userPath);
-    env = setEnv (env, "SHELL", shell);
-    for (envvar = envvars; *envvar; envvar++)
-    {
-	if (str = getenv(*envvar))
-	    env = setEnv (env, *envvar, str);
-    }
-    return env;
-}
-
-char **
-systemEnv (d, user, home)
-struct display	*d;
-char	*user, *home;
-{
-    char	**env;
-    
-    env = defaultEnv ();
-    env = setEnv (env, "DISPLAY", d->name);
-    if (home)
-	env = setEnv (env, "HOME", home);
-    if (user)
-	env = setEnv (env, "USER", user);
-    env = setEnv (env, "PATH", d->systemPath);
-    env = setEnv (env, "SHELL", d->systemShell);
-    if (d->authFile)
-	    env = setEnv (env, "XAUTHORITY", d->authFile);
-    return env;
 }
 
 #ifdef NGROUPS_MAX

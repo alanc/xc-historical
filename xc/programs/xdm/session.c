@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.64 94/01/14 19:40:13 gildea Exp $
+ * $XConsortium: session.c,v 1.65 94/01/18 17:29:15 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -22,13 +22,14 @@
  * session.c
  */
 
-# include "dm.h"
-# include <X11/Xlib.h>
-# include <signal.h>
-# include <X11/Xatom.h>
-# include <errno.h>
-# include <stdio.h>
-# include <ctype.h>
+#include "dm.h"
+#include "greet.h"
+#include <X11/Xlib.h>
+#include <signal.h>
+#include <X11/Xatom.h>
+#include <errno.h>
+#include <stdio.h>
+#include <ctype.h>
 #ifdef AIXV3
 # include <usersec.h>
 #endif
@@ -38,6 +39,13 @@
 #endif
 #ifdef K5AUTH
 # include <krb5/krb5.h>
+#endif
+
+#ifndef GREET_USER_STATIC
+#include <dlfcn.h>
+#ifndef RTLD_NOW
+#define RTLD_NOW 1
+#endif
 #endif
 
 #ifdef X_NOT_STDC_ENV
@@ -119,8 +127,11 @@ ErrorHandler(dpy, event)
 ManageSession (d)
 struct display	*d;
 {
-    int			pid, code, i;
-    Display		*dpy, *InitGreet ();
+    int			pid, code;
+    Display		*dpy;
+    greet_user_rtn	greet_stat; 
+    static GreetUserProc greet_user_proc = NULL;
+    void		*greet_lib_handle;
 
     Debug ("ManageSession %s\n", d->name);
     (void)XSetIOErrorHandler(IOErrorHandler);
@@ -130,132 +141,71 @@ struct display	*d;
      * Load system default Resources
      */
     LoadXloginResources (d);
-    dpy = InitGreet (d);
-    /*
-     * Run the setup script - note this usually will not work when
-     * the server is grabbed, so we don't even bother trying.
-     */
-    if (!d->grabServer)
-	SetupDisplay (d);
-    if (!dpy) {
-	LogError ("Cannot reopen display %s for greet window\n", d->name);
-	exit (RESERVER_DISPLAY);
-    }
-    for (;;) {
-	/*
-	 * Greet user, requesting name/password
-	 */
-	code = Greet (d, &greet);
-	if (code != 0)
-	{
-	    CloseGreet (d);
-	    SessionExit (d, code, FALSE);
-	}
-	/*
-	 * Verify user
-	 */
-	if (Verify (d, &greet, &verify))
-	    break;
-	else
-	    FailedLogin (d, &greet);
-    }
-    DeleteXloginResources (d, dpy);
-    CloseGreet (d);
-    Debug ("Greet loop finished\n");
-    /*
-     * Run system-wide initialization file
-     */
-    if (source (verify.systemEnviron, d->startup) != 0)
-    {
-	Debug ("Startup program %s exited with non-zero status\n",
-		d->startup);
-	SessionExit (d, OBEYSESS_DISPLAY, FALSE);
-    }
-    /*
-     * for user-based authorization schemes,
-     * add the user to the server's allowed "hosts" list.
-     */
-    for (i = 0; i < d->authNum; i++)
-    {
-#ifdef SECURE_RPC
-	if (d->authorizations[i]->name_length == 9 &&
-	    memcmp(d->authorizations[i]->name, "SUN-DES-1", 9) == 0)
-	{
-	    XHostAddress	addr;
-	    char		netname[MAXNETNAMELEN+1];
-	    char		domainname[MAXNETNAMELEN+1];
-    
-	    getdomainname(domainname, sizeof domainname);
-	    user2netname (netname, verify.uid, domainname);
-	    addr.family = FamilyNetname;
-	    addr.length = strlen (netname);
-	    addr.address = netname;
-	    XAddHost (dpy, &addr);
-	}
-#endif
-#ifdef K5AUTH
-	if (d->authorizations[i]->name_length == 14 &&
-	    memcmp(d->authorizations[i]->name, "MIT-KERBEROS-5", 14) == 0)
-	{
-	    /* Update server's auth file with user-specific info.
-	     * Don't need to AddHost because X server will do that
-	     * automatically when it reads the cache we are about
-	     * to point it at.
-	     */
-	    extern Xauth *Krb5GetAuthForUid();
 
-	    XauDisposeAuth (d->authorizations[i]);
-	    d->authorizations[i] =
-		Krb5GetAuthForUid(14, "MIT-KERBEROS-5", verify.uid);
-	    SaveServerAuthorizations (d, d->authorizations, d->authNum);
-	} 
+#ifdef GREET_USER_STATIC
+    greet_user_proc = GreetUser;
+#else
+    Debug("ManageSession: loading greeter library %s\n", greeterLib);
+    greet_lib_handle = dlopen(greeterLib, RTLD_NOW);
+    if (greet_lib_handle != NULL)
+	greet_user_proc = dlsym(greet_lib_handle, "GreetUser");
+    if (greet_user_proc == NULL)
+	{
+	LogError("%s while loading %s\n", dlerror(), greeterLib);
+	exit(UNMANAGE_DISPLAY);
+	}
 #endif
-    }
-    clientPid = 0;
-    if (!Setjmp (abortSession)) {
-	(void) Signal (SIGTERM, catchTerm);
-	/*
-	 * Start the clients, changing uid/groups
-	 *	   setting up environment and running the session
-	 */
-	if (StartClient (&verify, d, &clientPid, greet.name, greet.password)) {
-	    Debug ("Client Started\n");
+
+    greet_stat = (*greet_user_proc)(d, &dpy, &verify, &greet);
+
+    if (greet_stat == Greet_Success)
+    {
+	clientPid = 0;
+	if (!Setjmp (abortSession)) {
+	    (void) Signal (SIGTERM, catchTerm);
 	    /*
-	     * Wait for session to end,
+	     * Start the clients, changing uid/groups
+	     *	   setting up environment and running the session
 	     */
-	    for (;;) {
-		if (d->pingInterval)
-		{
-		    if (!Setjmp (pingTime))
+	    if (StartClient (&verify, d, &clientPid, greet.name, greet.password)) {
+		Debug ("Client Started\n");
+		/*
+		 * Wait for session to end,
+		 */
+		for (;;) {
+		    if (d->pingInterval)
 		    {
-			(void) Signal (SIGALRM, catchAlrm);
-			(void) alarm (d->pingInterval * 60);
-			pid = wait ((waitType *) 0);
-			(void) alarm (0);
+			if (!Setjmp (pingTime))
+			{
+			    (void) Signal (SIGALRM, catchAlrm);
+			    (void) alarm (d->pingInterval * 60);
+			    pid = wait ((waitType *) 0);
+			    (void) alarm (0);
+			}
+			else
+			{
+			    (void) alarm (0);
+			    if (!PingServer (d, (Display *) NULL))
+				SessionPingFailed (d);
+			}
 		    }
 		    else
 		    {
-			(void) alarm (0);
-		    	if (!PingServer (d, (Display *) NULL))
-			    SessionPingFailed (d);
+			pid = wait ((waitType *) 0);
 		    }
+		    if (pid == clientPid)
+			break;
 		}
-		else
-		{
-		    pid = wait ((waitType *) 0);
-		}
-		if (pid == clientPid)
-		    break;
+	    } else {
+		LogError ("session start failed\n");
 	    }
 	} else {
-	    LogError ("session start failed\n");
+	    /*
+	     * when terminating the session, nuke
+	     * the child and then run the reset script
+	     */
+	    AbortClient (clientPid);
 	}
-    } else {
-	/*
-	 * when terminating the session, nuke
-	 * the child and then run the reset script
-	 */
-	AbortClient (clientPid);
     }
     /*
      * run system-wide reset file
@@ -736,4 +686,41 @@ char	**environ;
 	    ;
 	execve (newargv[0], newargv, environ);
     }
+}
+
+extern char **setEnv ();
+
+char **
+defaultEnv ()
+{
+    char    **env, **exp, *value;
+
+    env = 0;
+    for (exp = exportList; exp && *exp; ++exp)
+    {
+	value = getenv (*exp);
+	if (value)
+	    env = setEnv (env, *exp, value);
+    }
+    return env;
+}
+
+char **
+systemEnv (d, user, home)
+struct display	*d;
+char	*user, *home;
+{
+    char	**env;
+    
+    env = defaultEnv ();
+    env = setEnv (env, "DISPLAY", d->name);
+    if (home)
+	env = setEnv (env, "HOME", home);
+    if (user)
+	env = setEnv (env, "USER", user);
+    env = setEnv (env, "PATH", d->systemPath);
+    env = setEnv (env, "SHELL", d->systemShell);
+    if (d->authFile)
+	    env = setEnv (env, "XAUTHORITY", d->authFile);
+    return env;
 }
