@@ -4,7 +4,7 @@
 
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.187 93/09/06 13:11:44 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.188 93/09/09 11:44:28 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -693,6 +693,9 @@ _NULLCMD_ = @ echo -n
 #define InstallCmd install
 #endif
 #endif
+#ifndef InstallFlags
+#define InstallFlags -c
+#endif
 #ifndef LdCmd
 #define LdCmd ld
 #endif
@@ -959,6 +962,7 @@ _NULLCMD_ = @ echo -n
 #endif
     PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)	/* prefered; mdep */
           INSTALL = InstallCmd
+     INSTALLFLAGS = InstallFlags
                LD = LdCmd
               LEX = LexCmd
              YACC = YaccCmd
