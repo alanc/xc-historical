@@ -1,5 +1,5 @@
 ##
-# $XConsortium: Imakefile,v 5.3 91/02/17 10:31:53 rws Exp $
+# $XConsortium: Imakefile,v 5.4 91/02/17 10:33:35 rws Exp $
 ##
 ##
 ## Copyright 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -33,7 +33,6 @@
 
     CDEBUGFLAGS = PexClientCDebugFlags
         DEFINES = PexClientDefines
-       INCLUDES = -I. -I$(INCDIR) $(TOP_INCLUDES) -I$(TOP)/X11
 LOCAL_LIBRARIES = $(PHIGSLIB) $(XLIB)
   SYS_LIBRARIES = -lm
         DEPLIBS = $(DEPPHIGSLIB) $(DEPXLIB)
