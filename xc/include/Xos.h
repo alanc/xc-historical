@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.31 91/01/08 15:18:27 rws Exp $
+ * $XConsortium: Xos.h,v 1.32 91/03/13 20:21:21 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -156,7 +156,7 @@ struct timezone {
 
 /* use POSIX name for signal */
 #if defined(SYSV) && !defined(SIGCHLD)
-#if !defined(macII) && !defined(ibm) && !defined(hpux)
+#if !defined(macII) && !defined(ibm) && !defined(hpux) && !defined(sgi)
 #define SIGCHLD SIGCLD
 #endif
 #endif
