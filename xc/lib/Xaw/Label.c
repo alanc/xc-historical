@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.86 91/03/15 15:59:32 gildea Exp $ */
+/* $XConsortium: Label.c,v 1.87 91/06/22 19:35:20 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -189,7 +189,7 @@ static void SetTextWidthAndHeight(lw)
 	    int width = XTextWidth(fs, label, strlen(label));
 
 	    if (lw->label.encoding)
-		width = XTextWidth16(fs, (XChar2b*)label, strlen(label)/2);
+		width = XTextWidth16(fs, (XChar2b*)label, (int)strlen(label)/2);
 	    else
 		width = XTextWidth(fs, label, strlen(label));
 	    if (width > (int) lw->label.label_width)
