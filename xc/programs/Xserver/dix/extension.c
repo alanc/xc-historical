@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: extension.c,v 1.30 87/09/01 22:16:18 newman Locked $ */
+/* $Header: extension.c,v 1.31 87/09/02 15:28:46 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -69,8 +69,8 @@ ExtensionEntry *AddExtension(name, NumEvents, NumErrors, MainProc,
     NumExtensions += 1;
     extensions = (ExtensionEntry *) Xrealloc(extensions,
 			      NumExtensions * sizeof(ExtensionEntry));
-    extensions[i].name = (char *)Xalloc(strlen(name));
-    bcopy(name, extensions[i].name , strlen(name));
+    extensions[i].name = (char *)Xalloc(strlen(name) + 1);
+    bcopy(name, extensions[i].name, strlen(name) + 1);  /* include null-termination */
     extensions[i].index = i;
     extensions[i].base = i + EXTENSION_BASE;
     extensions[i].CloseDown = CloseDownProc;
