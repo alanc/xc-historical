@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StringDefs.h,v 1.41 88/09/26 15:59:23 swick Exp $
+* $XConsortium: StringDefs.h,v 1.42 88/09/26 16:32:58 swick Exp $
 * $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 
@@ -81,6 +81,7 @@ SOFTWARE.
 #define XtNpixmap		"pixmap"
 #define XtNpopupCallback	"popupCallback"
 #define XtNpopdownCallback	"popdownCallback"
+#define XtNresize		"resize"
 #define XtNreverseVideo		"reverseVideo"
 #define XtNscreen               "screen"
 #define XtNscrollProc		"scrollProc"
@@ -151,6 +152,7 @@ SOFTWARE.
 #define XtCParameter		"Parameter"
 #define XtCPixmap		"Pixmap"
 #define XtCPosition		"Position"
+#define XtCResize		"Resize"
 #define XtCReverseVideo		"ReverseVideo"
 #define XtCScreen               "Screen"
 #define XtCScrollProc		"ScrollProc"
