@@ -68,7 +68,6 @@ defaultDistance	Thickness	int		4
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 height	Height	Dimension	A	Enough space to contain all children
-insertPosition	InsertPosition	Function		NULL
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
 screen	Screen	Pointer	R	Parent's Screen
@@ -97,7 +96,6 @@ _
 .Dp
 .Dc
 .Hw
-.Ip
 .Mm
 .Nc
 .Sc

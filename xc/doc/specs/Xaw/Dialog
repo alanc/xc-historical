@@ -69,7 +69,6 @@ depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 height	Height	Dimension	A	Enough space to contain all children
 icon	Icon	Pixmap		None
-insertPosition	InsertPosition	Function		NULL
 label	Label	String		"label"
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
@@ -103,7 +102,6 @@ _
 .IP \fBicon\fP 1.5i
 A pixmap image to be displayed immediately to the left of the 
 Dialog widget's label.
-.Ip
 .IP \fBlabel\fP 1.5i
 A Latin1 string to be displayed at the top of the Dialog widget.
 .Mm

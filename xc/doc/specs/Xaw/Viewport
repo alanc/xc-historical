@@ -70,7 +70,6 @@ depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 forceBars	Boolean	Boolean		False
 height	Height	Dimension		height of the child
-insertPosition	InsertPosition	Function		NULL
 mappedWhenManaged	MappedWhenManaged	Boolean		True
 numChildren	ReadOnly	Cardinal	R	0
 screen	Screen	Pointer	R	Parent's Screen
@@ -111,7 +110,6 @@ When \fBTrue\fP the scrollbars that have been \fIallowed\fP will always be
 visible on the screen.  If \fBFalse\fP the scrollbars will be visable only
 when the inner window is larger than the frame.
 .Hw
-.Ip
 .Mm
 .Nc
 .Sc
