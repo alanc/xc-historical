@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.136 94/02/05 16:41:39 gildea Exp $ */
+/* $XConsortium: Xlibint.h,v 11.137 94/02/09 22:51:02 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -105,6 +105,7 @@ struct _XDisplay
 	struct _XInternalAsync *async_handlers; /* for internal async */
 	unsigned long bigreq_size; /* max size of big requests */
 	struct _XLockPtrs *lock_fns; /* pointers to threads functions */
+	void (*idlist_alloc)();	   /* XID list allocator function */
 	/* things above this line should not move, for binary compatibility */
 	struct _XKeytrans *key_bindings; /* for XLookupString */
 	Font cursor_font;	   /* for XCreateFontCursor */
@@ -137,6 +138,8 @@ struct _XDisplay
 	struct _XkbInfoRec *xkb_info; /* XKB info */
 	struct _XtransConnInfo *trans_conn; /* transport connection object */
 };
+
+#define XAllocIDs(dpy,ids,n) (*(dpy)->idlist_alloc)(dpy,ids,n)
 
 /*
  * define the following if you want the Data macro to be a procedure instead
