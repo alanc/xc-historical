@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbply1rct.c,v 1.7 91/05/30 16:28:35 keith Exp $
+ * $XConsortium: cfbply1rct.c,v 1.8 91/06/24 14:45:50 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -63,7 +63,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     int		    sign1, sign2;
     int		    h;
     int		    l, r;
-    unsigned long   mask, bits = ~0;
+    unsigned long   mask, bits = ~((unsigned long)0);
     int		    nmiddle;
     RROP_DECLARE
 
