@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.12 91/02/20 22:32:01 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.13 91/02/21 10:46:11 rws Exp $
  */
 
 /*
@@ -150,12 +150,11 @@ _XlcGetDefaultLocaleName(category)
     int             category;
 {
     char           *locale_name;
-    char           *malloc();
 
     if ((locale_name = _XlcLocaleFromEnviron(category)) != NULL) {
         return locale_name;
     }
-    locale_name = malloc(strlen("C") + 1);
+    locale_name = Xmalloc(strlen("C") + 1);
     strcpy(locale_name, "C");
 
     return locale_name;
