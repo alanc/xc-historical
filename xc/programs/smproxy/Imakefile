@@ -1,7 +1,7 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/06/06 11:31:25 mor Exp $
         DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB)
-           SRCS = smproxy.c
-           OBJS = smproxy.o
+           SRCS = smproxy.c save.c
+           OBJS = smproxy.o save.o
 
 ComplexProgramTarget(smproxy)
