@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 92/06/08 18:54:51 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 92/08/06 19:04:08 rws Exp $
 
 #define BuildWithXTest
 
@@ -11,6 +11,7 @@ GENDEPLIB = $(DEPXTESTLIB)
 DEFINES = -DXTRAP
 GENLIB = -lXTrap $(XTOOLLIB)
 GENDEPLIB = $(DEPXTOOLLIB)
+INCLUDES = -I$(INCDIR)
 #endif
 #ifdef BuildWithXTestExt1
 DEFINES = -DXTESTEXT1
