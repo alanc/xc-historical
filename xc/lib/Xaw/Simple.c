@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Simple.c,v 1.15 88/09/12 11:48:04 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Simple.c,v 1.16 88/09/27 16:44:32 swick Exp $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
@@ -11,17 +11,13 @@ static char Xrcsid[] = "$XConsortium: Simple.c,v 1.15 88/09/12 11:48:04 swick Ex
 #include <X11/Vendor.h>		/* hack; force Xaw/Vendor.o to be loaded */
 
 #define UnspecifiedPixmap 2	/* %%% should be NULL, according to the spec */
-#define IsSensitive(w) ((w)->core.sensitive && (w)->core.ancestor_sensitive)
-
-static Cursor defaultCursor = None;
-static Pixmap defaultPixmap = NULL;
 
 static XtResource resources[] = {
 #define offset(field) XtOffset(SimpleWidget, simple.field)
   {XtNcursor, XtCCursor, XtRCursor, sizeof(Cursor),
-     offset(cursor), XtRCursor, (caddr_t)&defaultCursor},
+     offset(cursor), XtRImmediate, (caddr_t) None},
   {XtNinsensitiveBorder, XtCInsensitive, XtRPixmap, sizeof(Pixmap),
-     offset(insensitive_border), XtRPixmap, (caddr_t)&defaultPixmap}
+     offset(insensitive_border), XtRImmediate, (caddr_t) NULL}
 #undef offset
 };
 
@@ -94,7 +90,7 @@ static void Realize(w, valueMask, attributes)
 {
     Pixmap border_pixmap;
 
-    if (!IsSensitive(w)) {
+    if (!XtIsSensitive(w)) {
 	/* change border to gray; have to remember the old one,
 	 * so XtDestroyWidget deletes the proper one */
 	if (((SimpleWidget)w)->simple.insensitive_border == NULL)
@@ -117,7 +113,7 @@ static void Realize(w, valueMask, attributes)
     XtCreateWindow( w, (unsigned int)InputOutput, (Visual *)CopyFromParent,
 		    *valueMask, attributes );
 
-    if (!IsSensitive(w))
+    if (!XtIsSensitive(w))
 	w->core.border_pixmap = border_pixmap;
 
 }
@@ -127,11 +123,16 @@ static void Realize(w, valueMask, attributes)
 static Boolean SetValues(current, request, new)
     Widget current, request, new;
 {
-    if ((current->core.sensitive != new->core.sensitive ||
-	 current->core.ancestor_sensitive != new->core.ancestor_sensitive))
+    SimpleWidget s_old = (SimpleWidget) current;
+    SimpleWidget s_new = (SimpleWidget) new;
+
+    if ( XtIsSensitive(current) != XtIsSensitive(new) )
 	ChangeSensitive( new );
 
-    return False;
+    if ( (s_old->simple.cursor != s_new->simple.cursor) && XtIsRealized(new))
+        XDefineCursor(XtDisplay(new), XtWindow(new), s_new->simple.cursor);
+
+    return False;   
 }
 
 
@@ -139,7 +140,7 @@ static Boolean ChangeSensitive(w)
     register Widget w;
 {
     if (XtIsRealized(w)) {
-	if (IsSensitive(w))
+	if (XtIsSensitive(w))
 	    if (w->core.border_pixmap != UnspecifiedPixmap)
 		XSetWindowBorderPixmap( XtDisplay(w), XtWindow(w),
 				        w->core.border_pixmap );
