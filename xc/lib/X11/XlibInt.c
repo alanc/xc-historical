@@ -1,4 +1,4 @@
-/* $XConsortium: XlibInt.c,v 11.228 94/04/17 20:21:48 rws Exp kaleb $ */
+/* $XConsortium: XlibInt.c,v 11.229 94/09/12 19:58:21 kaleb Exp gildea $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -2659,11 +2659,7 @@ register xEvent *event;	/* wire protocol event */
 static char *_SysErrorMsg (n)
     int n;
 {
-#ifndef WIN32
-    extern char *sys_errlist[];
-    extern int sys_nerr;
-#endif
-    char *s = ((n >= 0 && n < sys_nerr) ? sys_errlist[n] : "unknown error");
+    char *s = strerror(n);
 
     return (s ? s : "no such error");
 }
