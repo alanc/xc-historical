@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.31 90/11/17 15:55:08 rws Exp $ */
+/* $XConsortium: events.c,v 5.32 91/01/03 09:34:27 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -724,9 +724,14 @@ ActivateKeyboardGrab(keybd, grab, time, passive)
     TimeStamp time;
     Bool passive;
 {
-    WindowPtr oldWin = (keybd->grab) ? keybd->grab->window
-				     : keybd->focus->win;
+    WindowPtr oldWin;
 
+    if (keybd->grab)
+	oldWin = keybd->grab->window;
+    else if (keybd->focus)
+	oldWin = keybd->focus->win;
+    else
+	oldWin = sprite.win;
     if (oldWin == FollowKeyboardWin)
 	oldWin = inputInfo.keyboard->focus->win;
     if (keybd->valuator)
@@ -749,7 +754,8 @@ DeactivateKeyboardGrab(keybd)
 {
     register GrabPtr grab = keybd->grab;
     register DeviceIntPtr dev;
-    register WindowPtr focusWin = keybd->focus->win;
+    register WindowPtr focusWin = keybd->focus ? keybd->focus->win
+					       : sprite.win;
 
     if (focusWin == FollowKeyboardWin)
 	focusWin = inputInfo.keyboard->focus->win;
@@ -1227,9 +1233,9 @@ DeliverDeviceEvents(pWin, xE, grab, stopAt, dev, count)
 	inputMasks = wOtherInputMasks(pWin);
 	if (!inputMasks || !(filter & inputMasks->deliverableEvents[mskidx]))
 	    return 0;
-	while (pWin && inputMasks)
+	while (pWin)
 	{
-	    if (inputMasks->inputEvents[mskidx] & filter)
+	    if (inputMasks && (inputMasks->inputEvents[mskidx] & filter))
 	    {
 		FixUpEventFromWindow(xE, pWin, child, FALSE);
 		deliveries = DeliverEventsToWindow(pWin, xE, count, filter,
@@ -1239,7 +1245,8 @@ DeliverDeviceEvents(pWin, xE, grab, stopAt, dev, count)
 	    }
 	    if ((deliveries < 0) ||
 		(pWin == stopAt) ||
-		(filter & inputMasks->dontPropagateMask[mskidx]))
+		(inputMasks &&
+		 (filter & inputMasks->dontPropagateMask[mskidx])))
 		return 0;
 	    child = pWin->drawable.id;
 	    pWin = pWin->parent;
@@ -1658,6 +1665,8 @@ DeliverFocusedEvent(keybd, xE, window, count)
     int count;
 {
     WindowPtr focus = keybd->focus->win;
+    int mskidx = 0;
+
     if (focus == FollowKeyboardWin)
 	focus = inputInfo.keyboard->focus->win;
     if (!focus)
@@ -1674,8 +1683,10 @@ DeliverFocusedEvent(keybd, xE, window, count)
     }
     /* just deliver it to the focus window */
     FixUpEventFromWindow(xE, focus, None, FALSE);
+    if (xE->u.u.type & EXTENSION_EVENT_BASE)
+	mskidx = keybd->id;
     (void)DeliverEventsToWindow(focus, xE, count, filters[xE->u.u.type],
-				NullGrab, 0);
+				NullGrab, mskidx);
 }
 
 void
