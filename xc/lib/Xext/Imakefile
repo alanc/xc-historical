@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.34 91/12/17 19:45:19 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.35 92/01/25 16:01:48 rws Exp $
 #define DoNormalLib NormalLibXext
 #define DoSharedLib SharedLibXext
 #define DoDebugLib DebugLibXext
@@ -9,9 +9,9 @@ XCOMM $XConsortium: Imakefile,v 1.34 91/12/17 19:45:19 keith Exp $
 REQUIREDLIBS = $(XLIBSRC)/libX11.a
 #endif
 
-#if BuildXInputLib || BuildPexClients || BuildXTrapLib
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+
 #if BuildXInputLib
       XINPUTDIRS = xinput
 #endif
@@ -21,11 +21,7 @@ REQUIREDLIBS = $(XLIBSRC)/libX11.a
 #if BuildXTrapLib
       XTRAPDIRS = xtrap
 #endif
-#if BuildXTestLib
-      XTESTDIRS = xtest
-#endif
-      SUBDIRS = $(XINPUTDIRS) $(PEXDIRS) $(XTRAPDIRS) $(XTESTDIRS)
-#endif
+      SUBDIRS = $(XINPUTDIRS) $(PEXDIRS) $(XTRAPDIRS) xtest
 
 #if HasShm
       SHMSRCS = XShm.c
