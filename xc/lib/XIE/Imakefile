@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 93/09/15 10:13:47 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 93/12/28 09:39:57 rws Exp $
 
 #define DoNormalLib NormalLibXie
 #define DoSharedLib SharedLibXie
@@ -19,8 +19,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
 DEFINES = $(ALLOC_DEFINES) $(MTX_DEFINES)
 
-HEADERS = XIElib.h \
-          XIElibint.h
+HEADERS = XIElib.h
 
 SRCS = abort.c \
        await.c \
