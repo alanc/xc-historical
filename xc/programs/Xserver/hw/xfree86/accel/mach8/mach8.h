@@ -1,4 +1,4 @@
-/* $XConsortium: mach8.h,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XConsortium: mach8.h,v 1.2 94/10/12 20:01:59 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.h,v 3.1 1994/07/24 11:46:16 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -67,7 +67,7 @@ extern void (*mach8ImageWriteFunc)(
     int,
     int,
     short,
-    short 
+    unsigned long
 #endif
 );
 extern void (*mach8ImageReadFunc)(
@@ -96,7 +96,7 @@ extern void (*mach8RealImageFillFunc)(
     int,
     int,
     short,
-    short 
+    unsigned long
 #endif
 );
 extern void (*mach8ImageStippleFunc)(
@@ -111,10 +111,10 @@ extern void (*mach8ImageStippleFunc)(
     int,
     int,
     int,
-    int,
-    int,
+    unsigned long,
+    unsigned long,
     short,
-    short ,
+    unsigned long,
     int
 #endif
 );
@@ -337,7 +337,7 @@ void mach8ImageFill(
     int,
     int,
     int,
-    int 
+    unsigned long 
 #endif
 );
 /* mach8bstor.c */
@@ -590,7 +590,7 @@ void mach8ImageWrite(
     int,
     int,
     short,
-    short 
+    unsigned long 
 #endif
 );
 void mach8ImageReadDram(
@@ -617,7 +617,7 @@ void mach8ImageWriteDram(
     int,
     int,
     short,
-    short 
+    unsigned long 
 #endif
 );
 void mach8RealImageFillDram(
@@ -633,7 +633,7 @@ void mach8RealImageFillDram(
     int,
     int,
     short,
-    short 
+    unsigned long 
 #endif
 );
 void mach8ImageStippleDram(
@@ -648,10 +648,10 @@ void mach8ImageStippleDram(
     int,
     int,
     int,
-    int,
-    int,
+    unsigned long,
+    unsigned long,
     short,
-    short ,
+    unsigned long,
     int
 #endif
 );
@@ -667,10 +667,10 @@ void mach8ImageStipple(
     int,
     int,
     int,
-    int,
-    int,
+    unsigned long,
+    unsigned long,
     short,
-    short ,
+    unsigned long,
     int
 #endif
 );
@@ -687,7 +687,7 @@ void mach8RealImageFill(
     int,
     int,
     short,
-    short 
+    unsigned long 
 #endif
 );
 void mach8InitFrect(

@@ -1,4 +1,4 @@
-/* $XConsortium: mach8im.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XConsortium: mach8im.c,v 1.2 94/10/12 20:01:59 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8im.c,v 3.2 1994/09/11 00:50:15 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -80,7 +80,7 @@ mach8ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			pox;
     int			poy;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
 {
     if (alu == MIX_DST)
 	return;
@@ -105,7 +105,7 @@ mach8ImageWrite(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     int			px;
     int			py;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
 {
     unsigned short *p;
     int i,j;
@@ -154,7 +154,7 @@ mach8ImageRead(x, y, w, h, psrc, pwidth, px, py, planemask)
     int			pwidth;
     int			px;
     int			py;
-    short		planemask;
+    unsigned long	planemask;
 {
     int i, j;
     unsigned short *sp;
@@ -209,7 +209,7 @@ mach8ImageFill(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     int			pox;
     int			poy;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
 {
     int srcxsave, srcx, srcy, dstw, srcw, srch;
     int wtemp, count, i, j;
@@ -293,7 +293,7 @@ mach8ImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
     int			fgPixel;
     int			bgPixel;
     short		alu;
-    short		planemask;
+    unsigned long	planemask;
     int			opaque;
 {
     int			srcx, srch, dstw;

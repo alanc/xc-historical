@@ -1,4 +1,4 @@
-/* $XConsortium: mach8frect.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XConsortium: mach8frect.c,v 1.3 94/10/12 20:01:59 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8frect.c,v 3.0 1994/07/15 06:58:59 dawes Exp $ */
 /*
  * Fill rectangles.
@@ -49,7 +49,7 @@ mach8pcach.c 94-07-12, Hans Nasten ( nasten@everyware.se ).
 */
 
 
-/* $XConsortium: mach8frect.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XConsortium: mach8frect.c,v 1.3 94/10/12 20:01:59 kaleb Exp kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -235,7 +235,7 @@ short fgalu;
 short bgalu;
 short fgmix;
 short bgmix;
-short planemask;
+unsigned long planemask;
 {
     int xwmid, ywmid, orig_xwmid;
     int startx, starty, endx, endy;
@@ -474,7 +474,7 @@ int h;
 int pox;
 int poy;
 short alu;
-short planemask;
+unsigned long planemask;
 {
 
     DoCacheImageFill( pci, x, y, w, h, pox, poy, alu,
@@ -490,9 +490,9 @@ int w;
 int h;
 int pox;
 int poy;
-int fg;
+unsigned long fg;
 short alu;
-short planemask;
+unsigned long planemask;
 {
 
     WaitQueue(3);
@@ -518,10 +518,10 @@ int w;
 int h;
 int pox;
 int poy;
-int fg;
-int bg;
+unsigned long fg;
+unsigned long bg;
 short alu;
-short planemask;
+unsigned long planemask;
 {
 
     WaitQueue(4);
