@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xkbbell.c,v 1.1 93/09/28 22:31:12 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -29,13 +29,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xproto.h>
 #include <X11/Xlib.h>
 #include <X11/X.h>
-#include <X11/extensions/XKBstr.h>
-#include <X11/extensions/XKBlib.h>
+#include <X11/XKBlib.h>
 #include <X11/extensions/XI.h>
 
 static	char		*dpyName = NULL;
 static	int		 volume = 100;
-static	int		 deviceSpec = XKB_USE_CORE_KBD;
+static	int		 deviceSpec = XkbUseCoreKbd;
 static	int		 bellClass= -1;
 static	int		 bellID= -1;
 static	char		 bellName[20];
@@ -128,9 +127,8 @@ int
 main(int argc,char *argv[])
 {
 Display	*dpy;
-int	i1,i2;
-extern	Bool	XKBQueryExtension(Display *,int *,int *);
-XKBDescRec	*desc;
+int	i1,i2,i3,i4,i5;
+XkbDescRec	*desc;
 unsigned	 	 query;
 
   
@@ -154,26 +152,26 @@ unsigned	 	 query;
 	return 1;
     if (synch)
 	XSynchronize(dpy,1);
-    if ( !XKBQueryExtension(dpy,&i1,&i2)>0 ) {
+    if ( !XkbQueryExtension(dpy,&i1,&i2,&i3,&i4,&i5)>0 ) {
 	fprintf(stderr,"query failed\n");
 	goto BAIL;
     }
-    if ( !XKBUseExtension(dpy,&i1,&i2) ) {
-	fprintf(stderr,"use extension failed (%d,%d)\n",i1,i2);
+    if ( !XkbUseExtension(dpy) ) {
+	fprintf(stderr,"use extension failed (%d,%d)\n",i4,i5);
 	goto BAIL;
     }
     if (bellName[0]!='\0')
 	nameAtom = XInternAtom(dpy,bellName,0);
-    if ((deviceSpec==XKB_USE_CORE_KBD)&&(bellClass<0)) {
-	if (!XKBBell(dpy,volume,nameAtom)) {
-	    fprintf(stderr,"XKBBell request failed\n");
+    if ((deviceSpec==XkbUseCoreKbd)&&(bellClass<0)) {
+	if (!XkbBell(dpy,volume,nameAtom)) {
+	    fprintf(stderr,"XkbBell request failed\n");
 	}
     }
     else {
 	if (bellClass<0)	bellClass= KbdFeedbackClass;
 	if (bellID<0)		bellID= 0;
-	if (!XKBDeviceBell(dpy,deviceSpec,bellClass,bellID,volume,nameAtom)) {
-	    fprintf(stderr,"XKBDeviceBell request failed\n");
+	if (!XkbDeviceBell(dpy,deviceSpec,bellClass,bellID,volume,nameAtom)) {
+	    fprintf(stderr,"XkbDeviceBell request failed\n");
 	}
     }
 BAIL:

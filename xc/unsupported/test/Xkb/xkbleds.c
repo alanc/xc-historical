@@ -29,8 +29,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xproto.h>
 #include <X11/Xlib.h>
 #include <X11/X.h>
-#include <X11/extensions/XKBstr.h>
-#include <X11/extensions/XKBlib.h>
+#include <X11/XKBlib.h>
 
 char *
 atomText(Display *dpy,Atom atom)
@@ -63,15 +62,17 @@ char *str;
 
     if (which) {
 	str= buf;
-	if (which&XKB_IMUseBase)
+	if (which&XkbIMUseBase)
 	    *str++= 'b';
-	if (which&XKB_IMUseLatched)
+	if (which&XkbIMUseLatched)
 	    *str++= 'l';
-	if (which&XKB_IMUseLocked)
+	if (which&XkbIMUseLocked)
 	    *str++= 'L';
-	if (which&XKB_IMUseEffective)
+	if (which&XkbIMUseEffectiveLocked)
+	    *str++= 'E';
+	if (which&XkbIMUseEffective)
 	    *str++= 'e';
-	if (which&XKB_IMUseCompat)
+	if (which&XkbIMUseCompat)
 	    *str++= 'c';
 	*str++= '\0';
     }
@@ -86,7 +87,7 @@ static	int		 showMapping;
 static	int		 synch = 0;
 
 static	CARD32			changed;
-static	XKBIndicatorMapRec	map[XKB_NUM_INDICATORS];
+static	XkbIndicatorMapRec	map[XkbNumIndicators];
 
 int
 parseArgs(int argc,char *argv[])
@@ -117,18 +118,20 @@ int i;
 		fprintf(stderr,"Couldn't parse map for indicator %d\n",led);
 		return 0;
 	    }
-	    if ((led<0)||(led>=XKB_NUM_INDICATORS)) {
-		fprintf(stderr,"Illegal led %d (must be 0..%d)\n",led,
-							XKB_NUM_INDICATORS-1);
+	    if ((led<1)||(led>XkbNumIndicators)) {
+		fprintf(stderr,"Illegal led %d (must be 1..%d)\n",led,
+							XkbNumIndicators);
 		return 0;
 	    }
+	    led--;
 	    tmp= buf;
 	    while (*tmp) {
-		if (*tmp=='b')		which|= XKB_IMUseBase;
-		else if (*tmp=='l')	which|= XKB_IMUseLatched;
-		else if (*tmp=='L')	which|= XKB_IMUseLocked;
-		else if (*tmp=='e')	which|= XKB_IMUseEffective;
-		else if (*tmp=='c')	which|= XKB_IMUseCompat;
+		if (*tmp=='b')		which|= XkbIMUseBase;
+		else if (*tmp=='l')	which|= XkbIMUseLatched;
+		else if (*tmp=='L')	which|= XkbIMUseLocked;
+		else if (*tmp=='e')	which|= XkbIMUseEffective;
+		else if (*tmp=='E')	which|= XkbIMUseEffectiveLocked;
+		else if (*tmp=='c')	which|= XkbIMUseCompat;
 		else if (*tmp=='x')	which= 0;
 		else {
 		    fprintf(stderr,"Unknown specifier '%c' ignored\n",*tmp);
@@ -147,22 +150,27 @@ int i;
 	    return 0;
 	}
     }
+    if (argc==1)
+	showMapping= 1;
     return 1;
 }
 
 void
-showMaps(Display *dpy,XKBDescRec *desc)
+showMaps(Display *dpy,XkbDescRec *desc)
 {
 register int i;
 CARD8	*action;
 char	*name;
-XKBIndicatorRec *leds;
-XKBNamesRec	*names;
+XkbIndicatorRec *leds;
+XkbNamesRec	*names;
+unsigned long	 state;
 
+    XkbGetIndicatorState(dpy,XkbUseCoreKbd,&state);
+    printf("state: 0x%08x\n",state);
     leds= desc->indicators;
     names= desc->names;
     printf("%d physical indicators\n",leds->nRealIndicators);
-    for (i=0;i<XKB_NUM_INDICATORS;i++) {
+    for (i=0;i<XkbNumIndicators;i++) {
 	if ((leds->maps[i].whichMods==0)&&(leds->maps[i].whichGroups==0)&&
 					  (leds->maps[i].controls==0))
 	    continue;
@@ -183,9 +191,8 @@ int
 main(int argc,char *argv[])
 {
 Display	*dpy;
-int	i1,i2;
-extern	Bool	XKBQueryExtension(Display *,int *,int *);
-XKBDescRec	*desc;
+int	i1,i2,i3,i4,i5;
+XkbDescRec	*desc;
 unsigned	 	 query;
 
   
@@ -202,32 +209,32 @@ unsigned	 	 query;
 	return 1;
     if (synch)
 	XSynchronize(dpy,1);
-    if ( !XKBQueryExtension(dpy,&i1,&i2)>0 ) {
+    if ( !XkbQueryExtension(dpy,&i1,&i2,&i3,&i4,&i5)>0 ) {
 	fprintf(stderr,"query failed\n");
 	goto BAIL;
     }
-    if ( !XKBUseExtension(dpy,&i1,&i2) ) {
-	fprintf(stderr,"use extension failed (%d,%d)\n",i1,i2);
+    if ( !XkbUseExtension(dpy) ) {
+	fprintf(stderr,"use extension failed (%d,%d)\n",i4,i5);
 	goto BAIL;
     }
-    desc = XKBGetMap(dpy,0,XKB_USE_CORE_KBD);
+    desc = XkbGetMap(dpy,0,XkbUseCoreKbd);
     if (!desc) {
-	fprintf(stderr,"XKBGetMap failed\n");
+	fprintf(stderr,"XkbGetMap failed\n");
 	goto BAIL;
     }
 
-    if (!XKBGetIndicatorMap(dpy,0xFFFFFFFF,desc)) {
+    if (!XkbGetIndicatorMap(dpy,0xFFFFFFFF,desc)) {
 	fprintf(stderr,"GetIndicatorMapping failed\n");
 	goto BAIL;
     }
     if ( showMapping )
 	showMaps(dpy,desc);
     if (changed) {
-	for (i1=0,i2=1;i1<XKB_NUM_INDICATORS;i1++,i2<<=1) {
+	for (i1=0,i2=1;i1<XkbNumIndicators;i1++,i2<<=1) {
 	    if (changed&i2)
 		desc->indicators->maps[i1]= map[i1];
 	}
-	XKBSetIndicatorMap(dpy,changed,desc);
+	XkbSetIndicatorMap(dpy,changed,desc);
 	XSync(dpy,0);
     }
 BAIL:

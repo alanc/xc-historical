@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xkbshow.c,v 1.1 93/09/28 22:31:24 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -29,12 +29,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xproto.h>
 #include <X11/Xlib.h>
 #include <X11/X.h>
-#include <X11/extensions/XKBstr.h>
-#include <X11/extensions/XKBlib.h>
+#include <X11/XKBlib.h>
 
 void
 printSyms(map,sym,num)
-    XKBKeyTypeRec *map;
+    XkbKeyTypeRec *map;
     KeySym *sym;
     int num;
 {
@@ -83,18 +82,18 @@ char	*name;
 
 char *
 behaviorText(behavior)
-    XKBAction behavior;
+    XkbAction behavior;
 {
 static char buf[30];
 
-    switch (XKBActionType(behavior)) {
-	case XKB_KB_RADIO_GROUP:
-		sprintf(buf,"radio group (%d)",XKBActionData(behavior));
+    switch (XkbActionType(behavior)) {
+	case XkbRadioGroupKB:
+		sprintf(buf,"radio group (%d)",XkbActionData(behavior));
 		break;
-	case XKB_KB_DEFAULT:	  
+	case XkbDefaultKB:	  
 		strcpy(buf,"default");
 		break;
-	case XKB_KB_LOCK:	 
+	case XkbLockKB:	 
 		strcpy(buf,"lock");
 		break;
 	default:		 
@@ -116,7 +115,7 @@ char	*str;
 	return buf;
     }
 
-    str= (CARD8 *)buf;
+    str= buf;
     if ( state&ShiftMask )	*str++ = 'S';
     if ( state&ControlMask )	*str++ = 'C';
     if ( state&LockMask )	*str++ = 'L';
@@ -131,75 +130,75 @@ char	*str;
 
 char *
 actionText(sa)
-    XKBAction sa;
+    XkbAction sa;
 {
 static char buf[60];
 
-    switch (XKBActionType(sa)) {
-	case XKB_SA_NO_ACTION:
+    switch (XkbActionType(sa)) {
+	case XkbSANoAction:
 	    strcpy(buf,"NO_ACTION");
 	    break;
-	case XKB_SA_SET_MODS:
-	    sprintf(buf,"SET_MODS(%s)",stateText(XKBActionDataLow(sa)));
+	case XkbSASetMods:
+	    sprintf(buf,"SET_MODS(%s)",stateText(XkbActionDataLow(sa)));
 	    break;
-	case XKB_SA_ISO_LOCK:
-	    sprintf(buf,"ISO_LOCK(%s)",stateText(XKBActionDataLow(sa)));
+	case XkbSAISOLock:
+	    sprintf(buf,"ISO_LOCK(%s)",stateText(XkbActionDataLow(sa)));
 	    break;
-	case XKB_SA_LOCK_MODS:
-	    sprintf(buf,"LOCK_MODS(%s)",stateText(XKBActionDataLow(sa)));
+	case XkbSALockMods:
+	    sprintf(buf,"LOCK_MODS(%s)",stateText(XkbActionDataLow(sa)));
 	    break;
-	case XKB_SA_LATCH_MODS:
-	    sprintf(buf,"LATCH_MODS(%s)",stateText(XKBActionDataLow(sa)));
+	case XkbSALatchMods:
+	    sprintf(buf,"LATCH_MODS(%s)",stateText(XkbActionDataLow(sa)));
 	    break;
-	case XKB_SA_SET_GROUP:
+	case XkbSASetGroup:
 	    sprintf(buf,"SET_GROUP(%s=%d)",
-			(sa.flags&XKB_SA_GROUP_ABSOLUTE?"absolute":"relative"),
-			XKBActionDataLow(sa));
+			(sa.flags&XkbSAGroupAbsolute?"absolute":"relative"),
+			XkbActionDataLow(sa));
 	    break;
-	case XKB_SA_LATCH_GROUP:
+	case XkbSALatchGroup:
 	    sprintf(buf,"LATCH_GROUP(%s=%d)",
-			(sa.flags&XKB_SA_GROUP_ABSOLUTE?"absolute":"relative"),
-			XKBActionDataLow(sa));
+			(sa.flags&XkbSAGroupAbsolute?"absolute":"relative"),
+			XkbActionDataLow(sa));
 	    break;
-	case XKB_SA_LOCK_GROUP:
+	case XkbSALockGroup:
 	    sprintf(buf,"LOCK_GROUP(%s=%d)",
-			(sa.flags&XKB_SA_GROUP_ABSOLUTE?"absolute":"relative"),
-			XKBActionDataLow(sa));
+			(sa.flags&XkbSAGroupAbsolute?"absolute":"relative"),
+			XkbActionDataLow(sa));
 	    break;
-	case XKB_SA_MOVE_PTR:
-	    sprintf(buf,"MOVE_POINTER=(%d,%d)",XKBActionData(sa)>>8,
-						XKBActionData(sa)&0xff);
+	case XkbSAMovePtrBtn:
+	    sprintf(buf,"MOVE_POINTER=(%d,%d)",XkbActionData(sa)>>8,
+						XkbActionData(sa)&0xff);
 	    break;
-	case XKB_SA_ACCEL_PTR:
-	    sprintf(buf,"ACCEL_POINTER=(%d,%d)",XKBActionData(sa)>>8,
-						XKBActionData(sa)&0xff);
+	case XkbSAAccelPtr:
+	    sprintf(buf,"ACCEL_POINTER=(%d,%d)",XkbActionData(sa)>>8,
+						XkbActionData(sa)&0xff);
 	    break;
-	case XKB_SA_PTR_BTN:
-	    sprintf(buf,"POINTER_BUTTON(%d)",XKBActionData(sa));
+	case XkbSAPtrBtn:
+	    sprintf(buf,"POINTER_BUTTON(%d)",XkbActionData(sa));
 	    break;
-	case XKB_SA_CLICK_PTR_BTN:
+	case XkbSAClickPtrBtn:
 	    sprintf(buf,"CLICK_POINTER_BUTTON(%d,%d)",
-				XKBActionDataHigh(sa),XKBActionDataLow(sa));
+				XkbActionDataHigh(sa),XkbActionDataLow(sa));
 	    break;
-	case XKB_SA_LOCK_PTR_BTN:
-	    sprintf(buf,"LOCK_POINTER_BUTTON(%d)",XKBActionData(sa));
+	case XkbSALockPtrBtn:
+	    sprintf(buf,"LOCK_POINTER_BUTTON(%d)",XkbActionData(sa));
 	    break;
-	case XKB_SA_SET_PTR_DFLT:
-	    sprintf(buf,"SET_POINTER_DFLT(%d,%d)",XKBActionDataHigh(sa),
-							XKBActionDataLow(sa)); 
+	case XkbSASetPtrDflt:
+	    sprintf(buf,"SET_POINTER_DFLT(%d,%d)",XkbActionDataHigh(sa),
+							XkbActionDataLow(sa)); 
 	    break; 
-	case XKB_SA_TERMINATE:
+	case XkbSATerminate:
 	    sprintf(buf,"TERMINATE_SERVER");
 	    break;
-	case XKB_SA_SWITCH_SCREEN:
-	    sprintf(buf,"SWITCH_TO_SCREEN(0x%x,%d)",XKBActionDataHigh(sa),
-							XKBActionDataLow(sa));
+	case XkbSASwitchScreen:
+	    sprintf(buf,"SWITCH_TO_SCREEN(0x%x,%d)",XkbActionDataHigh(sa),
+							XkbActionDataLow(sa));
 	    break;
-	case XKB_SA_SET_CONTROLS:
-	    sprintf(buf,"SET_CONTROLS(0x%x)",XKBActionData(sa));
+	case XkbSASetControls:
+	    sprintf(buf,"SET_CONTROLS(0x%x)",XkbActionData(sa));
 	    break;
-	case XKB_SA_LOCK_CONTROLS:
-	    sprintf(buf,"LOCK_CONTROLS(0x%x)",XKBActionData(sa));
+	case XkbSALockControls:
+	    sprintf(buf,"LOCK_CONTROLS(0x%x)",XkbActionData(sa));
 	    break;
 	default:
 	    sprintf(buf,"UNKNOWN(0x%x)",sa);
@@ -213,46 +212,46 @@ static char buf[60];
 void
 showKeys(dpy,xkb,which)
     Display *dpy;
-    XKBDescRec *xkb;
+    XkbDescRec *xkb;
     unsigned which;
 {
 int	i,key,nKeys;
 
-    if ( !(which & (XKBKeySymsMask|XKBKeyBehaviorsMask|XKBKeyActionsMask)) )
+    if ( !(which & (XkbKeySymsMask|XkbKeyBehaviorsMask|XkbKeyActionsMask)) )
 	return;
     nKeys = xkb->maxKeyCode-xkb->minKeyCode+1;
     for (i=0,key=xkb->minKeyCode;i<nKeys;i++,key++) {
 	printf("Key %d:\n",key);
-	if ( which & XKBKeySymsMask ) {
-	    int n = XKBKeyNumSyms(xkb,key);
-	    int ng= XKBKeyNumGroups(xkb,key);
+	if ( which & XkbKeySymsMask ) {
+	    int n = XkbKeyNumSyms(xkb,key);
+	    int ng= XkbKeyNumGroups(xkb,key);
 	    int tmp;
 	    printf("    %d symbol%s in %d %swrapping group%s",
 				n,(n>1?"s":""),ng,
-				(XKBKeyGroupsWrap(xkb,key)?"":"non-"),
+				(XkbKeyGroupsWrap(xkb,key)?"":"non-"),
 				(ng>1?"s":""));
 	    if (xkb->names && xkb->names->keyTypes) 
 		printf(" (%s)",atomText(dpy,
 		xkb->names->keyTypes[xkb->map->keySymMap[key].ktIndex]));
 	    for (tmp=0;tmp<ng;tmp++) {
 		printf("\n    [ ");
-		printSyms(XKBKeyKeyType(xkb,key),
-				XKBKeySymsPtr(xkb,key)+(tmp*n/ng),n/ng);
+		printSyms(XkbKeyKeyType(xkb,key),
+				XkbKeySymsPtr(xkb,key)+(tmp*n/ng),n/ng);
 		printf("]");
 	    }
 	    printf("\n");
 	}
-	if ( which & XKBKeyActionsMask ) {
-	    int nActs = XKBKeyNumActions(xkb,key);
-	    XKBAction *acts=XKBKeyActionsPtr(xkb,key);
+	if ( which & XkbKeyActionsMask ) {
+	    int nActs = XkbKeyNumActions(xkb,key);
+	    XkbAction *acts=XkbKeyActionsPtr(xkb,key);
 	    printf("    Actions:  ");
 	    if (nActs==1) {
-		if (acts[0].type==XKB_SA_NO_ACTION) 
+		if (acts[0].type==XkbSANoAction) 
 		     printf("None\n");
 		else printf("%s\n",actionText(acts[0]));
 	    }
 	    else {
-		int nGroups= XKBKeyNumGroups(xkb,key);
+		int nGroups= XkbKeyNumGroups(xkb,key);
 		int nLevels= nActs/nGroups;
 		int g,l;
 		for (g=0;g<nGroups;g++) {
@@ -266,7 +265,7 @@ int	i,key,nKeys;
 		}
 	    }
 	}
-	if ( which & XKBKeyBehaviorsMask ) {
+	if ( which & XkbKeyBehaviorsMask ) {
 	    printf("    Behavior: %s\n",
 				behaviorText(xkb->server->keyBehaviors[key]));
 	}
@@ -276,13 +275,13 @@ int	i,key,nKeys;
 void
 showKeyTypes(dpy,desc)
     Display *dpy;
-    XKBDescRec *desc;
+    XkbDescRec *desc;
 {
-XKBClientMapRec *map = desc->map;
+XkbClientMapRec *map = desc->map;
 int	i,m;
 
     for (i=0;i<map->nKeyTypes;i++) {
-	XKBKeyTypeRec *type= &map->keyTypes[i];
+	XkbKeyTypeRec *type= &map->keyTypes[i];
 	printf("Key Type %d",i);
 	if (desc->names && desc->names->keyTypes)
 	     printf(" (%s):\n",atomText(dpy,desc->names->keyTypes[i]));
@@ -317,7 +316,7 @@ int	i,m;
 static	char		*dpyName = NULL;
 static	int		 getState = -1;
 static	int		 getMap = -1;
-static	unsigned	 which = XKBAllMapComponentsMask;
+static	unsigned	 which = XkbAllMapComponentsMask;
 static	int		 usePartialQueries = 0;
 static	int		 synch = 0;
 
@@ -342,10 +341,10 @@ int i;
 		which = 0;
 		while (*subsets) {
 		    switch (*subsets) {
-			case 't':	which|= XKBKeyTypesMask; break;
-			case 's':	which|= XKBKeySymsMask; break;
-			case 'a':	which|= XKBKeyActionsMask; break;
-			case 'b':	which|= XKBKeyBehaviorsMask; break;
+			case 't':	which|= XkbKeyTypesMask; break;
+			case 's':	which|= XkbKeySymsMask; break;
+			case 'a':	which|= XkbKeyActionsMask; break;
+			case 'b':	which|= XkbKeyBehaviorsMask; break;
 			default:
 			    fprintf(stderr,"Unknown subset %c\n",*subsets);
 			    return 0;
@@ -382,12 +381,11 @@ main(argc,argv)
     char *argv[];
 {
 Display	*dpy;
-int	i1,i2;
-extern	Bool	XKBQueryExtension(Display *,int *,int *);
-XKBDescRec	*desc;
-XKBClientMapRec	*map;
-XKBStateRec	 state;
-XKBControlsRec	*ctrls;
+int	i1,i2,i3,i4,i5;
+XkbDescRec	*desc;
+XkbClientMapRec	*map;
+XkbStateRec	 state;
+XkbControlsRec	*ctrls;
 unsigned	 query;
 
   
@@ -411,12 +409,12 @@ unsigned	 query;
 	return 1;
     if (synch)
 	XSynchronize(dpy,1);
-    if ( !XKBQueryExtension(dpy,&i1,&i2)>0 ) {
+    if ( !XkbQueryExtension(dpy,&i1,&i2,&i3,&i4,&i5)>0 ) {
 	fprintf(stderr,"query failed\n");
 	goto BAIL;
     }
-    if ( !XKBUseExtension(dpy,&i1,&i2) ) {
-	fprintf(stderr,"use extension failed (%d,%d)\n",i1,i2);
+    if ( !XkbUseExtension(dpy) ) {
+	fprintf(stderr,"use extension failed (%d,%d)\n",i4,i5);
 	goto BAIL;
     }
     if ((getState>0) && (getMap<0))		getMap = 0;
@@ -424,7 +422,7 @@ unsigned	 query;
     else if ((getMap<0) && (getState<0))	getMap = getState = 1;
 
     if ( getState ) {
-	if (!XKBGetState(dpy,XKB_USE_CORE_KBD,&state)) {
+	if (!XkbGetState(dpy,XkbUseCoreKbd,&state)) {
 	    fprintf(stderr,"get keyboard state request failed\n");
 	    goto BAIL;
 	}
@@ -437,31 +435,31 @@ unsigned	 query;
     }
     if ( getMap ) {
 	query = which;
-	if (query&(XKBKeySymsMask|XKBKeyActionsMask))
-	    query|= XKBKeyTypesMask;
-	desc = XKBGetMap(dpy,0,XKB_USE_CORE_KBD);
+	if (query&(XkbKeySymsMask|XkbKeyActionsMask))
+	    query|= XkbKeyTypesMask;
+	desc = XkbGetMap(dpy,0,XkbUseCoreKbd);
 	map= desc->map;
 	if ( !usePartialQueries ) {
-	    if ( !XKBGetUpdatedMap(dpy,query,desc) ) {
+	    if ( !XkbGetUpdatedMap(dpy,query,desc) ) {
 		fprintf(stderr,"get keyboard desc request failed\n");
 		goto BAIL;
 	    }
 	}
 	else {
-	    if ( query & XKBKeyTypesMask )  {
-		if ( !XKBGetKeyTypes(dpy,0,3,map) ) {
-		    fprintf(stderr,"XKBGetKeyTypes failed\n");
+	    if ( query & XkbKeyTypesMask )  {
+		if ( !XkbGetKeyTypes(dpy,0,3,map) ) {
+		    fprintf(stderr,"XkbGetKeyTypes failed\n");
 		    goto BAIL;
 		}
 	    }
 	}
 
- 	if (!XKBGetControls(dpy,XKBAllControlsMask,desc)) {
-	    fprintf(stderr,"XKBGetControls failed\n");
+ 	if (!XkbGetControls(dpy,XkbAllControlsMask,desc)) {
+	    fprintf(stderr,"XkbGetControls failed\n");
 	    goto BAIL;
 	}
-	if (!XKBGetNames(dpy,XKBAllNamesMask,desc)) {
-	    fprintf(stderr,"XKBGetNames failed\n");
+	if (!XkbGetNames(dpy,XkbAllNamesMask,desc)) {
+	    fprintf(stderr,"XkbGetNames failed\n");
 	    goto BAIL;
 	}
 	ctrls= desc->controls;
@@ -470,29 +468,29 @@ unsigned	 query;
 	printf("geometry type: %s\n",atomText(dpy,desc->names->geometry));
 	printf("keycode range: %d-%d\n",desc->minKeyCode,desc->maxKeyCode);
 	printf("audible bell:     %s\n",
-		((ctrls->enabledControls&XKBAudibleBellMask)?"on":"off"));
+		((ctrls->enabledControls&XkbAudibleBellMask)?"on":"off"));
 	printf("auto autorepeat:  %s\n",
-		((ctrls->enabledControls&XKBAutoAutorepeatMask)?"on":"off"));
+		((ctrls->enabledControls&XkbAutoAutorepeatMask)?"on":"off"));
 	printf("internal mods:    0x%x\n",ctrls->internalMods);
 	printf("ignore lock mods: 0x%x\n",ctrls->ignoreLockMods);
 	printf("repeat keys:      %s (%d/%d)\n",
-		((ctrls->enabledControls&XKBRepeatKeysMask)?"on":"off"),
+		((ctrls->enabledControls&XkbRepeatKeysMask)?"on":"off"),
 		ctrls->repeatDelay,ctrls->repeatInterval);
 	printf("slow keys:        %s (%d)\n",
-		(ctrls->enabledControls&XKBSlowKeysMask?"on":"off"),
+		(ctrls->enabledControls&XkbSlowKeysMask?"on":"off"),
 		ctrls->slowKeysDelay);
 	printf("bounce keys:      %s (%d)\n",
-		(ctrls->enabledControls&XKBBounceKeysMask?"on":"off"),
+		(ctrls->enabledControls&XkbBounceKeysMask?"on":"off"),
 		ctrls->debounceDelay);
 	printf("sticky keys:      %s\n",
-		(ctrls->enabledControls&XKBStickyKeysMask?"on":"off"));
+		(ctrls->enabledControls&XkbStickyKeysMask?"on":"off"));
 	printf("mouse keys:      %s (btn=%d,accel=%d/%d/%d/%d)\n",
-		(ctrls->enabledControls&XKBMouseKeysMask?"on":"off"),
+		(ctrls->enabledControls&XkbMouseKeysMask?"on":"off"),
 		ctrls->mouseKeysDfltBtn,
 		ctrls->mouseKeysDelay, ctrls->mouseKeysInterval,
 		ctrls->mouseKeysTimeToMax, ctrls->mouseKeysCurve);
 	printf("access X keys:   %s (timeout=%d)\n",
-		(ctrls->enabledControls&XKBAccessXKeysMask?"on":"off"),
+		(ctrls->enabledControls&XkbAccessXKeysMask?"on":"off"),
 		ctrls->accessXTimeout);
 	printf("modifier names:\n");
 	for (i1=0;i1<8;i1++) {
@@ -511,9 +509,9 @@ unsigned	 query;
 	else printf("No character sets defined\n");
 	printf("%d keyboard groups\n",ctrls->numGroups);
 	printf("keyboard groups %s\n",
-		(ctrls->enabledControls&XKBGroupsWrapMask)?"wrap":"don't wrap");
+		(ctrls->enabledControls&XkbGroupsWrapMask)?"wrap":"don't wrap");
 	showKeys(dpy,desc,which);
-	if ( which & XKBKeyTypesMask )
+	if ( which & XkbKeyTypesMask )
 	    showKeyTypes(dpy,desc);
 	XCloseDisplay(dpy);
     }

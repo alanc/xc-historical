@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xkblock.c,v 1.1 93/09/28 22:31:20 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -29,11 +29,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xproto.h>
 #include <X11/Xlib.h>
 #include <X11/X.h>
-#include <X11/extensions/XKBstr.h>
-#include <X11/extensions/XKBlib.h>
+#include <X11/XKBlib.h>
+#include <X11/Xfuncs.h>
 
 static	char		*dpyName = NULL;
-static	unsigned	 device = XKB_USE_CORE_KBD;
+static	unsigned	 device = XkbUseCoreKbd;
 static	unsigned	 mask = 0;
 static	unsigned	 value = 0;
 static	unsigned	 latch = 0;
@@ -133,10 +133,9 @@ int
 main(int argc,char *argv[])
 {
 Display	*dpy;
-int	i1,i2;
-extern	Bool	XKBQueryExtension(Display *,int *,int *);
+int	i1,i2,i3,i4,i5;
 unsigned	query;
-XKBStateRec	state;
+XkbStateRec	state;
 
   
     if (!parseArgs(argc,argv)) {
@@ -162,17 +161,17 @@ XKBStateRec	state;
     dpy = XOpenDisplay(dpyName);
     if ( !dpy )
 	return 1;
-    if ( !XKBQueryExtension(dpy,&i1,&i2)>0 ) {
+    if ( !XkbQueryExtension(dpy,&i1,&i2,&i3,&i4,&i5)>0 ) {
 	fprintf(stderr,"query failed\n");
 	goto BAIL;
     }
-    if ( !XKBUseExtension(dpy,&i1,&i2) ) {
-	fprintf(stderr,"use extension failed (%d,%d)\n",i1,i2);
+    if ( !XkbUseExtension(dpy) ) {
+	fprintf(stderr,"use extension failed (%d,%d)\n",i4,i5);
 	goto BAIL;
     }
     XSynchronize(dpy,1);
-    if (!XKBGetState(dpy,XKB_USE_CORE_KBD,&state)) {
-	fprintf(stderr,"XKBGetState failed\n");
+    if (!XkbGetState(dpy,XkbUseCoreKbd,&state)) {
+	fprintf(stderr,"XkbGetState failed\n");
 	exit(1);
     }
     printf("       ------- group --------    ------- modifiers -------------\n");
@@ -181,11 +180,11 @@ XKBStateRec	state;
        state.group, state.baseGroup, state.latchedGroup, state.lockedGroup,
        state.mods, state.baseMods, state.latchedMods, state.lockedMods,
        state.compatState);
-    if (latch)		XKBLatchModifiers(dpy,device,mask,value);
-    else 		XKBLockModifiers(dpy,device,mask,value);
+    if (latch)		XkbLatchModifiers(dpy,device,mask,value);
+    else 		XkbLockModifiers(dpy,device,mask,value);
     bzero(&state,sizeof(state));
-    if (!XKBGetState(dpy,XKB_USE_CORE_KBD,&state)) {
-	fprintf(stderr,"XKBGetState failed\n");
+    if (!XkbGetState(dpy,XkbUseCoreKbd,&state)) {
+	fprintf(stderr,"XkbGetState failed\n");
 	exit(1);
     }
     printf("after:  %2d    %2d     %2d    %2d    0x%02x  0x%02x   0x%02x  0x%02x    0x%02x\n",

@@ -1,7 +1,7 @@
 /*
  * xkbev - event diagnostics for the X Keyboard Extension
  *
- * $XConsortium: xev.c,v 1.14 91/05/04 23:15:11 keith Exp $
+ * $XConsortium: xkbev.c,v 1.1 93/09/28 22:31:17 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,8 +26,7 @@
 #include <ctype.h>
 
 #include <X11/extensions/XKBproto.h>
-#include <X11/extensions/XKBstr.h>
-#include <X11/extensions/XKBlib.h>
+#include <X11/XKBlib.h>
 
 #define OUTER_WINDOW_MIN_WIDTH 100
 #define OUTER_WINDOW_MIN_HEIGHT 100
@@ -92,10 +91,10 @@ prologue (eventp, event_name)
 }
 
 xkb_prologue (eventp, event_name)
-    XKBEvent *eventp;
+    XkbEvent *eventp;
     char *event_name;
 {
-    XKBAnyEvent *e = (XKBAnyEvent *) eventp;
+    XkbAnyEvent *e = (XkbAnyEvent *) eventp;
 
     printf ("\n%s event, serial %ld, synthetic %s, device %d, time %ld,\n",
 	    event_name, e->serial, e->send_event ? Yes : No, e->device,e->time);
@@ -116,60 +115,60 @@ static char name[20];
 }
 
 void
-do_XKBStateNotify(xkbev)
-    XKBEvent	*xkbev;
+do_XkbStateNotify(xkbev)
+    XkbEvent	*xkbev;
 {
-    XKBStateNotifyEvent *state= &xkbev->state;
+    XkbStateNotifyEvent *state= &xkbev->state;
 
     if (state->keycode!=0)
 	 printf("    keycode %d, eventType %s,",
 		state->keycode,eventTypeToString(state->eventType));
     else printf("    request %d/%d,",state->requestMajor,state->requestMinor);
     printf(" compatState = 0x%02x%s\n",
-		state->compatState, (state->changed&XKBCompatStateMask?"*":""));
+		state->compatState, (state->changed&XkbCompatStateMask?"*":""));
     printf("    group= %d%s, base= %d%s, latched= %d%s, locked= %d%s,\n",
-		state->group, (state->changed&XKBGroupStateMask?"*":""),
-		state->baseGroup,(state->changed&XKBGroupBaseMask?"*":""),
-		state->latchedGroup,(state->changed&XKBGroupLatchMask?"*":""),
-		state->lockedGroup,(state->changed&XKBGroupLockMask?"*":""));
+		state->group, (state->changed&XkbGroupStateMask?"*":""),
+		state->baseGroup,(state->changed&XkbGroupBaseMask?"*":""),
+		state->latchedGroup,(state->changed&XkbGroupLatchMask?"*":""),
+		state->lockedGroup,(state->changed&XkbGroupLockMask?"*":""));
     printf("    mods= 0x%02x%s, base= 0x%02x%s, latched= 0x%02x%s, locked= 0x%02x%s\n",
-		state->mods, (state->changed&XKBModifierStateMask?"*":""),
-		state->baseMods,(state->changed&XKBModifierBaseMask?"*":""),
-		state->latchedMods,(state->changed&XKBModifierLatchMask?"*":""),
-		state->lockedMods,(state->changed&XKBModifierLockMask?"*":""));
+		state->mods, (state->changed&XkbModifierStateMask?"*":""),
+		state->baseMods,(state->changed&XkbModifierBaseMask?"*":""),
+		state->latchedMods,(state->changed&XkbModifierLatchMask?"*":""),
+		state->lockedMods,(state->changed&XkbModifierLockMask?"*":""));
     printf("    unlocked mods= 0x%02x%s, groups%s unlocked\n",
-	state->unlockedMods,(state->changed&XKBModifierUnlockMask?"*":""),
+	state->unlockedMods,(state->changed&XkbModifierUnlockMask?"*":""),
 	(state->groupsUnlocked?"":" not"));
     return;
 }
 
 void
-do_XKBMapNotify(xkbev)
-    XKBEvent	*xkbev;
+do_XkbMapNotify(xkbev)
+    XkbEvent	*xkbev;
 {
-    XKBMapNotifyEvent *map = &xkbev->map;
-    if (map->changed&XKBKeyTypesMask) {
+    XkbMapNotifyEvent *map = &xkbev->map;
+    if (map->changed&XkbKeyTypesMask) {
 	if (map->nKeyTypes>1)
 	     printf("    key types %d..%d changed", map->firstKeyType,
 					map->firstKeyType+map->nKeyTypes-1);
 	else printf("    key type %d changed", map->firstKeyType);
-	if (map->resized&XKBKeyTypesMask)
+	if (map->resized&XkbKeyTypesMask)
 	     printf(" [possibly resized]\n");
 	else printf("\n");
     }
-    if (map->changed&XKBKeySymsMask) {
+    if (map->changed&XkbKeySymsMask) {
 	if (map->nKeySyms>1)
 	     printf("    symbols for keys %d..%d changed\n",map->firstKeySym,
 					map->firstKeySym+map->nKeySyms-1);
 	else printf("    symbols for key %d changed\n",map->firstKeySym);
     }
-    if (map->changed&XKBKeyActionsMask) {
+    if (map->changed&XkbKeyActionsMask) {
 	if (map->nKeyActions>1)
 	     printf("    actions for keys %d..%d changed\n",map->firstKeyAction,
 					map->firstKeyAction+map->nKeyActions-1);
 	else printf("    actions for key %d changed\n",map->firstKeyAction);
     }
-    if (map->changed&XKBKeyBehaviorsMask) {
+    if (map->changed&XkbKeyBehaviorsMask) {
 	if (map->nKeyBehaviors>1)
 	     printf("    behavior for keys %d..%d changed\n",
 				map->firstKeyBehavior,
@@ -180,20 +179,20 @@ do_XKBMapNotify(xkbev)
 }
 
 void
-do_XKBControlsNotify(xkbev)
-    XKBEvent	*xkbev;
+do_XkbControlsNotify(xkbev)
+    XkbEvent	*xkbev;
 {
-    XKBControlsNotifyEvent *ctrls = &xkbev->controls;
+    XkbControlsNotifyEvent *ctrls = &xkbev->controls;
     printf("    changed= 0x%x, enabled= 0x%x\n",ctrls->changedControls,
 						ctrls->enabledControls);
     return;
 }
 
 void
-do_XKBIndicatorNotify(xkbev)
-    XKBEvent	*xkbev;
+do_XkbIndicatorNotify(xkbev)
+    XkbEvent	*xkbev;
 {
-    XKBIndicatorNotifyEvent *leds = &xkbev->indicators;
+    XkbIndicatorNotifyEvent *leds = &xkbev->indicators;
     printf("    stateChanged= 0x%08x, new state= 0x%08x\n",leds->stateChanged,
 								leds->state);
     printf("    mapsChanged= 0x%08x\n",leds->mapChanged);
@@ -201,10 +200,10 @@ do_XKBIndicatorNotify(xkbev)
 }
 
 void
-do_XKBBellNotify(xkbev)
-    XKBEvent	*xkbev;
+do_XkbBellNotify(xkbev)
+    XkbEvent	*xkbev;
 {
-    XKBBellNotifyEvent *bell = &xkbev->bell;
+    XkbBellNotifyEvent *bell = &xkbev->bell;
     printf("    bell class= %d, id= %d\n",bell->bellClass,bell->bellID);
     printf("    percent= %d, pitch= %d, duration= %d",
 				bell->percent,bell->pitch,bell->duration);
@@ -219,16 +218,16 @@ do_XKBBellNotify(xkbev)
 }
 
 void
-do_XKBSlowKeyNotify(xkbev)
-    XKBEvent	*xkbev;
+do_XkbSlowKeyNotify(xkbev)
+    XkbEvent	*xkbev;
 {
-    XKBSlowKeyNotifyEvent *sk = &xkbev->slowKey;
+    XkbSlowKeyNotifyEvent *sk = &xkbev->slowKey;
     char *what;
     switch (sk->slowKeyType) {
-	case XKBSKPress:  what= "press"; break;
-	case XKBSKAccept: what= "accept"; break;
-	case XKBSKReject: what= "reject"; break;
-	case XKBSKRelease: what= "release"; break;
+	case XkbSKPress:  what= "press"; break;
+	case XkbSKAccept: what= "accept"; break;
+	case XkbSKReject: what= "reject"; break;
+	case XkbSKRelease: what= "release"; break;
 	default: {
 	    static char buf[20];
 	    sprintf(buf,"unknown(%d)",sk->xkbType);
@@ -241,50 +240,50 @@ do_XKBSlowKeyNotify(xkbev)
     return;
 }
 
-do_XKBNamesNotify(xkbev)
-    XKBEvent	*xkbev;
+do_XkbNamesNotify(xkbev)
+    XkbEvent	*xkbev;
 {
-    XKBNamesNotifyEvent *names = &xkbev->names;
+    XkbNamesNotifyEvent *names = &xkbev->names;
 
     if (names->changed&
-		(XKBKeycodesNameMask|XKBGeometryNameMask|XKBSymbolsNameMask)) {
+		(XkbKeycodesNameMask|XkbGeometryNameMask|XkbSymbolsNameMask)) {
 	int needComma= 0;
 	printf("    ");
-	if (names->changed&XKBKeycodesNameMask) {
+	if (names->changed&XkbKeycodesNameMask) {
 	    printf("keycodes");
 	    needComma++;
 	}
-	if (names->changed&XKBGeometryNameMask) {
+	if (names->changed&XkbGeometryNameMask) {
 	    printf("%sgeometry",(needComma?", ":""));
 	    needComma++;
 	}
-	if (names->changed&XKBSymbolsNameMask) {
+	if (names->changed&XkbSymbolsNameMask) {
 	    printf("%ssymbols",(needComma?", ":""));
 	    needComma++;
 	}
 	printf(" name%s changed\n",(needComma>1?"s":""));
     }
-    if (names->changed&XKBKeyTypeNamesMask) {
+    if (names->changed&XkbKeyTypeNamesMask) {
 	printf("    names of key types %d..%d changed\n",
 		names->firstKeyType,names->firstKeyType+names->nKeyTypes-1);
     }
-    if (names->changed&XKBKTLevelNamesMask) {
+    if (names->changed&XkbKTLevelNamesMask) {
 	printf("    level names for key types %d..%d changed\n",
 		names->firstLevel,names->firstLevel+names->nLevels-1);
     }
-    if (names->changed&XKBRGNamesMask) {
+    if (names->changed&XkbRGNamesMask) {
 	printf("    names of radio groups %d..%d changed\n",
 				names->firstRadioGroup,
 				names->firstRadioGroup+names->nRadioGroups-1);
     }
-    if (names->changed&XKBIndicatorNamesMask) {
+    if (names->changed&XkbIndicatorNamesMask) {
 	printf("    names of indicators in 0x%08x changed\n",
 						names->changedIndicators);
     }
-    if (names->changed&XKBModifierNamesMask) {
+    if (names->changed&XkbModifierNamesMask) {
 	printf("    names of modifiers in 0x%02x changed\n",names->changedMods);
     }
-    if (names->changed&XKBCharSetsMask) {
+    if (names->changed&XkbCharSetsMask) {
 	 printf("    character set names changed (%d character sets)\n",
 						names->nCharSets);
     }
@@ -293,10 +292,10 @@ do_XKBNamesNotify(xkbev)
 }
 
 void
-do_XKBCompatMapNotify(xkbev)
-    XKBEvent	*xkbev;
+do_XkbCompatMapNotify(xkbev)
+    XkbEvent	*xkbev;
 {
-    XKBCompatMapNotifyEvent *map = &xkbev->compat;
+    XkbCompatMapNotifyEvent *map = &xkbev->compat;
 
     if (map->changedMods)
 	printf("    maps for modifiers in 0x%02 changed\n",map->changedMods);
@@ -309,10 +308,10 @@ do_XKBCompatMapNotify(xkbev)
 }
 
 void
-do_XKBAlternateSymsNotify(xkbev)
-    XKBEvent	*xkbev;
+do_XkbAlternateSymsNotify(xkbev)
+    XkbEvent	*xkbev;
 {
-    XKBAlternateSymsNotifyEvent *altSyms= &xkbev->altSyms;
+    XkbAlternateSymsNotifyEvent *altSyms= &xkbev->altSyms;
     printf("    alternate symbol set: %d\n",altSyms->altSymsID);
     printf("    definitions of keys %d..%d changed\n",altSyms->firstKey,
 					altSyms->firstKey+altSyms->nKeys-1);
@@ -325,7 +324,7 @@ main (argc, argv)
 {
     char *displayname = NULL;
     char *geom = NULL;
-    int i,i1,i2;
+    int i,i1,i2,i3,i4;
     XSizeHints hints;
     int borderwidth = 2;
     Window w;
@@ -341,9 +340,9 @@ main (argc, argv)
     for (i = 1; i < argc; i++) {
 	char *arg = argv[i];
 
-	if (strcasecmp(arg,"-synch")==0)
+	if (strcmp(arg,"-synch")==0)
 	    synch= 1;
-	else if (strcasecmp(arg,"-ignore")==0)
+	else if (strcmp(arg,"-ignore")==0)
 	    ignore= 1;
 	else if (arg[0] == '-') {
 	    switch (arg[1]) {
@@ -411,7 +410,7 @@ main (argc, argv)
     }					/* end for over argc */
 
     if (ignore)
-	XKBIgnoreExtension(1);
+	XkbIgnoreExtension(1);
     dpy = XOpenDisplay (displayname);
     if (!dpy) {
 	fprintf (stderr, "%s:  unable to open display '%s'\n",
@@ -420,18 +419,18 @@ main (argc, argv)
     }
     if (synch)
 	XSynchronize(dpy,1);
-    printf("%s compiled with XKB version %d.%02d\n",argv[0],XKB_MAJOR_VERSION,
-							XKB_MINOR_VERSION);
-    XKBLibraryVersion(&i1,&i2);
+    printf("%s compiled with XKB version %d.%02d\n",argv[0],XkbMajorVersion,
+							XkbMinorVersion);
+    XkbLibraryVersion(&i1,&i2);
     printf("X library supports XKB version %d.%02d\n",i1,i2);
-    if ( !XKBQueryExtension(dpy,&xkbEventBase,&i2)>0 ) {
+    if ( !XkbQueryExtension(dpy,&i1,&xkbEventBase,&i2,&i3,&i4)>0 ) {
 	printf("XKB Extension not present on %s\n",XDisplayName(displayname));
 	ignore= 1;
     }
     if (ignore)
 	 printf("Intentionally ignoring XKB\n");
-    else if ( !XKBUseExtension(dpy,&i1,&i2) ) {
-	 printf("X server supports XKB version %d.02d (MISMATCH)\n",i1,i2);
+    else if ( !XkbUseExtension(dpy) ) {
+	 printf("X server supports XKB version %d.02d (MISMATCH)\n",i3,i4);
 	 ignore= 1;
     }
     else printf("versions match\n");
@@ -441,7 +440,7 @@ main (argc, argv)
 
     /* select for all events */
     if (!ignore)
-	XKBSelectEvents(dpy,XKB_USE_CORE_KBD,XKBAllEventsMask,XKBAllEventsMask);
+	XkbSelectEvents(dpy,XkbUseCoreKbd,XkbAllEventsMask,XkbAllEventsMask);
     attr.event_mask = wanted;
     if (w) {
 	XGetWindowAttributes(dpy, w, &wattr);
@@ -478,43 +477,43 @@ main (argc, argv)
 	XNextEvent (dpy, &event);
 
 	if (event.type==xkbEventBase) {
-	    XKBEvent	*xkbev = (XKBEvent *)&event;
+	    XkbEvent	*xkbev = (XkbEvent *)&event;
 	    switch (xkbev->u.xkbType) {
-		case XKBStateNotify:
-		    xkb_prologue( xkbev, "XKBStateNotify" );
-		    do_XKBStateNotify(xkbev);
+		case XkbStateNotify:
+		    xkb_prologue( xkbev, "XkbStateNotify" );
+		    do_XkbStateNotify(xkbev);
 		    break;
-		case XKBMapNotify:
-		    xkb_prologue( xkbev, "XKBMapNotify" );
-		    do_XKBMapNotify(xkbev);
+		case XkbMapNotify:
+		    xkb_prologue( xkbev, "XkbMapNotify" );
+		    do_XkbMapNotify(xkbev);
 		    break;
-		case XKBControlsNotify:
-		    xkb_prologue( xkbev, "XKBControlsNotify" );
-		    do_XKBControlsNotify(xkbev);
+		case XkbControlsNotify:
+		    xkb_prologue( xkbev, "XkbControlsNotify" );
+		    do_XkbControlsNotify(xkbev);
 		    break;
-		case XKBIndicatorNotify:
-		    xkb_prologue( xkbev, "XKBIndicatorNotify" );
-		    do_XKBIndicatorNotify(xkbev);
+		case XkbIndicatorNotify:
+		    xkb_prologue( xkbev, "XkbIndicatorNotify" );
+		    do_XkbIndicatorNotify(xkbev);
 		    break;
-		case XKBBellNotify:
-		    xkb_prologue( xkbev, "XKBBellNotify" );
-		    do_XKBBellNotify(xkbev);
+		case XkbBellNotify:
+		    xkb_prologue( xkbev, "XkbBellNotify" );
+		    do_XkbBellNotify(xkbev);
 		    break;
-		case XKBSlowKeyNotify:
-		    xkb_prologue( xkbev, "XKBSlowKeyNotify" );
-		    do_XKBSlowKeyNotify(xkbev);
+		case XkbSlowKeyNotify:
+		    xkb_prologue( xkbev, "XkbSlowKeyNotify" );
+		    do_XkbSlowKeyNotify(xkbev);
 		    break;
-		case XKBNamesNotify:
-		    xkb_prologue( xkbev, "XKBNamesNotify" );
-		    do_XKBNamesNotify(xkbev);
+		case XkbNamesNotify:
+		    xkb_prologue( xkbev, "XkbNamesNotify" );
+		    do_XkbNamesNotify(xkbev);
 		    break;
-		case XKBCompatMapNotify:
-		    xkb_prologue( xkbev, "XKBCompatMapNotify" );
-		    do_XKBCompatMapNotify(xkbev);
+		case XkbCompatMapNotify:
+		    xkb_prologue( xkbev, "XkbCompatMapNotify" );
+		    do_XkbCompatMapNotify(xkbev);
 		    break;
-		case XKBAlternateSymsNotify:
-		    xkb_prologue( xkbev, "XKBAlternateSymsNotify" );
-		    do_XKBAlternateSymsNotify(xkbev);
+		case XkbAlternateSymsNotify:
+		    xkb_prologue( xkbev, "XkbAlternateSymsNotify" );
+		    do_XkbAlternateSymsNotify(xkbev);
 		    break;
 		default:
 		    xkb_prologue( xkbev, "XKB_UNKNOWN!!!" );

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xkbdebug.c,v 1.1 93/09/28 22:31:15 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -29,8 +29,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xproto.h>
 #include <X11/Xlib.h>
 #include <X11/X.h>
-#include <X11/extensions/XKBstr.h>
-#include <X11/extensions/XKBlib.h>
+#include <X11/XKBlib.h>
 
 static	char		*dpyName = NULL;
 static	unsigned	 flags = 0;
@@ -72,8 +71,7 @@ int
 main(int argc,char *argv[])
 {
 Display	*dpy;
-int	i1,i2;
-extern	Bool	XKBQueryExtension(Display *,int *,int *);
+int	i1,i2,i3,i4,i5;
 unsigned	query;
 
   
@@ -87,16 +85,16 @@ unsigned	query;
     dpy = XOpenDisplay(dpyName);
     if ( !dpy )
 	return 1;
-    if ( !XKBQueryExtension(dpy,&i1,&i2)>0 ) {
+    if ( !XkbQueryExtension(dpy,&i1,&i2,&i3,&i4,&i5)>0 ) {
 	fprintf(stderr,"query failed\n");
 	goto BAIL;
     }
-    if ( !XKBUseExtension(dpy,&i1,&i2) ) {
-	fprintf(stderr,"use extension failed (%d,%d)\n",i1,i2);
+    if ( !XkbUseExtension(dpy) ) {
+	fprintf(stderr,"use extension failed (%d,%d)\n",i4,i5);
 	goto BAIL;
     }
     XSynchronize(dpy,1);
-    XKBSetDebuggingFlags(dpy,flags);
+    XkbSetDebuggingFlags(dpy,flags);
     XCloseDisplay(dpy);
     return 0;
 BAIL:

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xkbwatch.c,v 1.1 93/09/28 22:31:27 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -30,12 +30,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xproto.h>
 #include <X11/Xlib.h>
 #include <X11/X.h>
-#include <X11/extensions/XKBstr.h>
-#include <X11/extensions/XKBlib.h>
+#include <X11/XKBlib.h>
 
 static	char		*dpyName = NULL;
-static	unsigned	 device = XKB_USE_CORE_KBD;
-static	unsigned	 which = XKBAllStateComponentsMask;
+static	unsigned	 device = XkbUseCoreKbd;
+static	unsigned	 which = XkbAllStateComponentsMask;
 static	int		 page_size = 24;
 
 int
@@ -78,38 +77,38 @@ int i;
 	else if (strlen(argv[i])==2) {
 	    switch (argv[i][1]) {
 		case 'a': case 'A':
-		    if (argv[i][0]=='-')      which&=~XKBAllStateComponentsMask;
-		    else if (argv[i][0]=='+') which|= XKBAllStateComponentsMask;
+		    if (argv[i][0]=='-')      which&=~XkbAllStateComponentsMask;
+		    else if (argv[i][0]=='+') which|= XkbAllStateComponentsMask;
 		    else			return 0;
 		    break;
 		case 's': case 'S':
-		    if (argv[i][0]=='-')	which&= ~XKBModifierStateMask;
-		    else if (argv[i][0]=='+')	which|= XKBModifierStateMask;
+		    if (argv[i][0]=='-')	which&= ~XkbModifierStateMask;
+		    else if (argv[i][0]=='+')	which|= XkbModifierStateMask;
 		    else			return 0;
 		    break;
 		case 'g': 
-		    if (argv[i][0]=='-')	which&= ~XKBGroupStateMask;
-		    else if (argv[i][0]=='+')	which|= XKBGroupStateMask;
+		    if (argv[i][0]=='-')	which&= ~XkbGroupStateMask;
+		    else if (argv[i][0]=='+')	which|= XkbGroupStateMask;
 		    else			return 0;
 		    break;
 		case 'G': 
-		    if (argv[i][0]=='-')	which&= ~XKBGroupLatchMask;
-		    else if (argv[i][0]=='+')	which|= XKBGroupLatchMask;
+		    if (argv[i][0]=='-')	which&= ~XkbGroupLatchMask;
+		    else if (argv[i][0]=='+')	which|= XkbGroupLatchMask;
 		    else			return 0;
 		    break;
 		case 'l':
-		    if (argv[i][0]=='-')	which&= ~XKBModifierLockMask;
-		    else if (argv[i][0]=='+')	which|= XKBModifierLockMask;
+		    if (argv[i][0]=='-')	which&= ~XkbModifierLockMask;
+		    else if (argv[i][0]=='+')	which|= XkbModifierLockMask;
 		    else			return 0;
 		    break;
 		case 'L':
-		    if (argv[i][0]=='-')	which&= ~XKBModifierLatchMask;
-		    else if (argv[i][0]=='+')	which|= XKBModifierLatchMask;
+		    if (argv[i][0]=='-')	which&= ~XkbModifierLatchMask;
+		    else if (argv[i][0]=='+')	which|= XkbModifierLatchMask;
 		    else			return 0;
 		    break;
 		case 'c': case 'C':
-		    if (argv[i][0]=='-')	which&= ~XKBCompatStateMask;
-		    else if (argv[i][0]=='+')	which|= XKBCompatStateMask;
+		    if (argv[i][0]=='-')	which&= ~XkbCompatStateMask;
+		    else if (argv[i][0]=='+')	which|= XkbCompatStateMask;
 		    else			return 0;
 		    break;
 	    }
@@ -126,11 +125,10 @@ int
 main(int argc,char *argv[])
 {
 Display	*dpy;
-int	i1,i2;
-extern	Bool	XKBQueryExtension(Display *,int *,int *);
+int	i1,i2,i3,i4;
 int		ev_base,num_out;
 XEvent		xev;
-XKBStateNotifyEvent	*sn;
+XkbStateNotifyEvent	*sn;
 
   
     if (!parseArgs(argc,argv)) {
@@ -155,27 +153,27 @@ XKBStateNotifyEvent	*sn;
     dpy = XOpenDisplay(dpyName);
     if ( !dpy )
 	return 1;
-    if ( !XKBQueryExtension(dpy,&ev_base,&i2)>0 ) {
+    if ( !XkbQueryExtension(dpy,&i1,&ev_base,&i2,&i3,&i4)>0 ) {
 	fprintf(stderr,"query failed\n");
 	goto BAIL;
     }
-    if ( !XKBUseExtension(dpy,&i1,&i2) ) {
-	fprintf(stderr,"use extension failed (%d,%d)\n",i1,i2);
+    if ( !XkbUseExtension(dpy) ) {
+	fprintf(stderr,"use extension failed (%d,%d)\n",i3,i4);
 	goto BAIL;
     }
     XSynchronize(dpy,1);
-    XKBSelectEventDetails(dpy,device,XKBStateNotify,which,which);
+    XkbSelectEventDetails(dpy,device,XkbStateNotify,which,which);
     num_out = 0;
     printf("Watching the keyboard state...\n");
     while (1) {
 	XNextEvent(dpy,&xev);
-	if (xev.type==XKBStateNotify+ev_base) {
+	if (xev.type==XkbStateNotify+ev_base) {
 	    if ((num_out%page_size)==0) {
 		printf("                ------- group --------  ------- modifiers -------------\n");
 		printf("id key   event  eff  base  latch  lock   eff  base  latch  lock  compat\n");
 	    }
 	    num_out++;
-	    sn = (XKBStateNotifyEvent *)&xev;
+	    sn = (XkbStateNotifyEvent *)&xev;
 		printf("%2d  %2d",sn->device, sn->keycode);
 		if (sn->keycode!=0)
 		     printf(" %7s",(sn->eventType==KeyPress?"down":"up"));
@@ -186,24 +184,24 @@ XKBStateNotifyEvent	*sn;
 		}
 		printf("   %2d%c   %2d%c    %2d%c   %2d%c",
 				sn->group,
-				(sn->changed&XKBGroupStateMask?'*':' '),
+				(sn->changed&XkbGroupStateMask?'*':' '),
 				sn->baseGroup,
-				(sn->changed&XKBGroupBaseMask?'*':' '),
+				(sn->changed&XkbGroupBaseMask?'*':' '),
 				sn->latchedGroup,
-				(sn->changed&XKBGroupLatchMask?'*':' '),
+				(sn->changed&XkbGroupLatchMask?'*':' '),
 				sn->lockedGroup,
-				(sn->changed&XKBGroupLockMask?'*':' '));
+				(sn->changed&XkbGroupLockMask?'*':' '));
 		printf(" 0x%02x%c 0x%02x%c  0x%02x%c 0x%02x%c   0x%02x%c\n",
 				sn->mods,
-				(sn->changed&XKBModifierStateMask?'*':' '),
+				(sn->changed&XkbModifierStateMask?'*':' '),
 				sn->baseMods,
-				(sn->changed&XKBModifierBaseMask?'*':' '),
+				(sn->changed&XkbModifierBaseMask?'*':' '),
 				sn->latchedMods,
-				(sn->changed&XKBModifierLatchMask?'*':' '),
+				(sn->changed&XkbModifierLatchMask?'*':' '),
 				sn->lockedMods,
-				(sn->changed&XKBModifierLockMask?'*':' '),
+				(sn->changed&XkbModifierLockMask?'*':' '),
 				sn->compatState,
-				(sn->changed&XKBCompatStateMask?'*':' '));
+				(sn->changed&XkbCompatStateMask?'*':' '));
 	}
 	else {
 	    fprintf(stderr,"Unknown event type %d\n",xev.type);

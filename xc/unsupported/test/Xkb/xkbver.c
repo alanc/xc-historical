@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xkbver.c,v 1.1 93/09/28 22:31:25 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -30,8 +30,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xlib.h>
 #include <X11/X.h>
 #include <X11/extensions/XKBproto.h>
-#include <X11/extensions/XKBstr.h>
-#include <X11/extensions/XKBlib.h>
+#include <X11/XKBlib.h>
 
 /***====================================================================***/
 
@@ -66,9 +65,8 @@ int
 main(int argc,char *argv[])
 {
 Display	*dpy;
-int	i1,i2;
-extern	Bool	XKBQueryExtension(Display *,int *,int *);
-XKBIndicatorRec	*map;
+int	i1,i2,i3,i4,i5;
+XkbIndicatorRec	*map;
 unsigned	 	 query;
 
   
@@ -84,17 +82,17 @@ unsigned	 	 query;
 	return 1;
     if (synch)
 	XSynchronize(dpy,1);
-    if ( !XKBQueryExtension(dpy,&i1,&i2)>0 ) {
+    if ( !XkbQueryExtension(dpy,&i1,&i2,&i3,&i4,&i5)>0 ) {
 	printf("XKB Extension not present on %s\n",(dpyName?dpyName:":0"));
 	goto BAIL;
     }
-    printf("%s compiled with XKB version %d.%02d\n",argv[0],XKB_MAJOR_VERSION,
-							XKB_MINOR_VERSION);
-    XKBLibraryVersion(&i1,&i2);
+    printf("%s compiled with XKB version %d.%02d\n",argv[0],XkbMajorVersion,
+							XkbMinorVersion);
+    XkbLibraryVersion(&i1,&i2);
     printf("X library supports XKB version %d.%02d\n",i1,i2);
-    if ( !XKBUseExtension(dpy,&i1,&i2) ) {
+    if ( !XkbUseExtension(dpy) ) {
 	printf("VERSION MISMATCH!\n");
-	printf("X server supports XKB version %d.%02d\n",i1,i2);
+	printf("X server supports XKB version %d.%02d\n",i4,i5);
 	goto BAIL;
     }
     printf("versions match\n");
