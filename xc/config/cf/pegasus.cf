@@ -13,6 +13,7 @@
 #define HasVoidSignalReturn NO
 
 #define BuildServer YES
+#define BuildBdfFonts NO		/* XXX remove in R5 */
 
 #define BootstrapCFlags    -DM4310 -DUTEK
 #define StandardDefines    -DM4310 -DUTEK -Dpegasus 
@@ -28,7 +29,7 @@
 #define XtekServer Xtek
 
 
-XCOMM platform:  $XConsortium: pegasus.cf,v 1.19 91/02/11 14:13:10 keith Exp $
+XCOMM platform:  $XConsortium: pegasus.cf,v 1.20 91/02/23 20:38:27 keith Exp $
 XCOMM operating system:  OSName
 
 /*
