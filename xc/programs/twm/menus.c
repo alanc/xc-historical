@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.105 89/11/01 19:21:08 jim Exp $
+ * $XConsortium: menus.c,v 1.106 89/11/01 19:32:47 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.105 89/11/01 19:21:08 jim Exp $";
+"$XConsortium: menus.c,v 1.106 89/11/01 19:32:47 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1236,6 +1236,8 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	EventHandler[LeaveNotify] = HandleUnknown;
 	if (DeferExecution(context, func, Scr->MoveCursor))
 	    return TRUE;
+
+	PopDownMenu();
 
 	if (pulldown)
 	    XWarpPointer(dpy, None, Scr->Root, 
