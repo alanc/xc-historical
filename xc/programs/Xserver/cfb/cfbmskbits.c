@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.c,v 4.11 93/12/13 17:22:13 dpw Exp $ */
+/* $XConsortium: cfbmskbits.c,v 4.12 94/04/17 20:28:54 dpw Exp $ */
 
 /*
  * ==========================================================================
@@ -208,9 +208,9 @@ PixelGroup cfbstarttab[] =
 PixelGroup cfbendtab[] =
     {
 	cfbBits(0x0000000000000000),
-	cfbBits(0xFFFFFFFFFFFF0000),
-	cfbBits(0xFFFFFFFF00000000),
 	cfbBits(0xFFFF000000000000),
+	cfbBits(0xFFFFFFFF00000000),
+	cfbBits(0xFFFFFFFFFFFF0000),
     };
 #endif /* PGSZ */
 #endif
@@ -381,9 +381,9 @@ PixelGroup cfbstartpartial[] =
 PixelGroup cfbendpartial[] =
     {
 	cfbBits(0xFFFFFFFFFFFFFFFF),
-	cfbBits(0xFFFFFFFFFFFF0000),
-	cfbBits(0xFFFFFFFF00000000),
 	cfbBits(0xFFFF000000000000),
+	cfbBits(0xFFFFFFFF00000000),
+	cfbBits(0xFFFFFFFFFFFF0000),
     };
 #endif /* PGSZ */
 #endif /* PSZ == 16 */
@@ -551,10 +551,10 @@ PixelGroup cfbmask[] =
     }; 
 PixelGroup cfbrmask[] = 
     {
-	cfbBits(0x000000000000FFFF),
- 	cfbBits(0x00000000FFFF0000),
-	cfbBits(0x0000FFFF00000000),
- 	cfbBits(0xFFFF000000000000),
+	cfbBits(0x0000FFFFFFFFFFFF),
+ 	cfbBits(0xFFFF0000FFFFFFFF),
+	cfbBits(0xFFFFFFFF0000FFFF),
+ 	cfbBits(0xFFFFFFFFFFFF0000),
     };
 #endif /* PGSZ */
 #endif /* PSZ == 16 */
