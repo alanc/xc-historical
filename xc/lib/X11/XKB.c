@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.c,v 1.2 93/09/28 19:28:54 rws Exp $ */
+/* $XConsortium: XKB.c,v 1.3 93/09/28 19:48:24 rws Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -999,6 +999,131 @@ XkbAction *newActs;
     xkb->server->actions = newActs;
     xkb->server->nActions= nActs;
     return &xkb->server->actions[xkb->server->keyActions[key]];
+}
+
+Status
+XkbChangeTypeOfKey(xkb,key,newType,pChanges)
+    XkbDescRec		*xkb;
+    unsigned	 	 key;
+    unsigned	 	 newType;
+    XkbMapChangesRec	*pChanges;
+{
+XkbKeyTypeRec	*pOldType,*pNewType;
+
+    if ((!xkb) || (key<xkb->minKeyCode) || (key>xkb->maxKeyCode) ||
+	(!xkb->map)||(!xkb->map->keyTypes)||(newType>=xkb->map->nKeyTypes)) {
+	return 0;
+    }
+
+    pOldType = XkbKeyKeyType(xkb,key);
+    pNewType = &xkb->map->keyTypes[newType];
+    if (newType==xkb->map->keySymMap[key].ktIndex) {
+	return 1;
+    }
+    else if (pOldType->groupWidth==pNewType->groupWidth) {
+	xkb->map->keySymMap[key].ktIndex= newType;
+    }
+    else if (pOldType->groupWidth>pNewType->groupWidth) {
+	int g,l,nGroups;
+	int oldWidth,newWidth;
+	KeySym	*pSyms;
+
+	xkb->map->keySymMap[key].ktIndex= newType;
+	pSyms = XkbKeySymsPtr(xkb,key);
+	oldWidth = pOldType->groupWidth;
+	newWidth = pNewType->groupWidth;
+	nGroups= XkbKeyNumGroups(xkb,key);
+	for (g=1;g<nGroups;g++) {
+	    for (l=0;l<newWidth;l++) {
+		pSyms[g*newWidth+l]= pSyms[g*oldWidth+l];
+	    }
+	}
+    }
+    else {
+	int g,l,nGroups;
+	int oldWidth,newWidth;
+	KeySym	*pSyms;
+
+	xkb->map->keySymMap[key].ktIndex= newType;
+	oldWidth = pOldType->groupWidth;
+	newWidth = pNewType->groupWidth;
+	nGroups= XkbKeyNumGroups(xkb,key);
+	pSyms = XkbEnlargeKeySymbols(xkb,key,newWidth*nGroups);
+	for (g=nGroups-1;g>=0;g--) {
+	    for (l=newWidth-1;l>=oldWidth;l--) {
+		pSyms[g*newWidth+l]= NoSymbol;
+	    }
+	    for (l=oldWidth-1;l>=0;l--) {
+		pSyms[g*newWidth+l]= pSyms[g*oldWidth+l];
+	    }
+	}
+    }
+    if (pChanges->changed&XkbKeySymsMask) {
+	int first,last;
+	first= pChanges->firstKeySym;
+	last= pChanges->firstKeySym+pChanges->nKeySyms-1;
+	if (key<first)	first= key;
+	if (key>last)	last= key;
+	pChanges->firstKeySym = first;
+	pChanges->nKeySyms = (last-first)+1;
+    }
+    else {
+	pChanges->changed|= XkbKeySymsMask;
+	pChanges->firstKeySym= key;
+	pChanges->nKeySyms= 1;
+    }
+    return 1;
+}
+
+Status
+XkbChangeSymsForKey(xkb,key,count,syms,pChanges)
+    XkbDescRec		*xkb;
+    unsigned	 	 key;
+    unsigned	 	 count;
+    KeySym 		*syms;
+    XkbMapChangesRec	*pChanges;
+{
+XkbKeyTypeRec	*pType;
+KeySym *pSyms;
+int nGroups,nSyms;
+
+    if ((!xkb) || (key<xkb->minKeyCode) || (key>xkb->maxKeyCode) ||
+	(!xkb->map)||(!xkb->map->keyTypes)||(!xkb->map->keySymMap) ||
+	(count<1))
+	return 0;
+
+    pType = XkbKeyKeyType(xkb,key);
+    nGroups = ((count+pType->groupWidth-1)/pType->groupWidth);
+    if ((nGroups<1)||(nGroups>8))
+	return 0;
+    
+    nSyms= nGroups*pType->groupWidth;
+    pSyms= XkbEnlargeKeySymbols(xkb,key,nSyms);
+    if (!pSyms) 
+	return 0;
+
+    memcpy(pSyms,syms,count*sizeof(KeySym));
+    while (count<nSyms) {
+	pSyms[count++]= NoSymbol;
+    }
+    xkb->map->keySymMap[key].groupInfo= 
+		XkbSetNumGroups(xkb->map->keySymMap[key].groupInfo,nGroups);
+
+    if (pChanges->changed&XkbKeySymsMask) {
+	int first,last;
+	first= pChanges->firstKeySym;
+	last= pChanges->firstKeySym+pChanges->nKeySyms-1;
+	if (key<first)	first= key;
+	if (key>last)	last= key;
+	pChanges->firstKeySym = first;
+	pChanges->nKeySyms = (last-first)+1;
+    }
+    else {
+	pChanges->changed|= XkbKeySymsMask;
+	pChanges->firstKeySym= key;
+	pChanges->nKeySyms= 1;
+    }
+    return;
 }
 
 static int
