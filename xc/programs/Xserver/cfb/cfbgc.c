@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.27 89/10/20 13:15:56 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.28 89/10/29 16:45:33 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -448,7 +448,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	case GCStipple:
 	    if (pGC->stipple)
 	    {
-		int width = pGC->stipple->drawable.width * PSZ;
+		int width = pGC->stipple->drawable.width;
 		PixmapPtr nstipple;
 
 		if ((width <= 32) && !(width & (width - 1)) &&
