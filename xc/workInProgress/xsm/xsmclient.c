@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.13 94/02/21 09:57:58 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.14 94/03/03 14:30:23 converse Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -52,7 +52,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 typedef struct {
     XtCheckpointToken	token;
-    Widget		appShell;
+    Widget		rootShell;
     Widget		dialog;
     String		smcid;
 } ApplicationDataRec, *ApplicationData;
@@ -87,7 +87,7 @@ static Boolean SaveState(ad)
 #ifndef X_NOT_POSIX
     str = getcwd((char *)NULL, PATH_MAX+2);
     XtSetArg(args[n], XtNcurrentDirectory, str);	n++;
-    XtSetValues(ad->appShell, args, n);
+    XtSetValues(ad->rootShell, args, n);
     if (appResources.verbose)
 	printf("%s:  Set %d properties\n", ad->smcid, n);
 #endif
@@ -103,8 +103,8 @@ static Boolean SaveState(ad)
 static void InteractResponse();
 
 
-static void SaveResponse(appShell, client_data, call_data)
-    Widget appShell;
+static void SaveResponse(rootShell, client_data, call_data)
+    Widget rootShell;
     XtPointer client_data, call_data;
 {
     ApplicationData ad = (ApplicationData) client_data;
@@ -137,7 +137,7 @@ static void SaveResponse(appShell, client_data, call_data)
     }
 
     if (token->shutdown || token->interact_style != SmInteractStyleNone)
-	XtSetSensitive(ad->appShell, False);
+	XtSetSensitive(ad->rootShell, False);
 
     if (token->interact_style == SmInteractStyleNone) {
 	token->save_success = SaveState(ad);
@@ -155,7 +155,7 @@ static void SaveResponse(appShell, client_data, call_data)
          * it is executed.  If there are multiple callbacks on the list,
          * they'll be executed serially, as the interact token is returned.
 	 */
-	XtAddCallback(appShell, XtNinteractCallback, InteractResponse,
+	XtAddCallback(rootShell, XtNinteractCallback, InteractResponse,
 		      client_data);
 
 	if (appResources.verbose)
@@ -164,8 +164,8 @@ static void SaveResponse(appShell, client_data, call_data)
 }
 
 
-static void InteractResponse(appShell, client_data, call_data)
-    Widget appShell;
+static void InteractResponse(rootShell, client_data, call_data)
+    Widget rootShell;
     XtPointer client_data, call_data;
 {
     ApplicationData ad = (ApplicationData) client_data;
@@ -198,27 +198,27 @@ static void InteractResponse(appShell, client_data, call_data)
     }
     XtVaSetValues(ad->dialog, XtNlabel, label, NULL);
 
-    XtVaGetValues(ad->appShell, XtNx, &x, XtNy, &y, NULL);
+    XtVaGetValues(ad->rootShell, XtNx, &x, XtNy, &y, NULL);
     XtVaSetValues(XtParent(ad->dialog), XtNx, x, XtNy, y, NULL);
     XtPopup(XtParent(ad->dialog), XtGrabNone);
 }
 
 
-static void DieResponse(appShell, client_data, call_data)
-    Widget appShell;
+static void DieResponse(rootShell, client_data, call_data)
+    Widget rootShell;
     XtPointer client_data, call_data;
 {
     ApplicationData ad = (ApplicationData) client_data;
 
     if (appResources.verbose)
 	printf("Client Id %s, received DIE or user said Quit\n", ad->smcid);
-    XtDestroyApplicationContext(XtWidgetToApplicationContext(appShell));
+    XtDestroyApplicationContext(XtWidgetToApplicationContext(rootShell));
     exit(0);
 }
 
 
-static void CancelResponse(appShell, client_data, call_data)
-    Widget appShell;
+static void CancelResponse(rootShell, client_data, call_data)
+    Widget rootShell;
     XtPointer client_data, call_data;
 {
     ApplicationData ad = (ApplicationData) client_data;
@@ -232,7 +232,7 @@ static void CancelResponse(appShell, client_data, call_data)
      *	o  previously finished saving state and expecting a Die request
      */
 
-    XtSetSensitive(ad->appShell, True);
+    XtSetSensitive(ad->rootShell, True);
 }
 
 
@@ -282,7 +282,7 @@ static void GetSessionProperties(w, client_data, call_data)
     SmcConn connection;
 
     XtSetArg(args[0], XtNconnection, &connection);
-    XtGetValues(ad->appShell, args, (Cardinal) 1);
+    XtGetValues(ad->rootShell, args, (Cardinal) 1);
     if (connection)
 	SmcGetProperties(connection, PropReplyProc, ad);
     else
@@ -302,10 +302,10 @@ static void Quit(w, client_data, call_data)
     reasonMsg[1] = "Quit Reason 2";
 
     /* A well-behaved client closes the session connection before exiting */
-    XtVaSetValues (ad->appShell, XtNjoinSession, False, NULL);
+    XtVaSetValues (ad->rootShell, XtNjoinSession, False, NULL);
 
     /* Do the exactly the same thing we'd do if we just received a Die */
-    XtCallCallbacks(ad->appShell, XtNdieCallback, NULL);
+    XtCallCallbacks(ad->rootShell, XtNdieCallback, NULL);
 }
 
 
@@ -321,7 +321,7 @@ static void UserSaysOkay(button, client_data, call_data)
 
     /* When a session shutdown is not imminent, allow user events again. */
     if (! token->shutdown)
-	XtSetSensitive(ad->appShell, True);
+	XtSetSensitive(ad->rootShell, True);
 
     XtPopdown(XtParent(ad->dialog));
 
@@ -375,7 +375,7 @@ static void CreateInteractDialog(ad)
     Widget dialogPopup;
 
     dialogPopup = XtVaCreatePopupShell (
-	"dialogPopup", transientShellWidgetClass, ad->appShell,
+	"dialogPopup", transientShellWidgetClass, ad->rootShell,
         XtNtitle, "Dialog",
 	XtNallowShellResize, True,
 	XtNancestorSensitive, True,
@@ -412,7 +412,7 @@ static void CreateMainInterface(ad)
     Widget cwdLabel, cwdDataLabel;
 
     mainWindow = XtCreateManagedWidget (
-	"mainWindow", formWidgetClass, ad->appShell, NULL, 0);
+	"mainWindow", formWidgetClass, ad->rootShell, NULL, 0);
 
     getPropButton = XtVaCreateManagedWidget (
 	"getPropButton", commandWidgetClass, mainWindow,
@@ -458,25 +458,26 @@ main(argc, argv)
     XtAppContext appContext;
     ApplicationData ad = &globals;
 
-    ad->appShell = XtAppInitialize(&appContext, "Xsmclient",
-				   options, XtNumber(options), &argc, argv,
-				   NULL, NULL, 0);
+    ad->rootShell = XtOpenApplication(&appContext, "XSMclient",
+				      options, XtNumber(options),
+				      &argc, argv, NULL, 
+				      sessionShellWidgetClass, NULL, 0);
 
-    XtAddCallback(ad->appShell, XtNsaveCallback, SaveResponse, ad);
-    XtAddCallback(ad->appShell, XtNcancelCallback, CancelResponse, ad);
-    XtAddCallback(ad->appShell, XtNdieCallback, DieResponse, ad);
+    XtAddCallback(ad->rootShell, XtNsaveCallback, SaveResponse, ad);
+    XtAddCallback(ad->rootShell, XtNcancelCallback, CancelResponse, ad);
+    XtAddCallback(ad->rootShell, XtNdieCallback, DieResponse, ad);
 	
-    XtGetApplicationResources(ad->appShell, (XtPointer)&appResources,
+    XtGetApplicationResources(ad->rootShell, (XtPointer)&appResources,
 			      Resources, XtNumber(Resources), NULL, 0);
 
     CreateMainInterface(ad);
-    XtRealizeWidget(ad->appShell);
+    XtRealizeWidget(ad->rootShell);
     CreateInteractDialog(ad);
 
     if (appResources.verbose) {
 	Arg args[1];
 	XtSetArg(args[0], XtNsessionID, &ad->smcid);
-	XtGetValues(ad->appShell, args, (Cardinal) 1);
+	XtGetValues(ad->rootShell, args, (Cardinal) 1);
 	ad->smcid = XtNewString(ad->smcid);
     }
 
