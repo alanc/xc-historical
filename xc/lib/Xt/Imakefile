@@ -23,7 +23,11 @@ HEADERS = \
 	CoreP.h \
 	Intrinsic.h \
 	IntrinsicP.h \
+	Object.h \
+	ObjectP.h \
 	Quarks.h \
+	RectObj.h \
+	RectObjP.h \
 	Selection.h \
 	Shell.h \
 	ShellP.h \
