@@ -1,5 +1,5 @@
 /*
- * $XConsortium: showrgb.c,v 1.1 89/10/26 16:24:49 jim Exp $
+ * $XConsortium: showrgb.c,v 1.2 89/10/26 17:34:05 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -22,12 +22,6 @@
  *
  * Author:  Jim Fulton, MIT X Consortium
  */
-
-#ifdef apollo
-#ifndef APOLLO_SR9
-#define NDBM
-#endif
-#endif
 
 #ifdef NDBM
 #include <ndbm.h>

@@ -5,13 +5,7 @@
    where red/green/blue are decimal values, and inserts them in a database.
  */
 #ifndef lint
-static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.8 89/07/20 18:42:46 rws Exp $";
-#endif
-
-#ifdef apollo
-#ifndef APOLLO_SR9
-#define NDBM
-#endif
+static char *rcsid_rgb_c = "$XConsortium: rgb.c,v 11.9 89/10/26 17:34:04 jim Exp $";
 #endif
 
 #ifdef NDBM
