@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.22 91/01/24 19:32:35 gildea Exp $
+ *	$XConsortium: screen.c,v 1.23 91/01/30 16:16:39 gildea Exp $
  */
 
 /*
@@ -30,7 +30,12 @@
 #include <X11/Xlib.h>
 #include <stdio.h>
 #include <signal.h>
+#ifdef SVR4
+#include <termios.h>
+#else
 #include <sys/ioctl.h>
+#endif
+
 #include "ptyx.h"
 #include "error.h"
 
