@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.1 89/06/12 16:28:37 keith Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.2 89/06/16 16:58:08 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -204,23 +204,21 @@ mfbCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pwinRoot = WindowTable[pWin->drawable.pScreen->myNum];
 
-    prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 
-					       pWin->borderClip->numRects);
+    prgnDst = (* pWin->drawable.pScreen->RegionCreate)(NULL, 1);
 
     dx = ptOldOrg.x - pWin->drawable.x;
     dy = ptOldOrg.y - pWin->drawable.y;
     (* pWin->drawable.pScreen->TranslateRegion)(prgnSrc, -dx, -dy);
-    (* pWin->drawable.pScreen->Intersect)(prgnDst, pWin->borderClip, prgnSrc);
+    (* pWin->drawable.pScreen->Intersect)(prgnDst, &pWin->borderClip, prgnSrc);
 
-    pbox = prgnDst->rects;
-    nbox = prgnDst->numRects;
-    if(!(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL( prgnDst->numRects *
-      sizeof(DDXPointRec))))
+    pbox = REGION_RECTS(prgnDst);
+    nbox = REGION_NUM_RECTS(prgnDst);
+    if(!(pptSrc = (DDXPointPtr )ALLOCATE_LOCAL(nbox * sizeof(DDXPointRec))))
 	return;
     ppt = pptSrc;
 
 #ifndef PURDUE
-    for (i=0; i<nbox; i++, ppt++, pbox++)
+    for (i=nbox; --i >= 0; ppt++, pbox++)
     {
 	ppt->x = pbox->x1 + dx;
 	ppt->y = pbox->y1 + dy;
