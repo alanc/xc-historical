@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.82 90/12/11 11:02:46 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.83 90/12/11 22:39:30 rws Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -446,7 +446,7 @@ extern int (*XESetCreateGC(
 	    )		/* proc */
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, GC, XExtCodes*
 #endif
 );
@@ -464,7 +464,7 @@ extern int (*XESetCopyGC(
             )		/* proc */	      
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, GC, XExtCodes*
 #endif
 );
@@ -482,7 +482,7 @@ extern int (*XESetFlushGC(
             )		/* proc */	     
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, GC, XExtCodes*
 #endif
 );
@@ -500,7 +500,7 @@ extern int (*XESetFreeGC(
             )		/* proc */	     
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, GC, XExtCodes*
 #endif
 );
@@ -518,7 +518,7 @@ extern int (*XESetCreateFont(
             )		/* proc */    
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, XFontStruct*, XExtCodes*
 #endif
 );
@@ -536,7 +536,7 @@ extern int (*XESetFreeFont(
             )		/* proc */    
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, XFontStruct*, XExtCodes*
 #endif
 ); 
@@ -553,7 +553,7 @@ extern int (*XESetCloseDisplay(
             )		/* proc */    
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, XExtCodes*
 #endif
 );
@@ -572,7 +572,7 @@ extern int (*XESetError(
             )		/* proc */    
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, xError*, XExtCodes*, int*
 #endif
 );
@@ -592,7 +592,7 @@ extern char* (*XESetErrorString(
               )		/* proc */	       
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, int, XExtCodes*, char*, int
 #endif
 );
@@ -610,7 +610,7 @@ extern void (*XESetPrintErrorValues (
 	     )		/* proc */
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, XErrorEvent*, void*
 #endif
 );
@@ -628,7 +628,7 @@ extern int (*XESetWireToEvent(
              )		/* proc */    
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, XEvent*, xEvent*
 #endif
 );
@@ -646,7 +646,7 @@ extern Status (*XESetEventToWire(
             )		/* proc */   
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, XEvent*, xEvent*
 #endif
 );
@@ -664,7 +664,7 @@ extern Status (*XESetWireToError(
             )		/* proc */   
 #endif
 ))(
-#if NeedFunctionPrototypes
+#if NeedNestedPrototypes
     Display*, XErrorEvent*, xError*
 #endif
 );
