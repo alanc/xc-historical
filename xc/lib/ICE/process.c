@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.21 93/11/25 14:20:40 mor Exp $ */
+/* $XConsortium: process.c,v 1.22 93/11/30 15:30:04 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -698,7 +698,7 @@ Bool			swap;
 	return;
     }
 
-    _IceGetValidAuthIndices (iceConn->listen_obj, "ICE",
+    _IceGetPaValidAuthIndices ("ICE", iceConn->connection_string,
 	_IceAuthCount, _IceAuthNames, &authUsableCount, authIndices);
 
     for (i = 0; i < _IceAuthCount; i++)
@@ -779,7 +779,7 @@ Bool			swap;
 
 	authState = NULL;
 
-	status = (*authProc) (&authState, iceConn->listen_obj,
+	status = (*authProc) (&authState, iceConn->connection_string,
 	    swap, 0, NULL, &authDataLen, &authData, &errorString);
 
 	if (status == IcePaAuthContinue)
@@ -1030,7 +1030,7 @@ Bool		swap;
 	    iceConn->connect_to_me->my_auth_index];
 	IcePaAuthStatus status =
 	    (*authProc) (&iceConn->connect_to_me->my_auth_state,
-	    iceConn->listen_obj, swap,
+	    iceConn->connection_string, swap,
 	    replyDataLen, replyData, &authDataLen, &authData, &errorString);
 
 	if (status == IcePaAuthContinue)
@@ -1103,7 +1103,7 @@ Bool		swap;
 	    iceConn->protosetup_to_me->my_auth_index];
 	IcePaAuthStatus status =
 	    (*authProc) (&iceConn->protosetup_to_me->my_auth_state,
-	    iceConn->listen_obj, swap,
+	    iceConn->connection_string, swap,
 	    replyDataLen, replyData, &authDataLen, &authData, &errorString);
 	int free_setup_info = 1;
 
@@ -1557,9 +1557,10 @@ Bool			swap;
     myAuthCount = myProtocol->auth_count;
     mustAuthenticate = message->mustAuthenticate;
 
-    _IceGetValidAuthIndices (
-	iceConn->listen_obj, _IceProtocols[myOpcode - 1].protocol_name,
-	myAuthCount, myProtocol->auth_names, &authUsableCount, authIndices);
+    _IceGetPaValidAuthIndices (
+	_IceProtocols[myOpcode - 1].protocol_name,
+	iceConn->connection_string, myAuthCount, myProtocol->auth_names,
+        &authUsableCount, authIndices);
 
     for (i = 0; i < myAuthCount; i++)
     {
@@ -1629,7 +1630,7 @@ Bool			swap;
 	authState = NULL;
 
 	status = (*authProc) (&authState,
-	    iceConn->listen_obj, swap, 0, NULL,
+	    iceConn->connection_string, swap, 0, NULL,
 	    &authDataLen, &authData, &errorString);
 
 	if (status == IcePaAuthContinue)
