@@ -1,4 +1,4 @@
-/* $Header: xlistdev.c,v 1.2 90/12/31 16:15:19 gms Exp $ */
+/* $Header: xlistdev.c,v 1.11 91/01/24 16:38:35 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -147,7 +147,7 @@ SizeDeviceInfo (d, namesize, size)
 	*size += sizeof (xButtonInfo);
     if (d->valuator != NULL)
 	*size += (sizeof(xValuatorInfo) + 
-		d->valuator->numAxes * sizeof(XAxisInfo));
+		d->valuator->numAxes * sizeof(xAxisInfo));
     }
 
 /***********************************************************************
@@ -309,7 +309,7 @@ CopySwapValuatorClass (client, v, buf)
     int			j;
     register char 	n;
     xValuatorInfoPtr 	v2;
-    XAxisInfo 		*a;
+    AxisInfo 		*a;
     xAxisInfoPtr 	a2;
 
     v2 = (xValuatorInfoPtr) *buf;
@@ -317,7 +317,7 @@ CopySwapValuatorClass (client, v, buf)
     v2->length = sizeof (xValuatorInfo) + v->numAxes *
 	sizeof (xAxisInfo);
     v2->num_axes  = v->numAxes;
-    v2->mode  = v->mode;
+    v2->mode  = v->mode & DeviceMode;
     v2->motion_buffer_size  = v->numMotionEvents;
     if (client->swapped)
 	{
