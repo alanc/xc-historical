@@ -1,8 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.h,v 1.3 89/05/06 21:16:16 kit Exp $
- * $Athena: ScrollByL.h,v 4.0 88/08/31 22:11:16 kit Exp $
+ * $XConsortium: ScrollByL.h,v 1.4 89/07/21 17:33:49 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: globals.c,v 1.6 89/10/03 15:57:50 kit Exp $
+ * $XConsortium: globals.c,v 1.7 91/01/09 17:31:19 rws Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -18,10 +18,6 @@
  * Author:    Chris D. Peterson, MIT Project Athena
  * Created:   October 22, 1987
  */
-
-#if ( !defined(lint) && !defined(SABER))
-  static char rcs_version[] = "$Athena: globals.c,v 4.5 88/12/19 13:46:53 kit Exp $";
-#endif
 
 #include "man.h"
 

@@ -1,8 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: icon_help.h,v 1.2 88/09/06 17:48:03 jim Exp $
- * $Athena: icon_help.h,v 4.0 88/08/31 22:12:12 kit Exp $
+ * $XConsortium: icon_help.h,v 1.3 91/01/10 22:22:25 gildea Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
