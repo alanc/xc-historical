@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.23 90/07/13 07:35:51 swick Exp $ */
+/* $XConsortium: TranslateI.h,v 1.24 90/08/17 15:17:00 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -226,8 +226,29 @@ extern void _XtRegisterAccRemoveCallbacks(
 #endif
 );
 
-void _XtUninstallAccelerators(
+extern void _XtUninstallAccelerators(
 #if NeedFunctionPrototypes
     Widget /* w */
+#endif
+);
+
+extern Boolean _XtCvtMergeTranslations(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    XrmValuePtr /* args */,
+    Cardinal*	/* num_args */,
+    XrmValuePtr /* from */,
+    XrmValuePtr /* to */,
+    XtPointer*	/* closure_ret */
+#endif
+);
+
+void _XtFreeTranslations(
+#if NeedFunctionPrototypes
+    XtAppContext /* app */,
+    XrmValuePtr  /* toVal */,
+    XtPointer    /* closure */,
+    XrmValuePtr  /* args */,
+    Cardinal*	 /* num_args */
 #endif
 );
