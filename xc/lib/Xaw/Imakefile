@@ -64,6 +64,7 @@ SRCS = \
 	Simple.c \
 	StringSrc.c \
 	Text.c \
+	TextTr.c \
 	Vendor.c \
 	Viewport.c \
 	VPaned.c \
@@ -89,6 +90,7 @@ OBJS = \
 	Simple.o \
 	StringSrc.o \
 	Text.o \
+	TextTr.o \
 	Vendor.o \
 	Viewport.o \
 	VPaned.o \
