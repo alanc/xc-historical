@@ -1,4 +1,4 @@
-.\" $XConsortium: macros.t,v 1.6 94/01/03 14:59:54 gildea Exp $
+.\" $XConsortium: macros.t,v 1.7 94/01/10 15:29:34 gildea Exp $
 .\" macros.t -- macros for X Consortium documents
 .\" Revised and commented by smarks 93.12.20.
 .\"
@@ -17,6 +17,12 @@
 .\}
 .\"
 .\" --- Ds --- displayed text (like .DS) with no keep
+.\" .Ds is obsolete.  Change to something from this table:
+.\" for this	use instead
+.\" .Ds		.ID
+.\" .Ds n	.LD		(where "n" is a number)
+.\" (Numbers don't work in these macros, so ".Ds 5"
+.\" comes out the same as ".Ds 0".)
 .\"
 .de Ds
 .nf
@@ -26,17 +32,21 @@
 .if \\n(VS>=40 .vs \\n(VSu
 .if \\n(VS<=39 .vs \\n(VSp
 ..
+.de D
+.ID \\$1
+..
+.de 0D
+.LD
+..
+.\" backward compatibility for the Xt spec
+.de 5D
+.LD
+..
 .\"
-.\" --- De --- end of displayed text (like .DE) with no keep
+.\" --- De --- obsolete: use .DE instead
 .\"
 .de De
-.ce 0
-.if \\n(BD .DF
-.nr BD 0
-.in \\n(OIu
-.if \\n(TM .ls 2
-.sp \\n(DDu
-.fi
+.DE
 ..
 .\"
 .\" --- FD ---
