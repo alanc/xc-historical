@@ -1,6 +1,6 @@
 /* LINTLIBRARY */
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Object.c,v 1.8 89/09/08 17:43:58 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Functions.c,v 1.1 89/09/11 17:45:23 swick Exp $";
 #endif /* lint */
 
 /*
@@ -144,5 +144,8 @@ void XtUnmapWidget(w)
 String XtNewString(str)
     String str;
 {
-    return strcpy(XtMalloc((unsigned)strlen(str) + 1), str);
+    if (str == NULL)
+	return NULL;
+    else
+	return strcpy(XtMalloc((unsigned)strlen(str) + 1), str);
 }
