@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.112 91/07/20 15:07:00 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.113 91/07/22 21:40:47 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -76,6 +76,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.112 91/07/20 15:07:00 rws Exp $
  *	MakeSubdirs				(dirs)
  *	NamedMakeSubdirs			(name,dirs)
  *	DependSubdirs				(dirs)
+ *	ForceSubdirs				(dirs)
  *	InstallSubdirs				(dirs)
  *	InstallManSubdirs			(dirs)
  *	NamedIncludesSubdirs			(name,dirs)
@@ -858,6 +859,21 @@ Concat(lib,libname.a): deplist						@@\
 
 
 /*
+ * SubdirLibraryRule -
+ */
+#ifndef SubdirLibraryRule
+#define	SubdirLibraryRule(objlist)					@@\
+all:: DONE								@@\
+									@@\
+DONE: objlist								@@\
+	touch $@							@@\
+									@@\
+clean::									@@\
+	$(RM) DONE
+#endif /* SubdirLibraryRule */
+
+
+/*
  * ProfiledLibraryTarget - generate rules to create a profiled library.
  */
 #ifndef ProfiledLibraryTarget
@@ -1063,6 +1079,18 @@ NamedMakeSubdirs(all,dirs)
 NamedTargetSubdirs(depend,dirs,"depending",NullParameter,depend)
 #endif /* DependSubdirs */
 
+
+/*
+ * ForceSubdirs - force make to build subdirectories
+ */
+#ifndef ForceSubdirs
+#define ForceSubdirs(dirs)						@@\
+dirs: FRC								@@\
+	@cd $@ ; echo "making all in $(CURRENT_DIR)/$@..."; \		@@\
+	$(MAKE) $(MFLAGS) PassCDebugFlags all				@@\
+									@@\
+FRC:
+#endif /* ForceSubdirs */
 
 /*
  * InstallSubdirs - generate rules to recursively install programs and files.
