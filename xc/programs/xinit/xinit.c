@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.29 88/09/27 10:59:53 jim Exp $";
+static char *rcsid_xinit_c = "$XConsortium: xinit.c,v 11.30 88/09/27 11:05:50 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -118,6 +118,20 @@ sigAlarm(sig)
 }
 #endif /* SYSV */
 
+static Execute (vec)
+    char **vec;				/* has room from up above */
+{
+    char *filename = vec[0];
+
+    execvp (filename, vec);
+    if (access (filename, R_OK) == 0) {
+	vec--;				/* back it up to stuff shell in */
+	vec[0] = SHELL;
+	execvp (filename, vec);
+    }
+    return;
+}
+
 main(argc, argv)
 int argc;
 register char **argv;
@@ -226,20 +240,12 @@ register char **argv;
 		(void) sprintf (xinitrcbuf, "%s/%s", cp, XINITRC);
 	    }
 	    if (xinitrcbuf[0]) {
-		if (access (xinitrcbuf, X_OK) == 0) {		/* execute */
+		if (access (xinitrcbuf, F_OK) == 0) {
 		    client += start_of_client_args - 1;
 		    client[0] = xinitrcbuf;
-		} else if (access (xinitrcbuf, R_OK) == 0) {	/* read */
-		    client += start_of_client_args - 2;
-		    client[0] = SHELL;
-		    client[1] = xinitrcbuf;
-		} else if (access (xinitrcbuf, F_OK) == 0) {	/* exists */
+		} else if (required) {
 		    fprintf (stderr,
-	     "%s:  warning, can't execute or read client init file \"%s\"\n",
-			     program, xinitrcbuf);
-		} else if (required) {			/* doesn't exist */
-		    fprintf (stderr, 
-		     "%s:  warning, no such client init file \"%s\"\n",
+			     "%s:  warning, no client init file \"%s\"\n",
 			     program, xinitrcbuf);
 		}
 	    }
@@ -261,25 +267,16 @@ register char **argv;
 		(void) sprintf (xserverrcbuf, "%s/%s", cp, XSERVERRC);
 	    }
 	    if (xserverrcbuf[0]) {
-		if (access (xserverrcbuf, X_OK) == 0) {		/* execute */
+		if (access (xserverrcbuf, F_OK) == 0) {
 		    server += start_of_server_args - 1;
 		    server[0] = xserverrcbuf;
-		} else if (access (xserverrcbuf, R_OK) == 0) {	/* read */
-		    server += start_of_server_args - 2;
-		    server[0] = SHELL;
-		    server[1] = xserverrcbuf;
-		} else if (access (xserverrcbuf, F_OK) == 0) {	/* exists */
+		} else if (required) {
 		    fprintf (stderr,
-	     "%s:  warning, can't execute or read server init file \"%s\"\n",
-			     program, xserverrcbuf);
-		} else if (required) {			/* doesn't exist */
-		    fprintf (stderr, 
-			     "%s:  warning, no such server init file \"%s\"\n",
+			     "%s:  warning, no server init file \"%s\"\n",
 			     program, xserverrcbuf);
 		}
 	    }
 	}
-
 
 
 	/*
@@ -419,7 +416,7 @@ startServer(server)
 		 */
 		setpgrp(0,getpid());
 
-		execvp(server[0], server);
+		Execute (server);
 		Error ("no server \"%s\" in PATH\n", server[0]);
 		{
 		    char **cpp;
@@ -481,7 +478,7 @@ startClient(client)
 		setuid(getuid());
 		setpgrp(0, getpid());
 		environ = newenviron;
-		execvp (client[0], client);
+		Execute (client);
 		Error ("no program named \"%s\" in PATH\r\n", client[0]);
 		fprintf (stderr,
 "\nSpecify a program on the command line or make sure that %s\r\n", bindir);
