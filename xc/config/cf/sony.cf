@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.22 91/03/27 09:13:26 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.23 91/03/28 19:17:52 rws Exp $
 
 #ifdef bsd43
 #define OSName                  NEWS-OS 3.3
@@ -18,8 +18,8 @@ XCOMM platform:  $XConsortium: sony.cf,v 1.22 91/03/27 09:13:26 rws Exp $
 #define BootstrapCFlags		-Dsony
 #define CcCmd                   /usr/bin/cc
 #define HasSockets		YES
-/* -Wf,-XNp6000,-XNd6000 is enough if you do not compile PEX client side */
-#define DefaultCCOptions        -Wf,-XNp15000,-XNd15000
+#define DefaultCCOptions        -Wf,-XNp6000,-XNd6000
+#define PexCCOptions            -Wf,-XNp15000,-XNd15000
 #endif
 XCOMM operating system:  OSName
 
