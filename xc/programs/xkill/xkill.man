@@ -1,4 +1,4 @@
-.TH XMAG 1 "1 October 1988" "X Version 11"
+.TH XKILL 1 "16 October 1988" "X Version 11"
 .SH NAME
 xkill - kill a client by its X resource
 .SH SYNOPSIS
