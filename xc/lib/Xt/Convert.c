@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.62 91/06/17 11:46:17 converse Exp $ */
+/* $XConsortium: Convert.c,v 1.63 91/11/26 13:54:29 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -738,10 +738,18 @@ _XtCallConverter(dpy, converter,
     {
 	Heap *heap;
 	XtPointer closure = NULL;
+	unsigned int supplied_size = to->size;
 	Boolean do_ref = cP->do_ref_count && cache_ref_return;
 	Boolean do_free = False;
 	Boolean retval =
 	    (*(XtTypeConverter)converter)(dpy, args, &num_args, from, to, &closure);
+
+	if (retval == False && supplied_size < to->size) {
+	    /* programmer error: caller must allocate sufficient storage */
+	    *cache_ref_return = NULL;
+	    return False;
+	}
+
 	if ((cP->cache_type == XtCacheNone) || do_ref) {
 	    heap = NULL;
 	    do_free = True;
