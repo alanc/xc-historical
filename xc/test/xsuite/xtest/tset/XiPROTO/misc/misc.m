@@ -37,9 +37,9 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: misc.m,v 1.5 94/02/21 18:37:27 rws Exp $
+ * $XConsortium: misc.m,v 1.6 94/04/17 21:13:54 rws Exp dpw $
  */
->>TITLE SelectExtensionEvent XIPROTO
+>>TITLE Miscellaneous XIPROTO
 >>SET startup protostartup
 >>SET cleanup protocleanup
 >>EXTERN
