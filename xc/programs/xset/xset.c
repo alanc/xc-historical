@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.58 91/07/22 18:26:37 keith Exp $ 
+ * $XConsortium: xset.c,v 1.59 91/07/22 18:32:33 keith Exp $ 
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985	*/
@@ -16,7 +16,7 @@ suitability of this software for any purpose.  It is provided "as is"
 without express or implied warranty.
 */
 
-/* $XConsortium: xset.c,v 1.58 91/07/22 18:26:37 keith Exp $ */
+/* $XConsortium: xset.c,v 1.59 91/07/22 18:32:33 keith Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -38,6 +38,9 @@ without express or implied warranty.
 
 #define SERVER_DEFAULT (-1)
 #define DONT_CHANGE -2
+
+#define DEFAULT_ON (-50)
+#define DEFAULT_TIMEOUT (-600)
 
 #define ALL -1
 #define TIMEOUT 1
@@ -109,6 +112,7 @@ for (i = 1; i < argc; ) {
     }
     arg = nextarg(i, argv);
     if (strcmp(arg, "on") == 0) {               /* Let click be default. */
+      percent = DEFAULT_ON;
       i++;
     } 
     else if (strcmp(arg, "off") == 0) {  
@@ -132,7 +136,7 @@ for (i = 1; i < argc; ) {
     }
     arg = nextarg(i, argv);
     if (strcmp(arg, "on") == 0) {               /* Let it stay that way.  */
-      set_bell_vol(dpy, percent);
+      set_bell_vol(dpy, DEFAULT_ON);
       i++;
     } 
     else if (strcmp(arg, "off") == 0) {
@@ -311,9 +315,12 @@ for (i = 1; i < argc; ) {
 	i++;
       }
     }
-    else if (strcmp(arg, "default") == 0 ||
-	     strcmp(arg, "on") == 0) {    /*  Leave as default.       */
-      set_saver(dpy, ALL, 0);
+    else if (strcmp(arg, "default") == 0) {    /*  Leave as default.       */
+      set_saver(dpy, ALL, SERVER_DEFAULT);
+      i++;
+    } 
+    else if (strcmp(arg, "on") == 0) {    /*  Turn on.       */
+      set_saver(dpy, ALL, DEFAULT_TIMEOUT);
       i++;
     } 
     else if (*arg >= '0' && *arg <= '9') {  /*  Set as user wishes.   */
@@ -415,8 +422,18 @@ Display *dpy;
 int percent;
 {
 XKeyboardControl values;
+XKeyboardState kbstate;
 values.key_click_percent = percent;
+if (percent == DEFAULT_ON)
+  values.key_click_percent = SERVER_DEFAULT;
 XChangeKeyboardControl(dpy, KBKeyClickPercent, &values);
+if (percent == DEFAULT_ON) {
+  XGetKeyboardControl(dpy, &kbstate);
+  if (!kbstate.key_click_percent) {
+    values.key_click_percent = -percent;
+    XChangeKeyboardControl(dpy, KBKeyClickPercent, &values);
+  }
+}
 return;
 }
 
@@ -425,8 +442,18 @@ Display *dpy;
 int percent;
 {
 XKeyboardControl values;
+XKeyboardState kbstate;
 values.bell_percent = percent;
+if (percent == DEFAULT_ON)
+  values.bell_percent = SERVER_DEFAULT;
 XChangeKeyboardControl(dpy, KBBellPercent, &values);
+if (percent == DEFAULT_ON) {
+  XGetKeyboardControl(dpy, &kbstate);
+  if (!kbstate.bell_percent) {
+    values.bell_percent = -percent;
+    XChangeKeyboardControl(dpy, KBBellPercent, &values);
+  }
+}
 return;
 }
 
@@ -646,14 +673,20 @@ int mask, value;
   if (mask == INTERVAL) interval = value;
   if (mask == PREFER_BLANK) prefer_blank = value;
   if (mask == ALLOW_EXP) allow_exp = value;
-  if (mask == ALL) {  /* "value" is ignored in this case.  (defaults) */
+  if (mask == ALL) {
     timeout = SERVER_DEFAULT;
     interval = SERVER_DEFAULT;
     prefer_blank = DefaultBlanking;
     allow_exp = DefaultExposures;
   }
-      XSetScreenSaver(dpy, timeout, interval, prefer_blank, 
+  XSetScreenSaver(dpy, timeout, interval, prefer_blank, 
+		  allow_exp);
+  if (mask == ALL && value == DEFAULT_TIMEOUT) {
+    XGetScreenSaver(dpy, &timeout, &interval, &prefer_blank, &allow_exp);
+    if (!timeout)
+      XSetScreenSaver(dpy, -DEFAULT_TIMEOUT, interval, prefer_blank, 
 		      allow_exp);
+  }
   return;
 }
 
