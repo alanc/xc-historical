@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.h,v 1.8 89/08/21 19:08:05 jim Exp $
+ * $XConsortium: events.h,v 1.9 89/10/27 14:01:14 jim Exp $
  *
  * twm event handler include file
  *
@@ -61,7 +61,6 @@ extern void HandleClientMessage();
 extern void HandlePropertyNotify();
 extern void HandleKeyPress();
 extern void HandleColormapNotify();
-extern void HandleVisibilityNotify();
 extern void HandleUnknown();
 
 extern event_proc EventHandler[];

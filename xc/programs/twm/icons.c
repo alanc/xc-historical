@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.10 89/11/16 21:14:14 jim Exp $
+ * $XConsortium: icons.c,v 1.11 89/11/19 15:34:12 jim Exp $
  *
  * Icon releated routines
  *
@@ -491,9 +491,9 @@ int def_x, def_y;
 	event_mask = ExposureMask;
     }
 
-    XSelectInput(dpy, tmp_win->icon_w,
-	KeyPressMask | VisibilityChangeMask |
-	ButtonPressMask | ButtonReleaseMask | event_mask);
+    XSelectInput (dpy, tmp_win->icon_w,
+		  KeyPressMask | ButtonPressMask | ButtonReleaseMask |
+		  event_mask);
 
     tmp_win->icon_bm_w = NULL;
     if (pm != None &&

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.50 89/11/21 16:41:47 jim Exp $
+ * $XConsortium: twm.h,v 1.51 89/11/22 15:36:55 jim Exp $
  *
  * twm include file
  *
@@ -202,8 +202,6 @@ typedef struct TwmWindow
     XSizeHints hints;		/* normal hints */
     XWMHints *wmhints;		/* WM hints */
     int group;			/* group ID */
-    int frame_vis;		/* frame visibility */
-    int icon_vis;		/* icon visibility */
     XClassHint class;
     struct WList *list;
     /***********************************************************************

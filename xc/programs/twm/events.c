@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.112 89/11/19 15:33:56 jim Exp $
+ * $XConsortium: events.c,v 1.113 89/11/21 16:41:19 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.112 89/11/19 15:33:56 jim Exp $";
+"$XConsortium: events.c,v 1.113 89/11/21 16:41:19 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -145,7 +145,6 @@ InitEvents()
     EventHandler[PropertyNotify] = HandlePropertyNotify;
     EventHandler[KeyPress] = HandleKeyPress;
     EventHandler[ColormapNotify] = HandleColormapNotify;
-    EventHandler[VisibilityNotify] = HandleVisibilityNotify;
 #ifdef SHAPE
     if (HasShape)
 	EventHandler[ShapeEventBase+ShapeNotify] = HandleShapeNotify;
@@ -259,26 +258,6 @@ HandleEvents()
     }
 }
 
-
-/***********************************************************************
- *
- *  Procedure:
- *	HandleVisiblityNotify - visibility notify event handler
- *
- ***********************************************************************
- */
-
-void
-HandleVisibilityNotify()
-{
-    if (Tmp_win == NULL)
-	return;
-
-    if (Event.xany.window == Tmp_win->frame)
-	Tmp_win->frame_vis = Event.xvisibility.state;
-    else if (Event.xany.window == Tmp_win->icon_w)
-	Tmp_win->icon_vis = Event.xvisibility.state;
-}
 
 /***********************************************************************
  *
