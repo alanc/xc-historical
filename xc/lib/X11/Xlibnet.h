@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.23 93/08/14 09:50:41 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.24 93/08/14 13:03:54 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -111,6 +111,8 @@ without express or implied warranty.
 #if !defined(USE_POLL) || defined(STREAMSCONN)
 
 #define MSKCNT ((OPEN_MAX + 31) / 32)
+
+typedef unsigned long FdSet[MSKCNT];
 
 #if (MSKCNT==1)
 #define BITMASK(i) (1 << (i))
@@ -283,6 +285,13 @@ struct iovec {
     caddr_t iov_base;
     int iov_len;
 };
+
+typedef fd_set FdSet;
+
+#define CLEARBITS(set) FD_ZERO(&set)
+#define BITSET(set,s) FD_SET(s,&set)
+#define _XANYSET(set) set.fd_count
+
 #endif /* WIN32 */
 
 #define ReadvFromServer(dpy, iov, iovcnt) _XReadV((dpy), (iov), (iovcnt))
