@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miarc.c,v 1.45 87/08/29 16:24:17 todd Exp $ */
+/* $Header: miarc.c,v 1.46 87/08/31 16:39:34 rws Locked $ */
 /* Author: Todd Newman */
 #include "X.h"
 #include "Xprotostr.h"
@@ -39,9 +39,6 @@ extern double sqrt(), cos(), sin(), atan();
 #define M_PI_2	1.57079632679489661923
 
 
-#define SAMESIGN(a, b)  ((((a) >= 0) && ((b) >= 0)) ||\
-                         (((a) <= 0) && ((b) <= 0)))
-
 /* This contains the information needed to draw one arc of a polyarc.
  * An array of them can be allocated if the polyarc has more than 1 part */
 typedef struct
@@ -57,7 +54,10 @@ typedef struct
 #define GCValsCapStyle 		4
 #define GCValsJoinStyle		5
 #define GCValsArcMode		6
-static int gcvals[]= {GXcopy, 1, 0, 0, 0, 0, 0};
+#define GCValsMask		(GCFunction | GCForeground | GCBackground | \
+				 GCLineWidth | GCCapStyle | GCJoinStyle | \
+				 GCArcMode)
+static CARD32 gcvals[]= {GXcopy, 1, 0, 0, 0, ArcChord};
 
 /* MIPOLYARC -- Public entry for the polyarc call.
  * Strategy: Similar in many ways to that for wide lines.
@@ -71,6 +71,8 @@ static int gcvals[]= {GXcopy, 1, 0, 0, 0, 0, 0};
  * if it involves the destination, then we use PushPixels to move the bits
  * from the scratch drawable to pDraw. (See the wide line code for a
  * fuller explanation of this.)
+ * Note that changing the arcmode below isn't required, but assuming the
+ * mi line code will be used, this will save changing it N times.
  */
 void
 miPolyArc(pDraw, pGC, narcs, parcs)
@@ -79,20 +81,19 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     int		narcs;
     xArc	*parcs;
 {
-    register int		i, j;
+    register int		i;
     register DDXPointPtr	ppt;	/* Points for the current arc */
     register DDXPointPtr	pAllPts; /* Points for all arcs so far */
     register int		cpt,	/* count of points in current arc */
     				cptAll;	/* count of points in all arcs */
     DDXPointPtr			pPts;	/* Points for the current arc */
     int				xMin, xMax, yMin, yMax, yOrg, xOrg, dx, dy,
-    				ifirst, ilast, count, gcmode, arcmode, width;
-    Bool			fAllOne, fTricky;
-    PixmapPtr			pDrawTo;
+    				ifirst, count, width;
+    CARD32			arcmode;
+    Bool			fTricky;
+    DrawablePtr			pDrawTo;
     GCPtr			pGCTo;
-    POLYARCINFO 		*polyarcs;
-    DDXPointRec			LastPt;
-
+    register POLYARCINFO	*polyarcs;
 
     width = pGC->lineWidth;
     if(width == 0 || narcs == 1)
@@ -104,17 +105,12 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    if( cpt = miGetArcPts(&parcs[i], 0, &pPts))
 	    {
 		(*pGC->Polylines)(pDraw, pGC, CoordModeOrigin, cpt, pPts);
-		Xfree(pPts);
+		Xfree((pointer)pPts);
 	    }
 	}
     }
     else 
     {
-	count = 0;
-	ifirst = 0;
-	fAllOne = FALSE;
-	pPts = (DDXPointPtr) NULL;
-	pAllPts = (DDXPointPtr) NULL;
 	polyarcs = (POLYARCINFO *)ALLOCATE_LOCAL(narcs * sizeof(POLYARCINFO));
 	if(!polyarcs)
 	    return;
@@ -126,26 +122,15 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	for(i = 0; i < narcs; i++)
 	{
 	    pPts = (DDXPointPtr) NULL;
-	    if((cpt = miGetArcPts(&parcs[i], 0, &pPts)) == 0)
-	    {
-		/* One of the arcs was empty. Give up */
-		while(--i >= 0)
-		{
-		    Xfree(polyarcs[i].pPts);
-		}
-		DEALLOCATE_LOCAL(polyarcs);
-		return;
-	    }
+	    cpt = miGetArcPts(&parcs[i], 0, &pPts);
 	    polyarcs[i].cpt = cpt;
 	    polyarcs[i].pPts = pPts;
-	    ppt = pPts;
-	    for(j = 0; j < cpt; j++)
+	    for(ppt = pPts, count = cpt; --count >= 0; ppt++)
 	    {
 		xMin = min(xMin, ppt->x);
 		yMin = min(yMin, ppt->y);
 		xMax = max(xMax, ppt->x);
 		yMax = max(yMax, ppt->y);
-		ppt++;
 	    }
 	}
 	/* Set up pDrawTo and pGCTo based on the rasterop */
@@ -156,41 +141,23 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	  case GXcopyInverted:	/* NOT src */
 	  case GXset:		/* 1 */
 	    fTricky = FALSE;
-	    pDrawTo = (PixmapPtr) pDraw;
+	    pDrawTo = pDraw;
 	    pGCTo = pGC;
-	    if(pGCTo->arcMode != ArcChord)
+	    arcmode = (CARD32)pGCTo->arcMode;
+	    if(arcmode != ArcChord)
 	    {
-		arcmode = pGCTo->arcMode;
 		DoChangeGC(pGCTo, GCArcMode, &gcvals[GCValsArcMode], 0);
 		ValidateGC(pDrawTo, pGCTo);
 	    }
-	    else
-		arcmode = ArcChord;
-
 	    break;
-	  case GXand:		/* src AND dst */
-	  case GXandReverse:	/* src AND NOT dst */
-	  case GXandInverted:	/* NOT src AND dst */
-	  case GXnoop:		/* dst */
-	  case GXxor:		/* src XOR dst */
-	  case GXor:		/* src OR dst */
-	  case GXnor:		/* NOT src AND NOT dst */
-	  case GXequiv:		/* NOT src XOR dst */
-	  case GXinvert:		/* NOT dst */
-	  case GXorReverse:		/* src OR NOT dst */
-	  case GXorInverted:	/* NOT src OR dst */
-	  case GXnand:		/* NOT src OR NOT dst */
+	  default:
 	    fTricky = TRUE;
 
 	    pGCTo = GetScratchGC(1, pDraw->pScreen);
 	    gcvals[GCValsLineWidth] = pGC->lineWidth;
 	    gcvals[GCValsCapStyle] = pGC->capStyle;
 	    gcvals[GCValsJoinStyle] = pGC->joinStyle;
-
-	    /* Also what about arcmode?? */
-	    gcmode = GCFunction | GCForeground | GCBackground | GCLineWidth |
-	             GCCapStyle | GCJoinStyle;
-	    DoChangeGC(pGCTo, gcmode, gcvals, 0);
+	    DoChangeGC(pGCTo, GCValsMask, gcvals, 0);
     
     	    xOrg = xMin - (width + 1)/2;
 	    yOrg = yMin - (width + 1)/2;
@@ -198,106 +165,60 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    dy = yMax - yMin + width + 1;
 	    for(i = 0; i < narcs; i++)
 	    {
-		cpt = polyarcs[i].cpt;
-		ppt = polyarcs[i].pPts;
-	        for(j = 0; j < cpt; j++)
+		for(ppt = polyarcs[i].pPts, count = polyarcs[i].cpt;
+		    --count >= 0;
+		    ppt++)
 		{
 		    ppt->x -= xOrg;
 		    ppt->y -= yOrg;
-		    ppt++;
 		}
+	    }
+	    if (pGC->miTranslate && (pDraw->type == DRAWABLE_WINDOW))
+	    {
+		xOrg += ((WindowPtr)pDraw)->absCorner.x;
+		yOrg += ((WindowPtr)pDraw)->absCorner.y;
 	    }
 
 	    /* allocate a 1 bit deep pixmap of the appropriate size, and
 	     * validate it */
-	    pDrawTo = (PixmapPtr)(*pDraw->pScreen->CreatePixmap)
-	      (pDraw->pScreen, dx, dy, 1, XYBitmap);
+	    pDrawTo = (DrawablePtr)(*pDraw->pScreen->CreatePixmap)
+					(pDraw->pScreen, dx, dy, 1, XYBitmap);
 	    ValidateGC(pDrawTo, pGCTo);
 	    miClearDrawable(pDrawTo, pGCTo);
 	}
 
-	ilast = narcs - 1;
+	ifirst = 0;
 
-	/* If the last arc joins with the first, find all the final arcs
-	 * that join together and join them with the initial ones.
-	 */
-	if(PtEqual(polyarcs[0].pPts[0],
-	            polyarcs[ilast].pPts[polyarcs[ilast].cpt - 1]) )
+	if (polyarcs[0].cpt)
 	{
-	    count = 1;
-	    while(PtEqual (polyarcs[ilast].pPts[0],
-	      polyarcs[ilast - 1].pPts[polyarcs[ilast - 1].cpt - 1]) )
-	    {
-		if(ilast <= 1)
-		{
-		    fAllOne = TRUE;
-		    break;
-		}
-		else
-		{
-		    ilast--;
-		    count++;
-		}
-	    }
-	    if(!fAllOne)
-	    {
-		while(PtEqual(polyarcs[ifirst].pPts[polyarcs[ifirst].cpt -1],
-			      polyarcs[ifirst + 1].pPts[0]))
-		    ifirst++;
-		cptAll = polyarcs[ilast].cpt;
-		pAllPts = polyarcs[ilast].pPts;
-		polyarcs[ilast++].pPts = (DDXPointPtr) NULL;
-		for(; ilast < narcs; ilast++)
-		{
-		    cpt = polyarcs[ilast].cpt;
-		    pAllPts = (DDXPointPtr) Xrealloc(pAllPts, 
-			 (cptAll+cpt-1) * sizeof(DDXPointRec));
-		    bcopy((char *) &polyarcs[ilast].pPts[1],
-			  (char *) &pAllPts[cptAll],
-			  (cpt - 1) * sizeof(DDXPointRec));
-		    cptAll += cpt - 1;
-		}
-		for( i = 0; i <= ifirst; i++)
-		{
-		    cpt = polyarcs[i].cpt;
-		    pAllPts =  (DDXPointPtr) Xrealloc(pAllPts, 
-			     (cptAll+cpt-1) * sizeof(DDXPointRec));
-		    bcopy((char *) &polyarcs[i].pPts[1],
-			  (char *) &pAllPts[cptAll],
-			  (cpt - 1) * sizeof(DDXPointRec));
-		    cptAll += cpt - 1;
-		}
-		(*pGCTo->Polylines)(pDrawTo, pGCTo, CoordModeOrigin,
-				    cptAll, pAllPts);
-		/* Don't need to free pAllPts, because we're sure to
-		 * Xrealloc it again */
-		if(fTricky)
-		{
-		    (*pGC->PushPixels)(pGC, pDrawTo, pDraw, dx, dy,
-		    			xOrg, yOrg);
-		    miClearDrawable(pDrawTo, pGCTo);
-		}
-	    }
-	    ifirst++;
+	    for (i = narcs - 1;
+		 (cpt = polyarcs[i].cpt) &&
+		 PtEqual(polyarcs[ifirst].pPts[0], polyarcs[i].pPts[cpt - 1]);
+		 ifirst = i, i--) ;
 	}
-	narcs -= count;
 
-	/* Now draw all the (remaining) arcs */
 	cptAll = 0;
-	for(i = ifirst; i < narcs; i++)
+	pAllPts = (DDXPointPtr) NULL;
+
+	for(i = ifirst, count = narcs; --count >= 0; i++)
 	{
+	    if (i == narcs)
+		i = 0;	/* wrap */
+
 	    cpt = polyarcs[i].cpt;
 	    pPts = polyarcs[i].pPts;
 
-	    if((i > ifirst) && PtEqual(pPts[0], LastPt))
+	    if((cpt > 0) && (cptAll > 0) && PtEqual(pPts[0], pAllPts[cptAll-1]))
 	    {
+		cpt--;
 		pAllPts = (DDXPointPtr)
-		   Xrealloc(pAllPts,
-			    (cptAll-1 + cpt) * sizeof(DDXPointRec));
+		   Xrealloc((pointer)pAllPts,
+			    (cptAll + cpt) * sizeof(DDXPointRec));
 		bcopy((char *)&pPts[1],
 		      (char *)&pAllPts[cptAll], 
-		      (cpt - 1) * sizeof(DDXPointRec));
-		cptAll += cpt - 1;
+		      cpt * sizeof(DDXPointRec));
+		Xfree((pointer)pPts);
+		cptAll += cpt;
 	    }
 	    else
 	    {
@@ -306,44 +227,37 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 		{
 		    (*pGC->Polylines)(pDrawTo, pGCTo, CoordModeOrigin,
 				      cptAll, pAllPts);
-		    Xfree(pAllPts);
+		    Xfree((pointer)pAllPts);
 		    if(fTricky)
 		    {
 		        (*pGC->PushPixels)(pGC, pDrawTo, pDraw, dx, dy,
 					    xOrg, yOrg);
-		        miClearDrawable(pDrawTo, pGCTo);
+		        miClearDrawable((DrawablePtr)pDrawTo, pGCTo);
 		    }
 		}
 		cptAll = cpt;
 		pAllPts = pPts;
 	    }
-	    LastPt = pPts[cpt-1];
-	}    /* end for each remaining arc */
+	}
 
-
-	if(cptAll > 0)
+	if (cptAll > 0)
 	{
 	    (*pGC->Polylines)(pDrawTo,pGCTo, CoordModeOrigin, cptAll, pAllPts);
-	    Xfree(pAllPts);
+	    Xfree((pointer)pAllPts);
+	    if(fTricky)
+		(*pGC->PushPixels)(pGC, pDrawTo, pDraw, dx, dy, xOrg, yOrg);
 	}
 	if(fTricky)
-	    (*pGC->PushPixels)(pGC, pDrawTo, pDraw, dx, dy, xOrg, yOrg);
-	for(i = 0; i < narcs; i++)
 	{
-	    Xfree(polyarcs[i].pPts);
-	}
-	DEALLOCATE_LOCAL(polyarcs);
-	if(fTricky)
-	{
-	    (*pGCTo->pScreen->DestroyPixmap)(pDrawTo);
+	    (*pGCTo->pScreen->DestroyPixmap)((PixmapPtr)pDrawTo);
 	    FreeScratchGC(pGCTo);
 	}
-        else
-	    if(arcmode != ArcChord)
-	    {
-		DoChangeGC(pGCTo, GCArcMode, &arcmode, 0);
-		ValidateGC(pDrawTo, pGCTo);
-	    }
+	else if(arcmode != ArcChord)
+	{
+	    DoChangeGC(pGCTo, GCArcMode, &arcmode, 0);
+	    ValidateGC(pDrawTo, pGCTo);
+	}
+	DEALLOCATE_LOCAL(polyarcs);
     }
 }
 
@@ -372,15 +286,14 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
 	 * handle it better */
         if(pGC->arcMode == ArcPieSlice && parcs[i].angle2 < FULLCIRCLE)
 	{
-	    cpt = 1;
 	    pPts = (DDXPointPtr)Xalloc(sizeof(DDXPointRec));
-	    if(cpt = miGetArcPts(&parcs[i], cpt, &pPts))
+	    if(cpt = miGetArcPts(&parcs[i], 1, &pPts))
 	    {
 		pPts[0].x = parcs[i].x + parcs[i].width/2;
 		pPts[0].y = parcs[i].y + parcs[i].height/2;
 		(*pGC->FillPolygon)(pDraw, pGC, Convex,
 			            CoordModeOrigin, cpt + 1, pPts);
-		Xfree((char *) pPts);
+		Xfree((pointer) pPts);
 	    }
 	}
         else /* Chord */
@@ -390,7 +303,7 @@ miPolyFillArc(pDraw, pGC, narcs, parcs)
 	    {
 		(*pGC->FillPolygon)(pDraw, pGC, Convex,
 		                    CoordModeOrigin, cpt, pPts);
-		Xfree((char *) pPts);
+		Xfree((pointer) pPts);
 	    }
 	}
     }
@@ -469,7 +382,8 @@ miGetArcPts(parc, cpt, ppPts)
 
     cdt = 2 * cos(dt);
 
-    poly = (DDXPointPtr) Xrealloc(*ppPts, (count + cpt) * sizeof(DDXPointRec));
+    poly = (DDXPointPtr) Xrealloc((pointer)*ppPts,
+				  (count + cpt) * sizeof(DDXPointRec));
     *ppPts = poly;
 
     xc = parc->width/2.0;		/* store half width and half height */
