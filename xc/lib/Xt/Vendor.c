@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Vendor.c,v 1.25 88/01/29 20:38:18 swick Locked $";
+static char rcsid[] = "$Header: Vendor.c,v 1.26 88/02/03 15:15:14 swick Exp $";
 #endif lint
 
 /*
@@ -28,9 +28,8 @@ static char rcsid[] = "$Header: Vendor.c,v 1.25 88/01/29 20:38:18 swick Locked $
 
 #include <pwd.h>
 #include <stdio.h>
-#include <strings.h>
+#include <X11/Xos.h>
 #include <sys/param.h>
-#include <sys/time.h>
 
 #include "IntrinsicI.h"
 #include "Atoms.h"

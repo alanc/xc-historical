@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Shell.c,v 1.7 88/02/03 23:36:26 swick Locked $";
+static char rcsid[] = "$Header: Shell.c,v 1.9 88/02/05 21:30:52 swick Exp $";
 #endif lint
 
 /*
@@ -29,9 +29,8 @@ static char rcsid[] = "$Header: Shell.c,v 1.7 88/02/03 23:36:26 swick Locked $";
 
 #include <pwd.h>
 #include <stdio.h>
-#include <strings.h>
+#include <X11/Xos.h>
 #include <sys/param.h>
-#include <sys/time.h>
 #include <X11/Xatom.h>
 
  /* Xlib definitions  */
