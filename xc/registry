@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.26 91/04/15 10:44:28 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.27 91/04/16 10:09:58 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -509,6 +509,10 @@ Name						Reference
 	(deprecated)
 	Korean Graphic Character Set,
 	GL encoding
+"omron_CNS11643-0"				[45]
+"omron_CNS11643-1"				[45]
+"omron_BIG5-0"					[45]
+"omron_BIG5-1"					[45]
 
 
 15. FONT PROPERTY NAMES
