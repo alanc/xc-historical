@@ -1,4 +1,4 @@
-/* $XConsortium: Xutil.h,v 11.45 89/04/19 15:09:25 jim Exp $ */
+/* $XConsortium: Xutil.h,v 11.46 89/05/10 09:48:57 jim Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -301,13 +301,24 @@ XImage *XCreateImage();
 
 XVisualInfo *XGetVisualInfo();
 
-/*
- * Allocation routines for properties that may get longer
- */
+/* Allocation routines for properties that may get longer */
 XSizeHints *XAllocSizeHints ();
 XStandardColormap *XAllocStandardColormap ();
 XWMHints *XAllocWMHints ();
 XClassHint *XAllocClassHint ();
 XIconSize *XAllocIconSize ();
+
+/* ICCCM routines for data structures defined in this file */
+Status XGetWMSizeHints(), XGetWMNormalHints();
+Status XGetRGBColormaps();
+Status XGetTextProperty(), XGetWMName(), XGetWMIconName();
+Status XGetWMClientMachine(), XGetWMCommand();
+Status XGetWMColormapWindows(), XSetWMColormapWindows();
+void XSetWMProperties(), XSetWMSizeHints(), XSetWMNormalHints();
+void XSetRGBColormaps();
+void XSetTextProperty(), XSetWMName(), XSetWMIconName();
+void XSetWMClientMachine(), XSetWMCommand();
+Status XStringListToTextProperty(), XTextPropertyToStringList();
+void XFreeStringList();
 
 #endif /* _XUTIL_H_ */

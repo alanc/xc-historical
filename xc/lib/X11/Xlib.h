@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.155 89/04/25 19:36:21 jim Exp $ */
+/* $XConsortium: Xlib.h,v 11.156 89/05/10 09:48:52 jim Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -1105,24 +1105,12 @@ int XScreenNumberOfScreen();
 int (*XSetErrorHandler())(), (*XSetIOErrorHandler())();
 XPixmapFormatValues *XListPixmapFormats();
 
-/*
- * ICCCM stuff
- */
+/* ICCCM routines for things that don't require special include files; */
+/* other declarations are given in Xutil.h                             */
 Status XReconfigureWMWindow();
 int XWMGeometry();
-Status XGetWMSizeHints(), XGetWMNormalHints();
-Status XGetRGBColormaps();
-Status XGetTextProperty(), XGetWMName(), XGetWMIconName();
-Status XGetWMClientMachine(), XGetWMCommand();
-Status XGetWMColormapWindows(), XSetWMColormapWindows();
 Status XGetWMProtocols(), XSetWMProtocols();
 Status XIconifyWindow(), XWithdrawWindow();
 Status XGetCommand();
-void XSetWMProperties(), XSetWMSizeHints(), XSetWMNormalHints();
-void XSetRGBColormaps();
-void XSetTextProperty(), XSetWMName(), XSetWMIconName();
-void XSetWMClientMachine(), XSetWMCommand();
-Status XStringListToTextProperty(), XTextPropertyToStringList();
-void XFreeStringList();
 
 #endif /* _XLIB_H_ */
