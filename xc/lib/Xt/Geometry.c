@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.52 91/01/10 21:10:06 converse Exp $ */
+/* $XConsortium: Geometry.c,v 1.53 91/05/02 16:12:29 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -392,32 +392,27 @@ void XtConfigureWidget(w, x, y, width, height, borderWidth)
     XWindowChanges changes, old;
     Cardinal mask = 0;
 
-    if (w->core.x != x) {
-	old.x = w->core.x;
+    if ((old.x = w->core.x) != x) {
 	changes.x = w->core.x = x;
 	mask |= CWX;
     }
 
-    if (w->core.y != y) {
-	old.y = w->core.y;
+    if ((old.y = w->core.y) != y) {
 	changes.y = w->core.y = y;
 	mask |= CWY;
     }
 
-    if (w->core.width != width) {
-	old.width = w->core.width;
+    if ((old.width = w->core.width) != width) {
 	changes.width = w->core.width = width;
 	mask |= CWWidth;
     }
 
-    if (w->core.height != height) {
-	old.height = w->core.height;
+    if ((old.height = w->core.height) != height) {
 	changes.height = w->core.height = height;
 	mask |= CWHeight;
     }
 
-    if (w->core.border_width != borderWidth) {
-	old.border_width = w->core.border_width;
+    if ((old.border_width = w->core.border_width) != borderWidth) {
 	changes.border_width = w->core.border_width = borderWidth;
 	mask |= CWBorderWidth;
     }
