@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.15 91/04/10 11:43:42 keith Exp $ */
+/* $XConsortium: mfb.h,v 5.16 92/02/24 19:05:55 keith Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -173,6 +173,9 @@ typedef mfbPrivGC	*mfbPrivGCPtr;
 
 extern int  mfbGCPrivateIndex;		/* index into GC private array */
 extern int  mfbWindowPrivateIndex;	/* index into Window private array */
+#ifdef PIXMAP_PER_WINDOW
+extern int  frameWindowPrivateIndex;	/* index into Window private array */
+#endif
 
 /* private field of window */
 typedef struct {
