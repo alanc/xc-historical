@@ -120,7 +120,7 @@ novice users:
 .in +8
 .nf
 #!/bin/sh
-xinit /usr/local/bin/startx -- /usr/bin/X11/Xhp :1
+xinit /usr/local/lib/site.xinitrc -- /usr/bin/X11/X bc
 .fi
 .in -8
 .sp
