@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbply1rct.c,v 1.2 91/03/11 15:47:55 rws Exp $
+ * $XConsortium: cfbply1rct.c,v 1.3 91/03/12 13:31:58 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -206,11 +206,11 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	    	{
 	    	    mask = SCRRIGHT(bits, c);
 	    	    RROP_SOLID_MASK(addr,mask);
-	    	    nmiddle -= (PPW - c);
+	    	    nmiddle += c - PPW;
 	    	    addr++;
 	    	}
 	    	nmiddle >>= PWSH;
-		while (nmiddle--) {
+		while (--nmiddle >= 0) {
 		    RROP_SOLID(addr); addr++;
 		}
 	    	if (mask = ~SCRRIGHT(bits, r & PIM))
