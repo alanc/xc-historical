@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 94/03/28 16:47:14 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 94/03/28 17:10:14 matt Exp $
 #define DoNormalLib NormalLibFresco
 #define DoSharedLib SharedLibFresco
 #define DoDebugLib DebugLibFresco
@@ -12,7 +12,6 @@ REQUIREDLIBS = SharedFrescoReqs
 #endif
 
 
-  INSTALLFLAGS = $(INSTINCFLAGS)
       LINTLIBS = $(LINTXLIB)
 DEPEND_DEFINES = CplusplusDependIncludes
 FRESCO_DEFINES = -DFRESCO_LIBALL='"$(XLIBDIR)/X11"' -DX_LIBDIR='"$(XLIBDIR)/X11"'
