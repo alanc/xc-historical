@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Quarks.c,v 1.7 88/02/14 11:55:01 rws Exp $";
+static char rcsid[] = "$Header: Quarks.c,v 1.8 88/02/26 12:56:28 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -32,7 +32,7 @@ SOFTWARE.
 extern void bcopy();
 
 
-typedef int Signature;
+typedef long Signature;
 
 static XrmQuark nextQuark = 1;	/* next available quark number */
 static XrmString *quarkToStringTable = NULL;
@@ -51,8 +51,13 @@ char *Xpermalloc(length)
 {
     char *ret;
 
+#ifdef INT64ARCH
+    /* round to nearest 8-byte boundary */
+    length = (length + 7) & (~7);
+#else
     /* round to nearest 4-byte boundary */
     length = (length + 3) & (~3);
+#endif /* INT64ARCH */
     if (neverFreeTableSize < length) {
 	neverFreeTableSize =
 	    (length > NEVERFREETABLESIZE ? length : NEVERFREETABLESIZE);
@@ -137,8 +142,9 @@ XrmQuark XrmStringToQuark(name)
 	return (NULLQUARK);
 
     /* Compute string signature (sparse 32-bit hash value) */
-    for (tname = name; *tname != '\0'; tname++)
+    for (tname = name; *tname != '\0'; tname++) {
 	sig = sig*scale + (unsigned int) *tname;
+    }
     strLength = tname - name + 1;
 
     /* Look for string in hash table */
