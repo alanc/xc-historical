@@ -7,3 +7,4 @@ LOCAL_LIBRARIES = XawClientLibs
 
 ComplexProgramTarget(editres)
 InstallAppDefaults(Editres)
+InstallAppDefaultsLong(Edit-col,Editres-color)
