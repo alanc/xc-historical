@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.22 91/07/17 16:41:13 rws Exp $ */
+/* $Header: XExtInt.c,v 1.23 91/07/23 12:30:32 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -89,7 +89,9 @@ XExtensionVersion versions[] = {{XI_Absent,0,0},
 	{XI_Present, XI_Initial_Release_Major, XI_Initial_Release_Minor},
 	{XI_Present, XI_Add_XDeviceBell_Major, XI_Add_XDeviceBell_Minor},
 	{XI_Present, XI_Add_XSetDeviceValuators_Major, 
-		     XI_Add_XSetDeviceValuators_Minor}};
+	 XI_Add_XSetDeviceValuators_Minor},
+	{XI_Present, XI_Add_XChangeDeviceControl_Major, 
+	 XI_Add_XChangeDeviceControl_Minor}};
 
 /***********************************************************************
  *
