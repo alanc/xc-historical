@@ -1,12 +1,14 @@
 /*
- * $XConsortium: sharedlib.c,v 1.2 89/08/23 19:02:41 jim Exp $
+ * $XConsortium: sharedlib.c,v 1.3 89/09/18 17:54:09 kit Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
  * This file is used to force shared libraries to get the right routines.
  */
 
-#ifdef SUNSHLIB
+#ifndef SUNSHLIB
+static int dummy;			/* avoid warning from ranlib */
+#else
 
 #include "IntrinsicI.h"
 
