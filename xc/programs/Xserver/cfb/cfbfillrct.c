@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.1 89/07/26 10:41:36 keith Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.2 89/07/27 18:58:28 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -340,7 +340,7 @@ cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
     if (pGC->fillStyle == FillTiled)
     {
 	pTile = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->
-							pRotatedTile;
+							pRotatedPixmap;
 	fillTiled = TRUE;
     }
     else
