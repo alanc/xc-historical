@@ -2004,32 +2004,6 @@ structure, refer to the section titled
 \fISession Management Properties\fP\^.
 .LP
 .NH 2
-Obtaining the Client's Host Name
-.XS
-\*(SN Obtaining the Client's Host Name
-.XE
-.LP
-To obtain the host name of a client, call the
-.PN SmsClientHostName
-function.  This host name will be needed to restart the client.
-.LP
-.sM
-.FD 0
-char *SmsClientHostName\^(\^\fIsms_conn\fP\^)
-.br
-    SmsConn \fIsms_conn\fP\^;
-.FN
-.IP \fIsms_conn\fP 1i
-The session management connection object.
-.LP
-.eM
-The string "local" will be returned if the client is connected to
-the session manager via a local transport.  Otherwise, it will contain
-a fully qualified domain name.
-.LP
-Call free() on the string returned when it is no longer needed.
-.LP
-.NH 2
 Pinging a Client
 .XS
 \*(SN Pinging a Client
@@ -2108,7 +2082,6 @@ The session management connection object.
 .LP
 .eM
 .LP
-.bp
 .NH 2
 Informational Functions
 .XS
@@ -2172,6 +2145,23 @@ Returns a null terminated string for the client Id associated with
 this connection.
 .LP
 Call free() on this pointer when the client Id is no longer needed.
+.LP
+.sp 0.5
+To obtain the host name of a client, call the
+.PN SmsClientHostName
+function.  This host name will be needed to restart the client.
+.LP
+.sM
+.FD 0
+char *SmsClientHostName\^(\^\fIsms_conn\fP\^)
+.br
+    SmsConn \fIsms_conn\fP\^;
+.FN
+.eM
+The string returned is of the form "protocol/hostname", where
+\fIprotocol\fP\^ is one of {tcp, decnet, local}.
+.LP
+Call free() on the string returned when it is no longer needed.
 .LP
 .sp 0.5
 .sM
@@ -2623,14 +2613,17 @@ In both cases, the host based authentication procedure invoked is of type
 .LP
 .sM
 typedef Bool (*IceHostBasedAuthProc) ();
+.br
+    char *\fIhost_name\fP\^;
 .FD 0
 Bool HostBasedAuthProc\^(\^\fIhost_name\fP\^)
 .FN
 .IP \fIhost_name\fP 1i
-The host name of the client.  This is either a dotted decimal internet
-address string, or "local" for a local connection.
+The host name of the client.
 .LP
 .eM
+\fIhost_name\fP\^ is a string of the form "protocol/hostname", where
+\fIprotocol\fP\^ is one of {tcp, decnet, local}.
 .LP
 The callback should return
 .PN True
