@@ -1,6 +1,6 @@
 /*
- * $Source: /usr/expo/X/src/clients/xmodmap/RCS/xmodmap.c,v $
- * $Header: xmodmap.c,v 1.9 88/02/19 13:14:43 jim Exp $
+ * $Source: /usr/expo/X/src/lib/Xaw/RCS/Mailbox.h,v $
+ * $Header: Mailbox.h,v 1.1 88/02/23 15:15:41 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -27,6 +27,7 @@
 /* resource names used by mailbox widget that aren't defined in Atoms.h */
 
 #define XtNupdate "update"		/* Int: how often to check mail */
+#define XtNfile "file"			/* String:  file name to check */
 
 
 /* structures */
