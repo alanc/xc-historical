@@ -19,6 +19,7 @@
 #else
 #define SignalReturnProcType void
 #endif
+#endif
 #if defined(MacIIArchitecture)
 #define SignalReturnProcType int
 #endif
@@ -32,6 +33,7 @@
 #define SignalReturnProcType int	/* not correct, but works more often */
 #endif
 #endif
+
 #ifndef HasPutenv
 #if defined(SunArchitecture) || defined(UltrixArchitecture)
 #define HasPutenv YES
