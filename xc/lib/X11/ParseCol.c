@@ -1,4 +1,4 @@
-/* $XConsortium: XParseCol.c,v 11.26 91/06/27 10:52:00 dave Exp $ */
+/* $XConsortium: XParseCol.c,v 11.27 91/07/22 22:34:30 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -84,6 +84,7 @@ Status XParseColor (dpy, cmap, spec, def)
 	if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
 	    if (_XcmsResolveColorString(ccc, &spec,
 		    &cmsColor, XcmsRGBFormat) != XcmsFailure) {
+		cmsColor.pixel = def->pixel;
 		_XcmsRGB_to_XColor(&cmsColor, def, 1);
 		return(1);
 	    }
