@@ -6,12 +6,12 @@
         CHECKFN = $(CHECKFNSRC)/checkfn
 
 #if BuildServer
-SERVERDIRSTOMAKE = fonts server rgb
+SERVERDIRSTOMAKE = server rgb
 #endif
 #if BuildDoc
 DOCDIRS = doc
 #endif
-        SUBDIRS = config include lib extensions $(SERVERDIRSTOMAKE) \
+        SUBDIRS = config include lib extensions fonts $(SERVERDIRSTOMAKE) \
 			clients demos util $(DOCDIRS)
   LNINSTALLDIRS = $(EXTENSIONSRC) $(LIBSRC)
 
