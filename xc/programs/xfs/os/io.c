@@ -1,4 +1,4 @@
-/* $XConsortium: io.c,v 1.11 93/09/20 18:08:47 hersh Exp $ */
+/* $XConsortium: io.c,v 1.12 94/01/31 12:49:37 mor Exp $ */
 /*
  * i/o functions
  */
@@ -420,6 +420,7 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 					      notWritten + OutputBufferSize);
 		if (!obuf) {
 		    _FONTTransClose(oc->trans_conn);
+		    oc->trans_conn = NULL;
 		    MarkClientException(client);
 		    oco->count = 0;
 		    return -1;
@@ -435,6 +436,7 @@ FlushClient(client, oc, extraBuf, extraCount, padsize)
 	    return extraCount;
 	} else {
 	    _FONTTransClose(oc->trans_conn);
+	    oc->trans_conn = NULL;
 	    MarkClientException(client);
 	    oco->count = 0;
 	    return -1;
@@ -519,6 +521,7 @@ write_to_client_internal(client, count, buf, padBytes)
 	    FreeOutputs = oco->next;
 	} else if (!(oco = AllocateOutputBuffer())) {
 	    _FONTTransClose(oc->trans_conn);
+	    oc->trans_conn = NULL;
 	    MarkClientException(client);
 	    return -1;
 	}
