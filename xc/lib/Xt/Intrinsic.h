@@ -363,6 +363,14 @@ typedef void (*XtResourceDefaultProc)(
 #endif
 );
 
+typedef String (*XtLangProc)(
+#if NeedFunctionPrototypes
+    Display*	/* dpy */,
+    String	/* xnl */,
+    XtPointer	/* closure */   /* data the application registered */
+#endif
+);
+
 typedef void (*XtErrorMsgHandler)(
 #if NeedFunctionPrototypes
     String 		/* name */,
@@ -1628,6 +1636,22 @@ extern void XtToolkitInitialize(
 #endif
 );
 
+extern XtLangProc XtSetLanguageProc(
+#if NeedFunctionPrototypes
+    XtAppContext	/* app */,
+    XtLangProc		/* proc */,
+    XtPointer		/* closure */
+#endif
+);
+
+extern String XtDefaultLanguageProc(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    String		/* xnl */,
+    XtPointer		/* closure */
+#endif
+);
+
 extern void XtDisplayInitialize(
 #if NeedFunctionPrototypes
     XtAppContext 	/* appContext */,
@@ -1931,6 +1955,7 @@ extern void XtGetConstraintResourceList(
 #define XtDefaultForeground	"XtDefaultForeground"
 #define XtDefaultBackground	"XtDefaultBackground"
 #define XtDefaultFont		"XtDefaultFont"
+#define XtDefaultFontSet	"XtDefaultFontSet"
 
 #if defined(CRAY) || defined(__arm)
 #if __STDC__
