@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.12 90/02/13 14:04:03 jim Exp $
+ * $XConsortium: Panner.c,v 1.13 90/02/13 14:12:40 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -54,8 +54,8 @@ static XtActionsRec actions[] = {
 /*
  * resources for the panner
  */
-#define poff(field) XtOffset(PannerWidget, panner.field)
 static XtResource resources[] = {
+#define poff(field) XtOffset(PannerWidget, panner.field)
     { XtNallowOff, XtCAllowOff, XtRBoolean, sizeof(Boolean),
 	poff(allow_off), XtRImmediate, (XtPointer) FALSE },
     { XtNresize, XtCBoolean, XtRBoolean, sizeof(Boolean),
@@ -88,14 +88,17 @@ static XtResource resources[] = {
 	poff(slider_height), XtRImmediate, (XtPointer) 0 },
     { XtNshadow, XtCShadow, XtRBoolean, sizeof(Boolean),
 	poff(shadow), XtRImmediate, (XtPointer) TRUE },
-};
+    { XtNstippleName, XtCStippleName, XtRString, sizeof(String),
+	poff(stipple_name), XtRImmediate, (XtPointer) NULL },
 #undef poff
+};
 
 
 /*
  * widget class methods used below
  */
 static void Initialize();		/* create gc's */
+static void Realize();			/* create window */
 static void Destroy();			/* clean up widget */
 static void Resize();			/* need to rescale ourselves */
 static void Redisplay();		/* draw ourselves */
@@ -112,7 +115,7 @@ PannerClassRec pannerClassRec = {
     /* class_inited		*/	FALSE,
     /* initialize		*/	Initialize,
     /* initialize_hook		*/	NULL,
-    /* realize			*/	XtInheritRealize,
+    /* realize			*/	Realize,
     /* actions			*/	actions,
     /* num_actions		*/	XtNumber(actions),
     /* resources		*/	resources,
@@ -357,12 +360,19 @@ static Boolean get_event_xy (pw, event, x, y)
     if (pw->panner.tmp.showing) DRAW_TMP(pw); \
 }
 
+#define BACKGROUND_STIPPLE(pw) \
+  XmuLocatePixmapFile (pw->core.screen, pw->panner.stipple_name, \
+		       pw->panner.foreground, pw->core.background_pixel, \
+		       pw->core.depth, NULL, 0, NULL, NULL, NULL, NULL)
+    
+
 
 /*****************************************************************************
  *                                                                           *
  * 			     panner class methods                            *
  *                                                                           *
  *****************************************************************************/
+
 
 static void Initialize (greq, gnew)
     Widget greq, gnew;
@@ -390,6 +400,32 @@ static void Initialize (greq, gnew)
     new->panner.tmp.doing = FALSE;
     new->panner.tmp.showing = FALSE;
 }
+
+
+static void Realize (gw, valuemaskp, attr)
+    Widget gw;
+    XtValueMask *valuemaskp;
+    XSetWindowAttributes *attr;
+{
+    PannerWidget pw = (PannerWidget) gw;
+    Pixmap pm = XtUnspecifiedPixmap;
+
+    if (pw->core.background_pixmap == XtUnspecifiedPixmap) {
+	if (pw->panner.stipple_name) pm = BACKGROUND_STIPPLE (pw);
+
+	if (pm != XtUnspecifiedPixmap) {
+	    attr->background_pixmap = pm;
+	    *valuemaskp |= CWBackPixmap;
+	    *valuemaskp &= ~CWBackPixel;
+	}
+    }
+    (*gw->core.widget_class->core_class.superclass->core_class.realize)
+      (gw, valuemaskp, attr);
+
+    if (pm != None && pm != XtUnspecifiedPixmap)
+      XFreePixmap (XtDisplay(gw), pm);
+}
+
 
 static void Destroy (gw)
     Widget gw;
@@ -475,6 +511,21 @@ static Boolean SetValues (gcur, greq, gnew, args, num_args)
     if (cur->panner.rubber_band != new->panner.rubber_band) {
 	reset_xor_gc (new);
 	if (new->panner.tmp.doing) redisplay = TRUE;
+    }
+
+    if (cur->panner.stipple_name != new->panner.stipple_name &&
+	XtIsRealized(new)) {
+	Pixmap pm = (new->panner.stipple_name ? BACKGROUND_STIPPLE (new)
+		     : XtUnspecifiedPixmap);
+
+	if (pm == XtUnspecifiedPixmap) {
+	    XSetWindowBackground (XtDisplay (new), XtWindow(new),
+				  new->core.background_pixel);
+	} else {
+	    XSetWindowBackgroundPixmap (XtDisplay (new), XtWindow(new), pm);
+	    if (pm != None) XFreePixmap (XtDisplay (new), pm);
+	}
+	redisplay = TRUE;
     }
 
     if (new->panner.resize_to_pref &&

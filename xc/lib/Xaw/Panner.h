@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.9 90/02/13 12:44:50 jim Exp $
+ * $XConsortium: Panner.h,v 1.10 90/02/13 14:04:06 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -56,6 +56,7 @@
  *  sliderY		SliderY		Position	0
  *  sliderWidth		SliderWidth	Dimension	0
  *  sliderHeight	SliderHeight	Dimension	0
+ *  stippleName		StippleName	String		NULL
  * 
  *****************************************************************************/
 
@@ -87,6 +88,9 @@
 #define XtCSliderWidth "SliderWidth"
 #define XtNsliderHeight "sliderHeight"
 #define XtCSliderHeight "SliderHeight"
+#define XtNstippleName "stippleName"
+#define XtCStippleName "StippleName"
+
 					/* external declarations */
 extern WidgetClass pannerWidgetClass;
 
