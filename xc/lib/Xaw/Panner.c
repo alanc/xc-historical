@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.34 90/03/09 15:26:33 jim Exp $
+ * $XConsortium: Panner.c,v 1.35 90/03/15 11:05:15 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,7 +27,6 @@
 #include <X11/StringDefs.h>		/* for XtN and XtC defines */
 #include <X11/Xmu/CharSet.h>		/* for XmuCompareISOLatin1() */
 #include <X11/Xaw/XawInit.h>		/* for XawInitializeWidgetSet */
-#include <X11/Xaw/SimpleP.h>		/* parent */
 #include <X11/Xaw/PannerP.h>		/* us */
 #include <X11/Xmu/Misc.h>		/* for Min */
 #include <ctype.h>			/* for isascii() etc. */
