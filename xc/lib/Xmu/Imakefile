@@ -29,7 +29,7 @@ HEADERS = \
 	Misc.h \
 	StdSel.h \
 	StdCmap.h \
-	WindowUtil.h
+	WinUtil.h
 
 
 SRCS = \
