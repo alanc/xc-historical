@@ -1,4 +1,4 @@
-/* $XConsortium: mecphoto.c,v 1.6 93/11/06 15:25:47 rws Exp $ */
+/* $XConsortium: mecphoto.c,v 1.7 94/01/12 20:07:44 rws Exp $ */
 /**** module mecphoto.c ****/
 /******************************************************************************
 				NOTICE
@@ -588,7 +588,7 @@ static int InitializeECPhotoUncomByPixel(flo,ped)
   CARD32 depth1,depth2,depth3,dstride,width;
   int s, d;
 
-  pvt->unaligned = FALSE;
+  pvt->unaligned = (tec->pixelStride[0] & 7) != 0;
 
   if(tec->bandOrder == xieValLSFirst)
       for(d = 0; d < xieValMaxBands; ++d)
@@ -606,8 +606,9 @@ static int InitializeECPhotoUncomByPixel(flo,ped)
   width   = sbnd1->format->width;
   dstride = tec->pixelStride[0]>>3;
 	
+  if (!pvt->unaligned) {
   /* First, look for special cases */ 
-  if (depth1 == 16 && depth2 == 16 && depth3 == 16) {
+    if (depth1 == 16 && depth2 == 16 && depth3 == 16) {
 #if (IMAGE_BYTE_ORDER == MSBFirst)
       void (*pa)() = (tec->pixelOrder == xieValMSFirst) ? PtoIS : sPtoIS;
 #else
@@ -622,7 +623,7 @@ static int InitializeECPhotoUncomByPixel(flo,ped)
           pvt->shift     = 0; /* Unused */
 	  pvt->clear_dst = FALSE;
       }
-  } else if (depth1 == 8 && depth2 == 8 && depth3 == 8) {
+    } else if (depth1 == 8 && depth2 == 8 && depth3 == 8) {
       for(s = 0; s < xieValMaxBands; s++, pvt++) {
           pvt->action    = BtoIS;
 	  pvt->width     = width;
@@ -632,7 +633,7 @@ static int InitializeECPhotoUncomByPixel(flo,ped)
 	  pvt->shift     = 0; /* Unused */
 	  pvt->clear_dst = FALSE;
       }
-  } else if (depth1 == 4 && depth2 == 4 && depth3 == 4) {
+    } else if (depth1 == 4 && depth2 == 4 && depth3 == 4) {
       if (tec->fillOrder == xieValMSFirst) {
           pvt->action    = BtoISb;
 	  pvt->width     = width;
@@ -678,7 +679,7 @@ static int InitializeECPhotoUncomByPixel(flo,ped)
 	  pvt->clear_dst = FALSE;
 	  pvt->shift     = 0; 
       }
-  } else if (depth1 + depth2 + depth3 <= 8) {
+    } else if (depth1 + depth2 + depth3 <= 8) {
       CARD8 ones = 0xff,smask1,smask2,smask3,shift1,shift2,shift3;
       if (tec->fillOrder == xieValMSFirst) {
           smask1 = ~(ones>>depth1);
@@ -716,8 +717,11 @@ static int InitializeECPhotoUncomByPixel(flo,ped)
       pvt->mask      = smask3;
       pvt->clear_dst = TRUE;
       pvt->shift     = shift3; 
-  } else {
+    } else 
       pvt->unaligned = TRUE;
+  }
+  pvt = (meUncompPtr)pet->private;
+  if ( pvt->unaligned ) {
       pvt[0].pitch = outf->pitch;
       pvt[0].width = sbnd1->format->width;
       pvt[0].depth = depth1;
