@@ -1,6 +1,6 @@
-/* $XConsortium: lbxmain.c,v 1.8 94/03/08 20:32:11 dpw Exp $ */
+/* $XConsortium: lbxmain.c,v 1.9 94/03/13 13:07:35 dpw Exp $ */
 /*
- * $NCDId: @(#)lbxmain.c,v 1.36 1994/03/08 02:16:33 dct Exp $
+ * $NCDId: @(#)lbxmain.c,v 1.38 1994/03/14 23:32:26 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
  *
  * Copyright 1992 Network Computing Devices
@@ -72,8 +72,10 @@ extern int	LbxDecodeSegment();
 extern int	LbxDecodeRectangle();
 extern int	LbxDecodeArc();
 
-static int ProcLbxDispatch(), SProcLbxDispatch();
-static void LbxResetProc(), SLbxEvent();
+int ProcLbxDispatch();
+extern int SProcLbxDispatch();
+static void LbxResetProc();
+extern void SLbxEvent();
 
 Bool	LbxInitClient ();
 void	LbxFreeClient ();
@@ -165,26 +167,17 @@ LbxCloseClient (client)
 	    master = proxy->lbxClients[LbxMasterClientIndex]->client;
 	if (master && !master->clientGone)
 	{
-#ifdef noneed
-/* any i/o errors should percolate up to proxy anyways, and
- * noClientException is also used for problems fatal only to
- * the client (access control)
- */
-	    if (client->noClientException != Success &&
-		client->noClientException != CloseLbxClient)
-	    {
-		DBG (DBG_CLIENT, (stderr, "Abort client %d\n", i));
-		CloseDownClient (master);
+	    closeEvent.type = LbxEventCode;
+	    closeEvent.lbxType = LbxCloseEvent;
+	    closeEvent.client = i;
+	    closeEvent.sequenceNumber = master->sequence;
+	    if (master->swapped) {
+		int	    n;
+
+		swaps(&closeEvent.sequenceNumber, n);
+		swapl(&closeEvent.client, n);
 	    }
-	    else
-#endif
-	    {
-		closeEvent.type = LbxEventCode;
-		closeEvent.lbxType = LbxCloseEvent;
-		closeEvent.client = i;
-		closeEvent.sequenceNumber = master->sequence;
-		WriteToClient (master, sizeof (closeEvent), &closeEvent);
-	    }
+	    WriteToClient (master, sizeof (closeEvent), &closeEvent);
 	}
     }
     /* Switch output to some other client */
@@ -199,7 +192,13 @@ LbxComputeReplyLen(lbxClient, buf)
     if (lbxClient->awaiting_setup)
     {
 	xConnSetupPrefix	*csp = (xConnSetupPrefix *) buf;
-	lbxClient->reply_remaining = 8 + (csp->length << 2);
+	short			len = csp->length;
+	int			n;
+	if (lbxClient->client->swapped)
+	{
+	    swaps(&len, n);
+	}
+	lbxClient->reply_remaining = 8 + (len << 2);
 	lbxClient->awaiting_setup = FALSE;
 	DBG(DBG_LEN, (stderr, "%d setup bytes remaining\n", lbxClient->reply_remaining));
     }
@@ -208,8 +207,15 @@ LbxComputeReplyLen(lbxClient, buf)
 	xReply    *reply = (xReply *) buf;
 
 	lbxClient->reply_remaining = 32;
-	if (reply->generic.type == X_Reply)
-	    lbxClient->reply_remaining += reply->generic.length << 2;
+	if (reply->generic.type == X_Reply) {
+	    int   len = reply->generic.length;
+	    int	  n;
+	    if (lbxClient->client->swapped)
+	    {
+		swapl(&len, n);
+	    }
+	    lbxClient->reply_remaining += len << 2;
+	}
 	DBG (DBG_LEN, (stderr, "%d reply bytes remaining\n", lbxClient->reply_remaining));
     }
 }
@@ -284,8 +290,13 @@ LbxComposeDelta(proxy, reply, len)
 	p->diffs = diffs;
 	p->cindex = cindex;
 	proxy->deltaEventRemaining = sz_xLbxDeltaReq + sz_xLbxDiffItem * diffs;
-	p->length = (proxy->deltaEventRemaining + 3) >> 2;	/* BYTESWAP!! */
+	p->length = (proxy->deltaEventRemaining + 3) >> 2;
 	proxy->deltaEventRemaining = p->length << 2;
+	if (proxy->lbxClients[0]->client->swapped) {
+	    int         n;
+
+	    swaps(&p->length, n);
+	}
 	proxy->outputDeltaPtr = proxy->tempEventBuf;
     }
 }
@@ -304,6 +315,7 @@ LbxWritev (connection, iov, num)
     LbxProxyPtr	    proxy = lbxClient->proxy;
     long	    this_time;
     Bool	    new_reply;
+    int		    n;
     
     if (lbxClient != proxy->curSend)
     {
@@ -317,9 +329,25 @@ LbxWritev (connection, iov, num)
     if (proxy->curSend->needs_output_switch)
     {
 	xLbxEvent *ev = (xLbxEvent *) proxy->tempEventBuf;
+#ifndef NDEBUG
+	{
+        int	client;
+
+        client = ((xLbxEvent *)(proxy->tempEventBuf))->client; 
+        if (proxy->curSend->client->swapped) {
+            swapl(&client, n);
+        }
+        if (proxy->switchEventRemaining)
+	    DBG (DBG_SWITCH, (stderr, "writing %d switch event bytes to client %d\n",
+		proxy->switchEventRemaining, client));
+	}
+#endif
 	ev->type = LbxEventCode;
 	ev->lbxType = LbxSwitchEvent;
 	ev->client = proxy->curSend->index;
+        if (proxy->curSend->client->swapped) {
+            swapl(&ev->client, n);
+        }
 	proxy->curSend->needs_output_switch = FALSE;
 	proxy->switchEventRemaining = sizeof (xLbxEvent);
     }
@@ -328,9 +356,18 @@ LbxWritev (connection, iov, num)
 	char	*b;
 	struct iovec	v;
 
+#ifndef NDEBUG
+	{
+        int	client;
+
+        client = ((xLbxEvent *)(proxy->tempEventBuf))->client; 
+        if (proxy->curSend->client->swapped) {
+            swapl(&client, n);
+        }
 	DBG (DBG_SWITCH, (stderr, "writing %d switch event bytes to client %d\n",
-	    proxy->switchEventRemaining, 
-	    ((xLbxEvent *)(proxy->tempEventBuf))->client));
+	    proxy->switchEventRemaining,  client));
+        }
+#endif
 	b = (char *) proxy->tempEventBuf;
 	b += sizeof (xLbxEvent) - proxy->switchEventRemaining;
 	v.iov_len = proxy->switchEventRemaining;
@@ -692,11 +729,9 @@ LbxReadRequestFromClient (client)
 	if (MAJOROP(client) == LbxReqCode) {
 	    if (MINOROP(client) == X_LbxSwitch)
 	    {
-#ifdef NOTDEF
 		if (client->swapped)
 		    SProcLbxSwitch (client);
 		else
-#endif
 		    ProcLbxSwitch (client);
 		return 0;
 	    }
@@ -957,11 +992,6 @@ ProcLbxStartProxy(client)
     deltaN = stuff->deltaN;
     deltaMaxLen = stuff->deltaMaxLen;
     comptype = stuff->comptype;
-    if (client->swapped) {
-	swaps(&deltaN, n);
-	swaps(&deltaMaxLen, n);
-	swapl(&comptype, n);
-    }
     if (LBXInitDeltaCache(&proxy->indeltas, deltaN, deltaMaxLen) < 0 ||
 	LBXInitDeltaCache(&proxy->outdeltas, deltaN, deltaMaxLen) < 0) {
 	LbxFreeProxy(proxy);
@@ -1013,6 +1043,9 @@ ProcLbxStartProxy(client)
     if (client->swapped) {
 	swaps(&rep.sequenceNumber, n);
 	swapl(&rep.length, n);
+	swaps(&rep.deltaN, n);
+	swaps(&rep.deltaMaxLen, n);
+	swapl(&rep.comptype, n);
     }
     lbxClient = LbxClient(client);
     (*lbxClient->writeToClient) (client, sizeof (xLbxStartReply), (char *)&rep);
@@ -1193,16 +1226,6 @@ ProcLbxCloseClient (client)
     return(client->noClientException = CloseLbxClient);
 }
 
-Bool
-LbxIsLBXClient(client)
-    ClientPtr client;
-{
-    if (client->lbxIndex)
-      return TRUE;
-    else
-      return FALSE;
-}
-
 int
 ProcLbxModifySequence (client)
     register ClientPtr	client;
@@ -1261,6 +1284,7 @@ ProcLbxDelta(client)
     return len;
 }
 
+int
 ProcLbxGetModifierMapping(client)
     ClientPtr	client;
 {
@@ -1269,6 +1293,7 @@ ProcLbxGetModifierMapping(client)
     return LbxGetModifierMapping(client);
 }
 
+int
 ProcLbxGetKeyboardMapping(client)
     ClientPtr	client;
 {
@@ -1277,6 +1302,7 @@ ProcLbxGetKeyboardMapping(client)
     return LbxGetKeyboardMapping(client);
 }
 
+int
 ProcLbxQueryFont(client)
     ClientPtr	client;
 {
@@ -1285,6 +1311,7 @@ ProcLbxQueryFont(client)
     return LbxQueryFont(client);
 }
 
+int
 ProcLbxChangeProperty(client)
     ClientPtr	client;
 {
@@ -1386,7 +1413,7 @@ ProcLbxPolyFillArc(client)
     return LbxDecodePoly(client, X_PolyFillArc, LbxDecodeArc);
 }
 
-static int
+int
 ProcLbxDispatch (client)
     register ClientPtr	client;
 {
@@ -1445,41 +1472,6 @@ ProcLbxDispatch (client)
 	return ProcLbxGetProperty (client);
     case X_LbxTagData:
 	return ProcLbxTagData (client);
-    default:
-	return BadRequest;
-    }
-}
-
-static void
-SLbxEvent(from, to)
-    xLbxEvent *from, *to;
-{
-    to->type = from->type;
-    to->lbxType = from->lbxType;
-    cpswaps(from->sequenceNumber, to->sequenceNumber);
-    cpswapl(from->client, to->client);
-}
-
-static int
-SProcLbxQueryVersion(client)
-    register ClientPtr	client;
-{
-    register int n;
-    REQUEST(xLbxQueryVersionReq);
-
-    swaps(&stuff->length, n);
-    return ProcLbxQueryVersion(client);
-}
-
-static int
-SProcLbxDispatch (client)
-    register ClientPtr	client;
-{
-    REQUEST(xReq);
-    switch (stuff->data)
-    {
-    case X_LbxQueryVersion:
-	return SProcLbxQueryVersion(client);
     default:
 	return BadRequest;
     }

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxtags.c,v 1.2 94/02/20 10:50:33 dpw Exp $ */
+/* $XConsortium: lbxtags.c,v 1.3 94/03/08 20:32:24 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxtags.c,v 1.8 1994/03/08 18:27:54 lemke Exp $
+ * $NCDId: @(#)lbxtags.c,v 1.9 1994/03/14 23:32:40 lemke Exp $
  */
 
 #include "X.h"
@@ -109,9 +109,10 @@ TagProxyMarked(tid, pid)
 }
 
 Bool
-TagSaveTag(tid, dtype, size, data)
+TagSaveTag(tid, dtype, dformat, size, data)
     XID         tid;
     int         dtype;
+    int         dformat;
     int         size;
     pointer     data;
 {
@@ -123,6 +124,7 @@ TagSaveTag(tid, dtype, size, data)
     bzero((char *) td->sent_to_proxy, sizeof(Bool) * MAX_NUM_PROXIES);
     td->tid = tid;
     td->data_type = dtype;
+    td->data_format = dformat;
     td->tdata = data;
     td->size = size;
     if (!AddResource(tid, TagResType, (pointer) td)) {

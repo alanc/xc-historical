@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.2 94/02/20 10:56:06 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.3 94/03/08 20:52:56 dpw Exp $ */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1403,7 +1403,6 @@ ResetWellKnownSockets ()
 #endif /* LOCALCONN */
 
 
-    ResetAuthorization ();
     ResetHosts(display);
     /*
      * See above in CreateWellKnownSockets about SIGUSR1
@@ -1492,65 +1491,9 @@ ClientAuthorized(client, proto_n, auth_proto, string_n, auth_string)
     char *auth_proto, *auth_string;
     unsigned int proto_n, string_n;
 {
-    register OsCommPtr priv;
-    union {
-	struct sockaddr sa;
-#ifdef UNIXCONN
-	struct sockaddr_un un;
-#endif /* UNIXCONN */
-#ifdef TCPCONN
-	struct sockaddr_in in;
-#endif /* TCPCONN */
-#ifdef DNETCONN
-	struct sockaddr_dn dn;
-#endif /* DNETCONN */
-    } from;
-    int	fromlen = sizeof (from);
-    XID	 auth_id;
-    char *reason;
-
-    auth_id = CheckAuthorization (proto_n, auth_proto,
-				  string_n, auth_string, client, &reason);
-
-    priv = (OsCommPtr)client->osPrivate;
-    if (auth_id == (XID) ~0L)
-    {
-	if (getpeername (priv->fd, &from.sa, &fromlen) != -1)
-	{
-	    if (InvalidHost (&from.sa, fromlen))
-		AuthAudit(client->index, FALSE, &from.sa, fromlen,
-			  proto_n, auth_proto);
-	    else
-	    {
-		auth_id = (XID) 0;
-		if (auditTrailLevel > 1)
-		    AuthAudit(client->index, TRUE, &from.sa, fromlen,
-			      proto_n, auth_proto);
-	    }
-	}
-	if (auth_id == (XID) ~0L)
-	    return "Client is not authorized to connect to Server";
-    }
-    else if (auditTrailLevel > 1)
-    {
-	if (getpeername (priv->fd, &from.sa, &fromlen) != -1)
-	    AuthAudit(client->index, TRUE, &from.sa, fromlen,
-		      proto_n, auth_proto);
-    }
-
-    priv->auth_id = auth_id;
-    priv->conn_time = 0;
-
-#ifdef XDMCP
-    /* indicate to Xdmcp protocol that we've opened new client */
-    XdmcpOpenDisplay(priv->fd);
-#endif /* XDMCP */
-    /* At this point, if the client is authorized to change the access control
-     * list, we should getpeername() information, and add the client to
-     * the selfhosts list.  It's not really the host machine, but the
-     * true purpose of the selfhosts list is to see who may change the
-     * access control list.
-     */
+    OsCommPtr oc = (OsCommPtr) client->osPrivate;
+  
+    oc->conn_time = 0;
     return((char *)NULL);
 }
 

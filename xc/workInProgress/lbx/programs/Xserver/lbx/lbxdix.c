@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdix.c,v 1.3 94/03/08 20:32:04 dpw Exp $ */
+/* $XConsortium: lbxdix.c,v 1.4 94/03/13 13:07:52 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxdix.c,v 1.18 1994/03/10 00:18:48 lemke Exp $
+ * $NCDId: @(#)lbxdix.c,v 1.20 1994/03/15 20:42:06 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -74,6 +74,16 @@ void
 LbxAllowMotion(client, num)
 {
     motion_allowed_events += num;
+}
+
+Bool
+LbxIsLBXClient(client)
+    ClientPtr   client;
+{
+    if (client->lbxIndex)
+	return TRUE;
+    else
+	return FALSE;
 }
 
 Bool
@@ -166,7 +176,7 @@ LbxSendConnSetup(client, reason)
 	conn_info_tag = TagNewTag();
 	tagdata = (pointer) ConnectionInfo;
 	dlength = connSetupPrefix.length << 2;
-	if (!TagSaveTag(conn_info_tag, LbxTagTypeConnInfo, dlength,
+	if (!TagSaveTag(conn_info_tag, LbxTagTypeConnInfo, 0, dlength,
 			tagdata)) {
 	    /* can't save it, so report no tag */
 	    conn_info_tag = 0;
@@ -217,23 +227,25 @@ LbxSendConnSetup(client, reason)
 	tagdata = (pointer) dataBuf;
     }
 
-#ifdef notyet
     if (client->swapped) {
-	WriteSConnSetupPrefix(client, &connSetupPrefix);
-	WriteSConnectionInfo(client,
-			     (unsigned long) (connSetupPrefix.length << 2),
-			     ConnectionInfo);
+	LbxWriteSConnSetupPrefix(client, &csp);
+	if (send_data) {
+	    WriteSConnectionInfo(client, dlength, tagdata);
+	} else {
+	    SwapLongs((CARD32 *) tagdata, (1 + screenInfo.numScreens));
+	    WriteToClient(client, dlength, tagdata);
+	}
+    } else {
+	WriteToClient(client, sizeof(xLbxConnSetupPrefix), (char *) &csp);
+	WriteToClient(client, dlength, tagdata);
     }
-#endif
-
-    WriteToClient(client, sizeof(xLbxConnSetupPrefix), (char *) &csp);
-    WriteToClient(client, dlength, tagdata);
 
 #ifndef NCD
     client->clientState = ClientStateRunning;
     if (ClientStateCallback)
 	CallCallbacks(&ClientStateCallback, (pointer) client);
 #endif
+
     return client->noClientException;
 }
 
@@ -270,7 +282,7 @@ LbxGetModifierMapping(client)
     if (!modifier_map_tag) {
 	modifier_map_tag = TagNewTag();
 	tagdata = (pointer) keyc->modifierKeyMap;
-	if (!TagSaveTag(modifier_map_tag, LbxTagTypeModmap, dlength,
+	if (!TagSaveTag(modifier_map_tag, LbxTagTypeModmap, 0, dlength,
 			tagdata)) {
 	    /* can't save it, so report no tag */
 	    modifier_map_tag = 0;
@@ -358,7 +370,7 @@ LbxGetKeyboardMapping(client)
 	tagdata = (pointer) curKeySyms->map[(stuff->firstKeyCode -
 			     curKeySyms->minKeyCode) * curKeySyms->mapWidth];
 	dlength = (curKeySyms->mapWidth * stuff->count);
-	if (!TagSaveTag(keyboard_map_tag, LbxTagTypeKeymap, dlength,
+	if (!TagSaveTag(keyboard_map_tag, LbxTagTypeKeymap, 0, dlength,
 			tagdata)) {
 	    /* can't save it, so report no tag */
 	    keyboard_map_tag = 0;
@@ -391,8 +403,7 @@ LbxGetKeyboardMapping(client)
 
     if (send_data) {
 	client->pSwapReplyFunc = CopySwap32Write;
-	WriteSwappedDataToClient(
-				 client,
+	WriteSwappedDataToClient(client,
 			curKeySyms->mapWidth * stuff->count * sizeof(KeySym),
 	    &curKeySyms->map[(stuff->firstKeyCode - curKeySyms->minKeyCode) *
 			     curKeySyms->mapWidth]);
@@ -414,7 +425,8 @@ int
 LbxQueryFont(client)
     ClientPtr   client;
 {
-    xQueryFontReply *reply;
+    xQueryFontReply *reply,
+               *sreply = NULL;
     xLbxQueryFontReply lbxrep;
     FontPtr     pFont;
     register GC *pGC;
@@ -478,7 +490,7 @@ LbxQueryFont(client)
 	/* data allocation is done when font is first queried */
 	tid = TagNewTag();
 	ftip = (FontTagInfoPtr) xalloc(sizeof(FontTagInfoRec));
-	if (ftip && TagSaveTag(tid, LbxTagTypeFont, sizeof(FontTagInfoRec),
+	if (ftip && TagSaveTag(tid, LbxTagTypeFont, 0, sizeof(FontTagInfoRec),
 			       (pointer) ftip)) {
 	    td = TagGetTag(tid);
 	    FontSetPrivate(pFont, lbx_font_private, (pointer) td);
@@ -506,14 +518,26 @@ LbxQueryFont(client)
     else
 	lbxrep.length = 0;
 
+    if (client->swapped) {
+	int         n;
+
+	swaps(&lbxrep.sequenceNumber, n);
+	swapl(&lbxrep.length, n);
+	swapl(&lbxrep.tag, n);
+	sreply = (xQueryFontReply *) ALLOCATE_LOCAL(rlength);
+	if (!sreply)
+	    return BadAlloc;
+	bcopy((char *) reply, (char *) sreply, rlength);
+	SwapFont((xQueryFontReply *) sreply, TRUE);
+	reply = sreply;
+    }
     WriteToClient(client, sizeof(xLbxQueryFontReply), (char *) &lbxrep);
-/* XXX swapping nastiness here -- if this swaps stuff, the stashed copy
- * gets munged...
- */
     if (send_data)
-	WriteReplyToClient(client, rlength, reply);
+	WriteToClient(client, rlength, reply);
     if (free_data)
 	xfree(reply);
+    if (sreply)
+	DEALLOCATE_LOCAL(sreply);
     return (client->noClientException);
 }
 
@@ -541,6 +565,8 @@ LbxQueryTag(client, tag)
     FontTagInfoPtr ftip;
     unsigned long size;
     pointer     data;
+    pointer     sdata = NULL;
+    int         data_format;
 
     td = TagGetTag(tag);
 
@@ -555,6 +581,9 @@ LbxQueryTag(client, tag)
 	    ftip = (FontTagInfoPtr) td->tdata;
 	    size = ftip->size;
 	    data = (pointer) ftip->replydata;
+	} else if (td->data_type == LbxTagTypeProperty) {
+	    size = td->size;
+	    data = td->tdata;
 	} else {
 	    size = td->size;
 	    data = td->tdata;
@@ -565,11 +594,45 @@ LbxQueryTag(client, tag)
     }
     if (client->swapped) {
 	swaps(&rep.sequenceNumber, n);
+	sdata = (pointer) ALLOCATE_LOCAL(rep.real_length);
+	if (!sdata)
+	    return BadAlloc;
+	bcopy((char *) data, (char *) sdata, rep.real_length);
+	switch (td->data_type) {
+	case LbxTagTypeModmap:
+	    /* no swapping necessary */
+	    break;
+	case LbxTagTypeKeymap:
+	    SwapLongs((CARD32 *) sdata, rep.real_length / 4);
+	    break;
+	case LbxTagTypeFont:
+	    SwapFont((xQueryFontReply *) sdata, TRUE);
+	    break;
+	case LbxTagTypeProperty:
+	    switch (td->data_format) {
+	    case LbxTagFormat32:
+		SwapLongs((CARD32 *) sdata, rep.real_length / 4);
+		break;
+	    case LbxTagFormat16:
+		SwapShorts((CARD16 *) sdata, rep.real_length / 2);
+		break;
+	    default:
+		break;
+	    }
+	case LbxTagTypeConnInfo:
+	    /* XXX */
+	    break;
+	}
+	data = sdata;
+
 	swapl(&rep.length, n);
+	swapl(&rep.real_length, n);
     }
     WriteToClient(client, sizeof(xLbxQueryTagReply), (char *) &rep);
     if (td)
 	WriteToClient(client, size, (char *) data);
+    if (sdata)
+	DEALLOCATE_LOCAL(sdata);
 
     return client->noClientException;
 }
@@ -634,15 +697,15 @@ LbxSendInvalidateTagToProxies(tag, tagtype)
 
 LbxProxyPtr
 LbxPidToProxy(pid)
-    int	pid;
+    int         pid;
 {
     LbxProxyPtr proxy;
     extern LbxProxyPtr proxyList;
 
     proxy = proxyList;
     while (proxy) {
-    	if (proxy->pid == pid)
-            return proxy;
+	if (proxy->pid == pid)
+	    return proxy;
     }
     assert(0);
     return NULL;
@@ -650,7 +713,7 @@ LbxPidToProxy(pid)
 
 void
 LbxSendSendTagData(pid, tag, tagtype)
-    int		pid;
+    int         pid;
     XID         tag;
     int         tagtype;
 {
@@ -805,18 +868,19 @@ LbxRemoveQTag(tag)
 void
 LbxQueryTagData(client, owner_pid, tag, tagtype, infop)
     ClientPtr   client;
-    int		owner_pid;
+    int         owner_pid;
     XID         tag;
     int         tagtype;
     pointer     infop;
 {
-    TagData	td;
+    TagData     td;
     PropertyPtr pProp;
 
     /* make sure the proxy is there */
-    if (!LbxPidToProxy(owner_pid)) {	
-	/* its dead, so pretend data is already there
-	 * XXX value will be junk, but its better than gettting stuck
+    if (!LbxPidToProxy(owner_pid)) {
+	/*
+	 * its dead, so pretend data is already there XXX value will be junk,
+	 * but its better than gettting stuck
 	 */
 	td = TagGetTag(tag);
 	switch (td->data_type) {
@@ -862,12 +926,26 @@ LbxTagData(client, tag, len, data)
 	switch (td->data_type) {
 	case LbxTagTypeProperty:
 	    assert(len == td->size);
-	    if (len == td->size) {
-		bcopy((char *) data, (char *) td->tdata, len);
-	    }
 	    /* mark it as known by server */
 	    pProp = (PropertyPtr) stqp->infop;
 	    pProp->owner_pid = 0;
+	    assert(pProp->format == td->data_format);
+	    if (len == td->size) {
+		/* didn't swap data up above, so do it here */
+		if (client->swapped) {
+		    switch (pProp->format) {
+		    case 32:
+			SwapLongs((CARD32 *) data, len / 4);
+			break;
+		    case 16:
+			SwapShorts((CARD16 *) data, len / 2);
+			break;
+		    default:
+			break;
+		    }
+		}
+		bcopy((char *) data, (char *) td->tdata, len);
+	    }
 	    break;
 	default:
 	    /* don't do others yet (ever?) */

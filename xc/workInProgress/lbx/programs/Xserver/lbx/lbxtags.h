@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: lbxtags.h,v 1.2 94/02/20 10:50:35 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxtags.h,v 1.2 1994/01/21 19:33:14 lemke Exp $
+ * $NCDId: @(#)lbxtags.h,v 1.4 1994/03/14 23:32:38 lemke Exp $
  */
 
 #ifndef _LBXTAGS_H_
@@ -36,14 +36,21 @@
 
 typedef struct _tagdata {
     XID         tid;
-    int         data_type;
+    short       data_type;
+    short       data_format;
     Bool        sent_to_proxy[MAX_NUM_PROXIES];
-    int		size;		/* needed, or hide in data? */
+    int         size;		/* needed, or hide in data? */
     pointer     tdata;
 }           TagDataRec;
 
 typedef struct	_tagdata	*TagData;
 
 extern TagData TagGetTag();
+
+/* for prop data formats */
+#define	LbxTagFormat8		8
+#define	LbxTagFormat16		16
+#define	LbxTagFormat32		32
+#define	LbxTagFormatOther	0	/* handles all others */
 
 #endif				/* _LBXTAGS_H_ */

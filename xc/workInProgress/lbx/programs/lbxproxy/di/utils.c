@@ -21,7 +21,9 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.3 94/02/20 11:14:26 dpw Exp $ */
+/* $XConsortium: utils.c,v 1.4 94/03/08 20:51:37 dpw Exp $ */
+/* $NCDId: @(#)utils.c,v 1.7 1994/03/11 20:02:07 lemke Exp $ */
+
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -242,6 +244,7 @@ char	*argv[];
 		UseMsg();
 	}
 #endif
+#ifdef old
 	else if ( strcmp( argv[i], "-auth") == 0)
 	{
 	    if(++i < argc)
@@ -249,6 +252,7 @@ char	*argv[];
 	    else
 		UseMsg();
 	}
+#endif
 	else if ( strcmp( argv[i], "-display") == 0)
 	{
 	    if(++i < argc)

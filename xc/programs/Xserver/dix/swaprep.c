@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.39 93/09/23 19:47:01 rws Exp $ */
+/* $XConsortium: swaprep.c,v 1.40 94/02/23 15:48:31 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -427,7 +427,10 @@ SwapFontInfo(pr)
     swapl(&pr->nCharInfos, n);
 }
 
-static void
+#ifndef LBX
+static
+#endif
+void
 SwapFont( pr, hasGlyphs)
     xQueryFontReply *	pr;
     Bool hasGlyphs;

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxprop.c,v 1.3 94/02/23 15:53:05 dpw Exp $ */
+/* $XConsortium: lbxprop.c,v 1.4 94/03/08 20:32:13 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -20,7 +20,7 @@
  * WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $NCDId: @(#)lbxprop.c,v 1.9 1994/03/08 19:22:31 lemke Exp $
+ * $NCDId: @(#)lbxprop.c,v 1.10 1994/03/14 23:32:36 lemke Exp $
  *
  * Author:  Dave Lemke, Network Computing Devices
  */
@@ -51,23 +51,23 @@ extern void (*ReplySwapVector[256]) ();
 extern void CopySwap16Write(), CopySwap32Write(), Swap32Write();
 extern int  fWriteToClient();
 
-#ifdef NCD	/* XXX this should be elsewhere */
+#ifdef NCD			/* XXX this should be elsewhere */
 #define	memmove(dst,src,len)	bcopy(src,dst,len)
 #endif
 
 void
 LbxStallPropRequest(client, pProp)
-    ClientPtr	client;
-    PropertyPtr	pProp;
+    ClientPtr   client;
+    PropertyPtr pProp;
 {
-    LbxQueryTagData(client, pProp->owner_pid, pProp->tag_id, LbxTagTypeProperty, pProp);    
-    ResetCurrentRequest(client);			        
-    client->sequence--; 				        
+    LbxQueryTagData(client, pProp->owner_pid, pProp->tag_id, LbxTagTypeProperty, pProp);
+    ResetCurrentRequest(client);
+    client->sequence--;
 
 /* XXX this won't work too well went done to a proxy client.
  * need finer grain of control
  */
-    IgnoreClient(client);				        
+    IgnoreClient(client);
 }
 
 int
@@ -130,7 +130,7 @@ LbxChangeWindowProperty(client, pWin, property, type, format, mode, len,
 		xfree(pProp->data);
 		return BadAlloc;
 	    }
-	    if (!TagSaveTag(tid, LbxTagTypeProperty, totalSize,
+	    if (!TagSaveTag(tid, LbxTagTypeProperty, format, totalSize,
 			    pProp->data)) {
 		xfree(pProp);
 		xfree(pProp->data);
@@ -156,14 +156,14 @@ LbxChangeWindowProperty(client, pWin, property, type, format, mode, len,
 	if ((pProp->type != type) && (mode != PropModeReplace))
 	    return (BadMatch);
 
-	/* if its a modify instead of replace, make sure we have the
-         * current value
-         */
-        if ((mode != PropModeReplace) && (pProp->owner_pid != 0)) {
+	/*
+	 * if its a modify instead of replace, make sure we have the current
+	 * value
+	 */
+	if ((mode != PropModeReplace) && (pProp->owner_pid != 0)) {
 	    LbxStallPropRequest(client, pProp);
-            return(client->noClientException);
-        }
-
+	    return (client->noClientException);
+	}
 	/* make sure any old tag is flushed first */
 	if (pProp->tag_id) {
 	    LbxFlushPropertyTag(pProp->tag_id);
@@ -187,7 +187,7 @@ LbxChangeWindowProperty(client, pWin, property, type, format, mode, len,
 		    xfree(pProp->data);
 		    return BadAlloc;
 		}
-		if (!TagSaveTag(tid, LbxTagTypeProperty, totalSize,
+		if (!TagSaveTag(tid, LbxTagTypeProperty, format, totalSize,
 				pProp->data)) {
 		    xfree(pProp);
 		    xfree(pProp->data);
@@ -289,9 +289,34 @@ LbxChangeProperty(client)
     rep.sequenceNumber = client->sequence;
     rep.length = 0;
     rep.tag = newtag;
-    WriteReplyToClient(client, sizeof(xLbxChangePropertyReply), &rep);
+    if (client->swapped) {
+	int         n;
+
+	swaps(&rep.sequenceNumber, n);
+	swapl(&rep.length, n);
+	swapl(&rep.tag, n);
+    }
+    WriteToClient(client, sizeof(xLbxChangePropertyReply), &rep);
 
     return client->noClientException;
+}
+
+static void
+LbxWriteGetpropReply(client, rep)
+    ClientPtr   client;
+    xLbxGetPropertyReply *rep;
+{
+    int         n;
+
+    if (client->swapped) {
+	swaps(&rep->sequenceNumber, n);
+	swapl(&rep->length, n);
+	swapl(&rep->propertyType, n);
+	swapl(&rep->bytesAfter, n);
+	swapl(&rep->nItems, n);
+	swapl(&rep->tag, n);
+    }
+    WriteToClient(client, sizeof(xLbxGetPropertyReply), rep);
 }
 
 int
@@ -351,21 +376,19 @@ LbxGetProperty(client)
 		    reply.nItems = 0;
 		    reply.propertyType = pProp->type;
 		    reply.tag = 0;
-		    WriteReplyToClient(client, sizeof(xGenericReply), &reply);
+		    LbxWriteGetpropReply(client, &reply);
 		    return (Success);
 		}
-
 		/* make sure we have the current value */
-		if ((pProp->owner_pid != 0) && 
-                	(pProp->owner_pid != LbxProxyID(client))) {
+		if ((pProp->owner_pid != 0) &&
+			(pProp->owner_pid != LbxProxyID(client))) {
 		    LbxStallPropRequest(client, pProp);
-		    return(client->noClientException);
+		    return (client->noClientException);
 		}
-
 		/*
 		 * Return type, format, value to client
 		 */
-		            n = (pProp->format / 8) * pProp->size;	/* size (bytes) of prop */
+		n = (pProp->format / 8) * pProp->size;	/* size (bytes) of prop */
 		ind = stuff->longOffset << 2;
 
 		/*
@@ -381,8 +404,8 @@ LbxGetProperty(client)
 
 		if (!tid) {
 		    tid = TagNewTag();
-		    if (!TagSaveTag(tid, LbxTagTypeProperty, len,
-				    ((char *) pProp->data + ind))) {
+		    if (!TagSaveTag(tid, LbxTagTypeProperty, pProp->format,
+                    		len, ((char *) pProp->data + ind))) {
 			tid = 0;
 		    }
 		    send_data = TRUE;
@@ -414,7 +437,7 @@ LbxGetProperty(client)
 		    event.u.property.time = currentTime.milliseconds;
 		    DeliverEvents(pWin, &event, 1, (WindowPtr) NULL);
 		}
-		WriteReplyToClient(client, sizeof(xGenericReply), &reply);
+		LbxWriteGetpropReply(client, &reply);
 		if (send_data && len) {
 		    switch (reply.format) {
 		    case 32:
@@ -447,7 +470,7 @@ LbxGetProperty(client)
 		reply.propertyType = None;
 		reply.format = 0;
 		reply.tag = 0;
-		WriteReplyToClient(client, sizeof(xGenericReply), &reply);
+		LbxWriteGetpropReply(client, &reply);
 	    }
 	    return (client->noClientException);
 
