@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XImUtil.c,v 11.20 88/02/07 11:47:45 jim Exp $ */
+/* $Header: XImUtil.c,v 11.21 88/02/09 13:29:46 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -71,7 +71,7 @@ static _normalizeimagebits (bpt, nb, byteorder, unitsize, bitorder)
     int unitsize;	/* size of the bitmap_unit or Zpixel */
     int bitorder;	/* swap bits if bitorder == MSBFirst */
 {
-	if (byteorder == MSBFirst) {
+	if (byteorder==MSBFirst) {
 	    register char c;
 	    register unsigned char *bp = bpt;
 	    register unsigned char *ep = bpt + nb;
@@ -141,7 +141,7 @@ static _putbits (src, dstoffset, numbits, dst)
 	register unsigned char chlo, chhi;
 	int hibits;
 	dst = dst + (dstoffset >> 3);
-	dstoffset = dstoffset % 8;
+	dstoffset = dstoffset & 7;
 	hibits = 8 - dstoffset;
 	chlo = *dst & _lomask[dstoffset];
 	for (;;) {
@@ -188,7 +188,7 @@ static _putbits (src, dstoffset, numbits, dst)
  * 
  */
 
-#define ROUNDUP(nbytes, pad) (((((nbytes) - 1) + (pad)) / (pad)) * (pad))
+#define ROUNDUP(nbytes, pad) ((((nbytes) + ((pad) - 1)) / (pad)) * (pad))
 
 #define XYNORMALIZE(bp, nbytes, img) \
     if ((img->byte_order == MSBFirst) || (img->bitmap_bit_order == MSBFirst)) \
@@ -302,6 +302,37 @@ int _XDestroyImage (ximage)
 	return 1;
 }
 
+/*
+ * Convert from native machine format to LSBFirst, slowly.
+ */
+static unsigned long LSBPixel(pixel)
+    unsigned long pixel;
+{
+	int i;
+	unsigned long p = 0;
+
+	for (i=0; i<sizeof(unsigned long); i++)
+	{
+	    ((unsigned char *)&p)[i] = pixel;
+	    pixel >>= 8;
+	}
+	return p;
+}
+
+/*
+ *  Convert from LSBFirst to the native machine format, slowly
+ */
+static unsigned long NativePixel(pixel)
+    unsigned long pixel;
+{
+	int i;
+	unsigned long p = 0;
+
+	for (i=sizeof(unsigned long); --i >= 0; )
+	    p = (p << 8) | ((unsigned char *)&pixel)[i];
+	return p;
+}
+         
 
 /*
  * GetPixel
@@ -323,26 +354,23 @@ unsigned long _XGetPixel (ximage, x, y)
     int y;
 
 {
-	unsigned long pixel, px;
+	unsigned long pixel, px, temp;
 	register char *src;
 	register char *dst;
 	register long i, j;
-	int plane;
+	int bits,plane;
 	long nbytes;
-	switch (ximage->format) {
-
-	    case XYBitmap:
+     
+	if (ximage->depth == 1) {
 		src = &ximage->data[XYINDEX(x, y, ximage)];
 		dst = (char *)&pixel;
 		pixel = 0;
 		nbytes = ximage->bitmap_unit >> 3;
 		for (i=0; i < nbytes; i++) *dst++ = *src++;
 		XYNORMALIZE(&pixel, nbytes, ximage);
-		pixel = pixel >> ((x + ximage->xoffset) % ximage->bitmap_unit);
-		pixel = pixel & 1;
-		break;
-
-	    case XYPixmap:
+          	bits = (x + ximage->xoffset) % ximage->bitmap_unit;
+		pixel = ((((char *)&pixel)[bits>>3])>>(bits&7)) & 1;
+	} else if (ximage->format == XYPixmap) {
 		pixel = 0;
 		plane = 0;
 		nbytes = ximage->bitmap_unit >> 3;
@@ -352,26 +380,22 @@ unsigned long _XGetPixel (ximage, x, y)
 		    px = 0;
 		    for (j=0; j < nbytes; j++) *dst++ = *src++;
 		    XYNORMALIZE(&px, nbytes, ximage);
-		    px = px >> ((x + ximage->xoffset) % ximage->bitmap_unit);
-		    px = px & 1;
-		    pixel = (pixel << 1) | px;		    
+		    bits = (x + ximage->xoffset) % ximage->bitmap_unit;
+		    pixel = (pixel << 1) |
+			    (((((char *)&px)[bits>>3])>>(bits&7)) & 1);
 		    plane = plane + (ximage->bytes_per_line * ximage->height);
 		}
-		break;
-
-	    case ZPixmap:
+	} else if (ximage->format == ZPixmap) {
 		src = &ximage->data[ZINDEX(x, y, ximage)];
 		dst = (char *)&pixel;
 		pixel = 0;
 		nbytes = ROUNDUP(ximage->bits_per_pixel, 8) >> 3;
 		for (i=0; i < nbytes; i++) *dst++ = *src++;		
 		ZNORMALIZE(&pixel, nbytes, ximage);
-		pixel = pixel >> ((x * ximage->bits_per_pixel) % 8);
-		break;
-
-	    default:  /* should never get here */
+                pixel = NativePixel(pixel);
+		pixel = pixel >> ((x * ximage->bits_per_pixel) & 7);
+	} else {
 		_XReportBadImage("format", ximage->format, "_XGetPixel");
-		break;
 	}
 	return pixel;
 }
@@ -406,10 +430,11 @@ int _XPutPixel (ximage, x, y, pixel)
 	register long i;
 	int plane, j;
 	register long nbytes;
+        unsigned long npixel;   /* native pixel */
 
-	switch (ximage->format) {
-
-	    case XYBitmap:
+        npixel = pixel;
+        pixel = LSBPixel(pixel);
+	if (ximage->depth == 1) {
 		src = &ximage->data[XYINDEX(x, y, ximage)];
 		dst = (char *)&px;
 		px = 0;
@@ -422,9 +447,7 @@ int _XPutPixel (ximage, x, y, pixel)
 		src = (char *) &px;
 		dst = &ximage->data[XYINDEX(x, y, ximage)];
 		for (i=0; i < nbytes; i++) *dst++ = *src++;
-		break;
-
-	    case XYPixmap:
+	} else if (ximage->format == XYPixmap) {
 		plane = (ximage->bytes_per_line * ximage->height) *
 		    (ximage->depth - 1); /* do least signif plane 1st */
 		nbytes = ximage->bitmap_unit >> 3;
@@ -440,12 +463,11 @@ int _XPutPixel (ximage, x, y, pixel)
 		    src = (char *)&px;
 		    dst = &ximage->data[XYINDEX(x, y, ximage) + plane];
 		    for (i=0; i < nbytes; i++) *dst++ = *src++;
-		    pixel = pixel >> 1;
+		    npixel = npixel >> 1;
+                    pixel = LSBPixel(npixel);
 		    plane = plane - (ximage->bytes_per_line * ximage->height);
 		}
-		break;
-
-	    case ZPixmap:
+	} else if (ximage->format == ZPixmap) {
 		src = &ximage->data[ZINDEX(x, y, ximage)];
 		dst = (char *)&px;
 		px = 0;
@@ -453,17 +475,14 @@ int _XPutPixel (ximage, x, y, pixel)
 		for (i=0; i < nbytes; i++) *dst++ = *src++;
 		ZNORMALIZE(&px, nbytes, ximage);
 		_putbits ((char *)&pixel, 
-			  (long) (x * ximage->bits_per_pixel) % 8, 
+			  (long) (x * ximage->bits_per_pixel) & 7, 
 		    ximage->bits_per_pixel, (char *)&px);
 		ZNORMALIZE(&px, nbytes, ximage);
 		src = (char *)&px;
 		dst = &ximage->data[ZINDEX(x, y, ximage)];
 		for (i=0; i < nbytes; i++) *dst++ = *src++;
-		break;
-
-	    default:  /* should never get here */
+	} else {
 		_XReportBadImage("format", ximage->format, "_XPutPixel");
-		break;
 	}
 	return 1;
 }
@@ -508,11 +527,11 @@ XImage *_XSubImage (ximage, x, y, width, height)
 	 */
 	if (subimage->format == ZPixmap) 	
 	    subimage->bytes_per_line = 
-	        ROUNDUP(((subimage->bits_per_pixel * width) >> 3), 
-	    		subimage->bitmap_pad >> 3);
+		ROUNDUP(subimage->bits_per_pixel * width,
+			subimage->bitmap_pad) >> 3;
 	else
 	    subimage->bytes_per_line =
-	        ROUNDUP((width >> 3), subimage->bitmap_pad >> 3);
+		ROUNDUP(width, subimage->bitmap_pad) >> 3;
 	subimage->obdata = NULL;
 	_XInitImageFuncPtrs (subimage);
 	dsize = subimage->bytes_per_line * height;
@@ -602,10 +621,9 @@ int _XAddPixel (ximage, value)
 	register int x;
 	int y;
 	long nbytes, i;
-	if (value != 0) {
-	  switch(ximage->format) {
 
-	    case XYBitmap:
+	if (value != 0) {
+	  if (ximage->depth == 1) {
 		/* The only value that we can add here to an XYBitmap
 		 * is one.  Since 1 + value = ~value for one bit wide
 		 * data, we do this quickly by taking the ones complement
@@ -619,9 +637,7 @@ int _XAddPixel (ximage, value)
 		    *dp = ~(*dp);
 		    dp++;
 		}
-		break;
-
-	    case XYPixmap:
+	  } else if (ximage->format == XYPixmap) {
 		/* this is slow, may do better later */
 		for (y = 0; y < ximage->height; y++) {
 		    for (x = 0; x < ximage->width; x++) {
@@ -630,15 +646,13 @@ int _XAddPixel (ximage, value)
 			XPutPixel(ximage, x, y, pixel);
 		    }
 		}
-		break;
-
-	    case ZPixmap:
+	  } else if (ximage->format == ZPixmap) {
 		/* If the bits_per_pixel makes the alignment occur on even
 		 * byte boundaries, perform the addition by stepping thru
 		 * the data one pixel at a time.  Otherwise, do it the slow
 		 * way by calling get and put pixel.
 		 */
-		if ((ximage->bits_per_pixel % 8) == 0) {
+		if ((ximage->bits_per_pixel & 7) == 0) {
 		    nbytes = ROUNDUP(ximage->bits_per_pixel, 8) >> 3;
 		    for (y = 0; y < ximage->height; y++) {
 			src = (unsigned char *) &ximage->data[ZINDEX(0, y, ximage)];
@@ -654,20 +668,17 @@ int _XAddPixel (ximage, value)
 			    for (i = 0; i < nbytes; i++) *dst++ = *tmp++;
 			}
 		    }			    
-		    break;
-		}
-		else for (y = 0; y < ximage->height; y++) {
-		    for (x = 0; x < ximage->width; x++) {
-			pixel = XGetPixel(ximage, x, y);
-			pixel = pixel + value;
-			XPutPixel(ximage, x, y, pixel);
+		} else {
+		    for (y = 0; y < ximage->height; y++) {
+			for (x = 0; x < ximage->width; x++) {
+			    pixel = XGetPixel(ximage, x, y);
+			    pixel = pixel + value;
+			    XPutPixel(ximage, x, y, pixel);
+			}
 		    }
 		}
-		break;
-
-	    default:	/* should never get here */
+	  } else {
 		_XReportBadImage("format", ximage->format, "_XAddPixel");
-		break;
 	  }
 	}
 	return 1;
@@ -713,7 +724,7 @@ _getbits (src, srcoffset, numbits, dst)
 	register unsigned char chlo, chhi;
 	int lobits;
 	src = src + (srcoffset >> 3);
-	srcoffset = srcoffset % 8;
+	srcoffset = srcoffset & 7;
 	lobits = 8 - srcoffset;
 	for (;;) {
 	    chlo = (unsigned char) (*src & _himask[srcoffset]) >> srcoffset;
