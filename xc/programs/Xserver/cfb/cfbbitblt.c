@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.9 89/08/23 20:54:27 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.10 89/09/05 20:10:13 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -952,7 +952,9 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 	    nlMiddle = 0;
 	}
 	else
+	{
 	    maskbits(dstx, width, startmask, endmask, nlMiddle);
+	}
 	/*
 	 * compute constants for the first four bits to be
 	 * copied.  This avoids troubles with partial first
@@ -963,9 +965,12 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 	    firstoff = xoffSrc - xoffDst;
 	    if (firstoff > 28)
 		secondoff = 32 - firstoff;
-	    srcx += (4-xoffDst);
-	    dstx += (4-xoffDst);
-	    xoffSrc = srcx & 0x1f;
+	    if (xoffDst)
+	    {
+	    	srcx += (4-xoffDst);
+	    	dstx += (4-xoffDst);
+	    	xoffSrc = srcx & 0x1f;
+	    }
 	}
 	leftShift = xoffSrc;
 	rightShift = 32 - leftShift;
@@ -1053,6 +1058,33 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    	bits = *psrc++;
 		    	tmp |= BitRight (bits, rightShift);
 		    }
+#ifdef FAST_CONSTANT_OFFSET_MODE
+		    pdst += nl;
+		    switch (nl)
+		    {
+		    case 7:
+		    	pdst[-7] = GetFourPixels(tmp);
+		    	NextFourBits(tmp);
+		    case 6:
+		    	pdst[-6] = GetFourPixels(tmp);
+		    	NextFourBits(tmp);
+		    case 5:
+		    	pdst[-5] = GetFourPixels(tmp);
+		    	NextFourBits(tmp);
+		    case 4:
+		    	pdst[-4] = GetFourPixels(tmp);
+		    	NextFourBits(tmp);
+		    case 3:
+		    	pdst[-3] = GetFourPixels(tmp);
+		    	NextFourBits(tmp);
+		    case 2:
+		    	pdst[-2] = GetFourPixels(tmp);
+		    	NextFourBits(tmp);
+		    case 1:
+		    	pdst[-1] = GetFourPixels(tmp);
+		    	NextFourBits(tmp);
+		    }
+#else
 		    switch (nl)
 		    {
 		    case 7:
@@ -1077,6 +1109,7 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    	*pdst++ = GetFourPixels(tmp);
 		    	NextFourBits(tmp);
 		    }
+#endif
 		    if (endmask)
 		    	*pdst = *pdst & ~endmask | GetFourPixels(tmp) & endmask;
 	    	}
