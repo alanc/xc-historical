@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: mmlink.mc,v 1.2 92/06/11 19:34:16 rws Exp $
 #
 # A version of the test that can be combined together with
 # all the other tests to make one executable.  This will save a
@@ -8,6 +8,8 @@
 #
 link.c: $(SOURCES)
 	$(CODEMAKER) -l -o link.c $(SOURCES)
+
+link.o: $(DEPHEADERS)
 
 # Link the objects into one large object.
 #
