@@ -4,13 +4,14 @@ set prntr=(-Pln03)
 set flags=() noglob
 unset dv
 unsetenv dv
-set dv=$DISPLAY
+set dv=""
 top:
 	if ($#argv > 0) then
 		switch ($argv[1])
 
-		case *\:*:
-			set dv=$argv[1]
+		case -display:
+			set dv="-display $argv[2]"
+			shift argv
 			shift argv
 			goto top
 
@@ -19,7 +20,7 @@ top:
 			shift argv
 			goto top
 
-		case -*:
+		case *:
 			set flags = ($flags $argv[1])
 			shift argv
 			goto top

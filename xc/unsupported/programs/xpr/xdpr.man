@@ -3,7 +3,7 @@
 xdpr \- dump an X window directly to the printer
 .SH SYNOPSIS
 .B xdpr
-[ option ]
+[-option ...]
 .SH DESCRIPTION
 \fIXdpr\fP runs the commands 
 .IR xwd (1),
@@ -18,12 +18,11 @@ of the window on the output page.
 .B -P\fIprinter\fP
 The printer argument for the lpr command can be set in the usual way.
 .TP
-.B \fIhost\fP:\fIdisplay\fP
+.B \-display \fIhost\fP:\fIdisplay\fP
 The host/display number can also be specified in the usual way.
 .PP
-Any other arguments (not containing a ``:'' or
-.B -P
-) will be passed as arguments to the 
+Any other arguments 
+will be passed as arguments to the 
 .IR xpr(1)
 command.
 .SH SEE ALSO
