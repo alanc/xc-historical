@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: button.c,v 1.42 89/07/16 15:24:11 jim Exp $
+ *	$XConsortium: button.c,v 1.43 89/11/06 12:03:23 jim Exp $
  */
 
 
@@ -35,7 +35,7 @@ button.c	Handles button events in the terminal emulator.
 				J. Gettys.
 */
 #ifndef lint
-static char rcs_id[] = "$XConsortium: button.c,v 1.42 89/07/16 15:24:11 jim Exp $";
+static char rcs_id[] = "$XConsortium: button.c,v 1.43 89/11/06 12:03:23 jim Exp $";
 #endif	/* lint */
 
 #include "ptyx.h"		/* Xlib headers included here. */
@@ -420,15 +420,24 @@ register XButtonEvent *event;
 }
 
 
+#define boundsCheck(x)	if (x < 0) \
+			    x = 0; \
+			else if (x >= screen->max_row) \
+			    x = screen->max_row;
+
 TrackMouse(func, startrow, startcol, firstrow, lastrow)
 int func, startrow, startcol, firstrow, lastrow;
 {
+	TScreen *screen = &term->screen;
+
 	if (!waitingForTrackInfo) {	/* Timed out, so ignore */
 		return;
 	}
 	waitingForTrackInfo = 0;
 	if (func == 0) return;
-
+	boundsCheck (startrow)
+	boundsCheck (firstrow)
+	boundsCheck (lastrow)
 	firstValidRow = firstrow;
 	lastValidRow  = lastrow;
 	replyToEmacs = TRUE;
