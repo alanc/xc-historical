@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.57 92/09/07 12:08:05 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.58 92/09/07 14:04:45 rws Exp $
 #include <Server.tmpl>
 
 #if (SystemV || SystemV4) && !HasSockets
@@ -95,13 +95,6 @@ NormalLibraryTarget(os,$(OBJS))
 LintLibraryTarget(os,$(SRCS))
 NormalLintTarget($(SRCS))
 
-XCOMM these depend on ConnectionFlags
-access.o: $(ICONFIGFILES)
-connection.o: $(ICONFIGFILES)
-
-XCOMM these depend on HASXDMAUTH
-auth.o xdmcp.o: $(ICONFIGFILES)
-
 #ifdef HPArchitecture
 XCOMM
 XCOMM The following kludge is necessary because dbm already has a global 
@@ -138,6 +131,8 @@ alloca.o:  $(PWLIB)
 	ar x $(PWLIB) alloca.o
 #endif /* NEED_ALLOCA_FROM_LIBPW */
 
+SpecialCObjectRule(access,$(ICONFIGFILES),$(_NOOP_))
+SpecialCObjectRule(auth,$(ICONFIGFILES),$(_NOOP_))
 SpecialCObjectRule(xdmcp,$(ICONFIGFILES),$(SOCK_DEFINES))
 SpecialCObjectRule(connection,$(ICONFIGFILES),$(SOCK_DEFINES))
 SpecialCObjectRule(osinit,$(ICONFIGFILES),$(ADM_DEFINES))
