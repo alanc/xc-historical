@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.114 91/02/28 11:11:37 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.115 91/04/01 18:13:55 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -431,9 +431,9 @@ Display *XOpenDisplay (display)
  */
 	endian = 1;
 	if (*(char *) &endian)
-	    client.byteOrder = 'l';
+	    client.byteOrder = '\154'; /* 'l' */
 	else
-	    client.byteOrder = 'B';
+	    client.byteOrder = '\102'; /* 'B' */
 	client.majorVersion = X_PROTOCOL;
 	client.minorVersion = X_PROTOCOL_REVISION;
 	client.nbytesAuthProto = conn_auth_namelen;
