@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: cfbscrinit.c,v 1.1 87/07/28 15:10:45 toddb Locked $ */
 /*
  * The Sun X drivers are a product of Sun Microsystems, Inc. and are provided
  * for unrestricted use provided that this legend is included on all tape
@@ -139,7 +139,6 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     pScreen->UninstallColormap = NoopDDA;
     pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
 #endif
-    pScreen->GetStaticColormap = cfbGetStaticColormap;
 #ifdef	STATIC_COLOR
     pScreen->StoreColors = NoopDDA;
     pScreen->ResolveColor = cfbResolveStaticColor;
