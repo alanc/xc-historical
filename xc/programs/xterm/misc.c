@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.89 91/07/10 11:45:55 rws Exp $
+ *	$XConsortium: misc.c,v 1.90 91/07/25 17:59:05 rws Exp $
  */
 
 /*
@@ -570,7 +570,7 @@ register TScreen *screen;
 
 	cp = screen->TekEmu ? Tbptr : bptr;
 	if((i = cp - screen->logstart) > 0)
-		write(screen->logfd, screen->logstart, i);
+		write(screen->logfd, (char *)screen->logstart, i);
 	screen->logstart = screen->TekEmu ? Tbuffer : buffer;
 }
 
