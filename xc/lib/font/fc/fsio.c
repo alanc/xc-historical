@@ -1,4 +1,6 @@
+/* $XConsortium$ */
 /*
+ *
  * Copyright 1990 Network Computing Devices
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -32,19 +34,29 @@
 #include	"FS.h"
 #include	"FSproto.h"
 #include	<stdio.h>
+#include	<signal.h>
 #include	<sys/types.h>
 #include	<sys/socket.h>
-#include	<netinet/tcp.h>
+/* #include	<netinet/tcp.h> */
 #include	<errno.h>
-#include	<fcntl.h>
-#include	<sys/file.h>
 #include	"FSlibos.h"
 #include	"fontmisc.h"
 #include	"fsio.h"
-#include	"assert.h"
 
 extern int  errno;
-extern char *sys_errlist[];
+
+/* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
+ * systems are broken and return EWOULDBLOCK when they should return EAGAIN
+ */
+#if defined(EAGAIN) && defined(EWOULDBLOCK)
+#define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK)
+#else
+#ifdef EAGAIN
+#define ETEST(err) (err == EAGAIN)
+#else
+#define ETEST(err) (err == EWOULDBLOCK)
+#endif
+#endif
 
 static int  padlength[4] = {0, 3, 2, 1};
 unsigned long fs_fd_mask[MSKCNT];
@@ -108,7 +120,8 @@ _fs_name_to_address(servername, inaddr)
 #endif
 
 static SIGNAL_T
-_fs_alarm ()
+_fs_alarm (foo)
+    int	foo;
 {
     return;
 }
@@ -121,7 +134,7 @@ _fs_connect(servername, timeout)
     int         fd;
     struct sockaddr *addr;
     struct sockaddr_in inaddr;
-    int		oldTime;
+    unsigned	oldTime;
     SIGNAL_T	(*oldAlarm)();
     int		ret;
 
@@ -132,11 +145,11 @@ _fs_connect(servername, timeout)
     if ((fd = socket((int) addr->sa_family, SOCK_STREAM, 0)) < 0)
 	return -1;
 
-    oldTime = alarm (0);
+    oldTime = alarm ((unsigned) 0);
     oldAlarm = signal (SIGALRM, _fs_alarm);
-    alarm (timeout);
+    alarm ((unsigned) timeout);
     ret = connect(fd, addr, sizeof(struct sockaddr_in));
-    alarm (0);
+    alarm ((unsigned) 0);
     signal (SIGALRM, oldAlarm);
     alarm (oldTime);
     if (ret == -1)
@@ -145,14 +158,19 @@ _fs_connect(servername, timeout)
 	return -1;
     }
 
+
+    /* ultrix reads hang on Unix sockets, hpux reads fail */
+#if defined(O_NONBLOCK) && (!defined(ultrix) && !defined(hpux))
+    (void) fcntl (fd, F_SETFL, O_NONBLOCK);
+#else
 #ifdef FIOSNBIO
     {
-	int         arg = 1;
-
-	ioctl(fd, FIOSNBIO, &arg);
+	int arg = 1;
+	ioctl (fd, FIOSNBIO, &arg);
     }
 #else
-    (void) fcntl(fd, F_SETFL, FNDELAY);
+    (void) fcntl (fd, F_SETFL, FNDELAY);
+#endif
 #endif
 
     return fd;
@@ -372,7 +390,7 @@ _fs_read(conn, data, size)
 	if (bytes_read > 0) {
 	    size -= bytes_read;
 	    data += bytes_read;
-	} else if (errno == EWOULDBLOCK) {
+	} else if (ETEST(errno)) {
 	    /* in a perfect world, this shouldn't happen */
 	    /* ... but then, its less than perfect... */
 	    if (_fs_wait_for_readable(conn) == -1)	/* check for error */
@@ -413,7 +431,7 @@ _fs_write(conn, data, size)
 	if (bytes_written > 0) {
 	    size -= bytes_written;
 	    data += bytes_written;
-	} else if (errno == EWOULDBLOCK) {
+	} else if (ETEST (errno)) {
 	    /* XXX -- we assume this can't happen */
 
 #ifdef DEBUG
@@ -444,7 +462,7 @@ _fs_read_pad(conn, data, len)
     if (padlength[len & 3]) {
 	return _fs_read(conn, pad, padlength[len & 3]);
     }
-    return len;
+    return 0;
 }
 
 _fs_write_pad(conn, data, len)

@@ -45,6 +45,7 @@
 
 extern int  errno;
 
+
 extern FontPtr find_old_font();
 
 extern int  fs_build_range();
@@ -64,6 +65,13 @@ static FSFpePtr   awaiting_reconnect;
 void	    _fs_connection_died ();
 static void _fs_restart_connection ();
 static void _fs_try_reconnect();
+static int  fs_send_query_info ();
+static int  fs_send_query_extents ();
+static int  fs_send_query_bitmaps ();
+static int  fs_send_close_font ();
+static int  fs_read_extents ();
+static int  fs_read_bitmaps ();
+
 /*
  * Font server access
  *
@@ -205,8 +213,6 @@ fs_free_fpe(fpe)
 {
     FSFpePtr    conn = (FSFpePtr) fpe->private;
 
-    assert(fpe->refcount == 0);
-
     /* close font server */
     (void) close(conn->fs_fd);
 
@@ -259,7 +265,7 @@ fs_new_block_rec(fpe, client, type)
 	size = sizeof(FSBlockedBitmapRec);
 	break;
     default:
-	assert(0);
+	break;
     }
     blockrec->data = (pointer) xalloc(size);
     if (!blockrec->data) {
@@ -308,7 +314,6 @@ fs_remove_blockrec(conn, blockrec)
 	last = br;
 	br = br->next;
     }
-    assert(0);
 }
 
 static void
@@ -380,25 +385,18 @@ fs_read_open_font(fpe, blockrec)
     }
 
     /* make sure the sequence number is correct */
-    assert(rep.type == FS_Reply);
-
     if (rep.originalid) {
 	newfont = find_old_font(blockrec->client, rep.originalid);
 	if (!newfont) {
 	    /* XXX - something nasty happened */
 	    return BadFontName;
 	}
-	assert(newfont->fpe);
-	assert(newfont->fpePrivate);
 
 	(void) fs_send_close_font(fpe, bfont->fontid);
 
 	fs_free_font (bfont);
 	bfont->fontid = rep.originalid;
 	bfont->pfont = newfont;
-	fsd->fontid = rep.originalid;
-	fsd->generation = conn->generation;
-
 	bfont->state = FS_DONE_REPLY;
 	/*
  	 * look for a blocked request to open the same font
@@ -448,9 +446,6 @@ fs_read_query_info(fpe, blockrec)
 	fs_free_font (bfont);
 	return StillWorking;
     }
-
-    /* check sequence number */
-    assert(rep.type == FS_Reply);
 
     /* move the data over */
     (void) fs_convert_header(&rep.header, &bfont->pfont->info);
@@ -513,9 +508,6 @@ fs_read_extent_info(fpe, blockrec)
 	fs_free_font (bfont);
 	return StillWorking;
     }
-
-    /* check sequence number */
-    assert(rep.type == FS_Reply);
 
     /* move the data over */
     ci = pCI = (CharInfoPtr) xalloc(sizeof(CharInfoRec) * rep.num_extents);
@@ -696,7 +688,7 @@ fs_block_handler(data, wt, LastSelectMask)
 	soonest = soonest - now;
 	recon_timeout.tv_sec = soonest;
 	recon_timeout.tv_usec = 0;
-	if (*wt == NULL)
+	if (*wt == (struct timeval *) 0)
 	{
 	    *wt = &recon_timeout;
 	}
@@ -766,7 +758,6 @@ fs_wakeup(fpe, LastSelectMask)
 	    return FALSE;
 	}
 	blockrec = br;
-	assert(blockrec);
 
 	bcopy((char *) &rep, (char *) &blockrec->header, sizeof(fsReplyHeader));
 
@@ -791,7 +782,7 @@ fs_wakeup(fpe, LastSelectMask)
 	    err = fs_read_bitmaps(fpe, blockrec);
 	    break;
 	default:
-	    assert(0);
+	    break;
 	}
 
 	if (err != StillWorking)
@@ -1181,8 +1172,6 @@ fs_read_glyphs(fpe, blockrec)
 	return StillWorking;
     }
 
-    assert(rep.type == FS_Reply);
-
     /* allocate space for glyphs */
     offset_size = sizeof(fsOffset) * rep.num_chars;
     glyph_size = (rep.length << 2) - sizeof(fsQueryXBitmaps8Reply)
@@ -1348,8 +1337,6 @@ fs_read_extents(fpe, blockrec)
 	return StillWorking;
     }
 
-    assert(rep.type == FS_Reply);
-
     /* allocate space for glyphs */
     bextent->nextents = rep.num_extents;
     size = rep.num_extents * sizeof(fsCharInfo);
@@ -1484,8 +1471,6 @@ fs_read_bitmaps(fpe, blockrec)
 	/* XXX what to free? */
 	return StillWorking;
     }
-
-    assert(rep.type == FS_Reply);
 
     /* allocate space for glyphs */
     bbitmap->nglyphs = rep.num_chars;
@@ -1624,8 +1609,6 @@ fs_read_list(fpe, blockrec)
     int         length,
                 i;
 
-    assert(blist->done == FALSE);
-
     blist->done = TRUE;
 
     /* read reply header */
@@ -1641,8 +1624,6 @@ fs_read_list(fpe, blockrec)
 	/* nothing to free (i think) */
 	return StillWorking;
     }
-
-    assert(rep.type == FS_Reply);
 
     length = (rep.length << 2) - sizeof(fsListFontsReply);
     data = (char *) xalloc(length);
@@ -1783,8 +1764,6 @@ fs_read_list_info(fpe, blockrec)
     {
 	goto done;
     }
-
-    assert(rep.type == FS_Reply);
 
     if (rep.nameLength == 0)
 	goto done;
