@@ -2,9 +2,10 @@
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
 SUBDIRS = \
-	bitmap pseudoroot uwm x10tox11 xbiff xcalc xclock xdm xdpyinfo xedit \
+	bitmap uwm x10tox11 xbiff xcalc xclock xdm xdpyinfo xedit \
 	xev xfd xhost xinit xkill xload xlogo xlsfonts xlswins xmag xman xmh \
-	xmodmap xpr xprop xrdb xrefresh xset xsetroot xterm xwd xwininfo xwud
+	xmodmap xpr xprop xpseudoroot \
+	xrdb xrefresh xset xsetroot xterm xwd xwininfo xwud
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
