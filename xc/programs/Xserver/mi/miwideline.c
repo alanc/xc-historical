@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.2 89/10/28 16:55:07 rws Exp $
+ * $XConsortium: miwideline.c,v 1.3 89/10/28 22:38:09 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -106,7 +106,7 @@ miFillPolyHelper (pDrawable, pGC, pixel, y, overall_height,
 	left_height -= height;
 	right_height -= height;
 
-	while (height-- > 0)
+	while (--height >= 0)
 	{
 	    if (right_x >= left_x)
 	    {
@@ -191,7 +191,7 @@ miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
 	edge->dx = (-dx) % dy;
     edge->dy = dy;
     edge->x = x + xi;
-    edge->e = e;
+    edge->e = e - dy;
     return y + yi;
 }
 
@@ -594,7 +594,7 @@ miWideSegment (pDrawable, pGC, pixel, FillPoly,
 	    lefts[0].x -= (lw >> 1);
 	lefts[0].stepx = 0;
 	lefts[0].signdx = 1;
-	lefts[0].e = 0;
+	lefts[0].e = -lw;
 	lefts[0].dx = 0;
 	lefts[0].dy = lw;
 	rights[0].height = lw;
@@ -603,7 +603,7 @@ miWideSegment (pDrawable, pGC, pixel, FillPoly,
 	    rights[0].x += (lw >> 1);
 	rights[0].stepx = 0;
 	rights[0].signdx = 1;
-	rights[0].e = 0;
+	rights[0].e = -lw;
 	rights[0].dx = 0;
 	rights[0].dy = lw;
 	(*FillPoly) (pDrawable, pGC, pixel, y1 - (lw >> 1), lw,
@@ -625,7 +625,7 @@ miWideSegment (pDrawable, pGC, pixel, FillPoly,
 	lefts[0].x = x1 - (lw >> 1);
 	lefts[0].stepx = 0;
 	lefts[0].signdx = 1;
-	lefts[0].e = 0;
+	lefts[0].e = -dy;
 	lefts[0].dx = dx;
 	lefts[0].dy = dy;
 
@@ -633,7 +633,7 @@ miWideSegment (pDrawable, pGC, pixel, FillPoly,
 	rights[0].x = lefts[0].x + (lw-1);
 	rights[0].stepx = 0;
 	rights[0].signdx = 1;
-	rights[0].e = 0;
+	rights[0].e = -dy;
 	rights[0].dx = dx;
 	rights[0].dy = dy;
 	(*FillPoly) (pDrawable, pGC, pixel, topy, bottomy - topy, lefts, rights, 1, 1);
@@ -762,6 +762,8 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
     y2 = pPts->y;
     first = TRUE;
     doJoin = FALSE;
+    projectLeft = pGC->capStyle == CapProjecting;
+    projectRight = FALSE;
     while (--npt)
     {
 	x1 = x2;
@@ -776,18 +778,8 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	}
 	if (x1 == x2 && y1 == y2)
 	    continue;
-	projectLeft = FALSE;
-	projectRight = FALSE;
-	if (first)
-	{
-	    if (pGC->capStyle == CapProjecting)
-		projectLeft = TRUE;
-	}
-	if (npt == 1)
-	{
-	    if (pGC->capStyle == CapProjecting)
-		projectRight = TRUE;
-	}
+	if (npt == 1 && pGC->capStyle == CapProjecting)
+	    projectRight = TRUE;
 	miWideSegment (pDrawable, pGC, pixel, FillPoly, x1, y1, x2, y2,
 		       projectLeft, projectRight, &leftFace, &rightFace);
 	if (first)
@@ -804,6 +796,7 @@ miWideLine (pDrawable, pGC, mode, npt, pPts)
 	    miLineCapRound (pDrawable, pGC, pixel, &rightFace, FALSE);
 	prevRightFace = rightFace;
 	first = FALSE;
+	projectLeft = FALSE;
     }
 }
 

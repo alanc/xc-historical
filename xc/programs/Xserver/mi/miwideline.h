@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Exp $
+ * $XConsortium: miwideline.h,v 1.1 89/10/25 15:16:20 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -84,7 +84,7 @@ typedef struct _LineFace {
 
 #define MIPOLYSTEPLEFT  left_x += left_stepx; \
     	    	    	left_e += left_dx; \
-    	    	    	if (left_e >= left_dy) \
+    	    	    	if (left_e >= 0) \
     	    	    	{ \
 	    	    	    left_x += left_signdx; \
 	    	    	    left_e -= left_dy; \
@@ -92,7 +92,7 @@ typedef struct _LineFace {
 
 #define MIPOLYSTEPRIGHT right_x += right_stepx; \
     	    	    	right_e += right_dx; \
-    	    	    	if (right_e >= right_dy) \
+    	    	    	if (right_e >= 0) \
     	    	    	{ \
 	    	    	    right_x += right_signdx; \
 	    	    	    right_e -= right_dy; \
