@@ -1,4 +1,4 @@
-.\" $XConsortium: mkfontdir.man,v 1.5 94/04/11 14:28:49 gildea Exp $
+.\" $XConsortium: mkfontdir.man,v 1.6 94/04/11 22:47:04 gildea Exp $
 .TH MKFONTDIR 1 "Release 6" "X Version 11"
 .SH NAME
 mkfontdir, fonts.dir, fonts.scale, fonts.alias \- create an index of X font files in a directory
@@ -6,15 +6,14 @@ mkfontdir, fonts.dir, fonts.scale, fonts.alias \- create an index of X font file
 .B "mkfontdir"
 [\fIdirectory-name\fP .\|.\|. ]
 .SH DESCRIPTION
-.B Mkfontdir
-For each directory argument, mkfontdir reads all of the font files in the
+For each directory argument, \fImkfontdir\fP reads all of the font files in the
 directory searching for properties named "FONT", or (failing that) the name
 of the file stripped of its suffix.  These are used as font names, and,
 with the name of the font file, are
 written out to the file "fonts.dir" in the directory.
 The X server and font server use "fonts.dir" to find font files.
 .PP
-The kinds of font files read by mkfontdir depends on configuration
+The kinds of font files read by \fImkfontdir\fP depend on configuration
 parameters, but typically include PCF (suffix ".pcf"), SNF (suffix ".snf")
 and BDF (suffix ".bdf").  If a font exists in multiple formats,
 .I mkfontdir
@@ -31,7 +30,7 @@ directory.
 The fonts listed in it are copied to fonts.dir by \fImkfontdir\fP.
 "fonts.scale" has the same format as the "fonts.dir" file.
 .SH "FONT NAME ALIASES"
-The file "fonts.alias" which can be put in any directory of the font-path is
+The file "fonts.alias", which can be put in any directory of the font-path, is
 used to map new names to existing fonts, and should be edited by hand.  The
 format is two white-space separated columns, the
 first containing aliases and the second containing font-name patterns.
@@ -42,12 +41,12 @@ font name, this is a scalable alias.  A font name of any size that
 matches this alias will be mapped to the same size of the font that
 the alias resolves to.
 .PP
-When a font alias is used, the name it references is search for in the normal
+When a font alias is used, the name it references is searched for in the normal
 manner, looking through each font directory in turn.  This means that the
 aliases need not mention fonts in the same directory as the alias file.
 .PP
-To embed white-space in either name, simply enclose them in double-quote
-marks, to embed double-quote marks (or any other character), precede them
+To embed white space in either name, simply enclose it in double-quote
+marks; to embed double-quote marks (or any other character), precede them
 with back-slash:
 .PP
 .nf
