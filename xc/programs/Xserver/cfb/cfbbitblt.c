@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.28 90/02/08 16:04:40 rws Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.29 90/02/12 18:35:55 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -34,6 +34,10 @@ Author: Keith Packard
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 #include	"fastblt.h"
+
+#if defined (FAST_UNALIGNED_READS) && (PPW == 4)
+#define DO_UNALIGNED_BITBLT
+#endif
 
 cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
     DrawablePtr	    pSrc, pDst;
@@ -257,7 +261,13 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	    	    xoffDst = pbox->x1 & PIM;
 		    pdstLine += (pbox->x1 >> PWSH);
 		    psrcLine += (pptSrc->x >> PWSH);
+#ifdef DO_UNALIGNED_BITBLT
+		    nl = xoffSrc - xoffDst;
+		    psrcLine = (unsigned int *)
+			        (((unsigned char *) psrcLine) + nl);
+#else
 		    if (xoffSrc == xoffDst)
+#endif
 		    {
 	    	    	while (h--)
 	    	    	{
@@ -300,6 +310,24 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 #undef LoopReset
 
 #else
+#ifdef NOTDEF
+			    /* you'd think this would be faster --
+			     * a single instruction instead of 6
+			     * but measurements show it to be ~15% slower
+			     */
+			    while ((nl -= 6) >= 0)
+			    {
+				asm ("moveml %1+,#0x0c0f;moveml#0x0c0f,%0"
+				     : "=m" (*(char *)pdst)
+				     : "m" (*(char *)psrc)
+				     : "d0", "d1", "d2", "d3",
+				       "a2", "a3");
+				pdst += 6;
+			    }
+			    nl += 6;
+			    while (nl--)
+				*pdst++ = *psrc++;
+#endif
 			    DuffL(nl, label1, *pdst++ = *psrc++;)
 #endif
 
@@ -307,6 +335,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    	*pdst = (*pdst & ~endmask) | (*psrc++ & endmask);
 		    	}
 		    }
+#ifndef DO_UNALIGNED_BITBLT
 		    else
 		    {
 		    	if (xoffSrc > xoffDst)
@@ -400,6 +429,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    }
 		    	}
 		    }
+#endif /* DO_UNALIGNED_BITBLT */
 	    	}
 	    	else	/* xdir == -1 */
 	    	{
@@ -407,7 +437,13 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 	    	    xoffDst = (pbox->x2 - 1) & PIM;
 		    pdstLine += ((pbox->x2-1) >> PWSH) + 1;
 		    psrcLine += ((pptSrc->x+w - 1) >> PWSH) + 1;
+#ifdef DO_UNALIGNED_BITBLT
+		    nl = xoffSrc - xoffDst;
+		    psrcLine = (unsigned int *)
+			        (((unsigned char *) psrcLine) + nl);
+#else
 		    if (xoffSrc == xoffDst)
+#endif
 		    {
 	    	    	while (h--)
 	    	    	{
@@ -459,6 +495,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    }
 		    	}
 		    }
+#ifndef DO_UNALIGNED_BITBLT
 		    else
 		    {
 			if (xoffDst > xoffSrc)
@@ -551,6 +588,7 @@ cfbDoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 			    }
 		    	}
 		    }
+#endif
 		}
 	    }
 	    pbox++;
