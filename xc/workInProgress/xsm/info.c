@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: info.c,v 1.1 94/07/07 16:47:37 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -225,7 +225,8 @@ UpdateClientList ()
 	    }
 
 	if (!progName)
-	    progName = "";
+	    progName = XtNewString ("");
+
 	clientNames[i] = progName;
     }
 
