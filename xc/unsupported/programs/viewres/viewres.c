@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.51 90/03/07 15:25:37 jim Exp $
+ * $XConsortium: viewres.c,v 1.52 90/03/07 17:43:54 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -28,6 +28,7 @@
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/Box.h>
+#include <X11/Xaw/Form.h>
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/SimpleMenu.h>
@@ -836,25 +837,20 @@ main (argc, argv)
     int argc;
     char **argv;
 {
-    Widget toplevel, pane, box, dummy, porthole, panner;
+    Widget toplevel, pane, box, dummy, porthole, panner, form;
     XtAppContext app_con;
-    Arg args[5];
+    Arg args[6];
     Dimension width, height;
     static XtCallbackRec callback_rec[2] = {{ NULL, NULL }, { NULL, NULL }};
     XtOrientation orient;
-    Boolean resize;
     int i;
 
     ProgramName = argv[0];
 
-    /*
-     * set mappedWhenManaged FALSE so that we can play games later letting
-     * the window grow to fit the panner
-     */
-    XtSetArg (args[0], XtNmappedWhenManaged, FALSE);
     toplevel = XtAppInitialize (&app_con, "Viewres", 
 				Options, XtNumber (Options),
-				&argc, argv, fallback_resources, args, ONE);
+				&argc, argv, fallback_resources, 
+				(ArgList) NULL, ZERO);
     if (argc != 1) usage ();
     XtAppAddActions (app_con, viewres_actions, XtNumber (viewres_actions));
 
@@ -948,23 +944,22 @@ main (argc, argv)
     MAKE_SELECT (SELECT_SHOWN_RESOURCES, "selectShownResources");
 #undef MAKE_SELECT
 
+    form = XtCreateManagedWidget ("treeform", formWidgetClass, pane,
+				  (ArgList) NULL, ZERO);
     /*
      * create the panner and the porthole and then connect them with the
      * callbacks (passing the other widget each callback)
      */
-    XtSetArg (args[0], XtNallowResize, TRUE);
-    panner = XtCreateManagedWidget ("panner", pannerWidgetClass, box,
-				    args, ONE);
-    XtSetArg (args[0], XtNresize, &resize);
-    XtGetValues (panner, args, ONE);
-    if (!resize) {
-	XtSetArg (args[0], XtNresize, TRUE);	/* so that scales properly */
-	XtSetValues (panner, args, ONE);
-    }
-
     XtSetArg (args[0], XtNbackgroundPixmap, None);  /* faster updates */
-    porthole = XtCreateManagedWidget ("porthole", portholeWidgetClass,
-				      pane, args, ONE);
+    XtSetArg (args[1], XtNtop, XtChainTop);
+    XtSetArg (args[2], XtNbottom, XtChainBottom);
+    XtSetArg (args[3], XtNleft, XtChainLeft);
+    XtSetArg (args[4], XtNright, XtChainRight);
+    XtSetArg (args[5], XtNresizable, TRUE);
+    porthole = XtCreateManagedWidget ("porthole", portholeWidgetClass, form,
+				      args, SIX);
+    panner = XtCreateWidget ("panner", pannerWidgetClass, form,
+			     (ArgList) NULL, ZERO);
 
     XtSetArg (args[0], XtNreportCallback, callback_rec);
     callback_rec[0].callback = (XtCallbackProc) panner_callback;
@@ -1004,11 +999,8 @@ main (argc, argv)
     XtSetArg (args[3], XtNsliderHeight, height);
     XtSetValues (panner, args, FOUR);
 
-    if (!resize) {
-	XtSetArg (args[0], XtNresize, FALSE);
-	XtSetValues (panner, args, ONE);
-    }
-    XtMapWidget (toplevel);
+    XtMapWidget (panner);
+    XRaiseWindow (XtDisplay(panner), XtWindow(panner));
     XtAppMainLoop (app_con);
 }
 

@@ -1,16 +1,21 @@
-*Panner.resize: off
+!*Panner.resize: off
+!*Panner.height: 50
+!*Panner.width: 200
 *Panner*backgroundStipple: grid2
 
 *allowShellResize: true
 *buttonbox*ShapeStyle: oval
+*treeform.Thickness: 0
+*treeform.borderWidth: 0
+*Tree.borderWidth: 0
+*Porthole.borderWidth: 0
+*Panner*DefaultScale: 5
 *Tree*ShapeStyle: rectangle
 *Tree*Toggle*BorderWidth: 0
 *Porthole*Box.BorderWidth: 0
 *Porthole*Box.HSpace: 0
 *Porthole*Box.VSpace: 0
 *Paned*allowResize: true
-*Panner.height: 50
-*Panner.width: 200
 *Panner.canvasWidth: 800
 *Panner.canvasHeight: 500
 *Panner.sliderWidth: 800
