@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.2 91/02/18 11:11:36 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.3 91/02/18 20:59:49 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1305,7 +1305,12 @@ fork_monitor( cph, argv )
 		_exit(0);
 	    } else {
 		/* close fd's on exec, leave stderr open */
-		for ( cnt = getdtablesize() - 1; cnt > 2; cnt--)
+#if defined(hpux) || defined(SVR4)
+		cnt = _NFILE - 1;
+#else
+		cnt = getdtablesize() - 1;
+#endif	/* hpux */
+		for ( ; cnt > 2; cnt--)
 		    (void)fcntl( cnt, F_SETFD, 1);
 		argv[0] = PHG_SERVER_NAME;
 		execv( monitor, argv);
