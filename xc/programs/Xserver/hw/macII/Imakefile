@@ -1,8 +1,10 @@
 SRCS =	\
 	macIIInit.c \
 	macIIInitC.c \
+	macIIInitS.c \
 	macIIBW2.c \
 	macIIBW2zd.c \
+	macIICG4C.c \
 	macIICrsr.c \
 	macIIIo.c \
 	macIIKbd.c \
@@ -10,15 +12,17 @@ SRCS =	\
 	macIIUtils.c \
 	macIIGC.c \
 	macIIKMap.c \
+	slotmgr.s \
 	Xrepair.c \
 	X11R2 \
 	def.x11start
 
-OFILES = macIIInit.o macIIInitC.o
+OFILES = macIIInit.o macIIInitC.o macIIInitS.o slotmgr.o
 
 OBJS = \
 	macIIBW2.o \
 	macIIBW2zd.o \
+	macIICG4C.o \
 	macIICrsr.o \
 	macIIIo.o \
 	macIIKbd.o \
