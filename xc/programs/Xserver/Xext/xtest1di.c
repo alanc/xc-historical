@@ -1,4 +1,4 @@
-/* $XConsortium: xtest1di.c,v 1.10 94/02/23 16:55:45 dpw Exp $ */
+/* $XConsortium: xtest1di.c,v 1.11 94/03/25 15:45:04 dpw Exp $ */
 /*
  *	File:  xtest1di.c
  *
@@ -523,7 +523,17 @@ ProcTestFakeInput(client)
 {
 	REQUEST(xTestFakeInputReq);
 	REQUEST_SIZE_MATCH(xTestFakeInputReq);
-	if (playback_client == NULL || playback_client == client)
+
+	if (playback_client == NULL)
+	    {
+	    playback_client = client;
+	    current_client_id = FakeClientID(client->index);
+	    AddResource(current_client_id,
+		    XTestType,
+		    0);
+	    MakeClientGrabImpervious(client);
+	    }
+	if (playback_client == client)
 	{
 		/*
 		 * This extension does not need to clean up any
@@ -717,6 +727,7 @@ XTestResetProc()
 	XTestFakeAckType = 1;
 	on_steal_input = FALSE;
 	exclusive_steal = FALSE;
+	playback_client = 0;	/* Don't really need this but it looks nice */
 }
 
 /*****************************************************************************
@@ -736,13 +747,13 @@ XTestCurrentClientGone(value, id)
 	/*
 	 * defined in xtest1dd.c
 	 */
-	flush_input_actions();
 	on_steal_input = FALSE;
 	exclusive_steal = FALSE;
 	/*
 	 * defined in xtestdd.c
 	 */
-	stop_stealing_input();	
+	playback_client = 0;
+	abort_play_back();
 	return TRUE;
 }
 
@@ -836,7 +847,7 @@ SEventXTestDispatch(from, to)
 		 * copy the input actions from the "from" event
 		 * to the "to" event
 		 */
-		for (i = 0; i < XTestACTIONS_SIZE;)
+		for (i = 0; i < XTestACTIONS_SIZE; i++)
 		{
 			((xTestInputActionEvent *) to)->actions[i] =
 			((xTestInputActionEvent *) from)->actions[i];
