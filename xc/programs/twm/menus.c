@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.139 89/12/14 17:14:58 jim Exp $
+ * $XConsortium: menus.c,v 1.140 90/01/11 09:15:39 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.139 89/12/14 17:14:58 jim Exp $";
+"$XConsortium: menus.c,v 1.140 90/01/11 09:15:39 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1189,7 +1189,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	XSync (dpy, 0);
 	Reborder ();
 	XSync (dpy, 0);
-	execvp(*Argv, Argv, Environ);
+	execvp(*Argv, Argv);
 	fprintf (stderr, "%s:  unable to restart:  %s\n", ProgramName, *Argv);
 	break;
 
