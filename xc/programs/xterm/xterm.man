@@ -871,7 +871,7 @@ For example, a debugging session might benefit from the following bindings:
 .Ds
 .TA .5i
 .ta .5i
-*VT100.translations: #override <Key>F13: keymap(dbx)
+*VT100.Translations: #override <Key>F13: keymap(dbx)
 *VT100.dbxKeymap.translations: \\
 	<Key>F14: keymap(None) \\n\\
 	<Key>F17: string("next") string(0x0d) \\n\\
