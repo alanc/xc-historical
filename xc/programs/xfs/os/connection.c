@@ -29,6 +29,7 @@
 
 #include	<stdio.h>
 #include	<errno.h>
+#include	<sys/types.h>
 #include	<sys/param.h>
 #include	<sys/socket.h>
 #include	<sys/uio.h>
