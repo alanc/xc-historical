@@ -1,4 +1,4 @@
-/* $XConsortium: XTextExt.c,v 11.15 89/02/01 15:06:35 rws Exp $ */
+/* $XConsortium: XTextExt.c,v 11.16 89/04/25 19:17:03 jim Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -29,6 +29,7 @@ SOFTWARE.
 
 /* text support routines. Three different access methods, a */
 /* charinfo array builder, and a bounding box calculator */
+
 
 /*ARGSUSED*/
 static
@@ -175,34 +176,51 @@ XTextExtents (fontstruct, string, nchars, dir, font_ascent, font_descent,
 
 int XTextWidth (fontstruct, string, count)
     XFontStruct *fontstruct;
-    register char *string;
+    char *string;
     int count;
 {
-    int	i, width;
-    unsigned int n;
+    register int    i, width = 0;
+    register unsigned char *ustring = (unsigned char *) string;
+    register XCharStruct     *cs;
+    unsigned int    firstCol = fontstruct->min_char_or_byte2;
+    unsigned int    numCols = fontstruct->max_char_or_byte2 - firstCol + 1;
+    unsigned int    firstRow = fontstruct->min_byte1;
+    unsigned int    numRows = fontstruct->max_byte1 - firstRow + 1;
+    unsigned int    chDefault = fontstruct->default_char;
 
-    {
-	XCharStruct **charstruct =
-	    (XCharStruct **)Xmalloc((unsigned)count*sizeof(XCharStruct *));
-    
-	if (fontstruct->max_byte1 == 0)
-	    GetGlyphs(fontstruct, count, string, GetCS, &n, charstruct);
-	else
-	    GetGlyphs(fontstruct, count, string, GetCS2d, &n, charstruct);
-    
-	if (n != 0) {
- 	    width = 0;
-	    for (i=0; i < n; i++) {
-		width += charstruct[i]->width;
+    /*
+     * This is similar to doing a GetGlyphs of GetCS (or GetCS2d) and then
+     * summing up all of the glyphs.  But, by inlining the code, we avoid a
+     * malloc and free as well as a lot of copying.
+     */
+
+    if (fontstruct->max_byte1 == 0) {
+	register unsigned int c;
+	XCharStruct *pCS = fontstruct->per_char;
+	int min_bounds_width = fontstruct->min_bounds.width;
+
+	for (i = count; i > 0; i--) {
+	    c = *ustring++ - firstCol;
+	    if (c >= numCols) {
+		if ((c = chDefault - firstCol) >= numCols) continue;
 	    }
-    
-	} else {
-	    width   = 0;
+
+	    if (!pCS) {
+		width += min_bounds_width;
+	    } else {
+		cs = &pCS[c];
+		if (! CI_NONEXISTCHAR(cs)) width += cs->width;
+	    }
 	}
+    } else {
+	for (i = 0; i < count; i++) {
+	    cs = GetCS2d (&fontstruct->min_bounds, fontstruct->per_char, 
+			  firstCol, numCols, firstRow, numRows, i, ustring,
+			  chDefault);
+	    if (cs != NULL) width += cs->width;
+	}
+    }
     
-	Xfree((char *)charstruct);
-    
-    } 
     return (width);
 }
 
