@@ -551,7 +551,7 @@ Athena widget set.
 .fi
 .SH COLORS
 If you would like bitmap to be viewable in color, include the following 
-in the #ifdef COLOR section you read with xrdb:
+in the #ifdef COLOR section of the file you read with xrdb:
 .sp 1
 *customization:                 -color
 .sp 1
