@@ -1,4 +1,4 @@
-/* $XConsortium: xlistdev.c,v 1.7 89/10/12 16:56:14 gms Exp $ */
+/* $XConsortium: xlistdev.c,v 1.8 89/12/02 15:21:20 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -262,11 +262,7 @@ CopySwapKeyClass (client, k, buf)
     k2->num_keys = k2->max_keycode - k2->min_keycode + 1;
     if (client->swapped)
 	{
-	/*
 	swaps(&k2->num_keys,n);
-	*/
-	swaps(&k2->min_keycode,n);
-	swaps(&k2->max_keycode,n);
 	}
     *buf += sizeof (xKeyInfo);
     }
@@ -324,7 +320,6 @@ CopySwapValuatorClass (client, v, buf)
     v2->motion_buffer_size  = v->numMotionEvents;
     if (client->swapped)
 	{
-	swaps(&v2->num_axes,n);
 	swapl(&v2->motion_buffer_size,n);
 	}
     *buf += sizeof (xValuatorInfo);
@@ -337,9 +332,9 @@ CopySwapValuatorClass (client, v, buf)
 	a2->resolution = a->resolution;
     	if (client->swapped)
 	    {
-	    swapl(&a->min_value,n);
-	    swapl(&a->max_value,n);
-	    swapl(&a->resolution,n);
+	    swapl(&a2->min_value,n);
+	    swapl(&a2->max_value,n);
+	    swapl(&a2->resolution,n);
 	    }
 	a2++;
 	a++;
