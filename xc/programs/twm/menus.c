@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.59 89/05/15 17:21:38 jim Exp $
+ * $XConsortium: menus.c,v 1.60 89/05/15 18:00:15 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.59 89/05/15 17:21:38 jim Exp $";
+"$XConsortium: menus.c,v 1.60 89/05/15 18:00:15 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -200,14 +200,16 @@ AddFuncKey(name, cont, mods, func, win_name, action)
     tmp->action = action;
 }
 
-PaintEntry(mr, mi)
+PaintEntry(mr, mi, exposure)
 MenuRoot *mr;
 MenuItem *mi;
+int exposure;
 {
     XGCValues gcv;
     int new_colors;
     int y_offset;
     int text_y;
+    GC gc;
 
 #ifdef DEBUG_MENUS
     fprintf(stderr, "Paint entry\n");
@@ -228,19 +230,27 @@ MenuItem *mi;
 
 	    FBF(mi->hi_fore, mi->hi_back, Scr->MenuFont.font->fid);
 
-	    XDrawImageString(dpy, mr->w, Scr->NormalGC, mi->x,
+	    XDrawString(dpy, mr->w, Scr->NormalGC, mi->x,
 		text_y, mi->item, mi->strlen);
+
+	    gc = Scr->NormalGC;
 	}
 	else
 	{
-	    XSetForeground(dpy, Scr->NormalGC, mi->back);
+	    if (mi->user_colors || !exposure)
+	    {
+		XSetForeground(dpy, Scr->NormalGC, mi->back);
 
-	    XFillRectangle(dpy, mr->w, Scr->NormalGC, 0, y_offset,
-		mr->width, Scr->EntryHeight);
+		XFillRectangle(dpy, mr->w, Scr->NormalGC, 0, y_offset,
+		    mr->width, Scr->EntryHeight);
 
-	    FBF(mi->fore, mi->back, Scr->MenuFont.font->fid);
+		FBF(mi->fore, mi->back, Scr->MenuFont.font->fid);
+		gc = Scr->NormalGC;
+	    }
+	    else
+		gc = Scr->MenuGC;
 
-	    XDrawImageString(dpy, mr->w, Scr->NormalGC, mi->x,
+	    XDrawString(dpy, mr->w, gc, mi->x,
 		text_y, mi->item, mi->strlen);
 	}
 
@@ -255,7 +265,7 @@ MenuItem *mi;
 	    }
 	    x = mr->width - pull_width - 5;
 	    y = y_offset + ((Scr->EntryHeight - pull_height)/2);
-	    XCopyPlane(dpy, Scr->pullPm, mr->w, Scr->NormalGC, 0, 0,
+	    XCopyPlane(dpy, Scr->pullPm, mr->w, gc, 0, 0,
 		pull_width, pull_height, x, y, 1);
 	}
     }
@@ -280,10 +290,9 @@ MenuItem *mi;
 
 	FBF(mi->fore, mi->back, Scr->MenuFont.font->fid);
 	/* finally render the title */
-	XDrawImageString(dpy, mr->w, Scr->NormalGC, mi->x,
+	XDrawString(dpy, mr->w, Scr->NormalGC, mi->x,
 	    text_y, mi->item, mi->strlen);
     }
-    XFlush(dpy);
 }
     
 
@@ -311,7 +320,7 @@ XEvent *e;
 	if (e->xexpose.y < (y_offset + Scr->EntryHeight) &&
 	    (e->xexpose.y + e->xexpose.height) > y_offset)
 	{
-	    PaintEntry(mr, mi);
+	    PaintEntry(mr, mi, True);
 	}
     }
     XSync(dpy, 0);
@@ -378,7 +387,7 @@ UpdateMenu()
 	    if (ActiveItem && ActiveItem->func != F_TITLE)
 	    {
 		ActiveItem->state = 0;
-		PaintEntry(ActiveMenu, ActiveItem);
+		PaintEntry(ActiveMenu, ActiveItem, False);
 	    }
 	    ActiveItem = NULL;
 	    continue;
@@ -405,7 +414,7 @@ UpdateMenu()
 	    if (!done && ActiveItem->func != F_TITLE)
 	    {
 		ActiveItem->state = 0;
-		PaintEntry(ActiveMenu, ActiveItem);
+		PaintEntry(ActiveMenu, ActiveItem, False);
 	    }
 	}
 
@@ -418,7 +427,7 @@ UpdateMenu()
 	    if (ActiveItem->func != F_TITLE && !ActiveItem->state)
 	    {
 		ActiveItem->state = 1;
-		PaintEntry(ActiveMenu, ActiveItem);
+		PaintEntry(ActiveMenu, ActiveItem, False);
 	    }
 	}
 
@@ -434,7 +443,7 @@ UpdateMenu()
 	    if (save != ActiveMenu && ActiveItem->state)
 	    {
 		ActiveItem->state = 0;
-		PaintEntry(save, ActiveItem);
+		PaintEntry(save, ActiveItem, False);
 		ActiveItem = NULL;
 	    }
 	}
@@ -596,6 +605,8 @@ AddToMenu(menu, item, action, sub, func, fore, back)
 MakeMenus()
 {
     MenuRoot *mr;
+    unsigned long gcm;
+    XGCValues gcv;
 
     for (mr = Scr->MenuList; mr != NULL; mr = mr->next)
     {
@@ -776,6 +787,7 @@ MenuRoot *mr;
 	    XAllocColor(dpy, Scr->CMap, &b3);
 	    cur->fore = f3.pixel;
 	    cur->back = b3.pixel;
+	    cur->user_colors = True;
 
 	    f3 = save_fore;
 	    b3 = save_back;
@@ -940,7 +952,7 @@ PopDownMenu()
     if (ActiveItem)
     {
 	ActiveItem->state = 0;
-	PaintEntry(ActiveMenu, ActiveItem);
+	PaintEntry(ActiveMenu, ActiveItem, False);
     }
 
     for (tmp = ActiveMenu; tmp != NULL; tmp = tmp->prev)

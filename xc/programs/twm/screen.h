@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.28 89/05/15 17:21:48 jim Exp $
+ * $XConsortium: screen.h,v 1.29 89/05/16 10:11:28 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -103,6 +103,7 @@ typedef struct ScreenInfo
     name_list *IconManagerHighlightL;	/* icon manager highlight colors */
 
     GC NormalGC;		/* normal GC for everything */
+    GC MenuGC;			/* gc for menus */
     GC DrawGC;			/* GC to draw lines for move and resize */
 
     unsigned long Black;

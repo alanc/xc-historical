@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: gc.c,v 1.12 89/04/13 15:48:16 jim Exp $
+ * $XConsortium: gc.c,v 1.13 89/04/18 13:31:30 jim Exp $
  *
  * Open the fonts and create the GCs
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: gc.c,v 1.12 89/04/13 15:48:16 jim Exp $";
+"$XConsortium: gc.c,v 1.13 89/04/18 13:31:30 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -76,6 +76,13 @@ CreateGCs()
     gcm |= GCSubwindowMode; gcv.subwindow_mode = IncludeInferiors;
 
     Scr->DrawGC = XCreateGC(dpy, Scr->Root, gcm, &gcv);
+
+    gcm = 0;
+    gcm |= GCForeground;    gcv.foreground = Scr->MenuC.fore;
+    gcm |= GCBackground;    gcv.background = Scr->MenuC.back;
+    gcm |= GCFont;	    gcv.font =  Scr->MenuFont.font->fid;
+
+    Scr->MenuGC = XCreateGC(dpy, Scr->Root, gcm, &gcv);
 
     gcm = 0;
     gcm |= GCPlaneMask;	    gcv.plane_mask = AllPlanes;
