@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.12 88/07/12 10:41:23 jim Exp $
+ *	$XConsortium: scrollbar.c,v 1.13 88/09/06 17:08:34 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -42,7 +42,7 @@
 extern void Bcopy();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.12 88/07/12 10:41:23 jim Exp $";
+static char rcs_id[] = "$XConsortium: scrollbar.c,v 1.13 88/09/06 17:08:34 jim Exp $";
 #endif	/* lint */
 
 /* Event handlers */
@@ -171,7 +171,7 @@ static Widget CreateScrollBar(xw, x, y, height)
 	scrollWidget = XtCreateWidget("scrollbar", scrollbarWidgetClass, 
 	  xw, argList, XtNumber(argList));
         XtAddCallback (scrollWidget, XtNscrollProc, ScrollTextUpDownBy, 0);
-        XtAddCallback (scrollWidget, XtNthumbProc, ScrollTextTo, 0);
+        XtAddCallback (scrollWidget, XtNjumpProc, ScrollTextTo, 0);
 	return (scrollWidget);
 }
 
@@ -377,8 +377,8 @@ ScrollBarOff(screen)
 /*ARGSUSED*/
 static void ScrollTextTo(scrollbarWidget, closure, topPercent)
 	Widget scrollbarWidget;
-	Opaque closure;
-	float topPercent;
+	caddr_t closure;
+	float *topPercent;
 {
 	register TScreen *screen = &term->screen;
 	int thumbTop;	/* relative to first saved line */
@@ -390,7 +390,7 @@ static void ScrollTextTo(scrollbarWidget, closure, topPercent)
    screen->topline    : -Number of lines above the last screen->max_row+1 lines
 */
 
-	thumbTop = topPercent * (screen->savedlines + screen->max_row+1);
+	thumbTop = *topPercent * (screen->savedlines + screen->max_row+1);
 	newTopLine = thumbTop - screen->savedlines;
 	WindowScroll(screen, newTopLine);
 }
