@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.70 89/12/12 20:17:23 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.71 90/09/06 14:12:20 bugs Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -98,15 +98,16 @@ static Boolean ShapeButton();
 static void Realize(), Resize();
 #endif /* SHAPE */
 
-static XtActionsRec actionsList[] =
-{
-  {"set",		Set},
-  {"notify",		Notify},
-  {"highlight",		Highlight},
-  {"reset",		Reset},
-  {"unset",		Unset},
-  {"unhighlight",	Unhighlight},
-};
+#define XawCommandActions \
+{ \
+  {"set",		Set},\
+  {"notify",		Notify},\
+  {"highlight",		Highlight},\
+  {"reset",		Reset},\
+  {"unset",		Unset},\
+  {"unhighlight",	Unhighlight},\
+}
+static XtActionsRec actionsList[] = XawCommandActions;
 
 /*
  * This is a temporary exported actions list for the command
@@ -119,7 +120,8 @@ static XtActionsRec actionsList[] =
  * Chris D. Peterson - 12/28/88.
  */
 
-XtActionList xaw_command_actions_list = actionsList;
+static XtActionsRec actionsListCopy[] = XawCommandActions;
+XtActionList xaw_command_actions_list = actionsListCopy;
 
 #define SuperClass ((LabelWidgetClass)&labelClassRec)
 
