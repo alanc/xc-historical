@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.2 93/12/13 17:38:58 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 94/01/07 09:56:50 dpw Exp $
 #include <Server.tmpl>
 
 #if HasShm
@@ -6,7 +6,7 @@ SHMDEF = -DHAS_SHM
 #endif
 
 XCOMM add more architectures here as we discover them
-#if defined(HPArchitecture)
+#if defined(HPArchitecture) || defined(SparcArchitecture) || SystemV4
 MMAPDEF = -DHAS_MMAP
 #endif
 
