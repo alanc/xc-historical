@@ -203,7 +203,7 @@
 
 )
 
-#+(or excl (and lcl3.0 (not pa)) clx-overlapping-arrays)
+#+(or excl clx-overlapping-arrays)
 (declaim (inline aref-card16 aref-int16 aref-card32 aref-int32 aref-card29
 		 aset-card16 aset-int16 aset-card32 aset-int32 aset-card29))
 

@@ -96,7 +96,9 @@
 		     plist name x-hot y-hot
 		     red-mask blue-mask green-mask
 		     bits-per-pixel format bytes-per-line
-		     (byte-lsb-first-p t)
+		     (byte-lsb-first-p 
+		       #+clx-little-endian t
+		       #-clx-little-endian nil)
 		     (bit-lsb-first-p
 		       #+clx-little-endian t
 		       #-clx-little-endian nil)
