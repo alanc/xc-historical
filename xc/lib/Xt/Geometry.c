@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $";
+static char rcsid[] = "$xHeader: Geometry.c,v 1.25 88/08/31 10:22:40 swick Exp $";
 /* $oHeader: Geometry.c,v 1.3 88/08/23 11:37:50 asente Exp $ */
 #endif lint
 
@@ -31,93 +31,6 @@ SOFTWARE.
 #include "Shell.h"
 
 /* Public routines */
-
-void XtResizeWindow(w)
-    Widget w;
-{
-    if (XtIsRealized(w)) {
-	XWindowChanges changes;
-	changes.width = w->core.width;
-	changes.height = w->core.height;
-	changes.border_width = w->core.border_width;
-	XConfigureWindow(XtDisplay(w), XtWindow(w),
-	    (unsigned) CWWidth | CWHeight | CWBorderWidth, &changes);
-    }
-} /* XtResizeWindow */
-
-
-void XtResizeWidget(w, width, height, borderWidth)
-    Widget w;
-    Dimension height, width, borderWidth;
-{
-    XWindowChanges changes;
-    Cardinal mask = 0;
-
-    if (w->core.width != width) {
-	changes.width = w->core.width = width;
-	mask |= CWWidth;
-    }
-
-    if (w->core.height != height) {
-	changes.height = w->core.height = height;
-	mask |= CWHeight;
-    }
-
-    if (w->core.border_width != borderWidth) {
-	changes.border_width = w->core.border_width = borderWidth;
-	mask |= CWBorderWidth;
-    }
-
-    if (mask != 0) {
-	if (XtIsRealized(w))
-	    XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
-    if ((mask & (CWWidth | CWHeight)) &&
-	XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
-	    (*(w->core.widget_class->core_class.resize))(w);
-    }
-} /* XtResizeWidget */
-
-void XtConfigureWidget(w, x, y, width, height, borderWidth)
-    Widget w;
-    Position x, y;
-    Dimension height, width, borderWidth;
-{
-    XWindowChanges changes;
-    Cardinal mask = 0;
-
-    if (w->core.x != x) {
-	changes.x = w->core.x = x;
-	mask |= CWX;
-    }
-
-    if (w->core.y != y) {
-	changes.y = w->core.y = y;
-	mask |= CWY;
-    }
-
-    if (w->core.width != width) {
-	changes.width = w->core.width = width;
-	mask |= CWWidth;
-    }
-
-    if (w->core.height != height) {
-	changes.height = w->core.height = height;
-	mask |= CWHeight;
-    }
-
-    if (w->core.border_width != borderWidth) {
-	changes.border_width = w->core.border_width = borderWidth;
-	mask |= CWBorderWidth;
-    }
-
-    if (mask != 0) {
-	if (XtIsRealized(w))
-	    XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
-    if ((mask & (CWWidth | CWHeight)) &&
-	XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
-	    (*(w->core.widget_class->core_class.resize))(w);
-    }
-} /* XtConfigureWidget */
 
 XtGeometryResult XtMakeGeometryRequest (widget, request, reply)
     Widget         widget;
@@ -274,6 +187,93 @@ XtGeometryResult XtMakeResizeRequest
 	    *replyHeight = height;
     return r;
 } /* XtMakeResizeRequest */
+
+void XtResizeWindow(w)
+    Widget w;
+{
+    if (XtIsRealized(w)) {
+	XWindowChanges changes;
+	changes.width = w->core.width;
+	changes.height = w->core.height;
+	changes.border_width = w->core.border_width;
+	XConfigureWindow(XtDisplay(w), XtWindow(w),
+	    (unsigned) CWWidth | CWHeight | CWBorderWidth, &changes);
+    }
+} /* XtResizeWindow */
+
+
+void XtResizeWidget(w, width, height, borderWidth)
+    Widget w;
+    Dimension height, width, borderWidth;
+{
+    XWindowChanges changes;
+    Cardinal mask = 0;
+
+    if (w->core.width != width) {
+	changes.width = w->core.width = width;
+	mask |= CWWidth;
+    }
+
+    if (w->core.height != height) {
+	changes.height = w->core.height = height;
+	mask |= CWHeight;
+    }
+
+    if (w->core.border_width != borderWidth) {
+	changes.border_width = w->core.border_width = borderWidth;
+	mask |= CWBorderWidth;
+    }
+
+    if (mask != 0) {
+	if (XtIsRealized(w))
+	    XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
+    if ((mask & (CWWidth | CWHeight)) &&
+	XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
+	    (*(w->core.widget_class->core_class.resize))(w);
+    }
+} /* XtResizeWidget */
+
+void XtConfigureWidget(w, x, y, width, height, borderWidth)
+    Widget w;
+    Position x, y;
+    Dimension height, width, borderWidth;
+{
+    XWindowChanges changes;
+    Cardinal mask = 0;
+
+    if (w->core.x != x) {
+	changes.x = w->core.x = x;
+	mask |= CWX;
+    }
+
+    if (w->core.y != y) {
+	changes.y = w->core.y = y;
+	mask |= CWY;
+    }
+
+    if (w->core.width != width) {
+	changes.width = w->core.width = width;
+	mask |= CWWidth;
+    }
+
+    if (w->core.height != height) {
+	changes.height = w->core.height = height;
+	mask |= CWHeight;
+    }
+
+    if (w->core.border_width != borderWidth) {
+	changes.border_width = w->core.border_width = borderWidth;
+	mask |= CWBorderWidth;
+    }
+
+    if (mask != 0) {
+	if (XtIsRealized(w))
+	    XConfigureWindow(XtDisplay(w), XtWindow(w), mask, &changes);
+    if ((mask & (CWWidth | CWHeight)) &&
+	XtClass(w)->core_class.resize != (XtWidgetProc) NULL)
+	    (*(w->core.widget_class->core_class.resize))(w);
+    }
+} /* XtConfigureWidget */
 
 void XtMoveWidget(w, x, y)
     Widget w;
