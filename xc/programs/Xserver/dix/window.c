@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.81 92/01/09 19:32:06 rws Exp $ */
+/* $XConsortium: window.c,v 5.82 92/01/09 20:36:13 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -57,23 +57,9 @@ extern Bool permitOldBugs;
 static unsigned char _back_lsb[4] = {0x88, 0x22, 0x44, 0x11};
 static unsigned char _back_msb[4] = {0x11, 0x44, 0x22, 0x88};
 
-typedef struct _ScreenSaverStuff {
-    WindowPtr pWindow;
-    XID       wid;
-    BYTE      blanked;
-} ScreenSaverStuffRec;
-
-#define SCREEN_IS_BLANKED   0
-#define SCREEN_ISNT_SAVED   1
-#define SCREEN_IS_TILED     2
-#define SCREEN_IS_BLACK	    3
-
-#define HasSaverWindow(i)   (savedScreenInfo[i].pWindow != NullWindow)
-
-extern int ScreenSaverBlanking, ScreenSaverAllowExposures;
 int screenIsSaved = SCREEN_SAVER_OFF;
 
-static ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
+ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 
 extern WindowPtr *WindowTable;
 extern void (* ReplySwapVector[256]) ();
@@ -646,6 +632,7 @@ CreateRootWindow(pScreen)
 
     savedScreenInfo[pScreen->myNum].pWindow = NULL;
     savedScreenInfo[pScreen->myNum].wid = FakeClientID(0);
+    savedScreenInfo[pScreen->myNum].ExternalScreenSaver = NULL;
     screenIsSaved = SCREEN_SAVER_OFF;
 
     WindowTable[pScreen->myNum] = pWin;
@@ -3981,26 +3968,37 @@ SaveScreens(on, mode)
 {
     int i;
     int what;
+    int type;
 
     if (on == SCREEN_SAVER_FORCER)
     {
         if (mode == ScreenSaverReset)
             what = SCREEN_SAVER_OFF;
         else
-           what = SCREEN_SAVER_ON;
-	if (what == screenIsSaved)
-            return ;
+	    what = SCREEN_SAVER_ON;
+	type = what;
     }
     else
+    {
         what = on;
+	type = what;
+	if (what == screenIsSaved)
+	    type = SCREEN_SAVER_CYCLE;
+    }
     for (i = 0; i < screenInfo.numScreens; i++)
     {
         if (on == SCREEN_SAVER_FORCER)
-        {
            (* screenInfo.screens[i]->SaveScreen) (screenInfo.screens[i], on);
-        }
-        if (what == SCREEN_SAVER_OFF)
-        {
+	if (savedScreenInfo[i].ExternalScreenSaver) 
+	{
+	    if ((*savedScreenInfo[i].ExternalScreenSaver) 
+		(screenInfo.screens[i], type, on == SCREEN_SAVER_FORCER))
+		continue;
+	}
+	if (what == screenIsSaved)
+	    continue;
+	switch (type) {
+	case SCREEN_SAVER_OFF:
 	    if (savedScreenInfo[i].blanked == SCREEN_IS_BLANKED)
 	    {
 	       (* screenInfo.screens[i]->SaveScreen) (screenInfo.screens[i],
@@ -4011,36 +4009,32 @@ SaveScreens(on, mode)
                 savedScreenInfo[i].pWindow = NullWindow;
     	        FreeResource(savedScreenInfo[i].wid, RT_NONE);
 	    }
-	    continue;
-        }
-        else if (what == SCREEN_SAVER_ON)
-        {
-            if (screenIsSaved == SCREEN_SAVER_ON)  /* rotate pattern */
-            {
-		if (savedScreenInfo[i].blanked == SCREEN_IS_TILED)
-	        {
-		    WindowPtr pWin = savedScreenInfo[i].pWindow;
-		    /* make it look like screen saver is off, so that
-		     * NotClippedByChildren will compute a clip list
-		     * for the root window, so miPaintWindow works
-		     */
-		    screenIsSaved = SCREEN_SAVER_OFF;
+	    break;
+	case SCREEN_SAVER_CYCLE:
+	    if (savedScreenInfo[i].blanked == SCREEN_IS_TILED)
+	    {
+		WindowPtr pWin = savedScreenInfo[i].pWindow;
+		/* make it look like screen saver is off, so that
+		 * NotClippedByChildren will compute a clip list
+		 * for the root window, so miPaintWindow works
+		 */
+		screenIsSaved = SCREEN_SAVER_OFF;
 #ifndef NOLOGOHACK
-		    if (logoScreenSaver)
-			(*pWin->drawable.pScreen->ClearToBackground)(pWin, 0, 0, 0, 0, FALSE);
+		if (logoScreenSaver)
+		    (*pWin->drawable.pScreen->ClearToBackground)(pWin, 0, 0, 0, 0, FALSE);
 #endif
-	            MoveWindow(pWin,
-			       (short)(-(rand() % RANDOM_WIDTH)),
-			       (short)(-(rand() % RANDOM_WIDTH)),
-		               pWin->nextSib, VTMove);
+		MoveWindow(pWin,
+			   (short)(-(rand() % RANDOM_WIDTH)),
+			   (short)(-(rand() % RANDOM_WIDTH)),
+			   pWin->nextSib, VTMove);
 #ifndef NOLOGOHACK
-		    if (logoScreenSaver)
-			DrawLogo(pWin);
+		if (logoScreenSaver)
+		    DrawLogo(pWin);
 #endif
-		    screenIsSaved = SCREEN_SAVER_ON;
-		}
-		continue;
+		screenIsSaved = SCREEN_SAVER_ON;
 	    }
+	    break;
+	case SCREEN_SAVER_ON:
             if (ScreenSaverBlanking != DontPreferBlanking)
 	    {
     	    	if ((* screenInfo.screens[i]->SaveScreen)
@@ -4063,6 +4057,7 @@ SaveScreens(on, mode)
 	    }
             else
 	        savedScreenInfo[i].blanked = SCREEN_ISNT_SAVED;
+	    break;
 	}
     }
     screenIsSaved = what;
@@ -4168,12 +4163,7 @@ TileScreenSaver(i, kind)
 	return FALSE;
 
     if (mask & CWBackPixmap)
-    {
-	pWin->backgroundState = BackgroundPixmap;
-	pWin->background.pixmap = pWin->parent->background.pixmap;
-	pWin->background.pixmap->refcnt++;
-	(*pWin->drawable.pScreen->ChangeWindowAttributes)(pWin, CWBackPixmap);
-    }
+	MakeRootTile (pWin);
 
     MapWindow(pWin, serverClient);
 #ifndef NOLOGOHACK
