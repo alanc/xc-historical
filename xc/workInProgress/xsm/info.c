@@ -1,4 +1,4 @@
-/* $XConsortium: info.c,v 1.6 94/07/22 10:39:27 mor Exp $ */
+/* $XConsortium: info.c,v 1.7 94/07/25 11:51:24 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -26,6 +26,8 @@ in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
 #include "xsm.h"
+#include "restart.h"
+
 
 
 static void
@@ -131,6 +133,33 @@ XtPointer 	callData;
 
 
 static void
+CloneXtProc (w, client_data, callData)
+
+Widget		w;
+XtPointer 	client_data;
+XtPointer 	callData;
+
+{
+    ClientRec *client = ClientList;
+    XawListReturnStruct *current;
+    int client_index;
+
+    current = XawListShowCurrent (clientListWidget);
+    client_index = current->list_index;
+
+    while (client_index > 0)
+    {
+	client = client->next;
+	client_index--;
+    }
+
+    if (client)
+	Clone (client);
+}
+
+
+
+static void
 KillClientXtProc (w, client_data, callData)
 
 Widget		w;
@@ -140,7 +169,7 @@ XtPointer 	callData;
 {
     ClientRec *client = ClientList;
     XawListReturnStruct *current;
-    int client_index, i, j;
+    int client_index;
 
     current = XawListShowCurrent (clientListWidget);
     client_index = current->list_index;
@@ -348,9 +377,18 @@ create_client_info_popup ()
     XtAddCallback (viewPropButton, XtNcallback, GetClientInfoXtProc, 0);
 
 
+    cloneButton = XtVaCreateManagedWidget (
+	"cloneButton", commandWidgetClass, clientInfoForm,
+        XtNfromHoriz, viewPropButton,
+        XtNfromVert, NULL,
+        NULL);
+    
+    XtAddCallback (cloneButton, XtNcallback, CloneXtProc, 0);
+
+
     killClientButton = XtVaCreateManagedWidget (
 	"killClientButton", commandWidgetClass, clientInfoForm,
-        XtNfromHoriz, viewPropButton,
+        XtNfromHoriz, cloneButton,
         XtNfromVert, NULL,
         NULL);
     
