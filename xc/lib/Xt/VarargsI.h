@@ -1,4 +1,4 @@
-/* $XConsortium: copyright.h,v 1.4 89/07/25 16:12:03 rws Exp $ */
+/* $XConsortium: VarargsI.h,v 1.2 89/11/10 17:40:15 swick Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1988, 1989 by the
@@ -21,7 +21,7 @@ without express or implied warranty.
 #ifndef _VarargsI_h_ 
 #define _VarargsI_h_ 
  
-#ifdef __STDC__
+#if defined(__STDC__) && ! defined(MissingStdargH)
 #include <stdarg.h>
 #define Va_start(a,b) va_start(a,b)
 #else
@@ -40,20 +40,19 @@ typedef struct _XtTypedArg{
 
 extern void _XtCountVaList(
 #if IncludePrototypes
-    va_list var, int total_count, int typed_count
+    va_list var, int *total_count, int *typed_count
 #endif
 );
 
 extern void _XtVaToArgList(
 #if IncludePrototypes
- Widget widget, int num_args, ArgList *args_return, int *num_args_return,
- va_list var
+   Widget widget, ArgList *args_return, Cardinal *num_args_return, va_list var
 #endif
 );
 
 extern void _XtVaToTypedArgList(
 #if IncludePrototypes
- va_list var, XtTypedArgList *args_return, Cardinal *num_args_return
+    va_list var, XtTypedArgList *args_return, Cardinal *num_args_return
 #endif
 );
 
