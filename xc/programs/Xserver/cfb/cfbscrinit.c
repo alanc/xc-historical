@@ -48,13 +48,13 @@ extern int defaultColorVisualClass;
 #define _RZ ((PSZ + 2) / 3)
 #define _RS 0
 #define _RM ((1 << _RZ) - 1)
-#define _GZ ((PSZ - _RS + 1) / 2)
+#define _GZ ((PSZ - _RZ + 1) / 2)
 #define _GS _RZ
 #define _GM (((1 << _GZ) - 1) << _GS)
 #define _BZ (PSZ - _RZ - _GZ)
 #define _BS (_RZ + _GZ)
 #define _BM (((1 << _BZ) - 1) << _BS)
-#define _CE (1 << _RM)
+#define _CE (1 << _RZ)
 
 static VisualRec visuals[] = {
 /* vid screen class rMask gMask bMask oRed oGreen oBlue bpRGB cmpE nplan */
