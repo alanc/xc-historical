@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.21 89/07/16 19:14:16 keith Exp $ */
+/* $XConsortium: window.c,v 5.22 89/07/16 22:06:55 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -923,8 +923,6 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
     }
     /* We SHOULD check for an error value here XXX */
     (*pScreen->PositionWindow)(pWin, pWin->drawable.x, pWin->drawable.y);
-    if ((vmask & CWEventMask) == 0)
-        (void)EventSelectForWindow(pWin, client, (Mask)0); /* can't fail */
 
     if (vmask)
         *error = ChangeWindowAttributes(pWin, vmask, vlist, wClient (pWin));
@@ -3762,7 +3760,7 @@ TileScreenSaver(i, kind)
 	      -RANDOM_WIDTH, -RANDOM_WIDTH,
 	      (unsigned short)screenInfo.screens[i]->width + RANDOM_WIDTH,
 	      (unsigned short)screenInfo.screens[i]->height + RANDOM_WIDTH,
-	      0, InputOutput, mask, attributes, 0, NullClient,
+	      0, InputOutput, mask, attributes, 0, serverClient,
 	      wVisual (WindowTable[i]), &result);
 
     if (!pWin)
