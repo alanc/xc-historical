@@ -25,6 +25,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
+/* $XConsortium: cfbscrinit.c,v 5.17 90/09/24 10:19:29 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
