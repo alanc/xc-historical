@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.76 93/09/13 15:56:19 rws Exp $ */
+/* $XConsortium: InitialI.h,v 1.77 93/09/15 15:08:21 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -248,9 +248,9 @@ _XtAppInit(
 #endif
 );
 
-extern void _XtDestroyAppContext(
+extern void _XtDestroyAppContexts(
 #if NeedFunctionPrototypes
-    XtAppContext	/* app */
+    void
 #endif
 );
 
