@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .TH OCLOCK 1 "Release 5" "X Version 11"
 .SH NAME
 oclock \- display time of day
@@ -5,8 +6,8 @@ oclock \- display time of day
 .B oclock
 [-option ...]
 .SH DESCRIPTION
-.I Clock
-simply displays the current time on an analog display
+.I Oclock
+simply displays the current time on an analog display.
 .SH OPTIONS
 .TP 8
 .B \-fg \fIforeground color\fB
