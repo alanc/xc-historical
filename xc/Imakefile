@@ -1,8 +1,6 @@
-XCOMM $XConsortium: Imakefile,v 1.114 93/09/09 12:34:37 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.115 93/09/10 17:13:58 rws Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
-
-      WORLDOPTS = -k
 
 #if BuildFonts
         FONTSDIR = fonts
@@ -29,6 +27,8 @@ XCOMM
 clean::
 	$(RM) -r $(BUILDINCDIR)
 	$(RM) -r $(BUILDLIBDIR)
+
+      WORLDOPTS = -k
 
 XCOMM do not name your log file make.log when you run this ...
 World::
@@ -93,8 +93,10 @@ clean::
 	deltree /y $(BUILDINCDIR:/=\)
 	deltree /y $(BUILDLIBDIR:/=\)
 
+      WORLDOPTS = -i
+
 XCOMM do not name your log file make.log when you run this ...
-World World.Win32::
+World World::
 	@echo :
 	@echo Building Release 6alpha of the X Window System
 	@echo :
@@ -109,7 +111,7 @@ World World.Win32::
 	$(MAKE) $(MFLAGS) clean
 	$(MAKE) $(MFLAGS) includes
 	$(MAKE) $(MFLAGS) depend
-	$(MAKE) $(MFLAGS) $(WIN32WORLDOPTS)
+	$(MAKE) $(MFLAGS) $(WORLDOPTS)
 	@echo :
 	@echo :
 	@echo Full build of Release 6alpha of the X Window System complete.
@@ -128,7 +130,7 @@ Everything::
 	$(MAKE) $(MFLAGS) Makefiles
 	$(MAKE) $(MFLAGS) includes
 	$(MAKE) $(MFLAGS) depend
-	$(MAKE) $(MFLAGS) $(WIN32WORLDOPTS)
+	$(MAKE) $(MFLAGS) $(WORLDOPTS)
 	@echo :
 	@echo :
 	@echo Rebuild of Release 6alpha of the X Window System complete.
