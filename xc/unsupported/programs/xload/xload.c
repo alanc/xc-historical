@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: xload.c,v 1.13 88/09/03 16:23:17 jim Exp $";
+static char rcsid[] = "$XConsortium: xload.c,v 1.14 88/09/06 17:20:53 jim Exp $";
 #endif  lint
 
 #include <X11/Intrinsic.h>
@@ -48,16 +48,21 @@ void main(argc, argv)
     Widget load;
     Arg arg;
     char *labelname = NULL;
+    Pixmap icon_pixmap = None;
     
     toplevel = XtInitialize("main", "XLoad", options, XtNumber(options), &argc, argv);
       
     if (argc != 1) usage();
     
-    XtSetArg (arg, XtNiconPixmap, 
-	      XCreateBitmapFromData (XtDisplay(toplevel),
-				     XtScreen(toplevel)->root,
-				     xload_bits, xload_width, xload_height));
-    XtSetValues (toplevel, &arg, 1);
+    XtSetArg (arg, XtNiconPixmap, &icon_pixmap);
+    XtGetValues(toplevel, &arg, 1);
+    if (icon_pixmap == None) {
+	XtSetArg(arg, XtNiconPixmap, 
+		 XCreateBitmapFromData(XtDisplay(toplevel),
+				       XtScreen(toplevel)->root,
+				       xload_bits, xload_width, xload_height));
+	XtSetValues (toplevel, &arg, 1);
+    }
 
     XtSetArg (arg, XtNlabel, &labelname);
     load = XtCreateManagedWidget ("load", loadWidgetClass, toplevel, NULL, 0);
