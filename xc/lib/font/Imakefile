@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.8 93/09/06 13:41:47 rws Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.9 94/11/21 18:22:33 kaleb Exp kaleb $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -12,7 +12,7 @@ DONES = bitmap/DONE fontfile/DONE fc/DONE Speedo/DONE Type1/DONE util/DONE
 
 NormalDepLibraryTarget(font,$(SUBDIRS) $(DONES),$(OBJS))
 
-InstallLinkKitLibrary(font,$(LINKKITDIR)
+InstallLinkKitLibrary(font,$(LINKKITDIR)/lib)
 
 ForceSubdirs($(SUBDIRS))
 
