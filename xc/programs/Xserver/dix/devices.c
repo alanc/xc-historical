@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.33 93/09/25 16:59:56 rws Exp $ */
+/* $XConsortium: devices.c,v 5.33 93/09/25 17:44:04 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -177,7 +177,7 @@ CloseDevice(dev)
     {
 #ifdef XKB
 	if (dev->key->xkbInfo)
-	    XKBFreeInfo(dev->key->xkbInfo);
+	    XkbFreeInfo(dev->key->xkbInfo);
 #endif
 	xfree(dev->key->curKeySyms.map);
 	xfree(dev->key->modifierKeyMap);
@@ -420,7 +420,7 @@ InitKeyClassDeviceStruct(dev, pKeySyms, pModifiers)
     }
     dev->key = keyc;
 #ifdef XKB
-    XKBInitDevice(dev);
+    XkbInitDevice(dev);
 #endif
     return TRUE;
 }
@@ -718,7 +718,7 @@ SendMappingNotify(request, firstKeyCode, count)
     }
 #ifdef XKB
     if ((request == MappingKeyboard) || (request == MappingModifier))
-	XKBApplyMappingChange(inputInfo.keyboard, request, firstKeyCode,
+	XkbApplyMappingChange(inputInfo.keyboard, request, firstKeyCode,
 			      count);
 #endif
     /* 0 is the server client */
@@ -1207,7 +1207,7 @@ ProcChangeKeyboardControl (client)
 	    vlist++;
 #ifdef XKB
 	    if (key != DO_ALL)
-		XKBDisableComputedAutoRepeats();
+		XkbDisableComputedAutoRepeats();
 #endif
 	    if (t == AutoRepeatModeOff)
 	    {
@@ -1303,7 +1303,7 @@ ProcBell(client)
     else
     	newpercent = base - newpercent + stuff->percent;
 #ifdef XKB
-    XKBHandleBell(keybd, newpercent, &keybd->kbdfeed->ctrl, 0, None);
+    XkbHandleBell(keybd, newpercent, &keybd->kbdfeed->ctrl, 0, None);
 #else
     (*keybd->kbdfeed->BellProc)(newpercent, keybd,
 				(pointer) &keybd->kbdfeed->ctrl, 0);

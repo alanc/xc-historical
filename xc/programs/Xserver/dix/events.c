@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.66 93/09/20 16:32:44 dpw Exp $ */
+/* $XConsortium: events.c,v 5.67 93/09/25 17:18:23 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -3546,7 +3546,7 @@ WriteEventsToClient(pClient, count, events)
 	    (*EventSwapVector[eventFrom->u.u.type & 0177])
 		(eventFrom, &eventTo);
 #ifdef XKB
-	    (void)XKBFilterWriteEvents(pClient, 1, (char *)&eventTo);
+	    (void)XkbFilterWriteEvents(pClient, 1, (char *)&eventTo);
 #else
 	    (void)WriteToClient(pClient, sizeof(xEvent), (char *)&eventTo);
 #endif
@@ -3556,7 +3556,7 @@ WriteEventsToClient(pClient, count, events)
     else
     {
 #ifdef XKB
-	(void)XKBFilterWriteEvents(pClient, count, events);
+	(void)XkbFilterWriteEvents(pClient, count, events);
 #else
 	(void)WriteToClient(pClient, count * sizeof(xEvent), (char *) events);
 #endif
