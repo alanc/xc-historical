@@ -219,6 +219,7 @@ main(argc, argv)
   
     FixupState();
     XCloseDisplay(dpy);
+    exit (0);
 }
 
 
