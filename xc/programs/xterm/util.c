@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: util.c,v 1.28 91/05/23 18:27:55 gildea Exp $
+ *	$XConsortium: util.c,v 1.29 91/05/30 16:46:16 gildea Exp $
  */
 
 /*
@@ -716,7 +716,7 @@ register TScreen *screen;
 		  ExposureMask, &reply);
 		switch (reply.type) {
 		case Expose:
-			HandleExposure (screen, (XExposeEvent *) &reply);
+			HandleExposure (screen, &reply);
 			break;
 		case NoExpose:
 		case GraphicsExpose:
@@ -726,7 +726,7 @@ register TScreen *screen;
 					screen->scrolls--;
 			}
 			if (reply.type == GraphicsExpose)
-			    HandleExposure (screen, (XExposeEvent *) &reply);
+			    HandleExposure (screen, &reply);
 
 			if ((reply.type == NoExpose) ||
 			    ((XExposeEvent *)rep)->count == 0) {
@@ -830,11 +830,14 @@ scrolling_copy_area(screen, firstline, nlines, amount)
  * Handler for Expose events on the VT widget.
  * Returns 1 iff the area where the cursor was got refreshed.
  */
-HandleExposure (screen, reply)
+HandleExposure (screen, event)
     register TScreen *screen;
-    register XExposeEvent *reply;
+    register XEvent *event;
 {
-    if (!screen->incopy)
+    register XExposeEvent *reply = (XExposeEvent *)event;
+
+    /* if not doing CopyArea or if this is a GraphicsExpose, don't translate */
+    if(!screen->incopy  ||  event->type != Expose)
 	return handle_translated_exposure (screen, reply->x, reply->y,
 					   reply->width, reply->height);
     else {
