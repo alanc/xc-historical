@@ -4,7 +4,7 @@
 
 /**/###########################################################################
 /**/# Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-/**/# $XConsortium: Imake.tmpl,v 1.34 89/05/11 18:06:54 jim Exp $
+/**/# $XConsortium: Imake.tmpl,v 1.35 89/05/16 13:24:52 jim Exp $
 /**/#
 /**/# Platform-specific parameters may be set in the appropriate .cf
 /**/# configuration files.  Site-wide parameters may be set in the file
@@ -258,6 +258,9 @@
 #endif
 #ifndef ServerCCOptions
 #define ServerCCOptions DefaultCCOptions
+#endif
+#ifndef PexCDebugFlags
+#define PexCDebugFlags -O
 #endif
 #ifndef SignalReturnProcType
 #define SignalReturnProcType int
