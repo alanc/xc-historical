@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.14 94/03/02 12:16:17 mor Exp $ */
+/* $XConsortium: Xtransint.h,v 1.15 94/03/15 13:19:21 mor Exp $ */
 
 /* Copyright (c) 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  * Copyright 1993, 1994 by the Massachusetts Institute of Technology
@@ -355,6 +355,13 @@ static int TRANS(WriteV)(
 #define WRITEV(ciptr, iov, iovcnt)	writev(ciptr->fd, iov, iovcnt)
 
 #endif /* CRAY || (SYSV && SYSV386) || WIN32 */
+
+
+static int is_numeric (
+#if NeedFunctionPrototypes
+    char *		/* str */
+#endif
+);
 
 
 /*
