@@ -1,11 +1,11 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.24 91/05/06 19:57:06 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.25 91/05/08 11:08:38 rws Exp $
 
 #ifdef bsd43
 #define OSName                  NEWS-OS 3.3
 #define OSMajorVersion          3
 #define OSMinorVersion          3
 #define SetTtyGroup             YES
-#define HasBsearch              YES
+#define HasBsearch              NO
 #define HasVoidSignalReturn     NO
 #define HasNdbm                 YES
 #define DirFailPrefix -
