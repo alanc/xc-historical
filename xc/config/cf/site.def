@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.69 92/12/03 17:42:10 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.70 92/12/29 10:33:42 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -40,10 +40,6 @@ XCOMM site:  $XConsortium: site.def,v 1.69 92/12/03 17:42:10 rws Exp $
 #define HasGcc2 YES
 #endif
 
-#if defined(SunArchitecture) && defined(SVR4)
-#define HasGcc2 YES
-#endif
-
 #endif /* BeforeVendorCF */
 
 #ifdef AfterVendorCF
@@ -51,9 +47,6 @@ XCOMM site:  $XConsortium: site.def,v 1.69 92/12/03 17:42:10 rws Exp $
 #if HasGcc2
 #ifdef Sun3Architecture
 #define PreIncDir /usr/local/lib/gcc-lib/sun3-sunos4.1/2.3.2/include
-#endif
-#if defined(SunArchitecture) && defined(SVR4)
-#define PreIncDir /opt/cygnus/lib/gcc-lib/sparc-sun-solaris2/cygnus-2.0.2/include
 #endif
 #endif
 
