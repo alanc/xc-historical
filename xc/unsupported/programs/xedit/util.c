@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: util.c,v 1.9 88/09/16 14:44:01 swick Exp $";
+static char rcs_id[] = "$XConsortium: util.c,v 1.10 89/05/11 18:49:33 kit Exp $";
 #endif
 
 /*
@@ -21,67 +21,78 @@ static char rcs_id[] = "$XConsortium: util.c,v 1.9 88/09/16 14:44:01 swick Exp $
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific, 
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be 
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
+#include <stdio.h>
 #include "xedit.h"
-XeditPrintf(fmt, arg1, arg2, arg3, arg4)
-  char *fmt;
+
+extern Widget messwidget;
+
+XeditPrintf(str)
+char * str;
 {
-  char buf[1024];
   XawTextBlock text;
-  
-  XawTextPosition pos = (*messsource->Scan)(messsource, 0, XawstAll, XawsdRight,1,0);
-    sprintf(buf, fmt, arg1, arg2, arg3, arg4);
-    text.length = strlen(buf);
-    text.ptr = buf;
-    XawTextReplace( messwidget, pos, pos, &text);
-    XawTextSetInsertionPoint(messwidget, pos + text.length);
+  static XawTextPosition pos = 0;
+
+  text.length = strlen(str);
+  text.ptr = str;
+  text.firstPos = 0;
+  text.format = FMT8BIT;
+
+  XawTextReplace( messwidget, pos, pos, &text);
+
+  pos += text.length;
+  XawTextSetInsertionPoint(messwidget, pos);
 }
 
-Widget makeCommandButton(box, name, function)
-  Window box;
-  char *name;
-  XtCallbackProc function;
+Widget
+MakeCommandButton(box, name, function)
+Widget box;
+char *name;
+XtCallbackProc function;
 {
-    Widget w = XtCreateManagedWidget(name, commandWidgetClass, box, NULL, 0);
-    XtAddCallback(w, XtNcallback, function, NULL);
-    return w;
+  Widget w = XtCreateManagedWidget(name, commandWidgetClass, box, NULL, ZERO);
+  if (function != NULL)
+    XtAddCallback(w, XtNcallback, function, (caddr_t) NULL);
+  return w;
 }
 
-
-Widget makeStringBox(parentBox, string, length)
-  Widget parentBox;
-  char *string;
+Widget 
+MakeStringBox(parent, name, string)
+Widget parent;
+String name, string;
 {
   Arg args[5];
+  Cardinal numargs = 0;
   Widget StringW;
-  int numargs;
-    numargs = 0;
-    MakeArg(XtNeditType, (XtArgVal)XawtextEdit );
-    MakeArg(XtNtextOptions, (XtArgVal)( resizeWidth)); 
-    MakeArg(XtNstring,(XtArgVal)string);     
-    MakeArg(XtNwidth,  (XtArgVal)length);
-    MakeArg(XtNlength, (XtArgVal)1000);
-    StringW = XtCreateManagedWidget("stringthing", asciiStringWidgetClass, 
-					parentBox, args, numargs);
-    return(StringW);  
+
+  XtSetArg(args[numargs], XtNeditType, XawtextEdit); numargs++;
+  XtSetArg(args[numargs], XtNtextOptions, resizeWidth); numargs++;
+  XtSetArg(args[numargs], XtNstring, string); numargs++;
+
+  StringW = XtCreateManagedWidget(name, asciiTextWidgetClass, 
+				  parent, args, numargs);
+  return(StringW);  
 }
  
-FixScreen(from)
-    XawTextPosition from;
+/*	Function Name: GetString
+ *	Description: retrieves the string from a asciiText widget.
+ *	Arguments: w - the ascii text widget.
+ *	Returns: the filename.
+ */
+
+String
+GetString(w)
+Widget w;
 {
-    XawTextPosition to;
-    if(from >= 0){
-        to = (*source->Scan)(source, 0, XawstAll, XawsdRight, 0,0) + 10;
-	XawTextInvalidate(textwindow, (from > 0 ) ? from -1 : from, to); 
-	XawTextSetInsertionPoint(textwindow, from); 
-    } else {
-	Feep();
-    }
+  String str;
+  Arg arglist[1];
+  
+  XtSetArg(arglist[0], XtNstring, &str);
+  XtGetValues(w, arglist, ONE);
+  return(str);
 }
-
-

@@ -1,7 +1,7 @@
 /*
- *	rcs_id[] = "$XConsortium: xedit.h,v 1.15 88/10/18 13:31:07 swick Exp $";
+ *	rcs_id[] = "$XConsortium: xedit.h,v 1.16 89/05/11 18:49:46 kit Exp $";
  */
-
+ 
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -21,12 +21,11 @@
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific, 
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be 
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
-
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -36,90 +35,38 @@
 
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/Command.h>
-#include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Label.h>
-#include <X11/Xaw/Scroll.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/Cardinals.h>
 
-#include <X11/Xaw/TextSrcP.h>
-
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-
-#define Feep()			XBell(CurDpy, 50)
-
-#define MakeArg(n, v){  	args[numargs].name = n; 	\
-			        args[numargs].value = v;	\
-			        numargs++; 			\
-		      }
-
-
-/*	misc externs 	*/
-extern XawTextSource TCreateISSource();
-extern XawTextSource CreatePSource();
-extern XawTextSource TCreateApAsSource();
-extern DestroyPSource();
-extern PSchanges();
-extern TDestroyApAsSource();
-extern char *malloc();
-extern char *realloc();
-extern char *calloc();
-
-
-/*	externs in xedit.c	*/
-extern Widget  searchstringwindow;
-extern Widget editbutton;
-extern char *filename;
-extern char *savedfile;
-extern char *loadedfile;
-extern Editable;
-extern backedup;
-extern saved;
-extern lastChangeNumber;
-extern Widget Row1;
-extern char *searchstring;
-extern char *replacestring;
-extern Widget toplevel;
-extern Widget outer;
-extern Widget textwindow;
-extern Widget messwidget;
-extern Widget labelwindow;
-extern XawTextSource source, asource, dsource, psource, messsource;
-extern XawTextSource PseudoDiskSourceCreate();
-extern void PseudoDiskSourceDestroy();
-
 extern struct _app_resources {
-    int editInPlace;
-    int enableBackups;
+    Boolean enableBackups;
     char *backupNamePrefix;
     char *backupNameSuffix;
 } app_resources;
 
-extern Display *CurDpy;
+/*	externals in xedit.c 	*/
 
+extern void Feep();
 
 /*	externals in util.c 	*/
-extern DoLine();
-extern DoJump();
-extern XeditPrintf();
-extern setWidgetValue();
-extern getWidgetValue();
-extern Widget makeCommandButton();
-extern Widget makeBooleanButton();
-extern Widget makeStringBox();
-extern FixScreen();
+
+extern Widget MakeCommandButton();
+extern Widget MakeStringBox();
+extern String GetString();
 
 /*	externs in commands.c 	*/
-extern DoQuit();
-extern DoReplaceOne();
-extern DoReplaceAll();
-extern DoSearchRight();
-extern DoSearchLeft();
-extern DoUndo();
-extern DoUndoMore();
-extern DoSave();
-extern DoLoad();
-extern DoEdit();
+
+extern void DoJump();
+extern void DoQuit();
+extern void DoReplaceOne();
+extern void DoReplaceAll();
+extern void DoSearchRight();
+extern void DoSearchLeft();
+extern void DoUndo();
+extern void DoUndoMore();
+extern void DoSave();
+extern void DoLoad();
+extern void DoEdit();

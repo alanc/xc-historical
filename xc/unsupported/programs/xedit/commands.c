@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: commands.c,v 1.19 89/04/05 12:13:39 converse Exp $";
+static char rcs_id[] = "$XConsortium: commands.c,v 1.20 89/05/11 18:49:22 kit Exp $";
 #endif
 
 /*
@@ -21,444 +21,262 @@ static char rcs_id[] = "$XConsortium: commands.c,v 1.19 89/04/05 12:13:39 conver
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting documentation,
- * and that the name of Digital Equipment Corporation not be used in advertising
- * or publicity pertaining to distribution of the software without specific, 
- * written prior permission.
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of Digital Equipment Corporation not be 
+ * used in advertising or publicity pertaining to distribution of the software
+ * without specific, written prior permission.
  */
 
+#include <stdio.h>
 #include "xedit.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/param.h>
 
-static int loadChangeNumber;
-static int quitChangeNumber;
+extern Widget textwindow, labelwindow, filenamewindow;
+extern Widget searchstringwindow, replacestringwindow;
 
+static Boolean double_click = FALSE;
+
+/*	Function Name: AddDoubleClickCallback(w)
+ *	Description: Adds a callback that will reset the double_click flag
+ *                   to false when the text is changed.
+ *	Arguments: w - widget to set callback upon.
+ *                 state - If true add the callback, else remove it.
+ *	Returns: none.
+ */
+
+AddDoubleClickCallback(w, state)
+Widget w;
+Boolean state;
+{
+  static void ResetDC();
+  Arg args[1];
+  static XtCallbackRec cb[] = { {NULL, NULL}, {NULL, NULL} };
+ 
+  if (state) 
+    cb[0].callback = ResetDC;
+  else
+    cb[0].callback = NULL;
+
+  XtSetArg(args[0], XtNcallback, cb);
+  XtSetValues(w, args, ONE);
+}
+  
+/*	Function Name: ResetDC
+ *	Description: Resets the double click flag.
+ *	Arguments: w - the text widget.
+ *                 junk, garbage - *** NOT USED ***
+ *	Returns: none.
+ */
+
+/* ARGSUSED */
+static void
+ResetDC(w, junk, garbage)
+Widget w;
+caddr_t junk, garbage;
+{
+  double_click = FALSE;
+
+  AddDoubleClickCallback(w, FALSE);
+}
+
+void
 DoQuit()
 {
-    if((lastChangeNumber == PSchanges(source)) ||
-       (quitChangeNumber == PSchanges(source))){
-        exit(0);
-    } else {    
-        XeditPrintf("\nUnsaved changes. Save them, or press Quit again.");
-        Feep();
-        quitChangeNumber = PSchanges(source);
-        return;
-    }
+  if( double_click || !XawAsciiSourceChanged(textwindow) ) {
+    exit(0);
+  } 
+  XeditPrintf("Unsaved changes. Save them, or press Quit again.\n");
+  Feep();
+  double_click = TRUE;
+  AddDoubleClickCallback(textwindow, TRUE);
 }
 
-static int searchEndPos = 999;
-static int searchBegPos = 999;
-static int FileMode = 0640;
-ReplaceOne()
+static Boolean
+Replace(report_error)
+Boolean report_error;
 {
-  int searchlen = strlen(searchstring);
-  int startpos  = XawTextGetInsertionPoint( textwindow);
-  int  count, result;
-  XawTextPosition pos, destpos;
-  char *buf;
-  XawTextBlock t, *text;
-    text = &t;
-     if((startpos != searchEndPos) && (startpos != searchBegPos)){
-	return(0);
-    }
-    buf = malloc(searchlen);
-    count = searchlen;
-    destpos = 0;
-    pos = searchBegPos;
-    while(count){
-        pos = (*source->Read)(source, pos, text, count);
-        strncpy(&buf[destpos], text->ptr, text->length);
-	count -= text->length;
-        destpos += text->length;
-    }
-    if(strncmp(buf, searchstring, searchlen)){
-	result = 0;
-    } else {
-	text->length = (strlen(replacestring));
-	text->firstPos = 0;
-	text->ptr = replacestring;
-	if(XawTextReplace( textwindow, searchBegPos,
-			  searchEndPos,text) != XawEditDone) 
-	    result = 0;
-	else 
-	    result = 1;
-    }       
-    free(buf);
-    return result;
+  static XawTextPosition Search();
+  char * string = GetString(searchstringwindow);
+  XawTextPosition pos;
+  XawTextBlock text;
+  int ret_val;
+
+  if ( (pos = Search(string, XawsdRight, report_error)) == XawTextSearchError)
+    return(FALSE);
+
+  text.ptr = GetString(replacestringwindow);
+  text.length = strlen(text.ptr);
+  text.format = FMT8BIT;
+  text.firstPos = 0;
+
+  ret_val = XawTextReplace(textwindow, pos, pos + strlen(string), &text);
+  if (ret_val != XawEditDone) {
+    XeditPrintf("Replace: Error returned from XtTextReplace.\n");
+    Feep();
+    return(FALSE);
+  }
+  
+  XawTextSetInsertionPoint(textwindow, pos + text.length);
+  XawTextSetSelection(textwindow, pos, pos + text.length);
+  return(TRUE);
 }
+
+void
 DoReplaceOne()
 {
-    if(!ReplaceOne()){
-	XeditPrintf("\nReplaceOne: nothing replaced");
-	Feep();
-    }
-    else 
-	XawTextUnsetSelection( textwindow);
-    if(SearchRight())
-        XawTextSetSelection(textwindow, searchBegPos, searchEndPos);
+  if (!Replace(TRUE)) {
+    XeditPrintf("Replace: nothing replaced.\n");
+  }
 }
 
+void
 DoReplaceAll()
 {
   int count;
-    count = 0;
-    XawTextSetInsertionPoint( textwindow, 0); 
-    while(SearchRight()){
-	if(!ReplaceOne())
-	    break;
-	count++;
-    }
-    if(!count){
-	XeditPrintf("\nReplaceAll: nothing replaced");
-	Feep();
-    } else {
-	XeditPrintf("\n%d Replacement%c made", count, (count>1)?'s':' ');
-    }
+
+  for ( count = 0; Replace(count == 0) ; count++ );
+
+  if (count == 0) 
+    XeditPrintf("ReplaceAll: nothing replaced\n");
+  else {
+    char buf[BUFSIZ];
+    sprintf(buf, "%d Replacement%s made\n", count, ((count>1) ? "s" : "") );
+    XeditPrintf(buf);
+  }
 }
 
+static XawTextPosition
+Search(string, direction, report_error)	
+char * string;
+XawTextScanDirection direction;
+Boolean report_error;
+{
+  XawTextBlock text;
+  XawTextPosition pos;
+
+  text.ptr = string;
+  text.length = strlen(string);
+  text.format = FMT8BIT;
+  text.firstPos = 0;
+
+  pos = XawTextSearch(textwindow, direction, &text);
+  
+  if ((pos == XawTextSearchError) && (report_error)) {
+    char buf[BUFSIZ];
+    sprintf(buf, "Search: couldn't find ` %s '.\n", text.ptr); 
+    XeditPrintf(buf);
+    Feep();
+  }
+  return(pos);
+}
+
+void
 DoSearchRight()
 {
-    if(SearchRight()){
-	XawTextSetSelection(textwindow, searchBegPos, searchEndPos);
-    } else {
-        Feep();  
-	XeditPrintf("\nSearch: couldn't find ` %s ' ", searchstring);
-    }
+  char * string = GetString(searchstringwindow);
+  XawTextPosition pos = Search(string, XawsdRight, TRUE);
+  int len;
+
+  if ( pos == XawTextSearchError) return;
+
+  len = strlen(string);
+  XawTextSetInsertionPoint(textwindow, pos + len);
+  XawTextSetSelection(textwindow, pos, pos + len);
 }
 
-SearchRight()
-{
-  XawTextPosition pos, startpos = XawTextGetInsertionPoint( textwindow);
-  int searchlen;
-  int n, i, destpos, size = (*source->Scan)(source, 0, XawstAll, 
-		XawsdRight, 0,0) - startpos;
-  char *s1, *s2, *buf = malloc(size);
-  XawTextBlock t, *text;
-    text = &t;
-    destpos = 0;
-    searchlen = strlen(searchstring);
-    if(!searchlen){
-	text->ptr = XFetchBuffer(CurDpy, &(text->length), 0);
-	if(!text->length){
-	    Feep();
-	    XeditPrintf("\nSearch: nothing selected.");
-	    return 0;
-	}
-	searchlen = text->length;
-	XawTextReplace( searchstringwindow, 0,0, text); 
-	free(text->ptr);
-    }
-    for(pos = startpos; pos < startpos + size; ){
-        pos = (*source->Read)(source, pos, text, size);
-	strncpy(&buf[destpos], text->ptr, text->length);
-	destpos += text->length;
-    }
-    for( i = 0; i < size; i++){
-	n = searchlen;
-	s1 = &buf[i];
-	s2 = searchstring;
-	while (--n >= 0 && *s1++ == *s2++);
-	if(n < 0)
-	    break;
-    }
-    free(buf);
-    if( n < 0){
-        i += startpos;
-        XawTextSetInsertionPoint( textwindow, i + searchlen); 
-        searchBegPos = i;
-        searchEndPos = i + searchlen;
-	return(1);
-    } else {
-        return(0);
-    }
-}
-
+void
 DoSearchLeft()
 {
-  XawTextPosition end = (*source->Scan)(source, 0, XawstAll, XawsdRight, 0,0);
-  XawTextPosition pos, startpos = XawTextGetInsertionPoint( textwindow);
-  int searchlen = strlen(searchstring);
-  int n, i, destpos, count =  startpos + searchlen;
-  char *s1, *s2, *buf = calloc(1, count);
-  XawTextBlock t, *text;
-    text = &t;
-    destpos = 0;
-    /* if there's a string in the window, use it, otherwize, use selected */
-    if(!searchlen){
-	text->ptr = XFetchBuffer(CurDpy, &(text->length), 0);
-	if(!text->length){
-	    XeditPrintf("\nSearch: nothing selected.");
-	    Feep();
-	    return;
-	}
-	searchlen = text->length;
-	XawTextReplace( searchstringwindow, 0,0, text); 
-	free(text->ptr);
-    }
-    /* buffer portion of file from insertion point, on */
-    for(pos = 0; pos < min(count, end);){
-        pos = (*source->Read)(source, pos, text, (count - pos));
-	strncpy(&buf[destpos], text->ptr, text->length);
-	destpos += text->length;
-    }
-    /* search for the target string */
-    for( i = startpos-1; i >= 0; i--){
-	n = searchlen;
-	s1 = &buf[i];
-	s2 = searchstring;
-	while (--n >= 0 && *s1++ == *s2++);
-	if(n < 0)
-	    break;
-    }
-    /* process result */
-    if(n < 0){
-        XawTextSetInsertionPoint( textwindow, i); 
-        searchBegPos = i;
-        searchEndPos = i + searchlen;
-	XawTextSetSelection(textwindow, searchBegPos, searchEndPos);
-    }
-    else {
-	XeditPrintf("\nSearch: couldn't find ` %s ' ", searchstring);
-	Feep();
-    }
-    free(buf);
-}
-DoUndo()
-{
-  XawTextPosition from;
-    from = (*source->Replace)(source, -1, 0, 0); 
-    FixScreen(from);
-}
-DoUndoMore()
-{
-  XawTextPosition from;
-    from = (*source->Replace)(source, 0, -1, 0); 
-    FixScreen(from);
-}
-setLoadedFile(name)
-  char *name;
-{
-    if(loadedfile) free(loadedfile);
-    loadedfile = malloc((unsigned)(strlen(name) + 1));
-    strcpy(loadedfile, name);
+  char * string = GetString(searchstringwindow);
+  XawTextPosition pos = Search(string, XawsdLeft, TRUE);
+
+  if ( pos == XawTextSearchError) return;
+
+  XawTextSetInsertionPoint(textwindow, pos);
+  XawTextSetSelection(textwindow, pos, pos + strlen(string));
 }
 
-
-setSavedFile(name)
-  char *name;
+char *
+makeBackupName(buf, filename)
+String buf, filename;
 {
-    if(savedfile) free(savedfile);
-    savedfile = malloc((unsigned)(strlen(name) + 1));
-    strcpy(savedfile, name);
+  sprintf(buf, "%s%s%s", app_resources.backupNamePrefix,
+	  filename, app_resources.backupNameSuffix);
+  return (buf);
 }
-
-char *makeTempName()
-{
-  extern char* mktemp();
-  char *tempname = malloc(MAXPATHLEN);
-    sprintf(tempname, "%s.XXXXXX", filename);
-    return(mktemp(tempname));
-}
-	
-char *makeBackupName()
-{
-  char *backupName = malloc(MAXPATHLEN);
-    sprintf(backupName, "%s%s%s", app_resources.backupNamePrefix,
-	    filename, app_resources.backupNameSuffix);
-    return (backupName);
-}
-/*
-error()
-{
-        extern int errno, sys_nerr;
-        extern char *sys_errlist[];
-
-        if (errno > 0 && errno < sys_nerr)
-                tvcprintf(stderr, "(%s)\n", sys_errlist[errno]);
-
-}
-*/
   
+void
 DoSave()
 {
-  char *backupFilename, *tempName;
-  XawTextPosition pos, end;
-  XawTextBlock t, *text;
-  FILE *outStream;
-  int outfid;
-    text = &t;
-    backupFilename = tempName = NULL;
-    if( (!filename) || (!strlen(filename)) ){
-	XeditPrintf("\nSave:  no filename specified -- nothing saved");
-	Feep();
-	return;
+  String filename = GetString(textwindow);
+  char buf[BUFSIZ];
+
+  if( (filename == NULL) || (strlen(filename) == 0) ){
+    XeditPrintf("Save:  no filename specified -- nothing saved\n");
+    Feep();
+    return;
+  }
+  
+  if( !XawAsciiSourceChanged(textwindow) ) {
+    XeditPrintf("Save:  no changes to save -- nothing saved\n");
+    Feep();
+    return;
+  }
+  
+  if (app_resources.enableBackups) {
+    char backup_file[BUFSIZ];
+    makeBackupName(backup_file, filename);
+
+    if (rename(filename, backup_file) != 0) {
+      sprintf(buf, "error backing up file:  %s\n",  backup_file); 
+      XeditPrintf(buf);
     }
-    if(((savedfile && !strcmp(savedfile, filename)) 
-                     || (!strcmp(loadedfile,filename)))
-    		     && (lastChangeNumber == PSchanges(source))){
-	XeditPrintf("\nSave:  no changes to save -- nothing saved");
-	Feep();
-	return;
-    }
-    if((!backedup) && (strlen(loadedfile)) && (!strcmp(filename, loadedfile))){
-        backupFilename = makeBackupName();
-        unlink(backupFilename);
-        if(link(filename, backupFilename)){
-	    XeditPrintf("\ncan't create backup file");
-	    Feep();
-	    return;
-	}
-	PseudoDiskSourceDestroy(dsource);  
-	dsource = PseudoDiskSourceCreate(backupFilename);  
-	PSsetROsource(source, dsource);
-        backedup = 1;
-    }
-    if(app_resources.editInPlace){
-	if(!(outStream = fopen(filename, "w"))){
-	    XeditPrintf("\nfile is not writable: %s", filename);
-	    return;
-	}
-    } else {
-	tempName = makeTempName();
-	if((outfid = creat(tempName, FileMode)) < 0){
-	    XeditPrintf("\n??? Can't create temporary file");
-	    return;
-	}
-	outStream = fdopen(outfid, "w");
-    }
-/* WRITE ALL THE BITS OUT TO THE OUTPUT STREAM */
-    end = (*source->Scan)(source, 0, XawstAll, XawsdRight, 1, FALSE);
-    for(pos = 0; pos < end; ){
-	pos = (*source->Read)(source, pos, text, 1024);
-	if(text->length == 0)
-	    break;
-	if(fwrite(text->ptr, 1, text->length, outStream) < text->length){
-	    XeditPrintf("\nerror writing to output file");
-	    break;
-	}
-    }
-    fclose(outStream);
-    if(!app_resources.editInPlace)
-	if(rename(tempName, filename) < 0){
-	    XeditPrintf("\nerror writing file.  Edits will be left in: %s",
-		tempName);
-	    Feep();
-	}
-    if(!app_resources.enableBackups && backupFilename)
-	if(unlink(backupFilename) < 0)
-	    XeditPrintf("\nerror deleting backupfile:  %s",  backupFilename);        lastChangeNumber = PSchanges(source);
-    setSavedFile(filename);
-    XeditPrintf("\nSaved file:  %s", savedfile);
-    loadChangeNumber = 0;
-    quitChangeNumber = 0;
-    if(backupFilename)
-	free(backupFilename);
-    if(tempName)
-	free(tempName);
-    PSbreakInput(source);
+  }
+  
+  if (XawAsciiSave(textwindow)) 
+    sprintf(buf, "Saved file:  %s\n", filename);
+  else 
+    sprintf(buf, "Error saving file:  %s\n",  filename);
+
+  XeditPrintf(buf);
 }
 
+void
 DoLoad()
 {
-  int numargs;
-  Arg args[2];
-  struct stat stats;
-    if((lastChangeNumber != PSchanges(source)) &&
-       (loadChangeNumber != PSchanges(source))){
-        XeditPrintf("\nUnsaved changes. Save them, or press Load again.");
-        Feep();
-        loadChangeNumber = PSchanges(source);
-        return;
-    }
-    numargs = 0;
-    MakeArg(XtNwindow, (XtArgVal)editbutton);
-    MakeArg(XtNindex,  (XtArgVal)2);
-    if ((strlen(filename)&&access(filename, R_OK) == 0)) {
-	stat(filename, &stats);
-	FileMode = stats.st_mode;
-	PseudoDiskSourceDestroy(dsource);  
-	PseudoDiskSourceDestroy(asource);
-	PSourceDestroy(source);
-	dsource = PseudoDiskSourceCreate(filename);  
-	asource = PseudoDiskSourceCreate("");
-	source = CreatePSource(dsource, asource);
-	XawTextSetSource( textwindow, source, 0);
-        if(Editable){
-/*            XtButtonBoxAddButton( Row1, args, numargs); */
-	    Editable = 0;
-	}
-        backedup = 0;
-	{
-	    static Arg setargs[] = {
-	        { XtNlabel,	 (XtArgVal)0 }
-	    };
-	    setargs[0].value = (XtArgVal)filename;
-	    XtSetValues( labelwindow, setargs, XtNumber(setargs));
-	}
-	setLoadedFile(filename);
-	lastChangeNumber = 0;
-    }
-    else {
-	XeditPrintf("\nLoad: couldn't access file ` %s '", filename);
-	setLoadedFile("");
-	Feep();
-    }
+  Arg args[5];
+  Cardinal num_args = 0;
+  String filename = GetString(filenamewindow);
+
+  if ( XawAsciiSourceChanged(textwindow) && !double_click) {
+    XeditPrintf("Unsaved changes. Save them, or press Load again.\n");
+    Feep();
+    double_click = TRUE;
+    AddDoubleClickCallback(textwindow, TRUE);
+    return;
+  }
+  double_click = FALSE;
+
+  if ((strlen(filename)&&access(filename, R_OK) == 0)) {
+    XtSetArg(args[num_args], XtNstring, filename); num_args++;
+    XtSetValues(textwindow, args, num_args);
+
+    num_args = 0;
+    XtSetArg(args[num_args], XtNlabel, filename); num_args++;
+    XtSetValues( labelwindow, args, num_args);
+  }
+  else {
+    char buf[BUFSIZ];
+    sprintf(buf, "Load: couldn't access file ` %s '.\n", filename);
+    XeditPrintf(buf);
+    Feep();
+  }
 }
 
-DoEdit()
-{
-  XawTextPosition newInsertPos = XawTextGetInsertionPoint( textwindow);
-  int numargs;
-  Arg args[1];
-    numargs = 0;
-    MakeArg(XtNwindow, (XtArgVal)editbutton);
-    if (access(filename, W_OK) == 0) {
-        XawTextSetSource( textwindow, source, 0);  
-/*        XUnmapWindow(CurDpy, editbutton); */
-/*        XtButtonBoxDeleteButton( Row1, args, numargs);  */
-	XawTextSetInsertionPoint(textwindow, newInsertPos);
-        Editable = 1;
-    } else {
-	XeditPrintf("\nEdit: File is not writable");
-	Feep();
-    }
-}
-
-static Jump(line)
-  int line;
-{
-  XawTextPosition pos;
-    if(line <= 1)
-	pos = 0;
-    else
-        pos =  (*source->Scan)(source, 0, XawstEOL, XawsdRight, line-1, 1);
-    XawTextSetInsertionPoint( textwindow, pos); 
-}
-
+void
 DoJump()
 {
-    char *XcutBuf, *buf;
-    int   XcutSize, line;
-    int freeit;
-	
-    XcutBuf = XFetchBuffer( CurDpy, &(XcutSize), 0);
-    if (XcutBuf) {
-	freeit = 1;
-    } else {
-	XcutBuf = "";
-	XcutSize = 0;
-	freeit = 0;
-    }
-    buf = malloc(XcutSize+1);
-    strncpy(buf, XcutBuf, XcutSize);
-    if (freeit) free (XcutBuf);
-    buf[XcutSize] = 0;
-    if(sscanf(buf, "%d", &line) > 0){
-	Jump(line);
-    } else {
-         XeditPrintf("\nPlease 'Select' a line number and try again");
-    }
-    free(buf);	
+  XeditPrintf("NIY - CDP 7/9/89.\n");
+/*
+  XeditPrintf("Please 'Select' a line number and try again.\n");
+*/
 }
