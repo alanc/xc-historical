@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.52 91/03/27 09:13:28 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.53 91/04/05 14:53:21 rws Exp $
 
 #define OSName            SunOS 4.1.1
 XCOMM operating system:  OSName
@@ -27,15 +27,14 @@ XCOMM operating system:  OSName
 
 /* #define HasGcc YES */	/* VERY USEFUL for server on Sun3 */
 #define HasGcc mc68000		/* XXX remove in R5 */
-
-#if HasSharedLibraries && HasGcc
-#define LibraryCcCmd cc		/* until gcc can generate -pic code */
-#endif
-
-#if HasGcc
+#if HasGcc			/* XXX remove in R5 */
 #define ServerCcCmd gcc -fstrength-reduce -fpcc-struct-return 
 #define CcCmd cc
 #define ServerCCOptions /* */
+#endif
+
+#if HasSharedLibraries && HasGcc
+#define LibraryCcCmd cc		/* until gcc can generate -pic code */
 #endif
 
 #ifdef mc68000
