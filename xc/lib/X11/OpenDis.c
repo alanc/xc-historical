@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.102 91/01/08 14:41:27 gildea Exp $
+ * $XConsortium: XOpenDis.c,v 11.103 91/01/08 21:11:55 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
