@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.17 93/08/20 10:39:38 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.18 93/08/20 16:45:12 rws Exp $
 
 .c.obj:
 	$(CC) -c $*.c @<<
@@ -147,6 +147,10 @@ XVARdef0 = dir/src							@@\
 src:  $(XVARuse0:/=\)							@@\
 	RemoveFile($@)							@@\
 	$(LN) $? $@							@@\
+									@@\
+includes:: src								@@\
+									@@\
+depends:: src								@@\
 									@@\
 clean::									@@\
 	RemoveFile(src)
