@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: PEXprotost.h,v 5.1 91/02/16 09:46:56 rws Exp $ */
 
 
 /***********************************************************
@@ -30,9 +30,9 @@ SOFTWARE.
 
 /* Matches revision 5.0P */
 
-#include "X11/Xmd.h"			/* defines things like CARD32 */
+#include <X11/Xmd.h>			/* defines things like CARD32 */
 
-#include "floatdef.h"			/* defines type "FLOAT" */
+#include <X11/extensions/floatdef.h>	/* defines type "FLOAT" */
 
 typedef CARD32  pexAsfAttribute;
 typedef CARD8	pexAsfValue;

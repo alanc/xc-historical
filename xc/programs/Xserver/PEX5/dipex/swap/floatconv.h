@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: floatconv.h,v 5.2 91/02/16 09:47:06 rws Exp $ */
 
 /*
  * Copyright (c) 1988-1991 by Sun Microsystems and the X Consortium.
@@ -37,9 +37,9 @@
 #ifndef FLOAT_CON_H
 #define FLOAT_CON_H
 
-#include "Xmd.h"
-#include "PEX.h"
-#include "floatdef.h"
+#include <X11/Xmd.h>
+#include <X11/extensions/PEX.h>
+#include <X11/extensions/floatdef.h>
 
 #ifdef vax			/* probably not good enough yet */
 #define MyFloatType DEC_F_Floating

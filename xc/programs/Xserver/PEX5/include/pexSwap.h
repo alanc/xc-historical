@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexSwap.h,v 5.1 91/02/16 09:47:09 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -32,8 +32,8 @@ SOFTWARE.
 #ifndef PEXSWAP_H
 #define PEXSWAP_H 1
 
-#include "floatdef.h"
-#include "PEXErr.h"
+#include <X11/extensions/floatdef.h>
+#include <X11/extensions/PEXErr.h>
 
 typedef FLOAT	    (*ConvFunction)();
 typedef CARD16	    (*SwapShortFunction)();
