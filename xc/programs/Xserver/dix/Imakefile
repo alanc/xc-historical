@@ -26,5 +26,14 @@ DependTarget()
 initext.o: $(IRULESRC)/$(MACROFILE)
 	$(CC) -c $(CFLAGS) $(EXT_DEFINES) initext.c
 
+# `specially made just for globals.o.  If the template file changes, then
+# we make a new globals.o because the font/rgb directories may have changed.
+
+globals.o: $(IRULESRC)/Imake.tmpl
+	$(CC) -c $(CFLAGS) \
+	-DCOMPILEDDEFAULTFONTPATH=\"$(FONTDIR)/\" \
+	-DRGB_DB=\"$(LIBDIR)/rgb\" \
+	globals.c
+
 ../../include/Xatom.h initatoms.c:	BuiltInAtoms buildatoms
 	sh buildatoms
