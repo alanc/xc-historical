@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.40 92/01/22 18:19:51 gildea Exp $
+ * $XConsortium: process.c,v 1.41 92/01/22 23:39:12 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -330,19 +330,18 @@ static int get_bytes (fp, n, ptr)	/* for reading numeric input */
 {
     char *s;
     register char *cp;
-    char buf[2];
+    int c1, c2;
 
     cp = s = malloc (n);
     if (!cp) return 0;
 
     while (n > 0) {
-	if ((buf[0] = getinput (fp)) == EOF || buf[0] == '\n' ||
-	    (buf[1] = getinput (fp)) == EOF || buf[1] == '\n') {
+	if ((c1 = getinput (fp)) == EOF || c1 == '\n' ||
+	    (c2 = getinput (fp)) == EOF || c2 == '\n') {
 	    free (s);
 	    return 0;
 	}
-	*cp = (char) ((hexvalues[(unsigned int)buf[0]] * 16) + 
-		      hexvalues[(unsigned int)buf[1]]);
+	*cp = (char) ((hexvalues[c1] * 16) + hexvalues[c2]);
 	cp++;
 	n--;
     }
