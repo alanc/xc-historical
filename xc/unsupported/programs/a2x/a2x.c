@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.44 92/04/06 10:40:46 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.45 92/04/06 19:28:24 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -29,8 +29,6 @@ Syntax of magic values in the input stream:
 ^T^C			set Control key for next character
 ^T^D<dx> <dy>^T		move mouse by (<dx>, <dy>) pixels
 ^T^E			exit the program
-^T^H<delay>^T		add <delay>-second delay to next event
-			<delay> is floating-point
 ^T^J<options>[ <mult>]^T jump to next closest top-level window
 	C		closest top-level window
 	D		top-level window going down
@@ -44,6 +42,9 @@ Syntax of magic values in the input stream:
 	u		top-level widget going up
 	k		require windows that select for key events
 	b		require windows that select for button events
+	N[name.class]	require window with given name and/or class
+			this must be the last option
+			either name or class can be empty
 	[mult]		off-axis distance multiplier (float)
 ^T^M			set Meta key for next character
 ^T^P			print debugging info
@@ -53,6 +54,8 @@ Syntax of magic values in the input stream:
 ^T^U			re-read undo file
 ^T^W<screen> <x> <y>^T	warp to position (<x>,<y>) on screen <screen>
 			(screen can be -1 for current)
+^T^Z<delay>^T		add <delay>-second delay to next event
+			<delay> is floating-point
 ^T<hexstring>^T		press and release key with numeric keysym <hexstring>
 			F<char> and F<char><char> are names, not numbers
 ^T<keysym>^T		press and release key with keysym named <keysym>
@@ -71,6 +74,7 @@ released automatically at next button or non-modifier key.
 #include <X11/extensions/XTest.h>
 #include <X11/Xos.h>
 #include <X11/keysym.h>
+#include <X11/Xmu/WinUtil.h>
 #include <ctype.h>
 #include <termios.h>
 #define _POSIX_SOURCE
@@ -127,7 +131,11 @@ typedef struct {
     int bestx, besty;
     double best_dist;
     Bool recurse;
+    Bool check_nc;
+    char name[100];
+    char class[100];
 } Closest;
+
 typedef struct {
     int x1;
     int y1;
@@ -677,6 +685,7 @@ find_closest(rec, parent, pwa, puniv, level)
 {
     Window *children;
     unsigned int nchild;
+    Window child;
     XWindowAttributes wa;
     int i;
     Bool found;
@@ -684,6 +693,8 @@ find_closest(rec, parent, pwa, puniv, level)
     Box box;
     int x, y;
     Region iuniv, univ;
+    Bool ok;
+    XClassHint hints;
 
     XQueryTree(dpy, parent, &wa.root, &wa.root, &children, &nchild);
     if (!nchild)
@@ -692,13 +703,14 @@ find_closest(rec, parent, pwa, puniv, level)
     iuniv = XCreateRegion();
     univ = NULL;
     for (i = nchild; --i >= 0; univ = destroy_region(univ)) {
-	if (!XGetWindowAttributes(dpy, children[i], &wa))
+	child = children[i];
+	if (!XGetWindowAttributes(dpy, child, &wa))
 	    continue;
 	if (wa.map_state != IsViewable)
 	    continue;
 	wa.x += pwa->x;
 	wa.y += pwa->y;
-	univ = compute_univ(puniv, iuniv, children[i], &wa, level);
+	univ = compute_univ(puniv, iuniv, child, &wa, level);
 	if (!univ)
 	    continue;
 	compute_box(univ, &box);
@@ -721,7 +733,7 @@ find_closest(rec, parent, pwa, puniv, level)
 	    break;
 	}
 	if (rec->recurse &&
-	    find_closest(rec, children[i], &wa, univ, level + 1))
+	    find_closest(rec, child, &wa, univ, level + 1))
 	    found = True;
 	if (rec->input && !(wa.all_event_masks & rec->input))
 	    continue;
@@ -729,6 +741,18 @@ find_closest(rec, parent, pwa, puniv, level)
 	    continue;
 	if (rec->recurse && !box_left(univ, iuniv))
 	    continue;
+	if (rec->check_nc) {
+	    if (!level)
+		child = XmuClientWindow(dpy, child);
+	    if (!XGetClassHint(dpy, child, &hints))
+		continue;
+	    ok = ((!rec->name[0] || !strcmp(rec->name, hints.res_name)) &&
+		  (!rec->class[0] || !strcmp(rec->class, hints.res_class)));
+	    XFree(hints.res_name);
+	    XFree(hints.res_class);
+	    if (!ok)
+		continue;
+	}
 	compute_box(univ, &box);
 	switch (rec->dir) {
 	case 'U':
@@ -796,6 +820,7 @@ do_jump(buf)
     int screen;
     double mult = 10.0;
     char *endptr;
+    char *cptr;
     Closest rec;
     Region univ;
     XRectangle rect;
@@ -804,6 +829,7 @@ do_jump(buf)
     rec.recurse = False;
     rec.input = 0;
     rec.best_dist = 4e9;
+    rec.check_nc = False;
     for (; *buf; buf++) {
 	switch (*buf) {
 	case 'C':
@@ -827,6 +853,26 @@ do_jump(buf)
 	    break;
 	case 'b':
 	    rec.input |= ButtonPressMask|ButtonReleaseMask;
+	    break;
+	case 'N':
+	    cptr = index(buf+1, '.');
+	    endptr = index(buf+1, ' ');
+	    if (endptr)
+		*endptr = '\0';
+	    if (cptr) {
+		bcopy(buf+1, rec.name, cptr - buf - 1);
+		rec.name[cptr - buf] = '\0';
+		strcpy(rec.class, cptr + 1);
+	    } else {
+		strcpy(rec.name, buf + 1);
+		rec.class[0] = '\0';
+	    }
+	    if (endptr) {
+		*endptr = ' ';
+		buf = endptr - 1;
+	    } else
+		buf += strlen(buf+1);
+	    rec.check_nc = True;
 	    break;
 	case ' ':
 	    mult = strtod(buf+1, &endptr);
@@ -1233,14 +1279,27 @@ process(buf, n, len)
 		n += j;
 	    }
 	    if (buf[j] != control_char) {
-		if (j != i)
+		if (j != i) {
+		    if (iscntrl(buf[j])) {
+			if (buf[j] != '\010') { /* abort */
+			    i = j;
+			    break;
+			}
+			bcopy(buf + j + 1, buf + j - 1, n - j - 1);
+			n -= 2;
+			j -= 2;
+		    }
 		    continue;
+		}
 		switch (buf[j]) {
 		case '\003': /* control c */
 		    do_key(control, 0);
 		    break;
 		case '\005': /* control e */
 		    quit(0);
+		    break;
+		case '\010': /* control h */
+		    j = i - 1;
 		    break;
 		case '\015': /* control m */
 		    do_key(meta, 0);
@@ -1260,7 +1319,7 @@ process(buf, n, len)
 		default:
 		    continue;
 		}
-		if (len)
+		if (len && (i > j))
 		    save_control(buf, i - 1, j);
 		break;
 	    }
@@ -1278,14 +1337,14 @@ process(buf, n, len)
 	    case '\004': /* control d */
 		do_motion(buf + i + 1);
 		break;
-	    case '\010': /* control h */
-		time_delay = atof(buf + i + 1) * 1000;
-		break;
 	    case '\012': /* control j */
 	    	do_jump(buf + i + 1);
 		break;
 	    case '\027': /* control w */
 		do_warp(buf + i + 1);
+		break;
+	    case '\032': /* control z */
+		time_delay = atof(buf + i + 1) * 1000;
 		break;
 	    default:
 		do_keysym(buf + i, j - i);
