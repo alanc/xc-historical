@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.193 93/10/21 10:50:12 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.194 93/10/21 10:53:38 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -25,6 +25,7 @@ without express or implied warranty.
 
 #include "Xlibint.h"
 #include "Xlibnet.h"
+#include "xcmiscstr.h"
 #include <X11/Xos.h>
 #include <stdio.h>
 #ifdef WIN32
@@ -1270,17 +1271,61 @@ _XSend (dpy, data, size)
 	}
 }
 
+static int
+_XIDHandler(dpy)
+    register Display *dpy;
+{
+    int (*func)();
+    xQueryExtensionReply qrep;
+    register xQueryExtensionReq *qreq;
+    xXCMiscGetXIDRangeReply grep;
+    register xXCMiscGetXIDRangeReq *greq;
+
+    LockDisplay(dpy);
+    GetReq(QueryExtension, qreq);
+    qreq->nbytes = sizeof(XCMiscExtensionName) - 1;
+    qreq->length += (qreq->nbytes+(unsigned)3)>>2;
+    _XSend(dpy, XCMiscExtensionName, (long)qreq->nbytes);
+    if (_XReply (dpy, (xReply *)&qrep, 0, xTrue) && qrep.major_opcode) {
+	GetReq(XCMiscGetXIDRange, greq);
+	greq->reqType = qrep.major_opcode;
+	greq->miscReqType = X_XCMiscGetXIDRange;
+	if (_XReply (dpy, (xReply *)&grep, 0, xTrue) && grep.min_id) {
+	    dpy->resource_id = ((grep.min_id - dpy->resource_base) >>
+				dpy->resource_shift);
+	    dpy->resource_max = ((grep.max_id - dpy->resource_base) >>
+				 dpy->resource_shift);
+	    if ((dpy->resource_max - dpy->resource_id) > 5)
+		dpy->resource_max -= 5;
+	    else
+		dpy->resource_max = dpy->resource_id;
+	    dpy->resource_max <<= dpy->resource_shift;
+	}
+    }
+    if (func = dpy->savedsynchandler) {
+	dpy->synchandler = func;
+	dpy->savedsynchandler = NULL;
+    }
+    UnlockDisplay(dpy);
+    if (func) (*func)(dpy);
+    return 0;
+}
+
 /*
- * _XAllocID - normal resource ID allocation routine.  A client
- * can roll his own and instatantiate it if he wants, but must
- * follow the rules.
+ * _XAllocID - resource ID allocation routine.
  */
 XID _XAllocID(dpy)
-register Display *dpy;
+    register Display *dpy;
 {
    XID id;
 
    id = dpy->resource_id << dpy->resource_shift;
+   if (id >= dpy->resource_max) {
+       if (!dpy->savedsynchandler)
+	   dpy->savedsynchandler = dpy->synchandler;
+       dpy->synchandler = _XIDHandler;
+       dpy->resource_max = dpy->resource_mask + 1;
+   }
    if (id <= dpy->resource_mask) {
        dpy->resource_id++;
        return (dpy->resource_base + id);
