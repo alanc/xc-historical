@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.15 91/01/09 17:31:22 rws Exp $
+ * $XConsortium: handler.c,v 1.16 91/01/10 22:23:13 gildea Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -33,11 +33,12 @@ static void ToggleBothShownState();
  *	Returns: none.
  */
 
-/* ARGSUSED */
+/*ARGSUSED*/
 void
 OptionCallback(w, pointer, junk)
 Widget w;
-caddr_t pointer,junk;
+XtPointer pointer;
+XtPointer junk;		/* unused */
 {
   ManpageGlobals * man_globals = (ManpageGlobals *) pointer;
   String params;
@@ -193,11 +194,10 @@ FILE * file;
  *	Returns: none.
  */
 
-/* ARGSUSED */
 void
 DirectoryHandler(w, global_pointer, ret_val)
 Widget w;
-caddr_t global_pointer, ret_val;
+XtPointer global_pointer, ret_val;
 {
   FILE * file;			/* The manpage file. */
   ManpageGlobals * man_globals = (ManpageGlobals *) global_pointer;
@@ -217,11 +217,12 @@ caddr_t global_pointer, ret_val;
  *	Returns: none.
  */
 
-/* ARGSUSED */
+/*ARGSUSED*/
 void
 DirPopupCallback(w,pointer,junk)
 Widget w;
-caddr_t pointer,junk;
+XtPointer pointer;
+XtPointer junk;		/* unused */
 {
   ManpageGlobals * man_globals; 
   MenuStruct * menu_struct;
@@ -274,7 +275,7 @@ caddr_t pointer,junk;
  *      Returns: none.
  */
 
-/* ARGSUSED */
+/*ARGSUSED*/
 void
 SaveFormattedPage(w, event, params, num_params)
 Widget w;
@@ -316,10 +317,18 @@ Cardinal * num_params;
 	      man_globals->save_file);
 #endif
 
-    if(system(cmdbuf) != 0) {		/* execute copy. */
-      sprintf(error_buf, "Something went wrong executing the command '%s'.\n",
-	      cmdbuf);
-      PrintWarning( man_globals, error_buf);
+    if(! system(cmdbuf)) {
+	/* make sure the formatted man page is fully accessible by the world */
+	if (chmod(man_globals->save_file, CHMOD_MODE) != 0) {
+	    sprintf(error_buf,
+		    "Couldn't set permissions on formatted man page '%s'.\n",
+		    man_globals->save_file);
+	    PrintWarning( man_globals, error_buf);
+	}
+    } else {
+	sprintf(error_buf, "Error while executing the command '%s'.\n",
+		cmdbuf);
+	PrintWarning( man_globals, error_buf);
     }
     break;
   case 'C':
@@ -352,7 +361,7 @@ Cardinal * num_params;
  *      Returns: none.
  */
 
-/* ARGSUSED */
+/*ARGSUSED*/
 void
 GotoPage(w, event, params, num_params)
 Widget w;
@@ -415,7 +424,7 @@ Cardinal * num_params;
  *      Returns: none.
  */
 
-/* ARGSUSED */
+/*ARGSUSED*/
 void 
 Quit(w, event, params, num_params)
 Widget w;
@@ -435,7 +444,7 @@ Cardinal * num_params;
  *      Returns: none.
  */
 
-/* ARGSUSED */
+/*ARGSUSED*/
 void 
 PopupHelp(w, event, params, num_params)
 Widget w;
@@ -455,7 +464,7 @@ Cardinal * num_params;
  *      Returns: none.
  */
 
-/* ARGSUSED */
+/*ARGSUSED*/
 void 
 PopupSearch(w, event, params, num_params)
 Widget w;
@@ -476,7 +485,7 @@ Cardinal * num_params;
  *      Returns: none.
  */
 
-/* ARGSUSED */
+/*ARGSUSED*/
 void 
 CreateNewManpage(w, event, params, num_params)
 Widget w;
@@ -496,7 +505,7 @@ Cardinal * num_params;
  *      Returns: none.
  */
 
-/* ARGSUSED */
+/*ARGSUSED*/
 void 
 RemoveThisManpage(w, event, params, num_params)
 Widget w;
@@ -529,7 +538,7 @@ Cardinal * num_params;
  *      Returns: none.
  */
 
-/* ARGSUSED */
+/*ARGSUSED*/
 void 
 Search(w, event, params, num_params)
 Widget w;
@@ -605,7 +614,7 @@ Cardinal * num_params;
  *      Returns: none.
  */
 
-/* ARGSUSED */
+/*ARGSUSED*/
 void 
 ShowVersion(w, event, params, num_params)
 Widget w;
@@ -614,6 +623,5 @@ String * params;
 Cardinal * num_params;
 {
   ManpageGlobals * man_globals = GetGlobals(w);
-
   ChangeLabel(man_globals->label, XMAN_VERSION);
 }
