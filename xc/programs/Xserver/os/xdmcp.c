@@ -28,6 +28,7 @@
 #include "opaque.h"
 
 #ifdef XDMCP
+#undef REQUEST
 #include "Xdmcp.h"
 
 extern int argcGlobal;
