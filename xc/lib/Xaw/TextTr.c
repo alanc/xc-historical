@@ -1,4 +1,4 @@
-/* $XConsortium: TextTr.c,v 1.13 89/11/01 17:01:24 kit Exp $ */
+/* $XConsortium: TextTr.c,v 1.16 94/01/31 10:53:53 kaleb Exp $ */
 
 /* INTERNATIONALIZATION:
 
@@ -54,7 +54,7 @@ Meta<Key>I:	insert-file() \n\
 Meta<Key>K:	kill-to-end-of-paragraph() \n\
 Meta<Key>Q:     form-paragraph() \n\
 Meta<Key>V:	previous-page() \n\
-Meta<Key>Y:	insert-selection(PRIMARY, INTERNAL) \n\
+Meta<Key>Y:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
 Meta<Key>Z:	scroll-one-line-down() \n\
 :Meta<Key>d:	delete-next-word() \n\
 :Meta<Key>D:	kill-word() \n\
@@ -101,9 +101,9 @@ Ctrl<Key>backslash:	reconnect-im() \n\
 <FocusOut>:	focus-out() \n\
 <Btn1Down>:	select-start() \n\
 <Btn1Motion>:	extend-adjust() \n\
-<Btn1Up>:	extend-end(PRIMARY, INTERNAL, CUT_BUFFER0) \n\
-<Btn2Down>:	insert-selection(PRIMARY, INTERNAL) \n\
+<Btn1Up>:	extend-end(PRIMARY, CUT_BUFFER0) \n\
+<Btn2Down>:	insert-selection(PRIMARY, CUT_BUFFER0) \n\
 <Btn3Down>:	extend-start() \n\
 <Btn3Motion>:	extend-adjust() \n\
-<Btn3Up>:	extend-end(PRIMARY, INTERNAL, CUT_BUFFER0) \
+<Btn3Up>:	extend-end(PRIMARY, CUT_BUFFER0) \
 ";
