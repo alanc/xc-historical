@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Xtos.h,v 1.7 90/12/27 09:58:37 rws Exp $
+* $XConsortium: Xtos.h,v 1.8 90/12/27 14:07:38 rws Exp $
 */
 
 /***********************************************************
@@ -35,7 +35,6 @@ SOFTWARE.
 
 #ifdef CRAY
 #define WORD64
-#define MAXPATHLEN PATH_MAX
 #endif
 
 /* stolen from server/include/os.h */
