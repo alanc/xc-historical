@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIm.c,v 1.4 94/01/20 18:04:02 rws Exp $ */
+/* $XConsortium: imDefIm.c,v 1.5 94/02/03 17:48:24 mor Exp $ */
 /******************************************************************
 
          Copyright 1990, 1991, 1992 by Sun Microsystems, Inc.
@@ -384,7 +384,7 @@ _XimPreConnect(im)
     register int    i;
 
     if((imserver = XInternAtom(display, XIM_SERVERS, True)) == (Atom)None)
-	return False;
+	return True;
 
     if(XGetWindowProperty(display, RootWindow(display, DefaultScreen(display)),
 			imserver, 0L, 1000000L, False, XA_ATOM, &actual_type, 
