@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.153 93/07/29 12:18:13 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.154 93/08/07 11:59:55 rws Exp $
 /*
  * Server Master Makefile
  */
@@ -63,8 +63,8 @@ XCOMM $XConsortium: Imakefile,v 1.153 93/07/29 12:18:13 rws Exp $
             MFB = ddx/mfb/libmfb.a
             CFB = ddx/cfb/libcfb.a ddx/cfb16/libcfb.a ddx/cfb32/libcfb.a
             CFB8 = ddx/cfb/libcfb.a
-            CFB16 = ddx/cfb/libcfb.a ddx/cfb/libcfb16.a
-            CFB32 = ddx/cfb/libcfb.a ddx/cfb/libcfb32.a
+            CFB16 = ddx/cfb/libcfb.a ddx/cfb16/libcfb.a
+            CFB32 = ddx/cfb/libcfb.a ddx/cfb32/libcfb.a
              MI = ddx/mi/libmi.a
             DIX = dix/libdix.a
            FONT = $(FONTSRC)/lib/font/libfont.a
