@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: userguide.mm,v 1.1 92/06/11 15:33:53 rws Exp $
 '
 .ds dN "\s-1MIT\s0-3-01.3
 '
@@ -643,7 +643,7 @@ C compiler defines specific to the X Protocol tests.
 This can be set as DEFINES, but
 you can build support for additional connection methods beyond TCP/IP,
 using the following defines, if XP_OPEN_DIS is
-XlibNoXTest.c (R4/R5 XOpenDisplay emulation):
+XlibNoXtst.c (R4/R5 XOpenDisplay emulation):
 .cS
 -DDNETCONN - Connections can also use DECnet\*F.
 -DUNIXCONN - Connections can also use UNIX\*F domain sockets.
@@ -660,7 +660,7 @@ UNIX is a registered trademark of UNIX System Laboratories, Inc. in
 the U.S. and other countries.
 .FE
 .br
-If XP_OPEN_DIS is one of XlibWithXTest.c or XlibOpaque.c then none of
+If XP_OPEN_DIS is one of XlibXtst.c or XlibOpaque.c then none of
 the defines listed above will be required.
 .cS
 Eg: XP_DEFINES=-D_POSIX_SOURCE -DUNIXCONN
@@ -739,7 +739,7 @@ A choice of which code to build in the X Protocol library
 to make an X server connection.
 This must be set to one of three possible values:
 .VL 4 0
-.LI XlibWithXTest.c
+.LI XlibXtst.c
 .br
 Use this option only if your Xlib includes post R5 enhancements 
 to _XConnectDisplay 
@@ -754,13 +754,13 @@ will be
 You have a normal R4 Xlib or early R5 Xlib which you 
 cannot patch to include the enhancements to 
 _XConnectDisplay, and you cannot emulate these by 
-building XlibNoXTest.c, so only client-native testing 
+building XlibNoXtst.c, so only client-native testing 
 can be done portably, and no failure testing of 
 XOpenDisplay can be done.
 This option uses XOpenDisplay to make the connection, 
 from which the file descriptor is recovered for our own use. 
 XCloseDisplay shuts down the connection.
-.LI XlibNoXTest.c	
+.LI XlibNoXtst.c	
 .br
 As for XlibOpaque.c but you can use the R4/R5 
 connection emulation supplied. (Note: R4/R5 independent)
@@ -768,7 +768,7 @@ This will ensure maximum protocol test coverage
 but may not be portable to all platforms.
 .LE
 .P
-Reasons for not being able to build XlibNoXTest.c might include:
+Reasons for not being able to build XlibNoXtst.c might include:
 .br
 i)  different interfaces to connection setup and connection read/write;
 .br

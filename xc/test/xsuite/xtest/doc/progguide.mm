@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: progguide.mm,v 1.1 92/06/11 15:32:30 rws Exp $
 '
 .ds dN "\s-1MIT\s0-3-02.3
 '
@@ -2876,7 +2876,7 @@ in this file should be called at the start and end of the
 .C main()
 function of each program executed via the TET function
 .C tet_exec() .
-.LI exposecheck.c
+.LI exposechk.c
 .br
 Check that either enough expose events were received to
 restore the window, or that the window has been restored from backing
@@ -3049,7 +3049,7 @@ obtain the next visual.
 The function 
 .C nvinf()
 returns the number of visuals.
-.LI nondepth1pix.c
+.LI nondpth1pix.c
 .br
 Obtain a pixmap of depth other than 1 if such a pixmap is supported.
 .LI notmember.c
@@ -3271,8 +3271,8 @@ Check for the expected response (error, event, reply, or nothing)
 from the X server.
 .LI JustALink.c
 .br
-This file is a link to one of the files XlibWithXTest.c, XlibOpaque.c, 
-or XlibNoXTest.c. The link is created when the X Protocol library 
+This file is a link to one of the files XlibXtst.c, XlibOpaque.c, 
+or XlibNoXtst.c. The link is created when the X Protocol library 
 is built, and the file used depends on the configuration parameter
 .SM XP_OPEN_DIS .
 .LI Log.c
@@ -3292,7 +3292,7 @@ to the X server using the functions in SendReq.c.
 Unpack the response from the server into a structure (RcvErr.c for errors,
 RcvEvt.c for events, RcvRep.c for replies; these all use DataMove.c to do 
 the unpacking).
-.LI ResourceMng.c
+.LI ResMng.c
 .br
 Create a resource (e.g. atom, window) and store its resource ID
 in the client data structure.
@@ -3338,10 +3338,10 @@ Utilities for isolating operating system dependencies.
 .br
 Routines to check whether the server under test supports the feature 
 being tested (eg. writable colour cells).
-.LI ValueListMng.c
+.LI ValListMng.c
 .br
 Modify the value lists at the ends of request structures.
-.LI XlibNoXTest.c
+.LI XlibNoXtst.c
 .br
 This file contains functions which emulate the post R5 enhanced connection 
 setup scheme. A connection can be established in client native or byte-swapped
@@ -3358,7 +3358,7 @@ setup scheme.
 The Xlib functions XOpenDisplay and ConnectionNumber are called here to 
 obtain a connection using the client native byte orientation,
 and subsequent X Protocol requests are made using this connection.
-.LI XlibWithXTest.c
+.LI XlibXtst.c
 .br
 This file contains portable functions to handle connection setup where 
 the Xlib implementation supports the post R5 enhanced connection setup scheme.
