@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.1 89/10/12 17:07:45 rws Exp $
+ * $XConsortium: protodpy.c,v 1.2 89/10/31 14:25:39 keith Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -94,7 +94,10 @@ NewProtoDisplay (address, addrlen, displayNumber,
     CARD32	    sessionID;
 {
     struct protoDisplay	*pdpy;
+    long    date;
 
+    time (&date);
+    TimeoutProtoDisplays (date);
     pdpy = (struct protoDisplay *) malloc (sizeof *pdpy);
     if (!pdpy)
 	return NULL;
@@ -106,9 +109,9 @@ NewProtoDisplay (address, addrlen, displayNumber,
     }
     pdpy->addrlen = addrlen;
     bcopy (address, pdpy->address, addrlen);
-    time (&pdpy->date);
     pdpy->displayNumber = displayNumber;
     pdpy->connectionType = connectionType;
+    pdpy->date = date;
     if (!XdmcpCopyARRAY8 (connectionAddress, &pdpy->connectionAddress))
     {
 	free ((char *) pdpy->address);
@@ -118,7 +121,6 @@ NewProtoDisplay (address, addrlen, displayNumber,
     pdpy->sessionID = sessionID;
     pdpy->authorization = (Xauth *) NULL;
     pdpy->next = protoDisplays;
-    TimeoutProtoDisplays (pdpy->date);
     protoDisplays = pdpy;
     return pdpy;
 }
