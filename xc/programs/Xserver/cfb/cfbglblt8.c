@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.4 89/11/17 14:20:36 keith Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.5 89/11/19 16:40:49 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -40,14 +40,18 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #ifdef USE_LEFTBITS
 typedef	unsigned char	*glyphPointer;
+extern long endtab[];
 
 #define GlyphBits(bits,width,dst)	getleftbits(bits,width,dst); \
 					(dst) &= widthMask; \
 					(bits) += widthGlyph;
+#define GlyphBitsS(bits,width,dst,off)	GlyphBits(bits,width,dst); \
+					dst = BitRight (dst, off);
 #else
-typedef unsigned int	*glyphPointer;
+typedef unsigned long	*glyphPointer;
 
-#define GlyphBits(bits,width,dst)	(dst) = *(bits)++;
+#define GlyphBits(bits,width,dst)	dst = *bits++;
+#define GlyphBitsS(bits,width,dst,off)	dst = BitRight(*bits++, off);
 #endif
 
 void
@@ -65,7 +69,6 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register glyphPointer   glyphBits;
     register int	    xoff;
     register int	    ewTmp;
-    int			    c1;
 
     CharInfoPtr		pci;
     FontInfoPtr		pfi = pGC->font->pFI;
@@ -75,7 +78,6 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int			widthDst;
     int			h;
     int			ew;
-    int			xG, yG;
     BoxRec		bbox;		/* for clipping */
     int			widthDiff;
     int			w;
@@ -132,16 +134,16 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	pci = *ppci++;
 	glyphBits = (glyphPointer) (pglyphBase + pci->byteOffset);
 	w = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
-	xG = x + pci->metrics.leftSideBearing;
-	yG = y - pci->metrics.ascent;
-	dstLine = pdstBase + yG * widthDst + (xG >> 2);
-	xoff = xG & 0x3;
+	xoff = x + pci->metrics.leftSideBearing;
+	dstLine = pdstBase +
+	          (y - pci->metrics.ascent) * widthDst + (xoff >> 2);
+	xoff &= 0x3;
 	ew = (w + xoff + 3) >> 2;
 	hTmp = pci->metrics.descent + pci->metrics.ascent;
 	dst = dstLine;
 #ifdef USE_LEFTBITS
 	widthGlyph = GLYPHWIDTHBYTESPADDED (pci);
-	widthMask = (1 << w) - 1;
+	widthMask = endtab[w];
 #endif
 	switch (ew) {
 	case 0:
@@ -149,8 +151,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	case 1:
 	    while (hTmp--)
 	    {
-		GlyphBits(glyphBits, w, c)
-	    	c = BitRight (c, xoff);
+		GlyphBitsS(glyphBits, w, c, xoff)
 		WriteFourBits (dst, pixel, GetFourBits(c));
 	    	dst += widthDst;
 	    }
@@ -158,8 +159,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	case 2:
 	    while (hTmp--)
 	    {
-		GlyphBits(glyphBits, w, c)
-	    	c = BitRight (c, xoff);
+		GlyphBitsS(glyphBits, w, c, xoff)
 	    	if (c)
 	    	{
 		    WriteFourBits (dst, pixel, GetFourBits(c));
@@ -172,8 +172,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	case 3:
 	    while (hTmp--)
 	    {
-		GlyphBits(glyphBits, w, c)
-	    	c = BitRight (c, xoff);
+		GlyphBitsS(glyphBits, w, c, xoff)
 	    	if (c)
 	    	{
 		    WriteFourBits (dst, pixel, GetFourBits(c));
@@ -190,22 +189,28 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    dst -= widthDiff;
 	    while (hTmp--)
 	    {
-		GlyphBits(glyphBits, w, c1)
+#if defined(__GNUC__) && defined(mc68020)
+		volatile unsigned long c1; /* XXX 1.35 is really stupid */
+#else
+		unsigned long c1;
+#endif
+
+		GlyphBits(glyphBits, w, c)
 	    	dst += widthDiff;
-	    	if (!c1)
+	    	if (!c)
 	    	{
 		    dst += ew;
 		    continue;
 	    	}
-	    	c = BitRight (c1, xoff);
+		c1 = BitLeft (c, 32 - xoff);
+	    	c = BitRight (c, xoff);
 	    	ewTmp = ew - 1;
 	    	while (ewTmp--) {
 		    WriteFourBits(dst, pixel, GetFourBits(c))
 		    dst++;
 		    NextFourBits(c);
 	    	}
-		c = BitLeft (c1, 32 - xoff);
-		WriteFourBits(dst, pixel, GetFourBits(c));
+		WriteFourBits(dst, pixel, GetFourBits(c1));
 		dst++;
 	    }
 	    break;
@@ -214,8 +219,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    dst -= widthDiff;
 	    while (hTmp--)
 	    {
-		GlyphBits(glyphBits, w, c)
-	    	c = BitRight (c, xoff);
+		GlyphBitsS(glyphBits, w, c, xoff)
 	    	dst += widthDiff;
 	    	if (!c)
 	    	{
@@ -248,7 +252,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     register glyphPointer   glyphBits;
     register int	    xoff;
     register int	    ewTmp;
-    int			    c1;
+    unsigned long	    c1;
 
     CharInfoPtr		pci;
     FontInfoPtr		pfi = pGC->font->pFI;
@@ -326,7 +330,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	dst = dstLine - widthDiff;
 #ifdef USE_LEFTBITS
 	widthGlyph = GLYPHWIDTHBYTESPADDED (pci);
-	widthMask = (1 << w) - 1;
+	widthMask = endtab[w];
 #endif
 	switch (cfb8ComputeClipMasks32 (pBox, numRects, xG, yG, w, hTmp, clips))
  	{
@@ -335,8 +339,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    {
 		while (hTmp--)
 		{
-		    GlyphBits(glyphBits, w, c)
-	    	    c = BitRight (c, xoff);
+		    GlyphBitsS(glyphBits, w, c, xoff)
 	    	    dst += widthDiff;
 	    	    if (!c)
 	    	    {
@@ -355,22 +358,22 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    {
 		while (hTmp--)
 		{
-		    GlyphBits(glyphBits, w, c1)
+		    GlyphBits(glyphBits, w, c)
 	    	    dst += widthDiff;
-	    	    if (!c1)
+	    	    if (!c)
 	    	    {
 		    	dst += ew;
 		    	continue;
 	    	    }
-	    	    c = BitRight (c1, xoff);
+		    c1 = BitLeft (c, 32 - xoff);
+	    	    c = BitRight (c, xoff);
 	    	    ewTmp = ew-1;
 	    	    while (ewTmp--) {
 		    	WriteFourBits (dst, pixel, GetFourBits(c));
 		    	dst++;
 		    	NextFourBits(c);
 	    	    }
-		    c = BitLeft (c1, 32 - xoff);
-		    WriteFourBits(dst, pixel, GetFourBits(c));
+		    WriteFourBits(dst, pixel, GetFourBits(c1));
 		    dst++;
 		}
 	    }
@@ -405,15 +408,16 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    {
 	    	while (hTmp--)
 	    	{
-		    GlyphBits(glyphBits, w, c1)
-		    c1 &= *cTmp++;
+		    GlyphBits(glyphBits, w, c)
+		    c &= *cTmp++;
 		    dst += widthDiff;
-		    if (!c1)
+		    if (!c)
 		    {
 		    	dst += ew;
 		    	continue;
 		    }
-		    c = BitRight (c1, xoff);
+		    c1 = BitLeft (c, 32 - xoff);
+		    c = BitRight (c, xoff);
 		    ewTmp = ew - 1;
 		    while (ewTmp--) {
 			if (GetFourBits(c))
@@ -423,10 +427,9 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 		    	dst++;
 		    	NextFourBits(c);
 		    }
-		    c = BitLeft (c1, 32 - xoff);
-		    if (GetFourBits(c))
+		    if (GetFourBits(c1))
 		    {
-		    	WriteFourBits (dst, pixel, GetFourBits(c));
+		    	WriteFourBits (dst, pixel, GetFourBits(c1));
 		    }
 		    dst++;
 	    	}

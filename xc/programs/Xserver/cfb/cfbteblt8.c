@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.7 89/11/17 14:20:52 keith Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.8 89/11/19 16:30:13 rws Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -35,19 +35,15 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #if (PPW == 4)
 
-#define GetBits4S   c = BitRight (*char1++, xoff1) | \
-			BitRight (*char2++, xoff2) | \
-			BitRight (*char3++, xoff3) | \
-			BitRight (*char4++, xoff4);
-#define GetBits4L   c = BitLeft  (*leftChar++, lshift) | \
-			BitRight (*char1++, xoff1) | \
-			BitRight (*char2++, xoff2) | \
-			BitRight (*char3++, xoff3) | \
-			BitRight (*char4++, xoff4);
-#define GetBits4U   c = *char1++ | \
-			BitRight (*char2++, xoff2) | \
-			BitRight (*char3++, xoff3) | \
-			BitRight (*char4++, xoff4);
+#define glyphbits(bits,width,mask,dst)	getleftbits(bits,width,dst); \
+					dst &= mask;
+
+/*
+ * On little-endian machines (or where fonts are padded to 32-bit
+ * boundaries) we can use some magic to avoid the expense of getleftbits
+ */
+
+#if (BITMAP_BIT_ORDER == LSBFirst || GLYPHPADBYTES == 4)
 
 #if GLYPHPADBYTES == 1
 typedef unsigned char	*glyphPointer;
@@ -63,13 +59,48 @@ typedef unsigned short	*glyphPointer;
 typedef unsigned int	*glyphPointer;
 #endif
 
-#ifdef FASTGETBITS
-#define glyphbits(bits,width,mask,dst) FASTGETBITS(bits,0,width,dst)
+#define GetBits4S   c = BitRight (*char1++, xoff1) | \
+			BitRight (*char2++, xoff2) | \
+			BitRight (*char3++, xoff3) | \
+			BitRight (*char4++, xoff4);
+#define GetBits4L   c = BitLeft  (*leftChar++, lshift) | \
+			BitRight (*char1++, xoff1) | \
+			BitRight (*char2++, xoff2) | \
+			BitRight (*char3++, xoff3) | \
+			BitRight (*char4++, xoff4);
+#define GetBits4U   c = *char1++ | \
+			BitRight (*char2++, xoff2) | \
+			BitRight (*char3++, xoff3) | \
+			BitRight (*char4++, xoff4);
+
 #else
-#define glyphbits(bits,width,mask,dst) getleftbits(bits,width,dst); dst &= mask;
+typedef unsigned char	*glyphPointer;
+#define USE_LEFTBITS
+
+#define GetBits4S   glyphbits (char1, widthGlyph, glyphMask, tmpSrc); \
+		    c  = BitRight (tmpSrc, xoff1); \
+		    char1 += glyphBytes; \
+		    glyphbits (char2, widthGlyph, glyphMask, tmpSrc); \
+		    c |= BitRight (tmpSrc, xoff2); \
+		    char2 += glyphBytes; \
+		    glyphbits (char3, widthGlyph, glyphMask, tmpSrc); \
+		    c |= BitRight (tmpSrc, xoff3); \
+		    char3 += glyphBytes; \
+		    glyphbits (char4, widthGlyph, glyphMask, tmpSrc); \
+		    c |= BitRight (tmpSrc, xoff4); \
+		    char4 += glyphBytes; 
+#define GetBits4L   GetBits4S \
+		    glyphbits (leftChar, widthGlyph, glyphMask, tmpSrc); \
+		    c |= BitLeft (tmpSrc, lshift); \
+		    leftChar += glyphBytes; 
+
+#define GetBits4U   GetBits4S
+
 #endif
 
 #ifdef USE_LEFTBITS
+extern long endtab[];
+
 #define IncChar(c)  (c = (glyphPointer) (((char *) c) + glyphBytes))
 #define GetBits1S   glyphbits (char1, widthGlyph, glyphMask, c); \
 		    c = BitRight (c, xoff1); \
@@ -243,7 +274,7 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
     widthGlyphs = widthGlyph << 2;
 
 #ifdef USE_LEFTBITS
-    glyphMask = (1 << widthGlyph) - 1;
+    glyphMask = endtab[widthGlyph];
     glyphBytes = GLYPHWIDTHBYTESPADDED(pci);
 #endif
 

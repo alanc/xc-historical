@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.11 89/09/13 18:58:11 rws Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.12 89/09/14 18:02:34 rws Exp $ */
 
 extern int cfbstarttab[];
 extern int cfbendtab[];
@@ -207,12 +207,15 @@ getleftbits(psrc, w, dst)
 #include	"Xmd.h"
 #include	"servermd.h"
 #if	(BITMAP_BIT_ORDER == MSBFirst)
-#define SCRLEFT(lw, n)	((lw) << ((n)*PSZ))
-#define SCRRIGHT(lw, n)	((lw) >> ((n)*PSZ))
+#define BitRight(lw,n)	((lw) >> (n))
+#define BitLeft(lw,n)	((lw) << (n))
 #else	/* (BITMAP_BIT_ORDER == LSBFirst) */
-#define SCRLEFT(lw, n)	((lw) >> ((n)*PSZ))
-#define SCRRIGHT(lw, n)	((lw) << ((n)*PSZ))
+#define BitRight(lw,n)	((lw) << (n))
+#define BitLeft(lw,n)	((lw) >> (n))
 #endif	/* (BITMAP_BIT_ORDER == MSBFirst) */
+
+#define SCRLEFT(lw, n)	BitLeft (lw, (n) * PSZ)
+#define SCRRIGHT(lw, n)	BitRight(lw, (n) * PSZ)
 
 /*
  * Note that the shift direction is independent of the byte ordering of the 
@@ -283,28 +286,31 @@ else \
 #undef getbits
 #define FASTGETBITS(psrc, x, w, dst) \
     asm ("bfextu %3{%1:%2},%0" \
-	 : "=d" (dst) : "di" (PSZ*(x)), "di" (PSZ*(w)), "o" (*(char *)(psrc)))
+	 : "=d" (dst) : "di" (x), "di" (w), "o" (*(char *)(psrc)))
 
 #define getbits(psrc,x,w,dst) \
-    FASTGETBITS(psrc, x, PPW, dst);
+{ \
+    FASTGETBITS(psrc, (x) * PSZ, (w) * PSZ, dst); \
+    dst = SCRLEFT(dst,PPW-(w)); \
+}
 
 #define FASTPUTBITS(src, x, w, pdst) \
     asm ("bfins %3,%0{%1:%2}" \
 	 : "=o" (*(char *)(pdst)) \
-	 : "di" ((x)*PSZ), "di" ((w)*PSZ), "d" (src), "0" (*(char *) (pdst)))
+	 : "di" (x), "di" (w), "d" (src), "0" (*(char *) (pdst)))
 
 #undef putbits
 #define putbits(src, x, w, pdst, planemask) \
 { \
-    if (planemask != 0xff) { \
+    if (planemask != PMSK) { \
         unsigned long _m, _pm; \
-        FASTGETBITS(pdst, x, PPW, _m); \
+        FASTGETBITS(pdst, (x) * PSZ , (w) * PSZ, _m); \
         PFILL2(planemask, _pm); \
         _m &= (~_pm); \
-        _m |= (src & _pm); \
-        FASTPUTBITS(SCRRIGHT(_m, PPW-(w)), x, w, pdst); \
+        _m |= (SCRRIGHT(src, PPW-(w)) & _pm); \
+        FASTPUTBITS(_m, (x) * PSZ, (w) * PSZ, pdst); \
     } else { \
-        FASTPUTBITS(SCRRIGHT(src, PPW-(w)), x, w, pdst); \
+        FASTPUTBITS(SCRRIGHT(src, PPW-(w)), (x) * PSZ, (w) * PSZ, pdst); \
     } \
 }
     
@@ -341,8 +347,37 @@ else \
 	(t2 & (cfbendtab[n] & pm)); \
 }
 
+#if GETLEFTBITS_ALIGNMENT == 1
+#define getleftbits(psrc, w, dst)	dst = *((unsigned int *) psrc)
+#endif /* GETLEFTBITS_ALIGNMENT == 1 */
+
+#define getglyphbits (psrc, x, w, dst) \
+{ \
+    dst = BitLeft((unsigned) *(psrc), (x)); \
+    if ( ((x) + (w)) > 32) \
+	dst |= (BitRight((unsigned) *((psrc)+1), 32-(x))); \
+}
+#if GETLEFTBITS_ALIGNMENT == 2
 #define getleftbits(psrc, w, dst) \
-    dst = *(psrc);
+    { \
+	if ( ((int)(psrc)) & 0x01 ) \
+		getglyphbits( ((unsigned int *)(((char *)(psrc))-1)), 8, (w), (dst) ); \
+	else \
+		getglyphbits(psrc, 0, w, dst);
+    }
+#endif /* GETLEFTBITS_ALIGNMENT == 2 */
+
+#if GETLEFTBITS_ALIGNMENT == 4
+#define getleftbits(psrc, w, dst) \
+    { \
+	int off, off_b; \
+	off_b = (off = ( ((int)(psrc)) & 0x03)) << 3; \
+	getbits( \
+		(unsigned int *)( ((char *)(psrc)) - off), \
+		(off_b), (w), (dst) \
+	       ); \
+    }
+#endif /* GETLEFTBITS_ALIGNMENT == 4 */
 
 #if (PPW*PSZ==32)
 #define GET_VALID_BITS_FROM_LONG(l) (l)
