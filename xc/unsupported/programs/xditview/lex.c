@@ -7,7 +7,7 @@
 
 DviGetAndPut(dw, cp)
     DviWidget	dw;
-    char	*cp;
+    int		*cp;
 {
     if (dw->dvi.ungot)
     {
