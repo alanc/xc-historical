@@ -1,48 +1,27 @@
 /*
- * $NCDId: @(#)Imakefile,v 1.1 1993/12/22 22:23:05 dct Exp $
- *
- * Copyright 1993 Network Computing Devices
- *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of NCD. not be used in advertising or
- * publicity pertaining to distribution of the software without specific,
- * written prior permission.  NCD. makes no representations about the
- * suitability of this software for any purpose.  It is provided "as is"
- * without express or implied warranty.
- *
- * NCD. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL NCD.
- * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
- * Author:  Dale Tonogai, Network Computing Devices
+ * Copyright 1991-92 Network Computing Devices, Inc.  All rights reserved.
+ * An unpublished work.
  */
 
-#include <Server.tmpl>
+/**/# $NCDId: @(#)Imakefile,v 1.2 1994/01/17 20:59:37 dct Exp $
 
-#if !BuildServer
-INCLUDESRC = /usr/include/X11
-#endif
+#include <Library.tmpl>
 
-INCLUDES = \
-        -I$(EXTENSIONSRC)/include \
-        -I$(EXTENSIONSRC)/include/lbx \
-	-I$(INCLUDESRC) \
-	-I$(SERVERSRC)/include
+SRCS = compress_lzw.c lzwio.c lbxdelta.c
 
-SRCS = lbxdelta.c
-OBJS = lbxdelta.o
+OBJS = compress_lzw.o lzwio.o lbxdelta.o
+
+INCLUDES = -I$(INCLUDESRC) -I$(EXTINCSRC) -I$(SERVERSRC)/include
+ 
+
+all::
 
 NormalLibraryObjectRule()
-NormalLibraryTarget(delta,$(OBJS))
-LintLibraryTarget(delta,$(SRCS))
-NormalLintTarget($(SRCS))
+
+NormalLibraryTarget(lbxutil,$(OBJS))
+LintLibraryTarget(lbxutil,$(SRCS))
 
 DependTarget()
 
-NCDDvlpDistTarget(delta,)
+NormalLintTarget($(SRCS))
+
