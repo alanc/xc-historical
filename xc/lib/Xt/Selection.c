@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Selection.c,v 1.34 89/12/01 11:40:15 swick Exp $";
+    "$XConsortium: Selection.c,v 1.35 89/12/01 12:38:58 swick Exp $";
 #endif
 
 /***********************************************************
@@ -127,9 +127,11 @@ Atom prop;
       }
 }
 
-static CallBackInfo MakeInfo(
-	callback, closures, count, widget, time, incremental)
+static CallBackInfo MakeInfo(ctx, callback, cancel, closures, count, widget,
+			     time, incremental)
+Select ctx;
 XtSelectionCallbackProc callback;
+XtCancelSelectionCallbackProc cancel;
 XtPointer *closures;
 int count;
 Widget widget;
@@ -137,10 +139,11 @@ Time time;
 Boolean incremental;
 {
     	static void HandleSelectionReplies();
-    	CallBackInfo info;
-	info = (CallBackInfo) XtMalloc(
-		(unsigned) sizeof(CallBackInfoRec));
+    	CallBackInfo info = XtNew(CallBackInfoRec);
+
+	info->ctx = ctx;
 	info->callback = callback;
+	info->req_cancel = cancel;
 	info->req_closure =
 	    (XtPointer*)XtMalloc((unsigned) (count * sizeof(XtPointer)));
 	bcopy((char*)closures, (char*)info->req_closure, count * sizeof(XtPointer));
@@ -152,9 +155,8 @@ Boolean incremental;
 	return (info);
 }
 
-static RequestSelectionValue(info, ctx, selection, target)
+static RequestSelectionValue(info, selection, target)
 CallBackInfo info;
-Select ctx;
 Atom selection;
 Atom target;
 {
@@ -167,7 +169,7 @@ Atom target;
 #endif 
 	XtAddEventHandler(info->widget, (EventMask) NULL, TRUE,
 			  HandleSelectionReplies, (XtPointer)info);
-	XConvertSelection(ctx->dpy, selection, target, 
+	XConvertSelection(info->ctx->dpy, selection, target, 
 			  info->property, XtWindow(info->widget), info->time);
 }
 
@@ -248,6 +250,8 @@ Time time;
    else return(FALSE);
 }
 
+static XContext selectWindowContext = 0;
+
 static void AddHandler(dpy, window, widget, mask, proc, closure)
 Display *dpy;
 Window window;
@@ -256,16 +260,26 @@ EventMask mask;
 XtEventHandler proc;
 XtPointer closure;
 {
-    /* see if there is already a widget associated with the window */
-    if (XtWindowToWidget(dpy, window)==NULL) {
-	_XtRegisterWindow(window, widget);
-	XtAddRawEventHandler(widget, mask, FALSE, proc, closure);
-	XSelectInput(dpy, window, mask);
-    } else if (XtWindow(widget) != window) 
-        /* raw handler already added */
-	return; 
+    if (XtWindow(widget) == window)
+	XtAddEventHandler(widget, mask, TRUE, proc, closure);
     else {
-      XtAddEventHandler(widget, mask, TRUE, proc, closure);
+	Widget w = XtWindowToWidget(dpy, window);
+	RequestWindowRec* requestWindow;
+	if (w != NULL && w != widget) widget = w;
+	if (selectWindowContext == 0)
+	    selectWindowContext = XUniqueContext();
+	if (XFindContext(dpy, window, selectWindowContext,
+			 (caddr_t *)&requestWindow)) {
+	    requestWindow = XtNew(RequestWindowRec);
+	    requestWindow->count = 0;
+	    (void)XSaveContext(dpy, window, selectWindowContext,
+			       (caddr_t)requestWindow);
+	}
+	if (requestWindow->count++ == 0) {
+	    _XtRegisterWindow(window, widget);
+	    XSelectInput(dpy, window, mask);
+	}
+	XtAddRawEventHandler(widget, mask, FALSE, proc, closure);
     }
 }
 
@@ -279,10 +293,17 @@ XtPointer closure;
 {
     if ((XtWindowToWidget(dpy, window) == widget) && 
         (XtWindow(widget) != window)) {
-    /* we had to hang this window onto our widget; take it off */
-      XtRemoveRawEventHandler(widget, mask, TRUE, proc, closure);
-      _XtUnregisterWindow(window, widget);
-      XSelectInput(dpy, window, 0L);
+	/* we had to hang this window onto our widget; take it off */
+	RequestWindowRec* requestWindow;
+	XtRemoveRawEventHandler(widget, mask, TRUE, proc, closure);
+	(void)XFindContext(dpy, window, selectWindowContext,
+			   (caddr_t *)&requestWindow);
+	if (--requestWindow->count == 0) {
+	    _XtUnregisterWindow(window, widget);
+	    XSelectInput(dpy, window, 0L);
+	    (void)XDeleteContext(dpy, window, selectWindowContext);
+	    XtFree((XtPointer)requestWindow);
+	}
     } else {
         XtRemoveEventHandler(widget, mask, TRUE,  proc, closure); 
     }
@@ -1215,12 +1236,11 @@ Boolean incremental;
 	ctx->req = NULL;
     }
     else {
-	info = MakeInfo(callback, &closure, 1, widget, time, incremental);
-	info->req_cancel = cancel;
+	info = MakeInfo(ctx, callback, cancel, &closure, 1, widget,
+			time, incremental);
 	info->target = (Atom *)XtMalloc((unsigned) sizeof(Atom));
 	 *(info->target) = target;
-	info->ctx = ctx;
-	RequestSelectionValue(info, ctx, selection, target);
+	RequestSelectionValue(info, selection, target);
     }
 }
 
@@ -1285,13 +1305,12 @@ Boolean incremental;
 			    callback, *closures, incremental);
 	ctx->req = NULL;
     } else {
-	info = MakeInfo(callback, closures, count, widget, time, incremental);
-	info->req_cancel = cancel;
+	info = MakeInfo(ctx, callback, cancel, closures, count, widget,
+			time, incremental);
 	info->target = (Atom *)XtMalloc((unsigned) ((count+1) * sizeof(Atom)));
         (*info->target) = ctx->indirect_atom;
 	bcopy((char *) targets, (char *) info->target+sizeof(Atom),
 	      count * sizeof(Atom));
-	info->ctx = ctx;
 	pairs = (IndirectPair*)XtMalloc((unsigned)(count*sizeof(IndirectPair)));
 	for (p = &pairs[count-1], t = &targets[count-1];
 	     p >= pairs;  p--, t-- ) {
@@ -1303,7 +1322,7 @@ Boolean incremental;
 			32, PropModeReplace, (unsigned char *) pairs, 
 			count * IndirectPairWordSize);
 	XtFree((XtPointer)pairs);
-	RequestSelectionValue(info, ctx, selection, ctx->indirect_atom);
+	RequestSelectionValue(info, selection, ctx->indirect_atom);
     }
 }
 
