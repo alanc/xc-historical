@@ -1,6 +1,4 @@
-#if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.34 90/04/30 17:04:26 converse Exp $";
-#endif 
+/* $XConsortium: SimpleMenu.c,v 1.35 90/09/10 14:34:23 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -120,6 +118,7 @@ static void AddPositionAction(), PositionMenu(), ChangeCursorOnGrab();
 static Dimension GetMenuWidth(), GetMenuHeight();
 static Widget FindMenu();
 static SmeObject GetEventEntry();
+static void MoveMenu();
 
 static XtActionsRec actionsList[] =
 {
@@ -1000,7 +999,6 @@ XPoint * location;
     SimpleMenuWidget smw = (SimpleMenuWidget) w;
     SmeObject entry;
     XPoint t_point;
-    static void MoveMenu();
     
     if (location == NULL) {
 	Window junk1, junk2;
@@ -1246,15 +1244,15 @@ XEvent * event;
 	break;
     }
     
-    if ( (x_loc < 0) || (x_loc >= smw->core.width) || (y_loc < 0) ||
-	(y_loc >= smw->core.height) )
+    if ( (x_loc < 0) || (x_loc >= (int)smw->core.width) || (y_loc < 0) ||
+	(y_loc >= (int)smw->core.height) )
 	return(NULL);
     
     ForAllChildren(smw, entry) {
 	if (!XtIsManaged ((Widget) *entry)) continue;
 
 	if ( ((*entry)->rectangle.y < y_loc) &&
-	    ((*entry)->rectangle.y + (*entry)->rectangle.height > y_loc) )
+	    ((*entry)->rectangle.y + (int) (*entry)->rectangle.height > y_loc) )
 	    if ( *entry == smw->simple_menu.label )
 		return(NULL);	/* cannot select the label. */
 	    else
