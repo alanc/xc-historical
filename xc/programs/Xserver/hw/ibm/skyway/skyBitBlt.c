@@ -1,6 +1,5 @@
 /*
- * skyway copy area:
- *   cfb copyarea except pixel blits replaced by skyway accelerater calls.
+ * skyway copy area: same as cfb except uses skyway accelerator.
  */
 
 /*
@@ -16,9 +15,8 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 
-Written by Keith Packard.
-
 */
+/* $XConsortium$ */
 
 #include	"X.h"
 #include	"Xmd.h"
