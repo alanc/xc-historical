@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.54 88/08/13 09:00:55 jim Exp $ */
+/* $Header: Xlibint.h,v 11.55 88/08/13 12:13:16 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -23,7 +23,7 @@
 #include <sys/types.h>
 #endif /* CRAY */
 
-#include <X11/Xlib.h>
+#include "Xlib.h"
 #include <X11/Xproto.h>
 #include "Xlibos.h"
 #include <errno.h>
