@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.135 90/04/03 10:50:13 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.136 90/04/03 11:37:20 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -753,8 +753,13 @@ extern void XtDisplayStringConversionWarning(
 #endif
 );
 
+#if defined(__STDC__)
+externalref XtConvertArgRec const colorConvertArgs[];
+externalref XtConvertArgRec const screenConvertArg[];
+#else
 externalref XtConvertArgRec colorConvertArgs[];
 externalref XtConvertArgRec screenConvertArg[];
+#endif
 
 extern void XtAppAddConverter( /* obsolete */
 #if NeedFunctionPrototypes
