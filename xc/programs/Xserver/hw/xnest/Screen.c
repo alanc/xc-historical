@@ -1,4 +1,4 @@
-/* $XConsortium: xnestScreen.c,v 1.1 93/06/23 16:23:38 dmatic Exp $ */
+/* $XConsortium: Screen.c,v 1.1 93/07/12 15:28:46 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -304,6 +304,8 @@ Bool xnestOpenScreen(index, pScreen, argc, argv)
   pScreen->WakeupHandler = (void (*)())NoopDDA;
   pScreen->blockData = (pointer)0;
   pScreen->wakeupData = (pointer)0;
+  if (!miScreenDevPrivateInit(pScreen, xnestWidth, NULL))
+      return FALSE;
 
   /* devPrivates */
 
