@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514plyp.c,v 1.2 94/04/17 20:30:36 dpw Exp $ */
+/* $XConsortium: plypt.c,v 1.1 95/01/26 15:29:18 kaleb Exp kaleb $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -39,7 +39,6 @@ Modified by Tiago Gons (tiago@comosjn.hobby.nl)
 ********************************************************/
 
 
-/* $XConsortium: ibm8514plyp.c,v 1.2 94/04/17 20:30:36 dpw Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"

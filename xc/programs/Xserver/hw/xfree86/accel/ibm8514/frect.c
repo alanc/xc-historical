@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514frec.c,v 1.2 94/04/17 20:30:32 dpw Exp $ */
+/* $XConsortium: frect.c,v 1.1 95/01/26 15:29:18 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/frect.c,v 3.1 1994/11/26 12:40:53 dawes Exp $ */
 /*
  * Fill rectangles.
@@ -47,7 +47,6 @@ mach8pcach.c 94-07-12, Hans Nasten ( nasten@everyware.se ).
 */
 
 
-/* $XConsortium: ibm8514frec.c,v 1.2 94/04/17 20:30:32 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
