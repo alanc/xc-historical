@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.44 89/07/11 08:36:21 rws Exp $ */
+/* $XConsortium: miregion.c,v 1.45 89/07/11 09:46:26 rws Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"
@@ -234,10 +234,9 @@ miValidRegion(reg)
 	        box.x1 = pboxN->x1;
 	    if (pboxN->x2 > box.x2)
 		box.x2 = pboxN->x2;
-	    if((pboxN->y1 < pboxP->y1) ||
+	    if ((pboxN->y1 < pboxP->y1) ||
 		((pboxN->y1 == pboxP->y1) &&
-		  ((pboxN->x1 < pboxP->x1) ||
-		   ((pboxN->y2 - pboxN->y1) != (pboxP->y2 - pboxP->y1)))))
+		 ((pboxN->x1 < pboxP->x2) || (pboxN->y2 != pboxP->y2))))
 		return FALSE;
 	}
 	return ((box.x1 == reg->extents.x1) &&
@@ -1142,9 +1141,11 @@ miUnion(newReg, reg1, reg2)
  *-----------------------------------------------------------------------
  * miRegionAppend --
  * 
- *      Just append the rgn rectangles onto the end of dstrgn.
- *      dstrgn is just a non-y-x-banded random collection of
- *      rectangles, and not yet a true region.  See miRegionValidate below.
+ *      "Append" the rgn rectangles onto the end of dstrgn, maintaining
+ *      knowledge of YX-banding when it's easy.  Otherwise, dstrgn just
+ *      becomes a non-y-x-banded random collection of rectangles, and not
+ *      yet a true region.  After a sequence of appends, the caller must
+ *      call miRegionValidate to ensure that a valid region is constructed.
  *
  * Results:
  *	None.
@@ -1158,7 +1159,9 @@ miRegionAppend(dstrgn, rgn)
     register RegionPtr dstrgn;
     register RegionPtr rgn;
 {
-    register int numRects;
+    int numRects, dnumRects;
+    BoxPtr new, old;
+    Bool prepend;
 
     if (!rgn->data && (dstrgn->data == &EmptyData))
     {
@@ -1170,17 +1173,62 @@ miRegionAppend(dstrgn, rgn)
     numRects = REGION_NUM_RECTS(rgn);
     if (!numRects)
 	return;
-
+    prepend = FALSE;
     RECTALLOC(dstrgn, numRects);
-    if (numRects == 1)
-	*REGION_TOP(dstrgn) = rgn->extents;
-    else
-	bcopy((char *)REGION_RECTS(rgn), (char *)REGION_TOP(dstrgn),
-	      numRects * sizeof(BoxRec));
-    if (!dstrgn->data->numRects)
+    old = REGION_RECTS(rgn);
+    dnumRects = dstrgn->data->numRects;
+    if (!dnumRects)
 	dstrgn->extents = rgn->extents;
+    else if (dstrgn->extents.x2 > dstrgn->extents.x1)
+    {
+	register BoxPtr first, last;
+
+	first = old;
+	last = REGION_BOXPTR(dstrgn) + (dnumRects - 1);
+	if ((first->y1 > last->y2) ||
+	    ((first->y1 == last->y1) && (first->y2 == last->y2) &&
+	     (first->x1 > last->x2)))
+	{
+	    if (rgn->extents.x1 < dstrgn->extents.x1)
+		dstrgn->extents.x1 = rgn->extents.x1;
+	    if (rgn->extents.x2 > dstrgn->extents.x2)
+		dstrgn->extents.x2 = rgn->extents.x2;
+	    dstrgn->extents.y2 = rgn->extents.y2;
+	}
+	else
+	{
+	    first = REGION_BOXPTR(dstrgn);
+	    last = old + (numRects - 1);
+	    if ((first->y1 > last->y2) ||
+		((first->y1 == last->y1) && (first->y2 == last->y2) &&
+		 (first->x1 > last->x2)))
+	    {
+		prepend = TRUE;
+		if (rgn->extents.x1 < dstrgn->extents.x1)
+		    dstrgn->extents.x1 = rgn->extents.x1;
+		if (rgn->extents.x2 > dstrgn->extents.x2)
+		    dstrgn->extents.x2 = rgn->extents.x2;
+		dstrgn->extents.y1 = rgn->extents.y1;
+	    }
+	    else
+		dstrgn->extents.x2 = dstrgn->extents.x1;
+	}
+    }
+    if (prepend)
+    {
+	new = REGION_BOX(dstrgn, numRects);
+	if (dnumRects == 1)
+	    *new = *REGION_BOXPTR(dstrgn);
+	else
+	    bcopy((char *)REGION_BOXPTR(dstrgn), (char *)new,
+		  dnumRects * sizeof(BoxRec));
+    }
     else
-	dstrgn->extents.x2 = dstrgn->extents.x1;
+	new = REGION_BOXPTR(dstrgn) + dnumRects;
+    if (numRects == 1)
+	*new = *old;
+    else
+	bcopy((char *)old, (char *)new, numRects * sizeof(BoxRec));
     dstrgn->data->numRects += numRects;
 }
 
@@ -1289,7 +1337,7 @@ miRegionValidate(badreg)
 {
     /* Descriptor for regions under construction  in Step 2. */
     typedef struct {
-	RegionPtr   reg;
+	RegionRec   reg;
 	int	    prevBand;
 	int	    curBand;
     } RegionInfo;
@@ -1308,7 +1356,10 @@ miRegionValidate(badreg)
 
     overlap = FALSE;
     if (!badreg->data)
+    {
+	good(badreg);
 	return FALSE;
+    }
     numRects = badreg->data->numRects;
     if (!numRects)
     {
@@ -1317,16 +1368,21 @@ miRegionValidate(badreg)
 	    xfreeData(badreg);
 	    badreg->data = &EmptyData;
 	}
+	good(badreg);
 	return FALSE;
     }
     if (numRects == 1)
     {
 	xfreeData(badreg);
 	badreg->data = (RegDataPtr)NULL;
+	good(badreg);
 	return FALSE;
     }
     if (badreg->extents.x1 < badreg->extents.x2)
+    {
+	good(badreg);
 	return FALSE;
+    }
 
     /* Step 1: Sort the rects array into ascending (y1, x1) order */
     QuickSortRects(REGION_BOXPTR(badreg), numRects);
@@ -1334,7 +1390,7 @@ miRegionValidate(badreg)
     /* Step 2: Scatter the sorted array into the minimum number of regions */
 
     /* Set up the first region to be the first rectangle in badreg */
-    /* Note that step 2 code will never overflow the badreg rects array */
+    /* Note that step 2 code will never overflow the ri[0].reg rects array */
     Must_have_memory = TRUE; /* XXX */
     ri = (RegionInfo *) xalloc(4 * sizeof(RegionInfo));
     Must_have_memory = FALSE; /* XXX */
@@ -1342,10 +1398,10 @@ miRegionValidate(badreg)
     numRI = 1;
     ri[0].prevBand = 0;
     ri[0].curBand = 0;
-    ri[0].reg = badreg;
-    box = REGION_BOXPTR(badreg);
-    badreg->extents = *box;
-    badreg->data->numRects = 1;
+    ri[0].reg = *badreg;
+    box = REGION_BOXPTR(&ri[0].reg);
+    ri[0].reg.extents = *box;
+    ri[0].reg.data->numRects = 1;
 
     /* Now scatter rectangles into the minimum set of valid regions.  If the
        next rectangle to be added to a region would force an existing rectangle
@@ -1359,12 +1415,12 @@ miRegionValidate(badreg)
 	/* Look for a region to append box to */
 	for (j = numRI, rit = ri; --j >= 0; rit++)
 	{
-	    reg = rit->reg;
+	    reg = &rit->reg;
 	    riBox = REGION_END(reg);
 
 	    if (box->y1 == riBox->y1 && box->y2 == riBox->y2)
 	    {
-		/* box in in same band as riBox.  Merge or append it */
+		/* box is in same band as riBox.  Merge or append it */
 		if (box->x1 <= riBox->x2)
 		{
 		    /* Merge it with riBox */
@@ -1402,13 +1458,14 @@ miRegionValidate(badreg)
 	    Must_have_memory = TRUE; /* XXX */
 	    ri = (RegionInfo *) xrealloc(ri, sizeRI * sizeof(RegionInfo));
 	    Must_have_memory = FALSE; /* XXX */
-	    rit = &(ri[numRI]);
+	    rit = &ri[numRI];
 	}
 	numRI++;
 	rit->prevBand = 0;
 	rit->curBand = 0;
-	rit->reg = miRegionCreate(box, 1);
-	miRectAlloc(rit->reg, (i+numRI) / numRI); /* MUST force allocation */
+	rit->reg.extents = *box;
+	rit->reg.data = (RegDataPtr)NULL;
+	miRectAlloc(&rit->reg, (i+numRI) / numRI); /* MUST force allocation */
 NextRect: ;
     } /* for i */
 
@@ -1417,7 +1474,7 @@ NextRect: ;
 
     for (j = numRI, rit = ri; --j >= 0; rit++)
     {
-	reg = rit->reg;
+	reg = &rit->reg;
 	riBox = REGION_END(reg);
 	reg->extents.y2 = riBox->y2;
 	if (reg->extents.x2 < riBox->x2) reg->extents.x2 = riBox->x2;
@@ -1435,16 +1492,14 @@ NextRect: ;
 	int half = numRI/2;
 	for (j = numRI & 1; j < (half + (numRI & 1)); j++)
 	{
-	    overlap |= miUnion(ri[j].reg, ri[j].reg, ri[j+half].reg);
-	    miRegionDestroy(ri[j+half].reg);
+	    reg = &ri[j+half].reg;
+	    overlap |= miUnion(&ri[j].reg, &ri[j].reg, reg);
+	    xfreeData(reg);
 	}
 	numRI -= half;
     }
-
-    /* Well, that's over with.  Just free up the ri array.  (Note that r[0].reg
-       has not been freed, but this is good: it is the result region */
+    *badreg = ri[0].reg;
     xfree(ri);
-
     good(badreg);
     return overlap;
 }
