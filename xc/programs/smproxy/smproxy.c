@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.c,v 1.6 94/06/17 10:13:13 mor Exp $ */
+/* $XConsortium: smproxy.c,v 1.7 94/06/27 14:21:45 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -651,11 +651,9 @@ SmPointer clientData;
     if (debug)
 	printf ("Trying to kill 0x%x\n", winInfo->window);
 
-#if 0
     XSync (disp, 0);
     XKillClient (disp, winInfo->window);
     XSync (disp, 0);
-#endif
 
 
     /*
@@ -890,6 +888,7 @@ XDestroyWindowEvent *event;
 	    if (win_list[i].smc_conn)
 	    {
 		SmcCloseConnection (win_list[i].smc_conn, 0, NULL);
+		win_list[i].smc_conn = NULL;
 		XtRemoveInput (win_list[i].input_id);
 	    }
 
