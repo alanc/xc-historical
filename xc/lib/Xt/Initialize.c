@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Initialize.c,v 1.6 88/08/29 16:45:39 asente Exp $";
+    "$XConsortium: Initialize.c,v 1.120 88/09/02 20:10:09 swick Exp $";
 /* $oHeader: Initialize.c,v 1.6 88/08/29 16:45:39 asente Exp $ */
 #endif lint
 
@@ -72,9 +72,6 @@ static XrmOptionDescRec opTable[] = {
 {"-synchronous","*synchronous",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-title",	".title",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-xrm",	NULL,		XrmoptionResArg,	(caddr_t) NULL},
-#ifdef EQUALGEOMETRY
-{"=",		".geometry",	XrmoptionIsArg,		(caddr_t) NULL},
-#endif
 };
 
 void XtToolkitInitialize()
@@ -319,12 +316,6 @@ void _XtDisplayInitialize(dpy, app, name, classname, urlist, num_urs, argc, argv
 	XrmQuark q;
 	XrmOptionDescRec *options;
 	Cardinal num_options;
-	
-	/* save first app name & class for R2 compatibility onlyX */
-	if (app->class == NULL) {
-	    app->name = XrmStringToName(name);
-	    app->class = XrmStringToName(classname);
-	}
 
 	GetInitialResourceDatabase(dpy, classname);
 
@@ -385,7 +376,7 @@ void _XtDisplayInitialize(dpy, app, name, classname, urlist, num_urs, argc, argv
  */
 
 Widget XtInitialize(name, classname, urlist, num_urs, argc, argv)
-	char *name;
+	char *name;		/* unused in R3 */
 	char *classname;
 	XrmOptionDescRec *urlist;
 	Cardinal num_urs;
@@ -411,7 +402,7 @@ Widget XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	for (i = 0 ; i < *argc ; i++) saved_argv[i] = argv[i];
 	saved_argv[i] = NULL;
 
-	dpy = XtOpenDisplay((XtAppContext) NULL, (String) NULL, name,
+	dpy = XtOpenDisplay((XtAppContext) NULL, (String) NULL, NULL,
 		classname, urlist, num_urs, argc, argv);
 	if (dpy == NULL) {
              XtErrorMsg("invalidDisplay","xtInitialize","XtToolkitError",
@@ -423,7 +414,7 @@ Widget XtInitialize(name, classname, urlist, num_urs, argc, argv)
 	XtSetArg(args[num_args], XtNargc, saved_argc);	num_args++;
 	XtSetArg(args[num_args], XtNargv, saved_argv);	num_args++;
 
-        root = XtAppCreateShell(name, classname, 
+        root = XtAppCreateShell(NULL, classname, 
 		applicationShellWidgetClass, dpy, args, num_args);
 
 	return root;
