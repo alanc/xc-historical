@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.19 92/04/21 15:34:25 rws Exp $ */
+/* $XConsortium: main.c,v 5.20 92/08/21 19:29:46 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -54,6 +54,7 @@ xConnSetupPrefix connSetupPrefix;
 
 extern WindowPtr *WindowTable;
 extern FontPtr defaultFont;
+extern int screenPrivateCount;
 
 extern void SetInputCheck();
 extern void InitProcVectors();
@@ -69,7 +70,10 @@ extern void ResetWellKnownSockets();
 extern void ResetWindowPrivates();
 extern void ResetGCPrivates();
 static void FreeScreen();
-static void ResetScreenPrivates();
+extern void ResetScreenPrivates();
+
+Bool CreateScratchPixmapsForScreen();
+void FreeScratchPixmapsForScreen();
 
 PaddingInfo PixmapWidthPaddingInfo[33];
 int connBlockScreenStart;
@@ -210,6 +214,9 @@ main(argc, argv)
 	ResetScreenPrivates();
 	ResetWindowPrivates();
 	ResetGCPrivates();
+#ifdef PIXPRIV
+	ResetPixmapPrivates();
+#endif
 	ResetFontPrivateIndex();
 	InitOutput(&screenInfo, argc, argv);
 	if (screenInfo.numScreens < 1)
@@ -217,11 +224,17 @@ main(argc, argv)
 	InitExtensions(argc, argv);
 	for (i = 0; i < screenInfo.numScreens; i++)
 	{
+	    ScreenPtr pScreen = screenInfo.screens[i];
+	    if (!CreateScratchPixmapsForScreen(i))
+		FatalError("failed to create scratch pixmaps");
+	    if (pScreen->CreateScreenResources &&
+		!(*pScreen->CreateScreenResources)(pScreen))
+		FatalError("failed to create screen resources");
 	    if (!CreateGCperDepth(i))
 		FatalError("failed to create scratch GCs");
 	    if (!CreateDefaultStipple(i))
 		FatalError("failed to create default stipple");
-	    if (!CreateRootWindow(screenInfo.screens[i]))
+	    if (!CreateRootWindow(pScreen))
 		FatalError("failed to create root window");
 	}
 	InitInput(argc, argv);
@@ -253,6 +266,7 @@ main(argc, argv)
 	CloseDownDevices();
 	for (i = screenInfo.numScreens - 1; i >= 0; i--)
 	{
+	    FreeScratchPixmapsForScreen(i);
 	    FreeGCperDepth(i);
 	    FreeDefaultStipple(i);
 	    (* screenInfo.screens[i]->CloseScreen)(i, screenInfo.screens[i]);
@@ -412,103 +426,6 @@ CreateConnectionBlock()
     return TRUE;
 }
 
-static int  screenPrivateCount;
-
-static void
-ResetScreenPrivates()
-{
-    screenPrivateCount = 0;
-}
-
-/* this can be called after some screens have been created,
- * so we have to worry about resizing existing devPrivates
- */
-int
-AllocateScreenPrivateIndex()
-{
-    int		index;
-    int		i;
-    ScreenPtr	pScreen;
-    DevUnion	*nprivs;
-
-    index = screenPrivateCount++;
-    for (i = 0; i < screenInfo.numScreens; i++)
-    {
-	pScreen = screenInfo.screens[i];
-	nprivs = (DevUnion *)xrealloc(pScreen->devPrivates,
-				      screenPrivateCount * sizeof(DevUnion));
-	if (!nprivs)
-	{
-	    screenPrivateCount--;
-	    return -1;
-	}
-	pScreen->devPrivates = nprivs;
-    }
-    return index;
-}
-
-Bool
-AllocateWindowPrivate(pScreen, index, amount)
-    register ScreenPtr pScreen;
-    int index;
-    unsigned amount;
-{
-    unsigned oldamount;
-
-    if (index >= pScreen->WindowPrivateLen)
-    {
-	unsigned *nsizes;
-	nsizes = (unsigned *)xrealloc(pScreen->WindowPrivateSizes,
-				      (index + 1) * sizeof(unsigned));
-	if (!nsizes)
-	    return FALSE;
-	while (pScreen->WindowPrivateLen <= index)
-	{
-	    nsizes[pScreen->WindowPrivateLen++] = 0;
-	    pScreen->totalWindowSize += sizeof(DevUnion);
-	}
-	pScreen->WindowPrivateSizes = nsizes;
-    }
-    oldamount = pScreen->WindowPrivateSizes[index];
-    if (amount > oldamount)
-    {
-	pScreen->WindowPrivateSizes[index] = amount;
-	pScreen->totalWindowSize += (amount - oldamount);
-    }
-    return TRUE;
-}
-
-Bool
-AllocateGCPrivate(pScreen, index, amount)
-    register ScreenPtr pScreen;
-    int index;
-    unsigned amount;
-{
-    unsigned oldamount;
-
-    if (index >= pScreen->GCPrivateLen)
-    {
-	unsigned *nsizes;
-	nsizes = (unsigned *)xrealloc(pScreen->GCPrivateSizes,
-				      (index + 1) * sizeof(unsigned));
-	if (!nsizes)
-	    return FALSE;
-	while (pScreen->GCPrivateLen <= index)
-	{
-	    nsizes[pScreen->GCPrivateLen++] = 0;
-	    pScreen->totalGCSize += sizeof(DevUnion);
-	}
-	pScreen->GCPrivateSizes = nsizes;
-    }
-    oldamount = pScreen->GCPrivateSizes[index];
-    if (amount > oldamount)
-    {
-	pScreen->GCPrivateSizes[index] = amount;
-	pScreen->totalGCSize += (amount - oldamount);
-    }
-    return TRUE;
-}
-
 /*
 	grow the array of screenRecs if necessary.
 	call the device-supplied initialization procedure 
@@ -553,7 +470,13 @@ AddScreen(pfnInit, argc, argv)
     pScreen->GCPrivateLen = 0;
     pScreen->GCPrivateSizes = (unsigned *)NULL;
     pScreen->totalGCSize = sizeof(GC);
+#ifdef PIXPRIV
+    pScreen->PixmapPrivateLen = 0;
+    pScreen->PixmapPrivateSizes = (unsigned *)NULL;
+    pScreen->totalPixmapSize = sizeof(PixmapRec);
+#endif
     pScreen->ClipNotify = (void (*)())NULL; /* for R4 ddx compatibility */
+    pScreen->CreateScreenResources = (Bool (*)())NULL;
     
 #ifdef DEBUG
     for (jNI = &pScreen->QueryBestSize; 
@@ -612,6 +535,9 @@ FreeScreen(pScreen)
 {
     xfree(pScreen->WindowPrivateSizes);
     xfree(pScreen->GCPrivateSizes);
+#ifdef PIXPRIV
+    xfree(pScreen->PixmapPrivateSizes);
+#endif
     xfree(pScreen->devPrivates);
     xfree(pScreen);
 }
