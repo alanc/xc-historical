@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.57 91/07/31 01:10:23 keith Exp $
+ * $XConsortium: tocutil.c,v 2.58 93/09/20 17:51:59 hersh Exp kaleb $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -501,7 +501,7 @@ void TUSaveTocFile(toc)
     if (fid < 0 && toc->length != toc->origlength)
 	fid = myopen(toc->scanfile, O_RDWR, 0666);
     if (fid >= 0) {
-#if defined(SYSV) && (defined(SYSV386) || defined(MOTOROLA))
+#if defined(SYSV) && (defined(i386) || defined(MOTOROLA))
 	(void) ftruncate_emu(fid, toc->length, toc->scanfile);
 #else
 	(void) ftruncate(fid, toc->length);
