@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.130 92/09/14 17:21:50 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.129 92/09/15 13:54:28 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1575,8 +1575,7 @@ static XtGeometryResult GeometryManager( wid, request, reply )
 	if (request->request_mode & (CWX | CWY))
 	    return(XtGeometryNo);
 
-	/* %%% worry about XtCWQueryOnly */
-	my_request.request_mode = 0;
+	my_request.request_mode = (request->request_mode & XtCWQueryOnly);
 	if (request->request_mode & CWWidth) {
 	    my_request.width = request->width;
 	    my_request.request_mode |= CWWidth;
@@ -1600,10 +1599,12 @@ static XtGeometryResult GeometryManager( wid, request, reply )
 	     * only one of the two) is now the correct child size
 	     */
 	    
-	    wid->core.width = shell->core.width;
-	    wid->core.height = shell->core.height;
-	    if (request->request_mode & CWBorderWidth) {
-		wid->core.x = wid->core.y = -request->border_width;
+	    if (!(request->request_mode & XtCWQueryOnly)) {
+		wid->core.width = shell->core.width;
+		wid->core.height = shell->core.height;
+		if (request->request_mode & CWBorderWidth) {
+		    wid->core.x = wid->core.y = -request->border_width;
+		}
 	    }
 	    return XtGeometryYes;
 	} else return XtGeometryNo;
