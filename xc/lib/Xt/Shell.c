@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.73 89/10/05 13:23:48 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.74 89/10/06 18:38:41 jim Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -877,7 +877,7 @@ static void Realize(wid, vmask, attr)
 	       and then re-Realized, we probably don't want to
 	       re-evaluate the defaults anyway.
 	     */
-	    void GetGeometry();
+	    static void GetGeometry();
 	    GetGeometry(wid, (Widget)NULL);
 	}
 	else if (w->core.background_pixmap == XtUnspecifiedPixmap) {
