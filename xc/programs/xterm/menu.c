@@ -2,7 +2,7 @@
 static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #endif
 /*
- *	$Header: menu.c,v 1.6 88/07/29 15:38:25 jim Exp $
+ *	$Header: menu.c,v 1.7 88/07/29 16:04:18 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -45,7 +45,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$Header: menu.c,v 1.6 88/07/29 15:38:25 jim Exp $";
+static char rcs_id[] = "$Header: menu.c,v 1.7 88/07/29 16:04:18 jim Exp $";
 #endif	lint
 
 #define DEFMENUBORDER	2
@@ -264,8 +264,7 @@ char *name;
 		 &xgc);
 	        xgc.foreground = menu->menuFgColor;
 	        xgc.background = menu->menuBgColor;
-	        xgc.function = menu->menuFgColor ? GXor : GXand;
-/*		xgc.function = GXcopy;*/
+		xgc.function = GXcopy;
 	        xgc.stipple = Gray_Tile;
 	        xgc.fill_style = FillStippled;
 	        MenuGrayGC = XCreateGC(dpy, DefaultRootWindow(dpy),
