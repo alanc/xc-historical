@@ -1,3 +1,4 @@
+.\" $XConsortium$
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
 .EH ''''
 .OH ''''
@@ -20,6 +21,8 @@
 \s+3\fBThe Input Method Protocol\fP\s-3
 .sp
 \fBX Consortium Standard\fR
+.sp
+\fBX Version 11, Release 6\fR
 .sp 3
 .AU
 Masahiko Narita
