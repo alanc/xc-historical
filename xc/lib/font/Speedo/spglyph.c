@@ -1,4 +1,4 @@
-/* $XConsortium: spglyph.c,v 1.3 91/05/11 09:58:37 rws Exp $ */
+/* $XConsortium: spglyph.c,v 1.4 91/06/04 15:50:16 rws Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -164,7 +164,14 @@ sp_set_bitmap_bits(y, xbit1, xbit2)
     if (xbit1 < 0)	/* XXX this is more than a little bit rude... */
 	xbit1 = 0;
 
-    dst = ((CARD32 *) cfv->bp) + (xbit1 >> 5);
+    nmiddle = ((int) cfv->bp) & 3;
+    if (nmiddle)
+    {
+	xbit1 += nmiddle << 3;
+	xbit2 += nmiddle << 3;
+	nmiddle = 4 - nmiddle;
+    }
+    dst = ((CARD32 *) (((char *) cfv->bp) - nmiddle)) + (xbit1 >> 5);
     nmiddle = (xbit2 >> 5) - (xbit1 >> 5);
     xbit1 &= 31;
     xbit2 &= 31;
