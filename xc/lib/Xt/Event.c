@@ -1052,6 +1052,10 @@ void XtAppMainLoop(app)
 
 void _XtEventInitialize()
 {
+    static Boolean initialized = FALSE;
+    if (initialized) return;
+    initialized = TRUE;
+
     _XtDestroyList = NULL;
     nullRegion = XCreateRegion();
     InitializeHash();
