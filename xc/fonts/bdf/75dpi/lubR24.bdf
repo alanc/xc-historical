@@ -10,7 +10,7 @@ COMMENT Begin LogicalFontDescription
 FONTNAME_REGISTRY ""
 FOUNDRY "B&H"
 FAMILY_NAME "LucidaBright"
-NAME "Medium"
+WEIGHT_NAME "Medium"
 SLANT "R"
 SETWIDTH_NAME "Normal"
 ADD_STYLE_NAME ""

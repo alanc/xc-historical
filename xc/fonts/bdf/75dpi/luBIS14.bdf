@@ -11,7 +11,7 @@ COMMENT Begin LogicalFontDescription
 FONTNAME_REGISTRY ""
 FOUNDRY "B&H"
 FAMILY_NAME "Lucida"
-NAME "Bold"
+WEIGHT_NAME "Bold"
 SLANT "I"
 SETWIDTH_NAME "Normal"
 ADD_STYLE_NAME "Sans"
