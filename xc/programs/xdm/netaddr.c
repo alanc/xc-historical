@@ -1,7 +1,7 @@
 /*
  * xdm - X display manager
  *
- * $XConsortium$
+ * $XConsortium: netaddr.c,v 1.1 91/07/15 15:59:05 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -26,15 +26,11 @@
 
 #ifdef XDMCP
 
-#ifndef STREAMSCONN
 #include <sys/socket.h>		/* struct sockaddr */
-#endif
+#include <netinet/in.h>		/* struct sockaddr_in */
 
 #ifdef UNIXCONN
 #include <sys/un.h>		/* struct sockaddr_un */
-#endif
-#ifdef TCPCONN
-#include <netinet/in.h>		/* struct sockaddr_in */
 #endif
 #ifdef DNETCONN
 #include <netdnet/dn.h>		/* struct sockaddr_dn */
@@ -47,7 +43,7 @@ int NetaddrFamily(netaddrp)
     XdmcpNetaddr *netaddrp;
 {
 #ifdef STREAMSCONN
-    short family = *netaddrp;
+    short family = *(short *)netaddrp;
     return family;
 #else
     return ((struct sockaddr *)netaddrp)->sa_family;
@@ -57,10 +53,10 @@ int NetaddrFamily(netaddrp)
 
 /* given an XdmcpNetaddr, returns a pointer to the TCP/UDP port used
    and sets *lenp to the length of the address
-   or 0 if not using TCP or UDP */
+   or 0 if not using TCP or UDP. */
 
 char * NetaddrPort(netaddrp, lenp)
-    XdmcpNetaddr *netaddrp;
+    XdmcpNetaddr netaddrp;
     int *lenp;			/* return */
 {
 #ifdef STREAMSCONN
@@ -84,10 +80,11 @@ char * NetaddrPort(netaddrp, lenp)
    and sets *lenp to the length of the address */
 
 char * NetaddrAddress(netaddrp, lenp)
-    XdmcpNetaddr *netaddrp;
+    XdmcpNetaddr netaddrp;
     int *lenp;			/* return */
 {
 #ifdef STREAMSCONN
+    *lenp = 4;
     return netaddrp+4;
 #else
 #ifdef UNIXCONN
@@ -122,7 +119,7 @@ char * NetaddrAddress(netaddrp, lenp)
    Returns the X protocol family used, e.g., FamilyInternet */
 
 int ConvertAddr (saddr, len, addr)
-    XdmcpNetaddr *saddr;
+    XdmcpNetaddr saddr;
     int *len;			/* return */
     char **addr;		/* return */
 {
@@ -131,14 +128,25 @@ int ConvertAddr (saddr, len, addr)
     if (len == NULL)
         return -1;
     *addr = NetaddrAddress(saddr, len);
+#ifdef STREAMSCONN
+    /* kludge */
+    if (NetaddrFamily(saddr) == 2)
+	retval = FamilyInternet;
+#else
     switch (NetaddrFamily(saddr))
     {
+#ifdef AF_UNSPEC
       case AF_UNSPEC:
+	retval = FamilyLocal;
+	break;
+#endif
+#ifdef AF_UNIX
 #ifndef hpux
       case AF_UNIX:
-#endif
         retval = FamilyLocal;
 	break;
+#endif
+#endif
 #ifdef TCPCONN
       case AF_INET:
         retval = FamilyInternet;
@@ -158,8 +166,60 @@ int ConvertAddr (saddr, len, addr)
 	retval = -1;
         break;
     }
+#endif /* STREAMSCONN else */
     Debug ("ConvertAddr returning %d\n", retval);
     return retval;
+}
+
+addressEqual (a1, len1, a2, len2)
+    XdmcpNetaddr a1, a2;
+    int		 len1, len2;
+{
+    int partlen1, partlen2;
+    char *part1, *part2;
+
+    if (len1 != len2)
+    {
+	return FALSE;
+    }
+    if (NetaddrFamily(a1) != NetaddrFamily(a2))
+    {
+	return FALSE;
+    }
+    part1 = NetaddrPort(a1, &partlen1);
+    part2 = NetaddrPort(a2, &partlen2);
+    if (partlen1 != partlen2 || bcmp(part1, part2, partlen1) != 0)
+    {
+	return FALSE;
+    }
+    part1 = NetaddrAddress(a1, &partlen1);
+    part2 = NetaddrAddress(a2, &partlen2);
+    if (partlen1 != partlen2 || bcmp(part1, part2, partlen1) != 0)
+    {
+	return FALSE;
+    }
+    return TRUE;
+}
+
+PrintSockAddr (a, len)		/* Debugging routine */
+    struct sockaddr *a;
+    int		    len;
+{
+    unsigned char    *t, *p;
+
+    Debug ("family %d, ", a->sa_family);
+    switch (a->sa_family) {
+#ifdef AF_INET
+    case AF_INET:
+
+	p = (unsigned char *) &((struct sockaddr_in *) a)->sin_port;
+	t = (unsigned char *) &((struct sockaddr_in *) a)->sin_addr;
+
+	Debug ("port %d, host %d.%d.%d.%d\n",
+		(p[0] << 8) + p[1], t[0], t[1], t[2], t[3]);
+	break;
+    }
+#endif
 }
 
 #endif /* XDMCP */
