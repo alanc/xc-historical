@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER) )
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.64 89/03/16 12:58:17 swick Exp $";
+static char Xrcsid[] = "$XConsortium: SimpleMenu.c,v 1.1 89/04/03 17:23:02 kit Exp $";
 #endif 
 
 /***********************************************************
@@ -748,6 +748,30 @@ Cardinal num_args;
   if (XtIsRealized(w))
     CalculateNewSize(w);	/* This only changes the width. */
   RefreshEntry(w, name, XawErefreshEntry);
+}
+
+  
+/*      Function Name: XawSimpleMenuGetValues
+ *      Description: gets the current values for an entry.
+ *      Arguments: w - the menu widget
+ *                 name - name of new menu item.
+ *                 args - the argument list. (name/address pairs)
+ *                 num_args -  number of arguments.
+ *      Returns: none.
+ */
+
+void
+XawSimpleMenuGetValues(w, name , args, num_args)
+Widget w;
+char * name;
+ArgList args;
+Cardinal num_args;
+{
+  MenuEntry * entry;
+
+  entry = GetMenuEntry(w, name);
+  XtGetSubvalues((char *) entry, entry_resources, XtNumber(entry_resources),
+		 args, num_args);
 }
 
 /************************************************************
