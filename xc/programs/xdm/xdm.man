@@ -894,6 +894,16 @@ isn't very good at doing is coexisting with other window systems.  To use
 multiple window systems on the same hardware, you'll probably be more
 interested in
 .I xinit .
+.SH FILES
+.nf
+/usr/lib/X11/xdm/xdm-config - the default configuration file
+/usr/bin/X11/xrdb - the default resource database loader
+/usr/bin/X11/X - the default server
+/usr/bin/X11/xterm - the default session program and failsafe client
+/usr/lib/X11/xdm/chooser - the default chooser
+/usr/lib/X11/xdm/A<host>-<suffix> - the default place for authorization files
+/usr/lib/X11/xdm/Xaccess - the default Xaccess file
+.fi
 .SH "SEE ALSO"
 X(1), xinit(1) and XDMCP
 .SH BUGS
