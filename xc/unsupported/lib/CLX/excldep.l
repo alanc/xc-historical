@@ -199,27 +199,6 @@
   (load "excldep.o"))
 
 
-;;
-;; Suns need a special hack so that you can build CLX on a OS3.* machine and
-;; use it on a OS4.0 machine.  This is because the hostent structure changed
-;; incompatibly.
-;;
-#+(or :sun3 :sun4)
-(when
-    (plusp (ff:get-entry-points
-	    (make-array 1 :initial-contents
-			(list (ff:convert-to-lang "connect_to_server_3_x"
-						  :language :c)))
-	    (make-array 1 :element-type '(unsigned-byte 32))))
-
-  (ff:remove-entry-point (ff:convert-to-lang "connect_to_server_3_x"
-					     :language :c))
-  (ff:remove-entry-point (ff:convert-to-lang "connect_to_server_4_x"
-					     :language :c))
-  (load "socket3x.o")
-  (load "socket4x.o")) 
-
-#-(or :sun3 :sun4)
 (when
     (plusp (ff:get-entry-points
 	    (make-array 1 :initial-contents
@@ -232,13 +211,6 @@
 
 (ff:defforeign-list `((xlib::connect-to-server
 		       :entry-point
-		       #+(or :sun3 :sun4)
-		       ,(if (probe-file "/lib/ld.so")
-			    (ff:convert-to-lang "connect_to_server_4_x"
-						:language :c)
-			  (ff:convert-to-lang "connect_to_server_3_x"
-						:language :c))
-		       #-(or :sun3 :sun4)
 		       ,(ff:convert-to-lang "connect_to_server" :language :c)
 		       :return-type :fixnum
 		       :arg-checking nil
