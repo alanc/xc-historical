@@ -99,23 +99,20 @@ ConvertFontNameToEncoding (n)
 	return n;
 }
 
-static void
-InstallFontSizes (dw, f)
+DviFontSizeList *
+InstallFontSizes (dw, x_name)
 	DviWidget	dw;
-	DviFontList	*f;
+	char		*x_name;
 {
 	char	fontNameString[2048];
 	char	**fonts;
 	int	i, count;
 	int	size;
-	DviFontSizeList	*head, *new;
+	DviFontSizeList	*sizes, *new;
 	XFontName	fontName;
 	unsigned int	fontNameAttributes;
 
-	f->sizes = 0;
-	if (!f->x_name)
-		return;
-	if (!XParseFontName (f->x_name, &fontName, &fontNameAttributes))
+	if (!XParseFontName (x_name, &fontName, &fontNameAttributes))
 		return;
 	fontNameAttributes &= ~(FontNamePixelSize|FontNamePointSize);
 	fontNameAttributes |= FontNameResolutionX;
@@ -124,18 +121,20 @@ InstallFontSizes (dw, f)
 	fontName.ResolutionY = dw->dvi.device_resolution;
 	XFormatFontName (&fontName, fontNameAttributes, fontNameString);
 	fonts = XListFonts (XtDisplay (dw), fontNameString, 10000000, &count);
+	sizes = 0;
 	for (i = 0; i < count; i++) {
 		if ((size = ConvertFontNameToSize (fonts[i])) != -1) {
 			new = (DviFontSizeList *) malloc (sizeof *new);
-			new->next = f->sizes;
+			new->next = sizes;
 			new->size = size;
 			new->x_name = savestr (fonts[i]);
 			new->doesnt_exist = 0;
 			new->font = 0;
-			f->sizes = new;
+			sizes = new;
 		}
 	}
 	XFreeFontNames (fonts);
+	return sizes;
 }
 
 static
@@ -162,6 +161,7 @@ InstallFont (dw, position, dvi_name, x_name)
 	char		*x_name;
 {
 	DviFontList	*f;
+	DviFontSizeList	*sizes;
 	char		*encoding;
 
 	if (f = LookupFontByPosition (dw, position)) {
@@ -172,26 +172,32 @@ InstallFont (dw, position, dvi_name, x_name)
 		    !strcmp (f->x_name, x_name))
 			return;
 
+		sizes = InstallFontSizes (dw, x_name);
+		if (!sizes)
+		    return f;
+
 		DisposeFontSizes (f->sizes);
 		if (f->dvi_name)
 			free (f->dvi_name);
 		if (f->x_name)
 			free (f->x_name);
 	} else {
+		sizes = InstallFontSizes (dw, x_name);
+		if (!sizes)
+		    return 0;
 		f = (DviFontList *) malloc (sizeof (*f));
 		f->next = dw->dvi.fonts;
 		dw->dvi.fonts = f;
 	}
-	f->sizes = 0;
 	f->dvi_name = savestr (dvi_name);
 	f->x_name = savestr (x_name);
 	f->dvi_number = position;
+	f->sizes = sizes;
 	if (f->x_name) {
 		encoding = ConvertFontNameToEncoding (f->x_name);
 		f->char_map = DviFindMap (encoding);
 	} else
 		f->char_map = 0;
-	InstallFontSizes (dw, f);
 	/* 
 	 * force requery of fonts
 	 */
@@ -288,7 +294,7 @@ SetFontPosition (dw, position, dvi_name, extra)
 	char	*x_name;
 
 	x_name = MapDviNameToXName (dw, dvi_name);
-	InstallFont (dw, position, dvi_name, x_name);
+	(void) InstallFont (dw, position, dvi_name, x_name);
 }
 
 XFontStruct *
