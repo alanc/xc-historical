@@ -1,7 +1,7 @@
-XCOMM $XConsortium: Imakefile,v 5.19 92/04/03 11:28:16 eswu Exp $
+XCOMM $XConsortium: Imakefile,v 5.20 92/09/07 13:53:29 rws Exp $
 #include <Server.tmpl>
 
-#if BuildXInputExt || BuildPexExt || BuildPexClients
+#if BuildXInputExt || BuildPexExt || BuildPexClients || BuildXIE
 #define IHaveSubdirs
 #endif
 
@@ -14,6 +14,9 @@ XCOMM $XConsortium: Imakefile,v 5.19 92/04/03 11:28:16 eswu Exp $
 #if BuildPexClients
   PEXDIRS = PEX/dipex/swap
 #endif
+#endif
+#if BuildXIE
+  XIEDIRS = xiesi
 #endif
 #if BuildXTrapExt
   XTRAPDIRS = xtrap
@@ -34,7 +37,7 @@ SAVEROBJS = saver.o
 		bigreq.o $(SAVEROBJS)
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(SERVERSRC)/include
    LINTLIBS = ../../server/dix/llib-ldix.ln ../../server/os/4.2bsd/llib-los.ln
-        SUBDIRS = $(XINPUTDIRS) $(PEXDIRS) $(XTRAPDIRS)
+        SUBDIRS = $(XINPUTDIRS) $(PEXDIRS) $(XIEDIRS) $(XTRAPDIRS)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(ext,$(OBJS))
