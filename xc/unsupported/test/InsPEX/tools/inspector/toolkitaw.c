@@ -1,5 +1,4 @@
-
-/* $XConsortium: toolkitaw.c,v 5.5 91/05/29 21:42:44 converse Exp $ */
+/* $XConsortium: toolkitaw.c,v 5.6 91/05/30 12:11:00 converse Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -36,24 +35,17 @@ SOFTWARE.
  * of -1 directs the function to use default or toolkit-determined
  * values.
  *
- * The application defines notification procedures as having no
- * arguments since we can't be sure all toolkits will call them
- * with the same arguments. Unfortunately, this forces greater use
- * of globals...
- *
  */
 
 #include <stdio.h>
 #include "toolkitaw.h"
 
-/* 
- * Static variables for Athena implementation
- */
+/* Static variables for Athena implementation */
 
 static Widget toplevel;
 static XtAppContext appContext;
 
-/* for keeping track of control widget layout.  We make an assumption
+/* For keeping track of control widget layout.  We make an assumption
  * that widgets in a control window (form widget) are created in order,
  * and use the column argument to detect whether it goes on the
  * same row as the last one.  (col==1 means new row)
@@ -61,17 +53,16 @@ static XtAppContext appContext;
 static Widget lastwidget=NULL;  	/* last one created */
 static Widget lastleftwidget=NULL; 	/* last one beginning a row */
 static Widget widgetAbove = NULL;	/* first one in the previous row */
-/*
- * Assume one list, items indexed beginning at 0, and monotonically added.
- */
+
+/* Assume one list, items indexed beginning at 0, and monotonically added. */
 static String *list = NULL;
 static int listCount = 0;
 static Cardinal listSize = 0;
 
 
-/*
- * tk_init(argc,argv) - initialize the toolkit.  The toolkit may
- * look for toolkit-specific arguments in the command-line input.
+
+/* Initialize the toolkit.  The toolkit may look for toolkit-specific 
+ * arguments in the command line.
  */
 void tk_init(argc, argv)
     int argc;
@@ -87,11 +78,8 @@ void tk_init(argc, argv)
 }
 
 
-/*
- * TK_Main_Window
- * Create a main application window with given label, height, and width,
- * Returning the display in display_return and window as
- * the return value.
+/* Create a main application window with given label, height, and width,
+ * Returning the display in display_return and window as the return value.
  */
 TK_Main_Window tk_create_main_window(label, height, width, display_return)
     char *label; 
@@ -99,71 +87,68 @@ TK_Main_Window tk_create_main_window(label, height, width, display_return)
     Display **display_return;
 {
     Arg args[5];
-    Cardinal i = 0;
+    Cardinal n = 0;
     Widget form;
 
     /* toplevel already created by tk_init: create a form child */
 
     /* blow off label for now */
     if (height != -1) {
-	XtSetArg(args[i], XtNheight, height); i++;
+	XtSetArg(args[n], XtNheight, height);	n++;
     }
     if (width != -1) {
-	XtSetArg(args[i], XtNwidth, width); i++;
+	XtSetArg(args[n], XtNwidth, width);	n++;
     }
-    XtSetArg(args[i], XtNresizable, True);	i++;
-    form = XtCreateManagedWidget("main", formWidgetClass, toplevel, args, i);
+    XtSetArg(args[n], XtNresizable, True);	n++;
+    form = XtCreateManagedWidget("main", formWidgetClass, toplevel, args, n);
     *display_return = XtDisplay(toplevel);
     return form;
 }
 
 
-/*
- * TK_Control_Window
- * Create a subwindow suitable for buttons, etc. that is a child of
- * the given parent.  A -1 for any of x, y, height or width 
- * yields the default or toolkit-determined value.
+/* Create a subwindow suitable for buttons, as a child of the given parent.
+ * A -1 for any of x, y, height or width yields the widget default value.
  */
 TK_Control_Window tk_create_control_window(parent, x, y, height, width)
     TK_Main_Window parent;
     int x, y, height, width;
 {
-    Arg args[15];
-    Cardinal i = 0;
     Widget control_win;
+    Cardinal n = 0;
+    Arg args[15];
     static int child = 0;	/* evil hack */
 
     if (height != -1) {
-	XtSetArg(args[i], XtNheight, height); i++;
+	XtSetArg(args[n], XtNheight, height); n++;
     }
     if (width != -1) {
-	XtSetArg(args[i], XtNwidth, width); i++;
+	XtSetArg(args[n], XtNwidth, width); n++;
     }
     if (x != -1) {
-	XtSetArg(args[i], XtNx, x); i++;
+	XtSetArg(args[n], XtNx, x); n++;
     }
     if (y != -1) {
-	XtSetArg(args[i], XtNy, y); i++;
+	XtSetArg(args[n], XtNy, y); n++;
     }
 
-    XtSetArg(args[i], XtNfromHoriz, NULL);		i++;
-    XtSetArg(args[i], XtNhorizDistance, x);		i++;
-    XtSetArg(args[i], XtNfromVert, NULL);		i++;
-    XtSetArg(args[i], XtNvertDistance, y);		i++;
-    XtSetArg(args[i], XtNresizable, True);		i++;
+    XtSetArg(args[n], XtNfromHoriz, NULL);		n++;
+    XtSetArg(args[n], XtNhorizDistance, x);		n++;
+    XtSetArg(args[n], XtNfromVert, NULL);		n++;
+    XtSetArg(args[n], XtNvertDistance, y);		n++;
+    XtSetArg(args[n], XtNresizable, True);		n++;
     if (child == 0) {
-	XtSetArg(args[i], XtNbottom, XawChainBottom);	i++;
-	XtSetArg(args[i], XtNleft, XawChainLeft);	i++;
-	XtSetArg(args[i], XtNright, XawChainRight);	i++;
+	XtSetArg(args[n], XtNbottom, XawChainBottom);	n++;
+	XtSetArg(args[n], XtNleft, XawChainLeft);	n++;
+	XtSetArg(args[n], XtNright, XawChainRight);	n++;
     } else if (child == 1) {
-	XtSetArg(args[i], XtNtop, XawChainTop);		i++;
-	XtSetArg(args[i], XtNright, XawChainRight);	i++;
-	XtSetArg(args[i], XtNbottom, XawChainBottom);	i++;
+	XtSetArg(args[n], XtNtop, XawChainTop);		n++;
+	XtSetArg(args[n], XtNright, XawChainRight);	n++;
+	XtSetArg(args[n], XtNbottom, XawChainBottom);	n++;
     }
     child++;
 
     control_win = XtCreateManagedWidget("control", formWidgetClass, parent,
-					args, i);
+					args, n);
     return (control_win);
 }
 
@@ -179,26 +164,26 @@ Drawable tk_create_X_drawable_window(parent, height, width,
     Display **display_return;
 {
     /* create a Core widget and return its Xid */
-    Arg args[4];
-    Cardinal i = 0;
     Widget core_widget;
     Drawable drawable;
+    Cardinal n = 0;
+    Arg args[4];
 
     if (height != -1) {
-	XtSetArg(args[i], XtNheight, height); i++;
+	XtSetArg(args[n], XtNheight, height); n++;
     }
     if (width != -1) {
-	XtSetArg(args[i], XtNwidth, width); i++;
+	XtSetArg(args[n], XtNwidth, width); n++;
     }
     core_widget = XtCreateManagedWidget("canvas", coreWidgetClass, parent,
-					args, i);
+					args, n);
     *display_return = XtDisplay(parent);
     XtRealizeWidget(core_widget);
     drawable = XtWindow(core_widget);
     return(drawable);
     
 }
-#endif
+#endif /* never called */
 
 XID tk_get_xid(window)
     TK_Main_Window window;
@@ -219,7 +204,7 @@ TK_Button tk_create_button(control_win, row, col, label, proc, active_status)
     void (*proc)();
     int active_status;
 {
-    Cardinal i=0;
+    Cardinal n=0;
     Widget button;
     Arg args[5];
 
@@ -228,23 +213,23 @@ TK_Button tk_create_button(control_win, row, col, label, proc, active_status)
      */
     if (row == 1 && col == 1) {
 	/* the first widget in the control window */
-	XtSetArg(args[i], XtNleft, XtChainLeft); 	i++;
-	XtSetArg(args[i], XtNtop, XtChainTop);		i++;
+	XtSetArg(args[n], XtNleft, XtChainLeft); 	n++;
+	XtSetArg(args[n], XtNtop, XtChainTop);		n++;
     } else if (col == 1) {
 	/* widget is in new row */
-	XtSetArg(args[i], XtNfromVert, lastleftwidget);	i++;
-	XtSetArg(args[i], XtNleft, XtChainLeft);	i++;
+	XtSetArg(args[n], XtNfromVert, lastleftwidget);	n++;
+	XtSetArg(args[n], XtNleft, XtChainLeft);	n++;
     } else {
 	/* widget is in same row as last widget */
-	XtSetArg(args[i], XtNfromHoriz, lastwidget);	i++;
-	XtSetArg(args[i], XtNfromVert, widgetAbove);	i++;
+	XtSetArg(args[n], XtNfromHoriz, lastwidget);	n++;
+	XtSetArg(args[n], XtNfromVert, widgetAbove);	n++;
     }
-    XtSetArg(args[i], XtNlabel, label);			i++;
+    XtSetArg(args[n], XtNlabel, label);			n++;
     if (active_status != TK_BUTTON_ACTIVE) {
-	XtSetArg(args[i], XtNsensitive, False);		i++;
+	XtSetArg(args[n], XtNsensitive, False);		n++;
     }
     button = XtCreateManagedWidget("button", commandWidgetClass,
-				   control_win, args, i);
+				   control_win, args, n);
     XtAddCallback(button, XtNcallback, proc, (XtPointer) NULL);
 
     lastwidget = button;
@@ -293,44 +278,42 @@ TK_Message_Item tk_create_message_item(control_win, row, col, label)
     char *label;
 {
     Arg args[5];
-    Cardinal i=0;
+    Cardinal n=0;
     Widget message;
 
-    /*
-     * Set up geometry constraints for Form widget parent
-     */
+    /* Set up geometry constraints for Form widget parent */
     if (row == 1 && col == 1) {
 	/* the first widget in the control window */
-	XtSetArg(args[i], XtNleft, XawChainLeft);	i++;
-	XtSetArg(args[i], XtNtop, XawChainTop);		i++;
+	XtSetArg(args[n], XtNleft, XawChainLeft);	n++;
+	XtSetArg(args[n], XtNtop, XawChainTop);		n++;
     } else if (col == 1) {
 	/* widget is in new row */
-	XtSetArg(args[i], XtNfromVert, lastleftwidget);	i++;
-	XtSetArg(args[i], XtNleft, XawChainLeft);	i++;
+	XtSetArg(args[n], XtNfromVert, lastleftwidget);	n++;
+	XtSetArg(args[n], XtNleft, XawChainLeft);	n++;
     } else if (row != -1) {
 	/* widget is in same row as last widget */
-	XtSetArg(args[i], XtNfromHoriz, lastwidget);	i++;
-	XtSetArg(args[i], XtNfromVert, lastleftwidget);	i++;
+	XtSetArg(args[n], XtNfromHoriz, lastwidget);	n++;
+	XtSetArg(args[n], XtNfromVert, lastleftwidget);	n++;
     } else {
 	/* widget is not in the control panel */ 
-	XtSetArg(args[i], XtNfromVert, NULL);		i++;
+	XtSetArg(args[n], XtNfromVert, NULL);		n++;
 	if (col == 60) {
-	    XtSetArg(args[i], XtNwidth, col);		i++;
-	    XtSetArg(args[i], XtNfromHoriz,lastwidget);	i++;
+	    XtSetArg(args[n], XtNwidth, col);		n++;
+	    XtSetArg(args[n], XtNfromHoriz,lastwidget);	n++;
 	}
     }
 
-    /* set up other button attributes */
-    XtSetArg(args[i], XtNlabel, label);			i++;
-    message = XtCreateManagedWidget("label", labelWidgetClass,
-				    control_win, args, i);
+    /* Set up other button attributes */
+    XtSetArg(args[n], XtNlabel, label);			n++;
+    message = XtCreateManagedWidget("message", labelWidgetClass,
+				    control_win, args, n);
 
     lastwidget = message;
     if (col == 1) {
 	widgetAbove = lastleftwidget;
 	lastleftwidget = message;
     }
-    return (message);
+    return message;
 }
 
 
@@ -351,7 +334,7 @@ TK_List tk_create_list(control_win, row, col, notify_proc)
     int (*notify_proc)();
 {
     Arg args[4];
-    Cardinal i=0;
+    Cardinal n=0;
     Widget viewport, list;
 
     /*
@@ -359,27 +342,27 @@ TK_List tk_create_list(control_win, row, col, notify_proc)
      */
     if (row == 1 && col == 1) {
 	/* the first widget in the control window */
-	XtSetArg(args[i], XtNleft,  XtChainLeft); i++;
-	XtSetArg(args[i], XtNtop,  XtChainTop); i++;
+	XtSetArg(args[n], XtNleft, XawChainLeft);	n++;
+	XtSetArg(args[n], XtNtop, XawChainTop);		n++;
     } else if (col == 1) {
 	/* widget is in new row */
-	XtSetArg(args[i], XtNfromVert,  lastleftwidget); i++;
-	XtSetArg(args[i], XtNleft,  XtChainLeft); i++;
+	XtSetArg(args[n], XtNfromVert, lastleftwidget);	n++;
+	XtSetArg(args[n], XtNleft, XawChainLeft);	n++;
     } else {
 	/* widget is in same row as last widget */
-	XtSetArg(args[i], XtNfromHoriz,  lastwidget); i++;
+	XtSetArg(args[n], XtNfromHoriz, lastwidget);	n++;
     }
 
     /* create the viewport */
     viewport = XtCreateManagedWidget("viewport", viewportWidgetClass,
-				     control_win, args, i);
+				     control_win, args, n);
 
     /* set up attributes of list widget */
-    i=0;
-    XtSetArg(args[i], XtNverticalList,  TRUE); i++;
-    XtSetArg(args[i], XtNheight,  100); i++;
+    n=0;
+    XtSetArg(args[n], XtNverticalList,  TRUE);		n++;
+    XtSetArg(args[n], XtNheight,  100);			n++;
 
-    list = XtCreateManagedWidget("list", listWidgetClass, viewport, args, i);
+    list = XtCreateManagedWidget("list", listWidgetClass, viewport, args, n);
     XtAddCallback(list, XtNcallback, notify_proc, (XtPointer) NULL);
     return (list);
 }
