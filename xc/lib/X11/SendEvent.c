@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSendEvent.c,v 11.6 87/09/11 08:06:40 toddb Exp $ */
+/* $Header: XSendEvent.c,v 11.7 88/02/20 20:22:57 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_EVENTS
@@ -16,7 +16,7 @@ XSendEvent(dpy, w, propagate, event_mask, event)
     register Display *dpy;
     Window w;
     Bool propagate;
-    unsigned long event_mask; /* CARD32 */
+    long event_mask;
     XEvent *event;
 {
     register xSendEventReq *req;
