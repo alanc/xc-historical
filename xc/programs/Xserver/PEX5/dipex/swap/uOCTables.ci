@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: uOCTables.ci,v 5.1 91/02/16 09:57:34 rws Exp $ */
 /* Automatically generated OC table
  */
 /******************************************************************
@@ -77,7 +77,7 @@ extern ErrorCode
 	SWAP_OC_PREFIX(ModelClipVolume) (),
 	SWAP_OC_PREFIX(ModelClipVolume2D) (),
 	SwapPEXRestoreModelClip (),
-	SwapPEXLightState (),
+	SWAP_OC_PREFIX(LightState) (),
 	SwapPEXPickId (),
 	SwapPEXHlhsrIdentifier (),
 	SWAP_OC_PREFIX(ParaSurfCharacteristics) (),
@@ -179,7 +179,7 @@ OCFunction SWAP_OC_PREFIX(OutputCmd) [] = {
 	SWAP_OC_PREFIX(ModelClipVolume2D),
 	SwapPEXRestoreModelClip,
 	SwapPEXMarkerBundleIndex,	/* ViewIndex */
-	SwapPEXLightState,
+	SWAP_OC_PREFIX(LightState),
 	SwapPEXMarkerBundleIndex,	/* DepthCueIndex */
 	SwapPEXPickId,
 	SwapPEXHlhsrIdentifier,

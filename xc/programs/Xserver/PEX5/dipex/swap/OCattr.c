@@ -1,4 +1,4 @@
-/* $XConsortium: OCattr.c,v 5.3 91/07/01 16:31:51 hersh Exp $ */
+/* $XConsortium: OCattr.c,v 5.4 91/07/19 17:14:01 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -420,29 +420,6 @@ pexRestoreModelClip	*strmPtr;
 
 }
 
-ErrorCode
-SwapPEXLightState (swapPtr, strmPtr)
-pexSwap		*swapPtr;
-pexLightState	*strmPtr;
-{
-    int i;
-    CARD16 *light;
-
-    SWAP_CARD16 (strmPtr->numEnable);
-    SWAP_CARD16 (strmPtr->numDisable);
-
-
-    for (i=0, light = (CARD16 *)(strmPtr+1); i<strmPtr->numEnable; i++, light++)
-	SWAP_CARD16 ((*light));
-
-    /* skip pad if there */
-    if (strmPtr->numEnable & 0x1) light++;
-
-    for (i=0; i<strmPtr->numDisable; i++, light++)
-	SWAP_CARD16 ((*light));
-
-
-}
 
 ErrorCode
 SwapPEXPickId (swapPtr, strmPtr)

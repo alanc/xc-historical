@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: OCattr.h,v 5.1 91/02/16 09:57:23 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -62,7 +62,6 @@ LOCAL_FLAG ErrorCode
 	SwapPEXGlobalTransform2D (),
 	SwapPEXModelClip (),
 	SwapPEXRestoreModelClip (),
-	SwapPEXLightState (),
 	SwapPEXPickId (),
 	SwapPEXHlhsrIdentifier (),
 	SwapPEXExecuteStructure (),

@@ -1,4 +1,4 @@
-/* $XConsortium: OCprim.h,v 5.1 91/02/16 09:57:28 rws Exp $ */
+/* $XConsortium: OCprim.h,v 5.2 92/03/04 14:19:20 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -34,6 +34,7 @@ LOCAL_FLAG void
 LOCAL_FLAG ErrorCode
 	SWAP_FUNC_PREFIX(PEXModelClipVolume) (),
 	SWAP_FUNC_PREFIX(PEXModelClipVolume2D) (),
+	SWAP_FUNC_PREFIX(PEXLightState) (),
 	SWAP_FUNC_PREFIX(PEXAddToNameSet) (),
 	SWAP_FUNC_PREFIX(PEXMarker) (),
 	SWAP_FUNC_PREFIX(PEXMarker2D) (),

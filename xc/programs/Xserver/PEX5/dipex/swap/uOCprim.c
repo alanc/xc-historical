@@ -1,4 +1,4 @@
-/* $XConsortium: uOCprim.c,v 5.6 92/03/04 14:18:45 hersh Exp $ */
+/* $XConsortium: uOCprim.c,v 5.7 92/06/02 19:41:24 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -173,6 +173,32 @@ pexModelClipVolume2D	*strmPtr;
 
     SWAP_CARD16 (strmPtr->numHalfSpaces);
 }
+
+
+ErrorCode
+SWAP_FUNC_PREFIX(PEXLightState) (swapPtr, strmPtr)
+pexSwap	*swapPtr;
+pexLightState	*strmPtr;
+{
+    int i, numE, numD;
+    CARD16 *light;
+
+    numE = strmPtr->numEnable; 
+    numD = strmPtr->numDisable;
+
+    SWAP_CARD16 (strmPtr->numEnable);
+    SWAP_CARD16 (strmPtr->numDisable);
+
+    for (i=0, light = (CARD16 *)(strmPtr+1); i<numE; i++, light++)
+	SWAP_CARD16 ((*light));
+
+    /* skip pad if there */
+    if (numE & 0x1) light++;
+
+    for (i=0; i<numD; i++, light++)
+	SWAP_CARD16 ((*light));
+}
+
 
 ErrorCode
 SWAP_FUNC_PREFIX(PEXAddToNameSet) (swapPtr, strmPtr)
