@@ -406,6 +406,14 @@ function keys instead of standard escape sequences.
 The following resources are specified as part of the ``vt100'' widget (class
 ``VT100''):
 .TP 8
+.B "allowSendEvents (\fPclass\fB AllowSendEvents)"
+Specifies whether or not synthetic key and button events (generated using
+the X protocol SendEvent request) should be interpreted or discarded.
+The default is ``false'' meaning they are discarded.  Note that allowing
+such events creates a very large security hole (imagine someone sending
+your idle shell the key events for ``rm -fr *'').
+.sp
+.TP 8
 .B "alwaysHighlight (\fPclass\fB AlwaysHighlight)"
 Specifies whether or not \fIxterm\fP should always display a highlighted 
 text cursor.  By default, a hollow text cursor is displayed whenever the
