@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.25 90/10/06 13:56:20 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.26 91/03/11 16:48:56 keith Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -35,9 +35,14 @@ SOFTWARE.
 #include "mifpoly.h"
 #include "mi.h"
 #include "mifillarc.h"
+#include "Xfuncproto.h"
 
 double	miDsin(), miDcos(), miDasin(), miDatan2();
-double	cbrt();
+double	cbrt(
+#if NeedFunctionPrototypes
+	     double
+#endif
+);
 
 #ifdef ICEILTEMPDECL
 ICEILTEMPDECL
