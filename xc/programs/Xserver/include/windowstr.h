@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 1.13 89/03/30 16:55:37 keith Exp $ */
+/* $XConsortium: windowstr.h,v 1.14 89/06/09 14:53:02 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

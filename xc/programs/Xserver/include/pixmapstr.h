@@ -1,4 +1,4 @@
-/* $XConsortium: pixmapstr.h,v 1.2 88/09/06 15:48:38 jim Exp $ */
+/* $XConsortium: pixmapstr.h,v 1.3 89/06/09 14:52:59 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

@@ -6,7 +6,7 @@
  * mi versions of these routines exist.
  */
 
-/* $XConsortium: Exp $ */
+/* $XConsortium: misprite.h,v 1.1 89/06/09 14:53:42 keith Exp $ */
 
 typedef struct {
     Bool	(*RealizeCursor)();	/* pScreen, pCursor */

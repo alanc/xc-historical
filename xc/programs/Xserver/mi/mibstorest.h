@@ -4,7 +4,7 @@
  * internal structure definitions for mi backing store
  */
 
-/* $XConsortium: Exp $ */
+/* $XConsortium: mibstorestr.h,v 1.1 89/06/09 14:53:05 keith Exp $ */
 
 # include   "mibstore.h"
 

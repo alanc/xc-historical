@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 1.5 89/03/18 16:18:44 rws Exp $ */
+/* $XConsortium: scrnintstr.h,v 1.6 89/06/09 14:53:00 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.

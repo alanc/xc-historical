@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: Exp $ */
+/* $XConsortium: mispritestr.h,v 1.1 89/06/09 14:53:53 keith Exp $ */
 
 # include   "misprite.h"
 
