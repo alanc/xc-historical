@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.56 89/09/29 15:13:42 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.57 89/09/29 16:23:31 swick Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -712,11 +712,11 @@ static ShapeOval(W)
     unsigned height = w->core.height + (w->core.border_width<<1);
     Pixmap p = XCreatePixmap( dpy, XtWindow(W), width, height, 1 );
     XGCValues values;
-    GC set_gc, clear_gc;
+    GC gc;
     unsigned int diam, x2, y2;
 
-    values.foreground = 1;
-    values.background = 0;
+    values.foreground = 0;
+    values.background = 1;
     values.cap_style = CapRound;
     if (width < height) {
 	diam = width;
@@ -728,18 +728,17 @@ static ShapeOval(W)
 	x2 = width - y2 - 1;
     }
     values.line_width = diam;
-    set_gc = XtGetGC( W,
-		      GCForeground | GCBackground | GCLineWidth | GCCapStyle,
-		      &values
-		    );
-    clear_gc = XtGetGC( W, 0, &values );
-    XFillRectangle( dpy, p, clear_gc, 0, 0, width, height );
-    XDrawLine( dpy, p, set_gc, diam>>1, diam>>1, x2, y2 );
+    gc = XCreateGC (dpy, p,
+		    GCForeground | GCBackground | GCLineWidth | GCCapStyle,
+		    &values);
+    XFillRectangle( dpy, p, gc, 0, 0, width, height );
+    XSetForeground( dpy, gc, 1 );
+    XDrawLine( dpy, p, gc, diam>>1, diam>>1, x2, y2 );
     XShapeCombineMask( dpy, XtWindow(W), ShapeBounding, 
 		       -(w->core.border_width), -(w->core.border_width),
 		       p, ShapeSet );
-    XtReleaseGC( W, set_gc );
-    XFillRectangle( dpy, p, clear_gc, 0, 0, width, height );
+    XSetForeground( dpy, gc, 0 );
+    XFillRectangle( dpy, p, gc, 0, 0, width, height );
     if (w->core.width < w->core.height) {
 	diam = w->core.width;
 	x2 = diam>>1;
@@ -750,15 +749,12 @@ static ShapeOval(W)
 	x2 = w->core.width - y2 - 1;
     }
     values.line_width = diam;
-    set_gc = XtGetGC( W,
-		      GCForeground | GCBackground | GCLineWidth | GCCapStyle,
-		      &values
-		    );
-    XDrawLine( dpy, p, set_gc, diam>>1, diam>>1, x2, y2 );
+    values.foreground = 1;
+    XChangeGC (dpy, gc, GCLineWidth|GCForeground, &values);
+    XDrawLine( dpy, p, gc, diam>>1, diam>>1, x2, y2 );
     XShapeCombineMask( dpy, XtWindow(W), ShapeClip, 0, 0, p, ShapeSet );
     XFreePixmap( dpy, p );
-    XtReleaseGC( W, set_gc );
-    XtReleaseGC( W, clear_gc );
+    XFreeGC (dpy, gc );
 }
 
 
@@ -771,22 +767,22 @@ static ShapeEllipse(W)
     unsigned height = w->core.height + (w->core.border_width<<1);
     Pixmap p = XCreatePixmap( dpy, XtWindow(W), width, height, 1 );
     XGCValues values;
-    GC set_gc, clear_gc;
+    GC gc;
 
-    values.foreground = 1;
-    values.background = 0;
-    set_gc = XtGetGC( W, GCForeground | GCBackground, &values );
-    clear_gc = XtGetGC( W, 0, &values );
-    XFillRectangle( dpy, p, clear_gc, 0, 0, width, height );
-    XFillArc( dpy, p, set_gc, 0, 0, width, height, 0, 360*64 );
+    values.foreground = 0;
+    gc = XCreateGC (dpy, p, GCForeground, &values );
+    XFillRectangle( dpy, p, gc, 0, 0, width, height );
+    XSetForeground (dpy, gc, 1);
+    XFillArc( dpy, p, gc, 0, 0, width, height, 0, 360*64 );
     XShapeCombineMask( dpy, XtWindow(W), ShapeBounding, 
 		       -(w->core.border_width), -(w->core.border_width),
 		       p, ShapeSet );
-    XFillRectangle( dpy, p, clear_gc, 0, 0, width, height );
-    XFillArc( dpy, p, set_gc, 0, 0, w->core.width, w->core.height, 0, 360*64 );
+    XSetForeground (dpy, gc, 0);
+    XFillRectangle( dpy, p, gc, 0, 0, width, height );
+    XSetForeground (dpy, gc, 1);
+    XFillArc( dpy, p, gc, 0, 0, w->core.width, w->core.height, 0, 360*64 );
     XShapeCombineMask( dpy, XtWindow(W), ShapeClip, 0, 0, p, ShapeSet );
     XFreePixmap( dpy, p );
-    XtReleaseGC( W, set_gc );
-    XtReleaseGC( W, clear_gc );
+    XFreeGC (dpy, gc);
 }
 #endif /*SHAPE*/
