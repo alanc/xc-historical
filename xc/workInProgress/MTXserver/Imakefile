@@ -167,15 +167,15 @@ IBMALLOCLIB = ddx/ibm/common/libibmalloc.a
 IBMALLOCLIB = 
 #endif
 
-ddx/ibm/common/ibmdate.o: AlwaysForce
-	(cd ddx/ibm/common; $(MAKE) ibmdate.o)
+ddx/ibm/common/ibmDate.o: AlwaysForce
+	(cd ddx/ibm/common; $(MAKE) ibmDate.o)
 
 AlwaysForce:
 
-loadXibm: ddx/ibm/common/ibmdate.o
+loadXibm: ddx/ibm/common/ibmDate.o
 
 IBMDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/ibm os/4.2bsd
-IBMOBJS = ddx/ibm/common/ibmcomm.o ddx/ibm/common/ibmdate.o $(FONTUTIL)
+IBMOBJS = ddx/ibm/common/ibmcomm.o ddx/ibm/common/ibmDate.o $(FONTUTIL)
 IBMLIBS = ddx/ibm/libibm.a $(IBMALLOCLIB) \
 		$(DIX)  $(BSD) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 IBMSYSLIBS = $(SYSLIBS)
