@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XSetLocale.c,v 1.11 91/02/20 18:20:53 rws Exp $
+ * $XConsortium: XSetLocale.c,v 1.12 91/02/20 22:32:01 rws Exp $
  */
 
 /*
@@ -60,10 +60,18 @@ extern XLocale *_XlcGetCurrentLocale();
 
 XLocale        *_Xlocale_;
 
+#if NeedFunctionPrototypes
+char           *
+_Xsetlocale(
+    int             lc_category,    /* locale category */
+    _Xconst char   *lc_name        /* locale name */
+)
+#else
 char           *
 _Xsetlocale(lc_category, lc_name)
     int             lc_category;    /* locale category */
     char           *lc_name;        /* locale name */
+#endif
 {
     XLocale        *current,
                    *template;
