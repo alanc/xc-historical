@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: error.c,v 1.10 89/10/09 14:58:11 keith Exp $
+ * $XConsortium: error.c,v 1.12 91/04/02 11:56:56 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -48,7 +48,7 @@ LogInfo (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
-    fprintf (stderr, "info (pid %d): ", getpid());
+    fprintf (stderr, "xdm info (pid %d): ", getpid());
     fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
     fflush (stderr);
 }
@@ -58,7 +58,7 @@ LogError (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
-    fprintf (stderr, "error (pid %d): ", getpid());
+    fprintf (stderr, "xdm error (pid %d): ", getpid());
     fprintf (stderr, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
     fflush (stderr);
 }
@@ -68,7 +68,7 @@ LogPanic (fmt, arg1, arg2, arg3, arg4, arg5, arg6)
 char	*fmt;
 int	arg1, arg2, arg3, arg4, arg5, arg6;
 {
-    LogError ("panic (pid %d): ", getpid());
+    LogError ("xdm panic (pid %d): ", getpid());
     LogError (fmt, arg1, arg2, arg3, arg4, arg5, arg6);
     exit (1);
 }
