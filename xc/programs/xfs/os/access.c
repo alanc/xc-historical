@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.8 93/09/20 18:08:40 hersh Exp $ */
+/* $XConsortium: access.c,v 1.9 93/09/29 18:01:11 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -22,8 +22,8 @@
  * THIS SOFTWARE.
  */
 
+#include	<X11/Xos.h>
 #include        <sys/param.h>
-#include	<sys/types.h>
 #include	<sys/socket.h>
 #include	<netdb.h>
 #include	<netinet/in.h>

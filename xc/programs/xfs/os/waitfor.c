@@ -1,4 +1,4 @@
-/* $XConsortium: waitfor.c,v 1.9 93/09/20 18:08:52 hersh Exp $ */
+/* $XConsortium: waitfor.c,v 1.10 93/09/22 16:59:17 rws Exp $ */
 /*
  * waits for input
  */
@@ -28,11 +28,11 @@
  *
  */
 
+#include	<X11/Xos.h>	/* strings, time, etc */
+
 #include	<stdio.h>
 #include	<errno.h>
 #include	<sys/param.h>
-
-#include	<X11/Xos.h>	/* strings, time, etc */
 
 #include	"clientstr.h"
 #include	"globals.h"
