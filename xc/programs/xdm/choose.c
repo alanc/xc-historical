@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.12 94/02/02 08:42:22 gildea Exp $
+ * $XConsortium: choose.c,v 1.13 94/02/02 15:03:49 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -368,7 +368,7 @@ ProcessChooserSocket (fd)
 
     Debug ("Process chooser socket\n");
     len = sizeof (buf);
-    client_fd = accept (fd, buf, &len);
+    client_fd = accept (fd, (struct sockaddr *)buf, &len);
     if (client_fd == -1)
     {
 	LogError ("Cannot accept chooser connection\n");
