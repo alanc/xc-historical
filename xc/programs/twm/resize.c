@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.53 89/11/19 15:34:18 jim Exp $
+ * $XConsortium: resize.c,v 1.54 89/11/20 13:30:48 jim Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: resize.c,v 1.53 89/11/19 15:34:18 jim Exp $";
+"$XConsortium: resize.c,v 1.54 89/11/20 13:30:48 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -434,6 +434,12 @@ EndResize()
 
     if (tmp_win->iconmgr)
     {
+	int ncols = tmp_win->iconmgrp->cur_columns;
+	if (ncols == 0) ncols == 1;
+
+	tmp_win->iconmgrp->width = (int) (((dragWidth - tmp_win->bw * 2) *
+			    (long) tmp_win->iconmgrp->columns)
+			   / ncols);
         PackIconManager(tmp_win->iconmgrp);
     }
 
@@ -638,7 +644,7 @@ int x, y, w, h;
 
     if (tmp_win->iconmgr)
     {
-        tmp_win->iconmgrp->width = w - 2*tmp_win->bw;
+	tmp_win->iconmgrp->width = w - 2 * tmp_win->bw;
         h = tmp_win->iconmgrp->height + tmp_win->title_height;
     }
 
