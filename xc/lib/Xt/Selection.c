@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.51 90/08/27 15:27:24 swick Exp $ */
+/* $XConsortium: Selection.c,v 1.52 90/08/27 18:04:53 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -209,7 +209,7 @@ Atom selection;
     ctx->selection = selection;
     ctx->widget = NULL;
     ctx->prop_list = GetPropList(dpy);
-    ctx->is_active = FALSE;
+    ctx->ref_count = 0;
     ctx->free_when_done = FALSE;
     ctx->was_disowned = FALSE;
     (void)XSaveContext(dpy, (Window)selection, selectContext, (caddr_t)ctx);
@@ -367,10 +367,8 @@ XtIntervalId   *id;
     RemoveHandler(ctx->dpy, req->requestor, req->widget,
 	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
     XtFree((char*)req);
-    if (ctx->free_when_done)
+    if (--ctx->ref_count == 0 && ctx->free_when_done)
 	XtFree((char*)ctx);
-    else
-	ctx->is_active = FALSE;
 }
 
 static void SendIncrement(incr)
@@ -430,10 +428,8 @@ XEvent *ev;
 	RemoveHandler(event->display, event->window, widget,
 	  	(EventMask) PropertyChangeMask, HandlePropertyGone, closure); 
 	XtFree((char*)req);
-	if (ctx->free_when_done)
+	if (--ctx->ref_count == 0 && ctx->free_when_done)
 	    XtFree((char*)ctx);
-	else
-	    ctx->is_active = FALSE;
     } else  { /* is this part of an incremental transfer? */ 
 	if (ctx->incremental) {
 	     if (req->bytelength == 0)
@@ -539,6 +535,7 @@ Boolean *incremental;
 	format = 32;
     }
     else {
+	ctx->ref_count++;
 	if (ctx->incremental == TRUE) {
 	     unsigned long size = MAX_SELECTION_INCR(ctx->dpy);
 	     if ((*(XtConvertSelectionIncrProc)ctx->convert)
@@ -547,12 +544,12 @@ Boolean *incremental;
 				&size, ctx->owner_closure, (XtRequestId*)&req)
 		     == FALSE) {
 		 XtFree((char*)req);
+		 ctx->ref_count--;
 		 return(FALSE);
 	     }
 	     PrepareIncremental(req, widget, event->requestor, property,
 				target, targetType, value, length, format);
 	     *incremental = True;
-	     ctx->is_active = TRUE;
 	     return(TRUE);
 	}
 	ctx->req = req;
@@ -560,6 +557,7 @@ Boolean *incremental;
 			    &targetType, &value, &length, &format) == FALSE) {
 	    XtFree((char*)req);
 	    ctx->req = NULL;
+	    ctx->ref_count--;
 	    return(FALSE);
 	}
 	ctx->req = NULL;
@@ -581,7 +579,6 @@ Boolean *incremental;
 	          AddHandler(ctx->dpy, event->requestor,
 			     widget, (EventMask) PropertyChangeMask, 
 			     HandlePropertyGone, (XtPointer)req);
-		  ctx->is_active = TRUE;
         }
 	XChangeProperty(ctx->dpy, event->requestor, property, 
 			targetType, format, PropModeReplace,
@@ -596,7 +593,6 @@ Boolean *incremental;
 	 PrepareIncremental(req, widget, event->requestor, property,
 			    target, targetType, value, length, format);
 	 *incremental = True;
-	 ctx->is_active = TRUE;
     }
     return(TRUE);
 }
@@ -709,7 +705,7 @@ Boolean incremental;
 
     ctx = FindCtx(XtDisplay(widget), selection);
     if (ctx->widget != widget || ctx->time != time ||
-	ctx->is_active || ctx->was_disowned)
+	ctx->ref_count || ctx->was_disowned)
     {
 	window = XtWindow(widget);
         XSetSelectionOwner(ctx->dpy, selection, window, time);
@@ -720,20 +716,19 @@ Boolean incremental;
 			      HandleSelectionEvents, (XtPointer)ctx);
 	    XtAddCallback(widget, XtNdestroyCallback,
 			  WidgetDestroyed, (XtPointer)ctx);
-	}
-	if (ctx->is_active) {
-	    oldctx = *ctx;
-	    old_context = TRUE;
-	    ctx->free_when_done = TRUE;
-	    ctx = NewContext(XtDisplay(widget), selection);
-	} else
-	    if (ctx->widget &&
-		ctx->widget != widget &&
-		!ctx->was_disowned)
-	    {
+	    if (ctx->widget && !ctx->was_disowned) {
 		oldctx = *ctx;
 		old_context = TRUE;
 	    }
+	}
+	if (ctx->ref_count) {
+	    if (!old_context) {
+		oldctx = *ctx;
+		old_context = TRUE;
+	    }
+	    ctx->free_when_done = TRUE;
+	    ctx = NewContext(XtDisplay(widget), selection);
+	}
 	ctx->widget = widget;	/* Selection offically changes hands. */
 	ctx->time = time;
     }
@@ -1334,15 +1329,13 @@ Boolean incremental;
 	req.event.type = 0;
 	req.event.requestor = XtWindow(widget);
 	req.event.time = time;
-	ctx->is_active = TRUE;
+	ctx->ref_count++;
 	DoLocalTransfer(&req, selection, target, widget,
 			callback, closure, incremental);
-	if (ctx->free_when_done)
+	if (--ctx->ref_count == 0 && ctx->free_when_done)
 	    XtFree((char*)ctx);
-	else {
-	    ctx->is_active = FALSE;
+	else
 	    ctx->req = NULL;
-	}
     }
     else {
 	info = MakeInfo(ctx, callback, &closure, 1, widget,
@@ -1406,16 +1399,14 @@ Boolean incremental;
 	req.event.type = 0;
 	req.event.requestor = XtWindow(widget);
 	req.event.time = time;
-	ctx->is_active = TRUE;
+	ctx->ref_count++;
 	for (; count; count--, targets++, closures++ )
 	    DoLocalTransfer(&req, selection, *targets, widget,
 			    callback, *closures, incremental);
-	if (ctx->free_when_done)
+	if (--ctx->ref_count == 0 && ctx->free_when_done)
 	    XtFree((char*)ctx);
-	else {
-	    ctx->is_active = FALSE;
+	else
 	    ctx->req = NULL;
-	}
     } else {
 	info = MakeInfo(ctx, callback, closures, count, widget,
 			time, incremental);
