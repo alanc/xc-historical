@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.163 91/01/24 19:31:59 gildea Exp $ */
+/* $XConsortium: main.c,v 1.164 91/01/30 18:01:30 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -45,12 +45,17 @@ SOFTWARE.
 #include <pwd.h>
 #include <ctype.h>
 
-#ifdef SVR4			/* SVR4 is (approx) a superset of SVR3 */
-#define SYSV
-#define USE_SYSV_UTMP
+#ifdef att
+#define ATT
 #endif
 
-#ifdef SYSV /* was att */
+#ifdef SVR4
+#define SYSV			/* SVR4 is (approx) a superset of SVR3 */
+#define USE_SYSV_UTMP
+#define ATT
+#endif
+
+#ifdef ATT
 #define USE_USG_PTYS
 #else
 #define USE_HANDSHAKE
@@ -75,7 +80,7 @@ SOFTWARE.
 #include <sys/ptem.h>			/* get struct winsize */
 #include <sys/stropts.h>		/* for I_PUSH */
 #include <poll.h>			/* for POLLIN */
-#endif
+#endif /* USE_USG_PTYS */
 #define USE_SYSV_TERMIO
 #define USE_SYSV_SIGNALS
 #define	USE_SYSV_PGRP
@@ -658,7 +663,7 @@ char **argv;
 	** of the various terminal structures (which may change from
 	** implementation to implementation).
 	*/
-#if defined(macII) || defined(SYSV)
+#if defined(macII) || defined(ATT)
 	d_tio.c_iflag = ICRNL|IXON;
 	d_tio.c_oflag = OPOST|ONLCR|TAB3;
     	d_tio.c_cflag = B9600|CS8|CREAD|PARENB|HUPCL;
@@ -757,15 +762,15 @@ char **argv;
 				    optionDescList, XtNumber(optionDescList), 
 				    &argc, argv, fallback_resources, NULL, 0);
 
-	XtGetApplicationResources( toplevel, (XtPointer) &resource,
+	XtGetApplicationResources(toplevel, (XtPointer) &resource,
 				  application_resources,
-				   XtNumber(application_resources), NULL, 0 );
+				  XtNumber(application_resources), NULL, 0);
 
 	waiting_for_initial_map = resource.wait_for_map;
 
-       /*
-	* ICCCM delete_window.
-	*/
+	/*
+	 * ICCCM delete_window.
+	 */
 	XtAppAddActions(XtWidgetToApplicationContext(toplevel), 
 			actionProcs, XtNumber(actionProcs));
 	XtOverrideTranslations
@@ -1018,7 +1023,7 @@ char *name;
 get_pty (pty)
 int *pty;
 {
-#ifdef SYSV
+#ifdef ATT
 	if ((*pty = open ("/dev/ptmx", O_RDWR)) < 0) {
 	    return 1;
 	}
@@ -1026,7 +1031,7 @@ int *pty;
 	strcpy(ttydev, ptsname(*pty));
 #endif
 	return 0;
-#else /* !SYSV, need lots of code */
+#else /* !ATT, need lots of code */
 #ifdef USE_GET_PSEUDOTTY
 	return ((*pty = getpseudotty (&ttydev, &ptydev)) >= 0 ? 0 : 1);
 #else
@@ -1088,7 +1093,7 @@ int *pty;
 	return(1);
 #endif /* umips && SYSTYPE_SYSV */
 #endif /* USE_GET_PSEUDOTTY */
-#endif /* SYSV */
+#endif /* ATT */
 }
 
 get_terminal ()
@@ -1821,7 +1826,9 @@ spawn ()
 		envsize += 1;   /* LOGNAME */
 #endif /* UTMP */
 #ifdef USE_SYSV_ENVVARS
+#ifndef TIOCSWINSZ		/* window size not stored in driver? */
 		envsize += 2;	/* COLUMNS, LINES */
+#endif /* TIOCSWINSZ */
 #ifdef UTMP
 		envsize += 2;   /* HOME, SHELL */
 #endif /* UTMP */
@@ -1854,7 +1861,7 @@ spawn ()
 			    (void) dup(tty);
 			}
 
-#ifndef SYSV
+#ifndef ATT
 		    /* and close the tty */
 		    if (tty > 2)
 			(void) close(tty);
@@ -2060,10 +2067,12 @@ spawn ()
 #endif /* USE_HANDSHAKE */
 
 #ifdef USE_SYSV_ENVVARS
+#ifndef TIOCSWINSZ		/* window size not stored in driver? */
 		sprintf (numbuf, "%d", screen->max_col + 1);
 		Setenv("COLUMNS=", numbuf);
 		sprintf (numbuf, "%d", screen->max_row + 1);
 		Setenv("LINES=", numbuf);
+#endif /* TIOCSWINSZ */
 #ifdef UTMP
 		if (pw) {	/* SVR4 doesn't provide these */
 		    if (!getenv("HOME"))
@@ -2072,7 +2081,7 @@ spawn ()
 			Setenv("SHELL=", pw->pw_shell);
 		}
 #endif /* UTMP */
-#else
+#else /* USE_SYSV_ENVVAR */
 		if(!screen->TekEmu) {
 		    strcpy (termcap, newtc);
 		    resize (screen, TermName, termcap, newtc);
