@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.90 91/03/13 14:52:25 rws Exp $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.91 91/03/13 14:55:16 rws Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -31,6 +31,7 @@ XCOMM rules:  $XConsortium: Imake.rules,v 1.90 91/03/13 14:52:25 rws Exp $
  *     	InstallProgram                           (program,dest)
  *      InstallProgramWithFlags                  (program,dest,flags)
  *     	InstallScript                            (program,dest)
+ *     	InstallNamedProg                         (srcname,dstname,dest)
  *      LinkFileList                             (step,list,dir,sub)
  *      InstallMultipleDestFlags                 (step,list,dest,flags)
  *      InstallMultipleDest                      (step,list,dest)
@@ -414,14 +415,23 @@ InstallProgramWithFlags(program,dest, /**/)
 
 
 /*
- * InstallScript - install a shell script using special install flags set in 
- * $(INSTALLFLAGS).  This macro has been superceeded by CppScriptTarget.
+ * InstallScript - install a shell script.
  */
 #ifndef InstallScript
 #define	InstallScript(program,dest)					@@\
 install:: program.script						@@\
 	$(INSTALL) -c $(INSTBINFLAGS) program.script dest/program
 #endif /* InstallScript */
+
+
+/*
+ * InstallNamedProg - install a program with renaming and no stripping.
+ */
+#ifndef InstallNamedProg
+#define	InstallNamedProg(srcname,dstname,dest)				@@\
+install:: srcname							@@\
+	$(INSTALL) -c $(INSTBINFLAGS) srcname dest/dstname
+#endif /* InstallNamedProg */
 
 
 /*
