@@ -28,6 +28,7 @@ Byte 3 is the next most-significant 8 bits
 Byte 4 is the least-significant 8 bits
 .LP
 There are two special KEYSYM values: NoSymbol and VoidSymbol.
+They are used to indicate the absence of symbols (see section 5).
 .TS
 l l l l l.
 _
