@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.17 94/03/16 15:49:49 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.18 94/03/18 10:26:50 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -72,6 +72,13 @@ typedef void (*SmcSaveYourselfProc) (
 #endif
 );
 
+typedef void (*SmcSaveYourselfPhase2Proc) (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */,
+    SmPointer		/* clientData */
+#endif
+);
+
 typedef void (*SmcInteractProc) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
@@ -87,6 +94,13 @@ typedef void (*SmcDieProc) (
 );
 
 typedef void (*SmcShutdownCancelledProc) (
+#if NeedFunctionPrototypes
+    SmcConn		/* smcConn */,
+    SmPointer		/* clientData */
+#endif
+);
+
+typedef void (*SmcSaveCompleteProc) (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
     SmPointer		/* clientData */
@@ -120,15 +134,21 @@ typedef struct {
     } die;
 
     struct {
+	SmcSaveCompleteProc	 callback;
+	SmPointer		 client_data;
+    } save_complete;
+
+    struct {
 	SmcShutdownCancelledProc callback;
 	SmPointer		 client_data;
     } shutdown_cancelled;
 
 } SmcCallbacks;
 
-#define SmcSaveYourselfProcMask		1
-#define SmcDieProcMask			2
-#define SmcShutdownCancelledProcMask	4
+#define SmcSaveYourselfProcMask		(1L << 0)
+#define SmcDieProcMask			(1L << 1)
+#define SmcSaveCompleteProcMask		(1L << 2)
+#define SmcShutdownCancelledProcMask	(1L << 3)
 
 
 
@@ -169,6 +189,13 @@ typedef void (*SmsSaveYourselfRequestProc) (
     int			/* interactStyle */,
     Bool		/* fast */,
     Bool		/* global */
+#endif
+);
+
+typedef void (*SmsSaveYourselfPhase2RequestProc) (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */,
+    SmPointer		/* managerData */
 #endif
 );
 
@@ -242,6 +269,11 @@ typedef struct {
     } save_yourself_request;
 
     struct {
+	SmsSaveYourselfPhase2RequestProc	callback;
+	SmPointer				manager_data;
+    } save_yourself_phase2_request;
+
+    struct {
 	SmsSaveYourselfDoneProc	callback;
 	SmPointer		manager_data;
     } save_yourself_done;
@@ -269,11 +301,26 @@ typedef struct {
 } SmsCallbacks;
 
 
-typedef void (*SmsNewClientProc) (
+#define SmsRegisterClientProcMask		(1L << 0)
+#define SmsInteractRequestProcMask		(1L << 1)
+#define SmsInteractDoneProcMask			(1L << 2)
+#define SmsSaveYourselfRequestProcMask  	(1L << 3)
+#define SmsSaveYourselfP2RequestProcMask	(1L << 4)
+#define SmsSaveYourselfDoneProcMask		(1L << 5)
+#define SmsCloseConnectionProcMask		(1L << 6)
+#define SmsSetPropertiesProcMask		(1L << 7)
+#define SmsDeletePropertiesProcMask		(1L << 8)
+#define SmsGetPropertiesProcMask		(1L << 9)
+
+
+
+typedef Status (*SmsNewClientProc) (
 #if NeedFunctionPrototypes
     SmsConn 		/* smsConn */,
     SmPointer		/* managerData */,
-    SmsCallbacks *	/* callbacksRet */
+    unsigned long *	/* maskRet */,
+    SmsCallbacks *	/* callbacksRet */,
+    char **		/* failureReasonRet */
 #endif
 );
 
@@ -316,6 +363,9 @@ typedef void (*SmsErrorHandler) (
 extern SmcConn SmcOpenConnection (
 #if NeedFunctionPrototypes
     char *		/* networkIdsList */,
+    int			/* xsmpMajorRev */,
+    int			/* xsmpMinorRev */,
+    unsigned long	/* mask */,
     SmcCallbacks *	/* callbacks */,
     char *		/* previousId */,
     char **		/* clientIdRet */,
@@ -356,7 +406,7 @@ extern void SmcDeleteProperties (
 #endif
 );
 
-extern void SmcGetProperties (
+extern Status SmcGetProperties (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
     SmcPropReplyProc	/* propReplyProc */,
@@ -364,7 +414,7 @@ extern void SmcGetProperties (
 #endif
 );
 
-extern void SmcInteractRequest (
+extern Status SmcInteractRequest (
 #if NeedFunctionPrototypes
     SmcConn		/* smcConn */,
     int			/* dialogType */,
@@ -388,6 +438,14 @@ extern void SmcRequestSaveYourself (
     int			/* interactStyle */,
     Bool		/* fast */,
     Bool		/* global */
+#endif
+);
+
+extern Status SmcSaveYourselfPhase2Request (
+#if NeedFunctionPrototypes
+    SmcConn			/* smcConn */,
+    SmcSaveYourselfPhase2Proc	/* saveYourselfPhase2Proc */,
+    SmPointer			/* clientData */
 #endif
 );
 
@@ -458,7 +516,7 @@ extern char *SmsGenerateClientID (
 #endif
 );
 
-extern void SmsRegisterClientReply (
+extern Status SmsRegisterClientReply (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */,
     char *		/* clientId */
@@ -475,6 +533,12 @@ extern void SmsSaveYourself (
 #endif
 );
 
+extern void SmsSaveYourselfPhase2 (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
 extern void SmsInteract (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */
@@ -482,6 +546,12 @@ extern void SmsInteract (
 );
 
 extern void SmsDie (
+#if NeedFunctionPrototypes
+    SmsConn		/* smsConn */
+#endif
+);
+
+extern void SmsSaveComplete (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */
 #endif
@@ -514,18 +584,6 @@ extern int SmsProtocolVersion (
 );
 
 extern int SmsProtocolRevision (
-#if NeedFunctionPrototypes
-    SmsConn		/* smsConn */
-#endif
-);
-
-extern char *SmsVendor (
-#if NeedFunctionPrototypes
-    SmsConn		/* smsConn */
-#endif
-);
-
-extern char *SmsRelease (
 #if NeedFunctionPrototypes
     SmsConn		/* smsConn */
 #endif
