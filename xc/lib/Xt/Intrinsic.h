@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.81 88/09/04 12:20:33 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.82 88/09/04 15:02:32 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -664,10 +664,6 @@ extern XtGeometryResult XtQueryGeometry();
 
 
 /* Class record constants */
-
-typedef struct _PopupClassRec *PopupWidgetClass;
-
-extern WidgetClass popupWidgetClass;
 
 extern Widget XtCreatePopupShell();
 
