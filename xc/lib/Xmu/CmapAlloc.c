@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CmapAlloc.c,v 1.5 92/11/23 15:42:57 rws Exp $
+ * $XConsortium: CmapAlloc.c,v 1.6 92/11/23 18:04:54 rws Exp $
  * 
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
@@ -144,7 +144,7 @@ static int default_allocation(vinfo, red, green, blue)
 
       case DirectColor:
 
-	*red = *green = *blue = vinfo->colormap_size / 2;
+	*red = *green = *blue = vinfo->colormap_size / 2 - 1;
 	break;
 
       case TrueColor:
