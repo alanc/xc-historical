@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.c,v 1.3 90/02/28 19:51:10 jim Exp $
+ * $XConsortium: Porthole.c,v 1.4 90/03/01 13:52:49 jim Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -140,6 +140,39 @@ static Widget find_child (pw)
 }
 
 
+static void layout_child (pw, child, geomp, xp, yp, widthp, heightp)
+    PortholeWidget pw;
+    Widget child;
+    XtWidgetGeometry *geomp;
+    Position *xp, *yp;
+    Dimension *widthp, *heightp;
+{
+    Position minx, miny;
+
+    *xp = child->core.x;
+    *yp = child->core.y;
+    *widthp = child->core.width;
+    *heightp = child->core.height;
+    if (geomp) {
+	if (geomp->request_mode & CWX) *xp = geomp->x;
+	if (geomp->request_mode & CWY) *yp = geomp->y;
+	if (geomp->request_mode & CWWidth) *widthp = geomp->width;
+	if (geomp->request_mode & CWHeight) *heightp = geomp->height;
+    }
+
+    if (*widthp < pw->core.width) *widthp = pw->core.width;
+    if (*heightp < pw->core.height) *heightp = pw->core.height;
+    minx = ((Position) pw->core.width) - ((Position) *widthp);
+    miny = ((Position) pw->core.height) - ((Position) *heightp);
+
+    if (*xp < minx) *xp = minx;		/* keep at lower right corner */
+    if (*yp < miny) *yp = miny;
+
+    if (*xp > 0) *xp = 0;		/* keep at upper left corner */
+    if (*yp > 0) *yp = 0;
+}
+
+
 /*****************************************************************************
  *                                                                           *
  *			 Porthole Widget Class Methods                       *
@@ -164,9 +197,24 @@ static void Realize (gw, valueMask, attributes)
 static void Resize (gw)
     Widget gw;
 {
-    SendReport ((PortholeWidget) gw,
-		(unsigned int) (XawPRCanvasWidth | XawPRCanvasHeight));
+    PortholeWidget pw = (PortholeWidget) gw;
+    Widget child = find_child (pw);
+
+    /*
+     * If we have a child, we need to make sure that it is at least as big
+     * as we are and in the right place.
+     */
+    if (child) {
+	Position x, y;
+	Dimension width, height;
+
+	layout_child (pw, child, NULL, &x, &y, &width, &height);
+	XtConfigureWidget (child, x, y, width, height, (Dimension) 0);
+    }
+
+    SendReport (pw, (unsigned int) (XawPRCanvasWidth | XawPRCanvasHeight));
 }
+
 
 static XtGeometryResult QueryGeometry (gw, intended, preferred)
     Widget gw;
@@ -201,48 +249,60 @@ static XtGeometryResult GeometryManager (w, req, reply)
     XtWidgetGeometry *req, *reply;
 {
     PortholeWidget pw = (PortholeWidget) w->core.parent;
-    unsigned int changed = 0;
-    int i;
     Widget child = find_child (pw);
+    Boolean okay = TRUE;
 
-    if (child != w ||
-	req->request_mode == CWBorderWidth)
-      return XtGeometryNo;
+    if (child != w) return XtGeometryNo;  /* unknown child */
 
-    /*
-     * allow everything except non-zero border widths
-     */
-    *reply = *req;
+    *reply = *req;			/* assume we'll grant everything */
+
     if ((req->request_mode & CWBorderWidth) && req->border_width != 0) {
 	reply->border_width = 0;	/* require border width of 0 */
-	return XtGeometryAlmost;
+	okay = FALSE;
     }
 
+    layout_child (pw, child, req, &reply->x, &reply->y,
+		  &reply->width, &reply->height);
+
+    if ((req->request_mode & CWX) && req->x != reply->x) okay = FALSE;
+    if ((req->request_mode & CWY) && req->x != reply->x) okay = FALSE;
+    if ((req->request_mode & CWWidth) && req->width != reply->width)
+      okay = FALSE;
+    if ((req->request_mode & CWHeight) && req->height != reply->height)
+      okay = FALSE;
+
+
+    /*
+     * if we failed on anything, simply return without touching widget
+     */
+    if (!okay) return XtGeometryAlmost;
+
+    /*
+     * if not just doing a query, update widget and send report
+     */
     if (!(req->request_mode & XtCWQueryOnly)) {
-	/*
-	 * Allow all size changes; allow location changes that remain within
-	 * the visible region.
-	 */
-	if (req->request_mode & CWX && w->core.x != req->x) {
+	unsigned int changed = 0;
+
+	if (child->core.x != reply->x) {
 	    changed |= XawPRSliderX;
-	    w->core.x = req->x;
+	    child->core.x = reply->x;
 	}
-	if (req->request_mode & CWY && w->core.y != req->y) {
+	if (child->core.y != reply->y) {
 	    changed |= XawPRSliderY;
-	    w->core.y = req->y;
+	    child->core.y = reply->y;
 	}
-	if (req->request_mode & CWWidth && w->core.width != req->width) {
+	if (child->core.width != reply->width) {
 	    changed |= XawPRSliderWidth;
-	    w->core.width = req->width;
+	    child->core.width = reply->width;
 	}
-	if (req->request_mode & CWHeight && w->core.height != req->height) {
+	if (child->core.height != reply->height) {
 	    changed |= XawPRSliderHeight;
-	    w->core.height = req->height;
+	    child->core.height = reply->height;
 	}
-	SendReport (pw, changed);
+	if (changed) SendReport (pw, changed);
     }
 
-    return XtGeometryYes;
+    return XtGeometryYes;		/* success! */
 }
 
 
