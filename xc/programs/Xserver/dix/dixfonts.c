@@ -21,7 +21,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.49 94/03/18 19:01:49 gildea Exp $ */
+/* $XConsortium: dixfonts.c,v 1.50 94/04/17 20:26:30 gildea Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -1136,6 +1136,7 @@ doPolyText(client, c)
     int err = Success, lgerr;	/* err is in X error, not font error, space */
     enum { NEVER_SLEPT, START_SLEEP, SLEEPING } client_state;
     FontPathElementPtr fpe;
+    GC *origGC;
 
     if (client->clientGone)
     {
@@ -1323,6 +1324,7 @@ doPolyText(client, c)
 			err = BadAlloc;
 			goto bail;
 		    }
+		    origGC = c->pGC;
 		    c->pGC = pGC;
 		    ValidateGC(c->pDraw, c->pGC);
 		    
@@ -1355,10 +1357,10 @@ bail:
     if (client_state == START_SLEEP)
     {
 	/* Step 4 */
-	if (pFont != c->pGC->font)
+	if (pFont != origGC->font)
 	{
-	    ChangeGC(c->pGC, GCFont, &fid);
-	    ValidateGC(c->pDraw, c->pGC);
+	    ChangeGC(origGC, GCFont, &fid);
+	    ValidateGC(c->pDraw, origGC);
 	}
 
 	/* restore pElt pointer for execution of remainder of the request */
