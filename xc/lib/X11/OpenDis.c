@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.73 89/02/01 18:10:38 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.74 89/02/02 16:13:39 rws Exp $
  */
 
 #include "copyright.h"
@@ -244,9 +244,10 @@ Display *XOpenDisplay (display)
  * give error message to the user....
  */
 	if (prefix.success != xTrue) {
-/*
-		(void) fwrite (u.failure, (int)*u.failure, sizeof(char), stderr);
-*/
+		/* XXX - printing messages marks a bad programming interface */
+		fprintf (stderr, 
+			 "%s:  connection to \"%s\" refused by server\n%s:  ",
+			 "Xlib", displaybuf, "Xlib");
 		(void) fwrite (u.failure, sizeof(char),
 			(int)prefix.lengthReason, stderr);
 		(void) fwrite ("\n", sizeof(char), 1, stderr);
