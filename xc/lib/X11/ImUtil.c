@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XImUtil.c,v 11.17 87/09/01 14:53:59 toddb Exp $ */
+/* $Header: XImUtil.c,v 11.18 88/01/30 18:02:08 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -236,7 +236,7 @@ XImage *XCreateImage (dpy, visual, depth, format, offset, data, width, height,
 {
 	register XImage *image;
 	int bits_per_pixel = 1;
-	int byte_offset;
+
 	image = (XImage *) Xcalloc (1, (unsigned) sizeof (XImage));
 	image->width = width;
 	image->height = height;
