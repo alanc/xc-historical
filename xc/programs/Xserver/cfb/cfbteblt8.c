@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.0 89/07/26 10:42:41 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -33,20 +33,8 @@ purpose.  It is provided "as is" without express or implied warranty.
 #include	"cfbmskbits.h"
 
 #if (PPW == 4)
-static unsigned long	pixels[16];
-static unsigned long	fgPixel, bgPixel;
 
-#if (BITMAP_BIT_ORDER == MSBFirst)
-#define GetFourBits(x)		(((x) >> 28) & 0xf)
-#define ToXoff(x,xoff)		((x) >> (xoff))
-#define NextFourBits(x)		((x) <<= 4)
-#define BitLeft(x,y)		((x) << (y))
-#else
-#define GetFourBits(x)		((x) & 0xf)
-#define ToXoff(x,xoff)		((x) << (xoff))
-#define NextFourBits(x)		((x) >>= 4)
-#define BitLeft(x,y)		((x) >> (y))
-#endif
+#include "cfb8bit.h"
 
 void
 cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
@@ -102,29 +90,8 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	return;
     }
 
-    if ((pGC->fgPixel & 0xff) != fgPixel || (pGC->bgPixel & 0xff) != bgPixel)
-    {
-	fgPixel = pGC->fgPixel & 0xff;
-	bgPixel = pGC->bgPixel & 0xff;
-    	/*
-     	 * create the appropriate pixel-fill bits for current
-     	 * foreground
-     	 */
-    	for (s = 0; s < 16; s++)
-    	{
-	    c = 0;
-	    if (s & 1)
-	    	c |= 0xff;
-	    if (s & 2)
-	    	c |= 0xff00;
-	     if (s & 4)
-	    	c |= 0xff0000;
-	     if (s & 8)
-	    	c |= 0xff000000;
-	    pixels[s] = (c & PFILL(fgPixel)) |
-		    	(~c & PFILL(bgPixel));
-    	}
-    }
+    if (!cfb8CheckPixels (pGC->fgPixel, pGC->bgPixel))
+	cfb8SetPixels (pGC->fgPixel, pGC->bgPixel);
 
     leftChar = 0;
     if (pDrawable->type == DRAWABLE_WINDOW)
@@ -158,45 +125,45 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
  		{
 		case 0:
 		    while (hTmp--) {
-			c = ToXoff (*rightChar++, xoff);
+			c = BitRight (*rightChar++, xoff);
 			*dst = (*dst & leftMask) |
-			       (pixels[GetFourBits (c)] & rightMask);
+			       (GetFourPixels(c) & rightMask);
 			dst += widthDst;
 		    }
 		    break;
 		case 1:
 		    while (hTmp--) {
-			c = ToXoff (*rightChar++, xoff);
+			c = BitRight (*rightChar++, xoff);
 			*dst = (*dst & leftMask) |
-			       (pixels[GetFourBits (c)] & rightMask);
+			       (GetFourPixels (c) & rightMask);
 			NextFourBits(c);
-			dst[1] = pixels[GetFourBits(c)];
+			dst[1] = GetFourPixels(c);
 			dst += widthDst;
 		    }
 		    break;
 		case 2:
 		    while (hTmp--) {
-			c = ToXoff (*rightChar++, xoff);
+			c = BitRight (*rightChar++, xoff);
 			*dst = (*dst & leftMask) |
-			       (pixels[GetFourBits (c)] & rightMask);
+			       (GetFourPixels (c) & rightMask);
 			NextFourBits(c);
-			dst[1] = pixels[GetFourBits(c)];
+			dst[1] = GetFourPixels(c);
 			NextFourBits(c);
-			dst[2] = pixels[GetFourBits(c)];
+			dst[2] = GetFourPixels(c);
 			dst += widthDst;
 		    }
 		    break;
 		case 3:
 		    while (hTmp--) {
-			c = ToXoff (*rightChar++, xoff);
+			c = BitRight (*rightChar++, xoff);
 			*dst = (*dst & leftMask) |
-			       (pixels[GetFourBits (c)] & rightMask);
+			       (GetFourPixels (c) & rightMask);
 			NextFourBits(c);
-			dst[1] = pixels[GetFourBits(c)];
+			dst[1] = GetFourPixels(c);
 			NextFourBits(c);
-			dst[2] = pixels[GetFourBits(c)];
+			dst[2] = GetFourPixels(c);
 			NextFourBits(c);
-			dst[3] = pixels[GetFourBits(c)];
+			dst[3] = GetFourPixels(c);
 			dst += widthDst;
 		    }
 		    break;
@@ -204,15 +171,15 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		    widthDiff = widthDst - ew;
 		    dst -= widthDiff;
 		    while (hTmp--) {
-			c = ToXoff (*rightChar++, xoff);
+			c = BitRight (*rightChar++, xoff);
 			dst += widthDiff;
 			*dst = (*dst & leftMask) |
-			       (pixels[GetFourBits (c)] & rightMask);
+			       (GetFourPixels (c) & rightMask);
 			ewTmp = ew;
 			while (ewTmp--) {
 			    dst++;
 			    NextFourBits(c);
-			    *dst = pixels[GetFourBits(c)];
+			    *dst = GetFourPixels (c);
 			}
 		    }
 		    break;
@@ -227,30 +194,30 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		case 1:
 		    while (hTmp--) {
 		    	c = BitLeft (*leftChar++, lshift) |
-			    ToXoff (*rightChar++, xoff);
-			dst[0] = pixels[GetFourBits(c)];
+			    BitRight (*rightChar++, xoff);
+			dst[0] = GetFourPixels(c);
 		    	dst += widthDst;
 		    }
 		    break;
 		case 2:
 		    while (hTmp--) {
 		    	c = BitLeft (*leftChar++, lshift) |
-			    ToXoff (*rightChar++, xoff);
-			dst[0] = pixels[GetFourBits(c)];
+			    BitRight (*rightChar++, xoff);
+			dst[0] = GetFourPixels(c);
 			NextFourBits(c);
-			dst[1] = pixels[GetFourBits(c)];
+			dst[1] = GetFourPixels(c);
 		    	dst += widthDst;
 		    }
 		    break;
 		case 3:
 		    while (hTmp--) {
 		    	c = BitLeft (*leftChar++, lshift) |
-			    ToXoff (*rightChar++, xoff);
-			dst[0] = pixels[GetFourBits(c)];
+			    BitRight (*rightChar++, xoff);
+			dst[0] = GetFourPixels(c);
 			NextFourBits(c);
-			dst[1] = pixels[GetFourBits(c)];
+			dst[1] = GetFourPixels(c);
 			NextFourBits(c);
-			dst[2] = pixels[GetFourBits(c)];
+			dst[2] = GetFourPixels(c);
 		    	dst += widthDst;
 		    }
 		    break;
@@ -259,11 +226,11 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		    dst = dst - widthDiff;
 		    while (hTmp--) {
 		    	c = BitLeft (*leftChar++, lshift) |
-			    ToXoff(*rightChar++,xoff);
+			    BitRight(*rightChar++,xoff);
 		    	dst += widthDiff;
 		    	ewTmp = ew;
 		    	while (ewTmp--) {
-			    *dst = pixels[GetFourBits(c)];
+			    *dst = GetFourPixels(c);
 			    ++dst;
 			    NextFourBits(c);
 		    	}
@@ -281,27 +248,27 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	    case 1:
 	    	while (hTmp--) {
 		    c = *rightChar++;
-		    dst[0] = pixels[GetFourBits(c)];
+		    dst[0] = GetFourPixels(c);
 		    dst += widthDst;
 	    	}
 		break;
 	    case 2:
 	    	while (hTmp--) {
 		    c = *rightChar++;
-		    dst[0] = pixels[GetFourBits(c)];
+		    dst[0] = GetFourPixels(c);
 		    NextFourBits(c);
-		    dst[1] = pixels[GetFourBits(c)];
+		    dst[1] = GetFourPixels(c);
 		    dst += widthDst;
 	    	}
 		break;
 	    case 3:
 	    	while (hTmp--) {
 		    c = *rightChar++;
-		    dst[0] = pixels[GetFourBits(c)];
+		    dst[0] = GetFourPixels(c);
 		    NextFourBits(c);
-		    dst[1] = pixels[GetFourBits(c)];
+		    dst[1] = GetFourPixels(c);
 		    NextFourBits(c);
-		    dst[2] = pixels[GetFourBits(c)];
+		    dst[2] = GetFourPixels(c);
 		    dst += widthDst;
 	    	}
 		break;
@@ -313,7 +280,7 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		    dst += widthDiff;
 		    ewTmp = ew;
 		    while (ewTmp--) {
-		    	*dst++ = pixels[GetFourBits(c)];
+		    	*dst++ = GetFourPixels(c);
 		    	NextFourBits(c);
 		    }
 	    	}
@@ -336,11 +303,7 @@ cfbTEGlyphBlt8 (pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	while (hTmp--)
 	{
 	    *dst = (*dst & rightMask) |
-#if (BITMAP_BIT_ORDER == MSBFirst)
-		   (pixels[GetFourBits(*leftChar << lshift)] & leftMask);
-#else
-		   (pixels[GetFourBits(*leftChar >> lshift)] & leftMask);
-#endif
+		   (GetFourPixels(BitLeft (*leftChar, lshift)) & leftMask);
 	    leftChar++;
 	    dst += widthDst;
 	}

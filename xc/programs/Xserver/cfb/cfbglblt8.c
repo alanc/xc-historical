@@ -1,6 +1,6 @@
 /*
  * Poly glyph blt for 8 bit displays.  Accepts
- * an arbitrary font <= 29 bits wide, in Copy mode only.
+ * an arbitrary font <= 32 bits wide, in Copy mode only.
  */
 
 /*
@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.0 89/07/26 10:42:02 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -33,155 +33,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 #if PPW == 4
 
-#if (BITMAP_BIT_ORDER == MSBFirst)
-#define GetFourBits(x)		(((x) >> 28) & 0xf)
-#define ToXoff(x,xoff)		((x) >> (xoff))
-#define NextFourBits(x)		((x) <<= 4)
-#else
-#define GetFourBits(x)		((x) & 0xf)
-#define ToXoff(x,xoff)		((x) << (xoff))
-#define NextFourBits(x)		((x) >>= 4)
-#endif
-
-#ifndef mips
-#define SLOW_CPU
-#endif
-
-#ifdef SLOW_CPU
-static unsigned long	masks[16] = {
-    0x00000000, 0x000000ff, 0x0000ff00, 0x0000ffff,
-    0x00ff0000, 0x00ff00ff, 0x00ffff00, 0x00ffffff,
-    0xff000000, 0xff0000ff, 0xff00ff00, 0xff00ffff,
-    0xffff0000, 0xffff00ff, 0xffffff00, 0xffffffff,
-};
-#define WriteBits(dst,pixel,bits) \
-    {						    \
-    register unsigned long mask = masks[(bits)];    \
-    *(dst) = (*(dst) & ~mask) | ((pixel) & mask);   \
-    }
-      
-#else
-
-#if (BITMAP_BIT_ORDER == MSBFirst)
-#define WriteBits(dst,pixel,bits) \
-	switch (bits) {			\
-	case 0:				\
-	    break;			\
-	case 1:				\
-	    ((char *) (dst))[3] = (pixel);	\
-	    break;			\
-	case 2:				\
-	    ((char *) (dst))[2] = (pixel);	\
-	    break;			\
-	case 3:				\
-	    ((short *) (dst))[1] = (pixel);	\
-	    break;			\
-	case 4:				\
-	    ((char *) (dst))[1] = (pixel);	\
-	    break;			\
-	case 5:				\
-	    ((char *) (dst))[3] = (pixel);	\
-	    ((char *) (dst))[1] = (pixel);	\
-	    break;			\
-	case 6:				\
-	    ((char *) (dst))[2] = (pixel);	\
-	    ((char *) (dst))[1] = (pixel);	\
-	    break;			\
-	case 7:				\
-	    ((short *) (dst))[1] = (pixel);	\
-	    ((char *) (dst))[1] = (pixel);	\
-	    break;			\
-	case 8:				\
-	    ((char *) (dst))[3] = (pixel);	\
-	    break;			\
-	case 9:				\
-	    ((char *) (dst))[3] = (pixel);	\
-	    ((char *) (dst))[0] = (pixel);	\
-	    break;			\
-	case 10:			\
-	    ((char *) (dst))[2] = (pixel);	\
-	    ((char *) (dst))[0] = (pixel);	\
-	    break;			\
-	case 11:			\
-	    ((short *) (dst))[1] = (pixel);	\
-	    ((char *) (dst))[0] = (pixel);	\
-	    break;			\
-	case 12:			\
-	    ((short *) (dst))[0] = (pixel);	\
-	    break;			\
-	case 13:			\
-	    ((char *) (dst))[3] = (pixel);	\
-	    ((short *) (dst))[0] = (pixel);	\
-	    break;			\
-	case 14:			\
-	    ((char *) (dst))[2] = (pixel);	\
-	    ((short *) (dst))[0] = (pixel);	\
-	    break;			\
-	case 15:			\
-	    ((long *) (dst))[0] = (pixel);	\
-	    break;			\
-	}
-#else
-#define WriteBits(dst,pixel,bits) \
-	switch (bits) {			\
-	case 0:				\
-	    break;			\
-	case 1:				\
-	    ((char *) (dst))[0] = (pixel);	\
-	    break;			\
-	case 2:				\
-	    ((char *) (dst))[1] = (pixel);	\
-	    break;			\
-	case 3:				\
-	    ((short *) (dst))[0] = (pixel);	\
-	    break;			\
-	case 4:				\
-	    ((char *) (dst))[2] = (pixel);	\
-	    break;			\
-	case 5:				\
-	    ((char *) (dst))[0] = (pixel);	\
-	    ((char *) (dst))[2] = (pixel);	\
-	    break;			\
-	case 6:				\
-	    ((char *) (dst))[1] = (pixel);	\
-	    ((char *) (dst))[2] = (pixel);	\
-	    break;			\
-	case 7:				\
-	    ((short *) (dst))[0] = (pixel);	\
-	    ((char *) (dst))[2] = (pixel);	\
-	    break;			\
-	case 8:				\
-	    ((char *) (dst))[3] = (pixel);	\
-	    break;			\
-	case 9:				\
-	    ((char *) (dst))[0] = (pixel);	\
-	    ((char *) (dst))[3] = (pixel);	\
-	    break;			\
-	case 10:			\
-	    ((char *) (dst))[1] = (pixel);	\
-	    ((char *) (dst))[3] = (pixel);	\
-	    break;			\
-	case 11:			\
-	    ((short *) (dst))[0] = (pixel);	\
-	    ((char *) (dst))[3] = (pixel);	\
-	    break;			\
-	case 12:			\
-	    ((short *) (dst))[1] = (pixel);	\
-	    break;			\
-	case 13:			\
-	    ((char *) (dst))[0] = (pixel);	\
-	    ((short *) (dst))[1] = (pixel);	\
-	    break;			\
-	case 14:			\
-	    ((char *) (dst))[1] = (pixel);	\
-	    ((short *) (dst))[1] = (pixel);	\
-	    break;			\
-	case 15:			\
-	    ((long *) (dst))[0] = (pixel);	\
-	    break;			\
-	}
-#endif
-#endif
+#include	"cfb8bit.h"
 
 void
 cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
@@ -277,20 +129,20 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	case 1:
 	    while (hTmp--)
 	    {
-	    	c = ToXoff (*glyphBits++, xoff);
-		WriteBits (dst, pixel, GetFourBits(c));
+	    	c = BitRight (*glyphBits++, xoff);
+		WriteFourBits (dst, pixel, GetFourBits(c));
 	    	dst += widthDst;
 	    }
 	    break;
 	case 2:
 	    while (hTmp--)
 	    {
-	    	c = ToXoff (*glyphBits++, xoff);
+	    	c = BitRight (*glyphBits++, xoff);
 	    	if (c)
 	    	{
-		    WriteBits (dst, pixel, GetFourBits(c));
+		    WriteFourBits (dst, pixel, GetFourBits(c));
 		    NextFourBits(c);
-		    WriteBits (dst+1, pixel, GetFourBits(c));
+		    WriteFourBits (dst+1, pixel, GetFourBits(c));
 	    	}
 	    	dst += widthDst;
 	    }
@@ -298,16 +150,39 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	case 3:
 	    while (hTmp--)
 	    {
-	    	c = ToXoff (*glyphBits++, xoff);
+	    	c = BitRight (*glyphBits++, xoff);
 	    	if (c)
 	    	{
-		    WriteBits (dst, pixel, GetFourBits(c));
+		    WriteFourBits (dst, pixel, GetFourBits(c));
 		    NextFourBits(c);
-		    WriteBits (dst+1, pixel, GetFourBits(c));
+		    WriteFourBits (dst+1, pixel, GetFourBits(c));
 		    NextFourBits(c);
-		    WriteBits (dst+2, pixel, GetFourBits(c));
+		    WriteFourBits (dst+2, pixel, GetFourBits(c));
 	    	}
 	    	dst += widthDst;
+	    }
+	    break;
+	case 9:
+	    widthDiff = widthDst - ew;
+	    dst -= widthDiff;
+	    while (hTmp--)
+	    {
+	    	c = BitRight (*glyphBits, xoff);
+	    	dst += widthDiff;
+	    	if (!c)
+	    	{
+		    dst += ew;
+		    continue;
+	    	}
+	    	ewTmp = ew - 1;
+	    	while (ewTmp--) {
+		    WriteFourBits(dst, pixel, GetFourBits(c))
+		    dst++;
+		    NextFourBits(c);
+	    	}
+		c = BitLeft (*glyphBits++, 32 - xoff);
+		WriteFourBits(dst, pixel, GetFourBits(c));
+		dst++;
 	    }
 	    break;
 	default:
@@ -315,7 +190,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    dst -= widthDiff;
 	    while (hTmp--)
 	    {
-	    	c = ToXoff (*glyphBits++, xoff);
+	    	c = BitRight (*glyphBits++, xoff);
 	    	dst += widthDiff;
 	    	if (!c)
 	    	{
@@ -324,7 +199,7 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    	}
 	    	ewTmp = ew;
 	    	while (ewTmp--) {
-		    WriteBits(dst, pixel, GetFourBits(c))
+		    WriteFourBits(dst, pixel, GetFourBits(c))
 		    dst++;
 		    NextFourBits(c);
 	    	}
@@ -333,147 +208,6 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	x += pci->metrics.characterWidth;
     }
 }
-
-unsigned long	lowBits[32] = {
-    0xffffffff, 0x7fffffff, 0x3fffffff, 0x1fffffff,
-    0x0fffffff, 0x07ffffff, 0x03ffffff, 0x01ffffff,
-    0x00ffffff, 0x007fffff, 0x003fffff, 0x001fffff,
-    0x000fffff, 0x0007ffff, 0x0003ffff, 0x0001ffff,
-    0x0000ffff, 0x00007fff, 0x00003fff, 0x00001fff,
-    0x00000fff, 0x000007ff, 0x000003ff, 0x000001ff,
-    0x000000ff, 0x0000007f, 0x0000003f, 0x0000001f,
-    0x0000000f, 0x00000007, 0x00000003, 0x00000001,
-};
-
-unsigned long highBits[32] = {
-    0xffffffff, 0xfffffffe, 0xfffffffc, 0xfffffff8,
-    0xfffffff0, 0xffffffe0, 0xffffffc0, 0xffffff80,
-    0xffffff00, 0xfffffe00, 0xfffffc00, 0xfffff800,
-    0xfffff000, 0xffffe000, 0xffffc000, 0xffff8000,
-    0xffff0000, 0xfffe0000, 0xfffc0000, 0xfff80000,
-    0xfff00000, 0xffe00000, 0xffc00000, 0xff800000,
-    0xff000000, 0xfe000000, 0xfc000000, 0xf8000000,
-    0xf0000000, 0xe0000000, 0xc0000000, 0x80000000,
-};
-
-#if (BITMAP_BIT_ORDER == MSBFirst)
-#define rightMask   lowBits
-#define leftMask    lowBits
-#else
-#define rightMask   highBits
-#define leftMask    highBits
-#endif
-
-/*
- * a grungy little routine.  This computes clip masks
- * for partial character blts.  Returns rgnOUT if the
- * entire character is clipped; returns rgnIN if the entire
- * character is unclipped; returns rgnPART if a portion of
- * the character is visible.  Computes clip masks for each
- * longword of the character -- and those with the
- * contents of the glyph to compute the visible bits.
- */
-
-int
-clipBlt (pBox, numRects, x, y, w, h, clips)
-    BoxPtr	pBox;
-    int		numRects;
-    int		x, y, w, h;
-    unsigned long   *clips;
-{
-    int	    yBand, yBandBot;
-    int	    ch;
-    unsigned long	    clip;
-    int	    partIN = FALSE, partOUT = FALSE;
-    int	    result;
-
-    if (numRects == 0)
-	return rgnOUT;
-    while (numRects && pBox->y2 <= y)
-    {
-	--numRects;
-	++pBox;
-    }
-    if (!numRects || pBox->y1 >= y + h)
-	return rgnOUT;
-    yBand = pBox->y1;
-    while (numRects && pBox->y1 == yBand && pBox->x2 <= x)
-    {
-	--numRects;
-	++pBox;
-    }
-    if (!numRects || pBox->y1 >= y + h)
-	return rgnOUT;
-    if (numRects &&
-	x >= pBox->x1 &&
-	x + w <= pBox->x2 &&
-	y >= pBox->y1 &&
-	y + h <= pBox->y2)
-    {
-	return rgnIN;
-    }
-    ch = 0;
-    while (ch < h && y + ch < pBox->y1)
-    {
-	partOUT = TRUE;
-	clips[ch++] = 0;
-    }
-    while (numRects && pBox->y1 < y + h)
-    {
-	yBand = pBox->y1;
-	yBandBot = pBox->y2;
-    	while (numRects && pBox->y1 == yBand && pBox->x2 <= x)
-    	{
-	    --numRects;
-	    ++pBox;
-    	}
-    	if (!numRects)
-	    break;
-	clip = 0;
-    	while (numRects && pBox->y1 == yBand && pBox->x1 < x + w)
-    	{
-	    if (x < pBox->x1)
-		if (pBox->x2 < x + w)
-		    clip |= leftMask[pBox->x1 - x] & ~rightMask[pBox->x2 - x];
-		else
-		    clip |= leftMask[pBox->x1 - x];
- 	    else
-		if (pBox->x2 < x + w)
-		    clip |= ~rightMask[pBox->x2 - x];
-		else
-		    clip = ~0;
-	    --numRects;
-	    ++pBox;
-    	}
-	if (clip != 0)
-		partIN = TRUE;
-	if (clip != ~0)
-		partOUT = TRUE;
-	while (ch < h && y + ch < yBandBot)
-	    clips[ch++] = clip;
-	while (numRects && pBox->y1 == yBand)
-	{
-	    --numRects;
-	    ++pBox;
-	}
-    }
-    while (ch < h)
-    {
-	partOUT = TRUE;
-	clips[ch++] = 0;
-    }
-    result = rgnOUT;
-    if (partIN)
-    {
-	if (partOUT)
-	    result = rgnPART;
-	else
-	    result = rgnIN;
-    }
-    return result;
-}
-#undef leftMask
-#undef rightMask
 
 cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
@@ -490,7 +224,6 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     int		    ewTmp;
     int		    xoff;
     unsigned long   *rightChar;
-    unsigned long   leftMask, rightMask;
 
     CharInfoPtr		pci;
     FontInfoPtr		pfi = pGC->font->pFI;
@@ -566,11 +299,12 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	hTmp = pci->metrics.descent + pci->metrics.ascent;
 	widthDiff = widthDst - ew;
 	dst = dstLine - widthDiff;
-	switch (clipBlt (pBox, numRects, xG, yG, w, hTmp, clips)) {
+	switch (cfb8ComputeClipMasks32 (pBox, numRects, xG, yG, w, hTmp, clips))
+ 	{
 	case rgnIN:
 	    while (hTmp--)
 	    {
-	    	c = ToXoff (*rightChar++, xoff);
+	    	c = BitRight (*rightChar++, xoff);
 	    	dst += widthDiff;
 	    	if (!c)
 	    	{
@@ -579,7 +313,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    	}
 	    	ewTmp = ew;
 	    	while (ewTmp--) {
-		    WriteBits (dst, pixel, GetFourBits(c));
+		    WriteFourBits (dst, pixel, GetFourBits(c));
 		    dst++;
 		    NextFourBits(c);
 	    	}
@@ -589,7 +323,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    cTmp = clips;
 	    while (hTmp--)
 	    {
-	    	c = ToXoff (*rightChar++ & *cTmp++, xoff);
+	    	c = BitRight (*rightChar++ & *cTmp++, xoff);
 	    	dst += widthDiff;
 	    	if (!c)
 	    	{
@@ -598,7 +332,7 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    	}
 	    	ewTmp = ew;
 	    	while (ewTmp--) {
-		    WriteBits (dst, pixel, GetFourBits(c));
+		    WriteFourBits (dst, pixel, GetFourBits(c));
 		    dst++;
 		    NextFourBits(c);
 	    	}
