@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.53 91/07/13 17:15:21 converse Exp $
+ * $XConsortium: tocutil.c,v 2.54 91/07/13 17:53:11 gildea Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -396,7 +396,7 @@ void TULoadTocFile(toc)
 	msg->position = position;
 	msg->length = l = strlen(ptr);
 	position += l;
-	if (buf[bufsiz-2] != '\n' && l == app_resources.toc_width) {
+	if (l == app_resources.toc_width && buf[bufsiz-2] != '\n') {
 	    buf[bufsiz-2] = '\n';
 	    msg->buf = strcpy(XtMalloc((Cardinal) ++l), ptr);
 	    msg->msgid = atoi(ptr);
