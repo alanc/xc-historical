@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.29 91/04/02 11:58:51 rws Exp $
+ * $XConsortium: greet.c,v 1.30 92/04/15 10:52:33 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -69,6 +69,8 @@ GreetDone (w, data, status)
     case NOTIFY_OK:
 	strcpy (name, data->name);
 	strcpy (password, data->passwd);
+	bzero (data->name, NAME_LEN);
+	bzero (data->passwd, NAME_LEN);
 	code = 0;
 	done = 1;
 	break;
@@ -202,10 +204,11 @@ struct greet_info	*greet;
 }
 
 
-/*ARGSUSED*/
 FailedLogin (d, greet)
 struct display	*d;
 struct greet_info	*greet;
 {
     DrawFail (login);
+    bzero (greet->name, strlen(greet->name));
+    bzero (greet->password, strlen(greet->password));
 }
