@@ -307,6 +307,12 @@ char		*bogus= NULL;
 	case ExprFieldRef:
 	    bogus= "field reference";
 	    break;
+	case ExprArrayRef:
+	    bogus= "array reference";
+	    break;
+	case ExprActionDecl:
+	    bogus= "function";
+	    break;
 	case OpAdd:
 	case OpSubtract:
 	case OpMultiply:
@@ -653,6 +659,7 @@ ExprResolveMask(expr,val_rtrn,lookup,lookupPriv)
 int	ok= 0;
 ExprResult	leftRtrn,rightRtrn;
 ExprDef		*left,*right;
+char *		bogus= NULL;
 
     switch (expr->op) {
 	case ExprValue:
@@ -684,6 +691,14 @@ ExprDef		*left,*right;
 					stText(expr->value.field.element),
 					stText(expr->value.field.field));
 	    return ok;
+	case ExprArrayRef:
+	    bogus= "array reference";
+	case ExprActionDecl:
+	    if (bogus==NULL)
+		bogus= "function use";
+	    uError("Unexpected %s in mask expression\n",bogus);
+	    uAction("Expression ignored\n");
+	    return False;
 	case OpAdd:
 	case OpSubtract:
 	case OpMultiply:
