@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.9 93/09/24 15:58:30 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.10 93/09/26 15:17:36 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -63,8 +63,8 @@ IceReplyWaitInfo *replyWait;
 	iceErrorMsg 	*pMsg;
 	char	    	*pData;
 
-	IceReadCompleteMessage (iceConn,
-	    SIZEOF (iceErrorMsg), iceErrorMsg, pMsg, pData);
+	IceReadMessage (iceConn, SIZEOF (iceErrorMsg),
+	    iceErrorMsg, pMsg, pData);
 
 	if (replyWait &&
 	    replyWait->minor_opcode_of_request == SM_RegisterClient &&
@@ -111,8 +111,7 @@ IceReplyWaitInfo *replyWait;
 	    _SmcRegisterClientReply 	*reply = 
 	        (_SmcRegisterClientReply *) (replyWait->reply);
 
-	    IceReadCompleteMessage (iceConn,
-		SIZEOF (smRegisterClientReplyMsg),
+	    IceReadMessage (iceConn, SIZEOF (smRegisterClientReplyMsg),
 		smRegisterClientReplyMsg, pMsg, pData);
 
 	    EXTRACT_ARRAY8_AS_STRING (pData, swap, reply->client_id);
@@ -194,29 +193,13 @@ IceReplyWaitInfo *replyWait;
 	{
 	    smPropertiesReplyMsg 	*pMsg;
 	    char 			*pData;
-	    char			*tempBuf = NULL;
-	    unsigned long 		bytes;
 	    int				numProps;
 	    SmProp			*props;
 	    _SmcPropReplyWait 		*next;
+	    Bool			freeMsgData;
 
-	    IceReadMessageHeader (iceConn, SIZEOF (smPropertiesReplyMsg),
-		smPropertiesReplyMsg, pMsg);
-
-	    bytes = (pMsg->length << 3) - (SIZEOF (smPropertiesReplyMsg) - 8);
-
-	    if ((iceConn->inbufmax - iceConn->inbufptr) >= bytes)
-	    {
-		IceReadData (iceConn, bytes, iceConn->inbufptr);
-		pData = iceConn->inbufptr;
-		iceConn->inbufptr += bytes;
-	    }
-	    else
-	    {
-		tempBuf = (char *) malloc ((unsigned) bytes);
-		pData = tempBuf;
-		IceReadData (iceConn, bytes, tempBuf);
-	    }
+	    IceCheckAndReadMessage (iceConn, SIZEOF (smPropertiesReplyMsg),
+		smPropertiesReplyMsg, pMsg, pData, freeMsgData);
 
 	    EXTRACT_LISTOF_PROPERTY (pData, swap, numProps, props);
 
@@ -228,8 +211,8 @@ IceReplyWaitInfo *replyWait;
 	    free ((char *) smcConn->prop_reply_waits);
 	    smcConn->prop_reply_waits = next;
 
-	    if (tempBuf)
-		free (tempBuf);
+	    if (freeMsgData)
+		free (pData);
 	}
 	break;
 
@@ -296,8 +279,8 @@ Bool		 swap;
 	iceErrorMsg 	*pMsg;
 	char	    	*pData;
 
-	IceReadCompleteMessage (iceConn,
-	    SIZEOF (iceErrorMsg), iceErrorMsg, pMsg, pData);
+	IceReadMessage (iceConn, SIZEOF (iceErrorMsg),
+	    iceErrorMsg, pMsg, pData);
 
 	(*_SmsErrorHandler) (smsConn, swap,
 	    pMsg->offendingMinorOpcode,
@@ -314,8 +297,7 @@ Bool		 swap;
 	char 			*savePtr;
 	char 			*previousId;
 
-	IceReadCompleteMessage (iceConn,
-	    SIZEOF (smRegisterClientMsg),
+	IceReadMessage (iceConn, SIZEOF (smRegisterClientMsg),
 	    smRegisterClientMsg, pMsg, pData);
 
 	savePtr = pData;
@@ -422,8 +404,7 @@ Bool		 swap;
 	int 			count, i;
 	char 			**reasonMsgs = NULL;
 
-	IceReadCompleteMessage (iceConn,
-	    SIZEOF (smCloseConnectionMsg),
+	IceReadMessage (iceConn, SIZEOF (smCloseConnectionMsg),
 	    smCloseConnectionMsg, pMsg, pData);
 
 	EXTRACT_ARRAY8_AS_STRING (pData, swap, locale);
@@ -446,28 +427,12 @@ Bool		 swap;
     {
 	smSetPropertiesMsg 	*pMsg;
 	char 			*pData;
-	char			*tempBuf = NULL;
-	unsigned long 		bytes;
 	SmProp			*props = NULL;
 	int 			numProps;
+	Bool			freeMsgData;
 	
-	IceReadMessageHeader (iceConn, SIZEOF (smSetPropertiesMsg),
-	    smSetPropertiesMsg, pMsg);
-
-	bytes = (pMsg->length << 3) - (SIZEOF (smSetPropertiesMsg) - 8);
-
-	if ((iceConn->inbufmax - iceConn->inbufptr) >= bytes)
-	{
-	    IceReadData (iceConn, bytes, iceConn->inbufptr);
-	    pData = iceConn->inbufptr;
-	    iceConn->inbufptr += bytes;
-	}
-	else
-	{
-	    tempBuf = (char *) malloc ((unsigned) bytes);
-	    pData = tempBuf;
-	    IceReadData (iceConn, bytes, tempBuf);
-	}
+	IceCheckAndReadMessage (iceConn, SIZEOF (smSetPropertiesMsg),
+	    smSetPropertiesMsg, pMsg, pData, freeMsgData);
 
 	if (swap)
 	    pMsg->sequenceRef = lswapl (pMsg->sequenceRef);
@@ -478,8 +443,8 @@ Bool		 swap;
 	    smsConn->callbacks.set_properties.manager_data,
             pMsg->sequenceRef, numProps, props);
 
-	if (tempBuf)
-	    free (tempBuf);
+	if (freeMsgData)
+	    free (pData);
 
 	break;
     }
