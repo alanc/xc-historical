@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.13 89/06/14 11:12:29 jim Exp $
+ * $XConsortium: Xos.h,v 1.14 89/06/14 13:18:53 jim Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -95,6 +95,10 @@ struct timeval {
     long tv_sec;
     long tv_usec;
 };
+struct timezone {
+    int tz_minuteswest;
+    int tz_dsttime;
+}
 #endif
 #endif /* umips or not */
 #endif /* USG */
