@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.62 94/02/23 15:48:05 dpw Exp $ */
+/* $XConsortium: dispatch.c,v 5.63 94/03/08 20:31:27 dpw Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2108,7 +2108,7 @@ ProcGetImage(client)
 		    	      bufPtr += widthBytesLine,
 			      protoPtr += widthBytesLineProto, 
 			      i++)
-		    	    bcopy(bufPtr,protoPtr,widthBytesLineProto);
+		    	    memmove(protoPtr,bufPtr,widthBytesLineProto);
 
 		        /* Note: NOT a call to WriteSwappedDataToClient,
 		           as we do NOT byte swap */
