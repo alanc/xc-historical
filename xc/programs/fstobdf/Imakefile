@@ -1,6 +1,6 @@
-XCOMM $XConsortium$
-LOCAL_LIBRARIES = $(FSLIBSRC)/libFS.a $(XLIB)
-DEPLIBS = $(FSLIBSRC)/libFS.a $(DEPXLIB)
+XCOMM $XConsortium: Imakefile,v 1.7 91/07/17 16:04:53 gildea Exp $
+LOCAL_LIBRARIES = $(FSLIB) $(XLIB)
+DEPLIBS = $(DEPFSLIB) $(DEPXLIB)
 INCLUDES = -I$(FONTSRC)/include
 
            SRCS = chars.c fstobdf.c header.c props.c

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.16 92/11/06 15:25:25 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.17 93/07/12 18:07:43 rws Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -7,8 +7,6 @@ OSDIR = os
 OSLIB = $(OSDIR)/libos.a
 DIFSDIR = difs
 DIFSLIB = $(DIFSDIR)/libdifs.a
-FONTLIBDIR = $(FONTSRC)/lib/font
-FONTLIB = $(FONTLIBDIR)/libfont.a
 SYSLIBS =
 #if defined(HPArchitecture) || defined(i386SVR3Architecture)
 BSDEMUL = $(LIBSRC)/Berk/Berklib.o
