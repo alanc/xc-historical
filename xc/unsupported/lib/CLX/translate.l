@@ -301,7 +301,7 @@
 	   (values keysym))
   (let* ((mapping (display-keyboard-mapping display))
 	 (keysym (aref mapping keycode keysym-index)))
-    (declare (type (simple-array keysym (256 2)) mapping)
+    (declare (type (simple-array keysym (* *)) mapping)
 	     (type keysym keysym))
     ;; The keysym-mapping is brain dammaged.
     ;; Mappings for both-case alphabetic characters have the
@@ -426,7 +426,7 @@
 	   (symbolp (and (> keysyms-per-keycode 2)
 			 (state-keysymp display state character-set-switch-keysym)))
 	   (result (if symbolp 2 0)))
-      (declare (type (simple-array keysym (256 2)) mapping)
+      (declare (type (simple-array keysym (* *)) mapping)
 	       (type boolean symbolp)
 	       (type card8 keysyms-per-keycode result))
       (when (and (< result keysyms-per-keycode)
