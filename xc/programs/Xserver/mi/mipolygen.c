@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolygen.c,v 1.17 87/09/11 07:19:05 toddb Exp $ */
+/* $XConsortium: mipolygen.c,v 1.18 88/09/06 14:49:17 jim Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "miscanfill.h"
@@ -62,11 +62,11 @@ miFillGeneralPoly(dst, pgc, count, ptsIn)
     int fixWAET = 0;
 
     if (count < 3)
-	return;
+	return(TRUE);
 
     if(!(pETEs = (EdgeTableEntry *)
         ALLOCATE_LOCAL(sizeof(EdgeTableEntry) * count)))
-	return;
+	return(FALSE);
     ptsOut = FirstPoint;
     width = FirstWidth;
     miCreateETandAET(count, ptsIn, &ET, &AET, pETEs, &SLLBlock);
@@ -195,4 +195,5 @@ miFillGeneralPoly(dst, pgc, count, ptsIn)
     (*pgc->FillSpans)(dst, pgc, nPts, FirstPoint, FirstWidth, 1);
     DEALLOCATE_LOCAL(pETEs);
     miFreeStorage(SLLBlock.next);
+    return(TRUE);
 }
