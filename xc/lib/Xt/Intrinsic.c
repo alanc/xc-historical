@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.195 94/05/05 14:46:30 mor Exp kaleb $ */
+/* $XConsortium: Intrinsic.c,v 1.196 94/11/21 18:20:56 kaleb Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -306,6 +306,7 @@ static void RealizeWidget(widget)
     Window			window;
     Display*			display;
     String			class_name;
+    Widget			hookobj;
 
     if (!XtIsWidget(widget) || XtIsRealized(widget)) return;
     display = XtDisplay(widget);
@@ -323,6 +324,16 @@ static void RealizeWidget(widget)
 		      (String *)NULL, (Cardinal *)NULL);
     else (*realize) (widget, &value_mask, &values);
     window = XtWindow(widget);
+    hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
+    if (XtHasCallbacks(hookobj,XtNchangeHook) == XtCallbackHasSome) {
+	XtChangeHookDataRec call_data;
+
+	call_data.type = XtHrealizeWidget;
+	call_data.widget = widget;
+	XtCallCallbackList(hookobj, 
+		((HookObject)hookobj)->hooks.changehook_callbacks, 
+		(XtPointer)&call_data);
+    }
 #ifndef NO_IDENTIFY_WINDOWS
     if (_XtGetPerDisplay(display)->appContext->identify_windows) {
 	int len_nm, len_cl;
@@ -378,7 +389,6 @@ static void RealizeWidget(widget)
 void XtRealizeWidget (widget)
     Widget		widget;
 {
-    Widget hookobj;
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
@@ -388,16 +398,6 @@ void XtRealizeWidget (widget)
     }
     CallChangeManaged(widget);
     RealizeWidget(widget);
-    hookobj = XtHooksOfDisplay(XtDisplayOfObject(widget));
-    if (XtHasCallbacks(hookobj,XtNchangeHook) == XtCallbackHasSome) {
-	XtChangeHookDataRec call_data;
-
-	call_data.type = XtHrealizeWidget;
-	call_data.widget = widget;
-	XtCallCallbackList(hookobj, 
-		((HookObject)hookobj)->hooks.changehook_callbacks, 
-		(XtPointer)&call_data);
-    }
     UNLOCK_APP(app);
 } /* XtRealizeWidget */
 
