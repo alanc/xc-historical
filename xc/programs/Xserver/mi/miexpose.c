@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miexpose.c,v 1.27 87/11/10 17:49:34 rws Exp $ */
+/* $Header: miexpose.c,v 1.28 88/03/15 17:57:27 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -188,7 +188,10 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
 	        pe->u.graphicsExposure.width = pBox->x2 - pBox->x1;
 	        pe->u.graphicsExposure.height = pBox->y2 - pBox->y1;
 	        pe->u.graphicsExposure.count = prgnExposed->numRects - i;
-					
+		pe->u.graphicsExposure.majorEvent =
+			((xReq *)requestingClient->requestBuffer)->reqType;
+		/* XXX will need support for extensions */
+		pe->u.graphicsExposure.minorEvent = 0;
 	    }
 	    TryClientEvents(requestingClient, pEvent, prgnExposed->numRects,
 			    0, NoEventMask, NullGrab);
@@ -199,6 +202,10 @@ miHandleExposures(pSrcDrawable, pDstDrawable,
             xEvent event;
 	    event.u.u.type = NoExpose;
 	    event.u.noExposure.drawable = requestingClient->lastDrawableID;
+	    event.u.noExposure.majorEvent = 
+			((xReq *)requestingClient->requestBuffer)->reqType;
+	    /* XXX will need support for extensions */
+	    event.u.noExposure.minorEvent = 0;
 	    TryClientEvents(requestingClient, &event, 1,
 	        0, NoEventMask, NullGrab);
         }
