@@ -25,6 +25,7 @@ IMPLIED.
 #include <sys/video.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <errno.h>
 
 static struct termio d_tio = {
 	(BRKINT|IGNPAR|ISTRIP|ICRNL|IXON)&(~IGNBRK)&(~PARMRK)&(~INPCK)&(~INLCR)&
@@ -36,24 +37,40 @@ static struct termio d_tio = {
 	{CINTR, CQUIT, CERASE, CKILL, CEOF, CNUL, CNUL, CNUL}
 };
 
+/*
+ * Check to see that the server restored the "line" streams module
+ * on /dev/console. If so, we'll presume all is well. If not, clear 
+ * all stacked modules, push "line", and establish workable stty values.
+ */
 main()
 {
 	int fd; int line;
 	struct strioctl s;
+	char buff[FMNAMESZ+1];
 
-	fd = open("/dev/console", O_RDWR);
+	if ((fd = open("/dev/console", O_RDWR)) < 0) {
+	    printf("Xrepair: can't open /dev/console\n");
+	} else if (ioctl(fd, I_FIND, "line") == 0) {
+	    errno = 0;
+	    ioctl(fd, I_LOOK, buff);
+	    while (errno != EINVAL) {
+		if(ioctl(fd, I_POP, 0) < 0) {
+			printf("Failed to ioctl I_POP %s.\n", buff);
+		}
+		ioctl(fd, I_LOOK, buff);
+	    }
 
-	line = ioctl(fd, I_POP, 0); /* remove line discipline and stash it */
-	ioctl(fd, I_FLUSH, FLUSHRW); /* flush input to put us in known state */
+	    ioctl(fd, I_FLUSH, FLUSHRW); 
     
-	s.ic_len = 0;
-	s.ic_cmd = VIDEO_NOMOUSE;
-	ioctl(fd, I_STR, &s);
-	s.ic_len = 0;
-	s.ic_cmd = VIDEO_ASCII;
-	ioctl(fd, I_STR, &s);
-	ioctl(fd, I_PUSH, "line");
-
-	ioctl(fd, TCSETA, &d_tio);
-
+	    s.ic_len = 0;
+	    s.ic_cmd = VIDEO_NOMOUSE;
+	    ioctl(fd, I_STR, &s);
+	    s.ic_len = 0;
+	    s.ic_cmd = VIDEO_ASCII;
+	    ioctl(fd, I_STR, &s);
+	    ioctl(fd, I_PUSH, "line");
+    
+	    ioctl(fd, TCSETA, &d_tio);
+	}
+    
 }
