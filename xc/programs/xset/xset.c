@@ -27,25 +27,30 @@ static char *rcsid_xset_c = "$Header: xset.c,v 1.13 87/06/29 13:56:25 dkk Exp $"
 	if (i >= argc) \
 		break; \
 
-#define DO_ACCEL 1
-#define DO_THRESH 2
-#define DO_SAVER 4
-#define REPEAT_OFF 8
-#define REPEAT_ON 16
-#define NEW_PIXELS 32
-#define DO_QUERY 64
+/*  These are bit identifiers for "set->do_what" to tell us what to do: */
+#define DO_ACCEL 1     /*  Alter the pointer (mouse) acceleration.      */
+#define DO_THRESH 2    /*  Alter the pointer threshold (of acceleration).*/
+#define DO_SAVER 4     /*  Alter the screen saver settings. */
+#define REPEAT_OFF 8   /*  Turn auto repeat off. */
+#define REPEAT_ON 16   /*  Turn auto repeat on.  */
+#define NEW_PIXELS 32  /*  Define new pixel color values.  */
+#define DO_QUERY 64    /*  Answer a query.  (Give info about xsettings.) */
 
+/*  The Setinfo structure is for communication between the argument parsing
+ *  function, process_input(), and main.
+ */
 struct Setinfo {
-  XKeyboardControl *values;
-  unsigned long value_mask;
-  int do_what;
-  int acc_num;
-  int acc_denom;
-  int thresh;
-  int timeout;
-  int interval;
-  int prefer_blank;
-  int allow_exp;
+  XKeyboardControl *values;  /*  An argument for XChangeKeyboardControl() */
+  unsigned long value_mask;  /*  An argument for XChangeKeyboardControl() */
+  int do_what;       /*  Tells us what to change.  See #defines, above.   */
+  int acc_num;       /*  These two specify the mouse acceleration for use */
+  int acc_denom;     /*    by XChangeKeyboardControl().                   */
+  int thresh;        /*  Specifies threshold above which pointer speed is */
+                     /*    increased by a factor of accel_num/accel_denom.*/
+  int timeout;       /*  Specifies idle time until screen saver kicks in. */
+  int interval;      /*  Time between redrawings of screen saver pattern. */
+  int prefer_blank;  /*  Either PreferBlanking, DontPrefer.. or Default.. */
+  int allow_exp;     /*  Not yet implemented.                             */
   int pixels[512];
   caddr_t colors[512];
   int numpixels;
@@ -55,15 +60,18 @@ main(argc, argv)
 int argc;
 char **argv;
 {
-	Display	*dpy;
-
+	Display	*dpy;    /*  Pointer to the display structure.   */
 	XColor def;
-	Display *process_input();
+	Display *process_input();  /*  Command parsing function. */
+
 	set = (struct Setinfo *) malloc(sizeof(struct Setinfo));
 	set->values = (XKeyboardControl *) malloc(sizeof(XKeyboardControl));
 
-	dpy = process_input(argc, argv, set);
+	dpy = process_input(argc, argv, set);  /*  Sets set structure. */
 	if (!set->value_mask && !set->do_what) {
+/*  That is, if nothing has been flagged for change by XKeyboardControl()
+ *  (by value_mask) or for change by another X function (by do_what).
+ */
 		usage(argv[0]);
 	}
 	XSynchronize(dpy, ON);
@@ -72,7 +80,7 @@ char **argv;
 	        XChangeKeyboardControl(dpy, set->value_mask, set->values);
 	}
 	if (set->do_what & DO_QUERY) {
-	        query(dpy);
+	        query(dpy);   /* Returns info to user.  */
 	}
 	if (set->do_what & DO_ACCEL){
 	  XChangePointerControl(dpy, True, 
@@ -101,7 +109,7 @@ char **argv;
 		}
 	}
 	XFlush(dpy);
-	exit(0);
+	exit(0);    /*  Done.  We can go home now.  */
 }
 
 isnumber(arg, maximum)
@@ -122,10 +130,10 @@ isnumber(arg, maximum)
  *  structure is used to return data from the command line to the rest
  *  of the program.
  */
-Display *process_input(argc, argv, cmd)
-int argc;
-char **argv;
-struct Setinfo *cmd;
+Display *process_input(argc, argv, cmd)  /* Returns what XOpenDisplay does*/
+int argc;       /*  These two are passed from main. */
+char **argv;     
+struct Setinfo *cmd;  /*  The structure is filled with info for main.  */
 {
 register char *arg;
 register int i;
@@ -135,62 +143,62 @@ cmd->do_what = 0;
 if (argc == 1)  usage(argv[0]);
 for (i = 1; i < argc; ) {
   arg = argv[i++];
-  if (*arg == '-' && *(arg + 1) == 'c') {
-    cmd->values->key_click_percent = 0;
-    cmd->value_mask |= KBKeyClickPercent;
+  if (*arg == '-' && *(arg + 1) == 'c') {  /* Does arg start with "-c"?  */
+    cmd->values->key_click_percent = 0;    /* If so, turn click off and  */
+    cmd->value_mask |= KBKeyClickPercent;  /*    set proper bit in mask. */
   } 
-  else if (*arg == 'c') {
-    cmd->values->key_click_percent = -1;
+  else if (*arg == 'c') {         /* Well, does it start with "c", then? */
+    cmd->values->key_click_percent = -1;   /* Default click volume.      */
     cmd->value_mask |= KBKeyClickPercent;
     arg = nextarg(i, argv);
-    if (strcmp(arg, "on") == 0) {
+    if (strcmp(arg, "on") == 0) {               /* Let click be default. */
       i++;
     } 
-    else if (strcmp(arg, "off") == 0) {
-      cmd->values->key_click_percent = 0;
+    else if (strcmp(arg, "off") == 0) {  
+      cmd->values->key_click_percent = 0;       /* Turn it off.          */
       i++;
     } 
     else if (isnumber(arg, 100)) {
-      cmd->values->key_click_percent = atoi(arg);
+      cmd->values->key_click_percent = atoi(arg);  /* Set to spec. volume */
       i++;
     }
   } 
-  else if (*arg == '-' && *(arg + 1) == 'b') {
-    cmd->values->bell_percent = 0;
+  else if (*arg == '-' && *(arg + 1) == 'b') {  /* Does arg start w/ "-b" */
+    cmd->values->bell_percent = 0;              /* Then turn off bell.    */
     cmd->value_mask |= KBBellPercent;
   } 
-  else if (*arg == 'b') {
-    cmd->values->bell_percent = -1;
+  else if (*arg == 'b') {                       /* Does it start w/ "b".  */
+    cmd->values->bell_percent = -1;             /* Set bell to default.   */
     cmd->value_mask |= KBBellPercent;
     arg = nextarg(i, argv);
-    if (strcmp(arg, "on") == 0) {
+    if (strcmp(arg, "on") == 0) {               /* Let it stay that way.  */
       i++;
     } 
     else if (strcmp(arg, "off") == 0) {
-      cmd->values->bell_percent = 0;
+      cmd->values->bell_percent = 0;            /* Turn the bell off.     */
       i++;
     } 
-    /* volume */
-    else if (isnumber(arg, 100)) {
-      cmd->values->bell_percent = atoi(arg);
+
+    else if (isnumber(arg, 100)) {              /* If volume is given:    */
+      cmd->values->bell_percent = atoi(arg);    /* set bell appropriately.*/
       i++;
-      /* pitch */
       arg = nextarg(i, argv);
-      if (isnumber(arg, 20000)) {
-	cmd->values->bell_pitch = atoi(arg);
+
+      if (isnumber(arg, 20000)) {               /* If pitch is given:     */
+	cmd->values->bell_pitch = atoi(arg);    /* set the bell.           */
 	cmd->value_mask |= KBBellPitch;
 	i++;
-	/* duration */
+
 	arg = nextarg(i, argv);
-	if (isnumber(arg, 1000)) {
-	  cmd->values->bell_duration = atoi(arg);
+	if (isnumber(arg, 1000)) {              /* If duration is given:  */
+	  cmd->values->bell_duration = atoi(arg);  /*  set the bell.      */
 	  cmd->value_mask |= KBBellDuration;
 	  i++;
 	}
       }
     }
   } 
-  else if (strcmp(arg, "-led") == 0) {
+  else if (strcmp(arg, "-led") == 0) {         /* Turn off one or all LEDs */
     cmd->values->led_mode = OFF;
     cmd->value_mask |= KBLedMode;
     arg = nextarg(i, argv);
@@ -200,14 +208,14 @@ for (i = 1; i < argc; ) {
       i++;
     }
   } 
-  else if (strcmp(arg, "led") == 0) {
+  else if (strcmp(arg, "led") == 0) {         /* Turn on one or all LEDs  */
     cmd->values->led_mode = ON;
     cmd->value_mask |= KBLedMode;
     arg = nextarg(i, argv);
     if (strcmp(arg, "on") == 0) {
       i++;
     } 
-    else if (strcmp(arg, "off") == 0) {
+    else if (strcmp(arg, "off") == 0) {       /*  ...except in this case. */
       cmd->values->led_mode = OFF;
       i++;
     }
@@ -217,53 +225,54 @@ for (i = 1; i < argc; ) {
       i++;
     }
   }
+/*  Set pointer (mouse) settings:  Acceleration and Threshold. */
   else if (strcmp(arg, "m") == 0 || strcmp(arg, "mouse") == 0) {
     cmd->acc_num = -1;
-    cmd->acc_denom = -1;
+    cmd->acc_denom = -1;     /*  Defaults */
     cmd->thresh = -1;
     if (i >= argc){
-      cmd->do_what |= DO_ACCEL;
+      cmd->do_what |= DO_ACCEL;    /*  Let the defaults stand.  */
       cmd->do_what |= DO_THRESH;
       break;
     }
     arg = argv[i];
     if (strcmp(arg, "default") == 0) {
-      cmd->do_what |= DO_ACCEL;
+      cmd->do_what |= DO_ACCEL;    /* Let defaults stand here, too.  */
       cmd->do_what |= DO_THRESH;
       i++;
     } 
     else if (*arg >= '0' && *arg <= '9') {
-      cmd->acc_num = atoi(arg);
+      cmd->acc_num = atoi(arg);  /* Set acceleration to user's tastes.  */
       cmd->do_what |= DO_ACCEL;
       i++;
       if (i >= argc)
 	break;
       arg = argv[i];
       if (*arg >= '0' && *arg <= '9') {
-	cmd->thresh = atoi(arg);
+	cmd->thresh = atoi(arg);  /* Set threshold as user specified.  */
 	cmd->do_what |= DO_THRESH;
 	i++;
       }
     }
   } 
-  else if (*arg == 's') {
-    cmd->timeout = -1;
+  else if (*arg == 's') {   /*  If arg starts with "s".  */
+    cmd->timeout = -1;      /*  Set defaults.            */
     cmd->interval = -1;
     cmd->prefer_blank = DefaultBlanking;
     cmd->do_what |= DO_SAVER;
     if (i >= argc)
       break;
     arg = argv[i];
-    if (strcmp(arg, "blank") == 0) {
+    if (strcmp(arg, "blank") == 0) {       /* Alter blanking preference. */
       cmd->prefer_blank = PreferBlanking;
       i++;
     }
-    if (strcmp(arg, "noblank") == 0) {
+    if (strcmp(arg, "noblank") == 0) {     /*  Ditto.  */
       cmd->prefer_blank = DontPreferBlanking;
       i++;
     }
     if (strcmp(arg, "off") == 0) {
-      cmd->timeout = 0;
+      cmd->timeout = 0;                    /*  Turn off screen saver.  */
       i++;
       if (i >= argc)
 	break;
@@ -273,10 +282,10 @@ for (i = 1; i < argc; ) {
 	i++;
       }
     }
-    if (strcmp(arg, "default") == 0) {
+    if (strcmp(arg, "default") == 0) {    /*  Leave as default.       */
       i++;
     } 
-    else if (*arg >= '0' && *arg <= '9') {
+    else if (*arg >= '0' && *arg <= '9') {  /*  Set as user wishes.   */
       cmd->timeout = atoi(arg);
       i++;
       if (i >= argc)
@@ -288,14 +297,14 @@ for (i = 1; i < argc; ) {
       }
     }
   } 
-  else if(*arg == '-' && *(arg + 1) == 'r'){
+  else if(*arg == '-' && *(arg + 1) == 'r'){ /* If arg starts w/ "-r" */
     cmd->do_what |= REPEAT_OFF;
   } 
-  else if (*arg == 'r') {
+  else if (*arg == 'r') {            /*  If it starts with "r"        */
     cmd->do_what |= REPEAT_ON;
     if (i > argc)
       break;
-    arg = argv[i];
+    arg = argv[i];                   /*  Check next argument.         */
     if (strcmp(arg, "on") == 0) {
       i++;
     } 
@@ -304,7 +313,7 @@ for (i = 1; i < argc; ) {
       i++;
     }
   } 
-  else if (*arg == 'p') {
+  else if (*arg == 'p') {           /*  If arg starts with "p"       */
     cmd->do_what |= NEW_PIXELS;
     if (i + 1 >= argc)
       usage(argv[0]);
@@ -318,16 +327,16 @@ for (i = 1; i < argc; ) {
     i++;
     cmd->numpixels++;
   } 
-  else if (index(arg, ':')) {
+  else if (index(arg, ':')) {     /*  Set display name given by user.  */
     disp = arg;
   } 
-  else if (*arg == 'q') {
+  else if (*arg == 'q') {         /*  Give status to user.             */
     cmd->do_what |= DO_QUERY;
   }
   else
     usage(argv[0]);
 }
-	dpy = XOpenDisplay(disp);
+	dpy = XOpenDisplay(disp);  /*  Open display and check for success */
 	if (dpy == NULL) {
 		fprintf(stderr, "%s: Can't open display '%s'\n",
 		argv[0], XDisplayName(disp ? disp : "\0"));
