@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.14 90/10/17 16:52:26 converse Exp $ */
+/* $XConsortium: Vendor.c,v 1.15 91/01/06 16:08:45 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -56,9 +56,9 @@ static XtResource resources[] = {
  *
  ***************************************************************************/
 
-static void _VendorShellClassInitialize();
-static void _VendorShellInitialize();
-static Boolean _VendorShellSetValues();
+static void XawVendorShellClassInitialize();
+static void XawVendorShellInitialize();
+static Boolean XawVendorShellSetValues();
 static void Realize(), ChangeManaged();
 
 #define SuperClass (&wmShellClassRec)
@@ -67,10 +67,10 @@ externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
     /* superclass	  */	(WidgetClass)SuperClass,
     /* class_name	  */	"VendorShell",
     /* size		  */	sizeof(VendorShellRec),
-    /* class_initialize	  */	_VendorShellClassInitialize,
+    /* class_initialize	  */	XawVendorShellClassInitialize,
     /* class_part_initialize*/	NULL,
     /* Class init'ed ?	  */	FALSE,
-    /* initialize	  */	_VendorShellInitialize,
+    /* initialize	  */	XawVendorShellInitialize,
     /* initialize_hook	  */	NULL,		
     /* realize		  */	Realize,
     /* actions		  */	NULL,
@@ -85,7 +85,7 @@ externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
     /* destroy		  */	NULL,
     /* resize		  */	XtInheritResize,
     /* expose		  */	NULL,
-    /* set_values	  */	_VendorShellSetValues,
+    /* set_values	  */	XawVendorShellSetValues,
     /* set_values_hook	  */	NULL,			
     /* set_values_almost  */	XtInheritSetValuesAlmost,  
     /* get_values_hook	  */	NULL,
@@ -114,22 +114,22 @@ externaldef(vendorshellclassrec) VendorShellClassRec vendorShellClassRec = {
 externaldef(vendorshellwidgetclass) WidgetClass vendorShellWidgetClass =
 	(WidgetClass) (&vendorShellClassRec);
 
-static void _VendorShellClassInitialize()
+static void XawVendorShellClassInitialize()
 {
     static XtConvertArgRec screenConvertArg[] = {
         {XtWidgetBaseOffset, (caddr_t) XtOffset(Widget, core.screen),
 	     sizeof(Screen *)}
     };
 
-    XtAddConverter("String", "Cursor", XmuCvtStringToCursor,      
+    XtAddConverter(XtRString, XtRCursor, XmuCvtStringToCursor,      
 		   screenConvertArg, XtNumber(screenConvertArg));
 
-    XtAddConverter("String", "Bitmap", XmuCvtStringToBitmap,
+    XtAddConverter(XtRString, XtRBitmap, XmuCvtStringToBitmap,
 		   screenConvertArg, XtNumber(screenConvertArg));
 }
 
 /* ARGSUSED */
-static void _VendorShellInitialize(req, new)
+static void XawVendorShellInitialize(req, new)
 	Widget req, new;
 {
     void _EditResCheckMessages();
@@ -138,7 +138,7 @@ static void _VendorShellInitialize(req, new)
 }
 
 /* ARGSUSED */
-static Boolean _VendorShellSetValues(old, ref, new)
+static Boolean XawVendorShellSetValues(old, ref, new)
 	Widget old, ref, new;
 {
 	return FALSE;
