@@ -1,4 +1,4 @@
-/* $XConsortium: cpa_clnt.c,v 5.1 91/02/16 09:48:42 rws Exp $ */
+/* $XConsortium: cpa_clnt.c,v 5.2 91/04/04 21:05:51 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <X11/Xlibint.h>
 #include "phg.h"
 #include "cp.h"
 #include "cp_priv.h"
