@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.16 89/12/01 11:40:53 swick Exp $ */
+/* $XConsortium: SelectionI.h,v 1.17 89/12/01 12:37:50 swick Exp $ */
 /* $oHeader: SelectionI.h,v 1.3 88/08/19 14:02:44 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -84,8 +84,8 @@ typedef struct {
     Widget widget;
     Time time;
     Select ctx;
-    Boolean incremental;
     XtCancelSelectionCallbackProc req_cancel;
+    Boolean incremental;
 } CallBackInfoRec, *CallBackInfo;
 
 typedef struct {
@@ -101,13 +101,15 @@ typedef struct {
 } SelectionPropRec, *SelectionProp;
 
 typedef struct {
+  Display *dpy;
+  Atom incremental_atom, indirect_atom;
   int propCount;
   SelectionProp list;
 } PropListRec, *PropList;
 
 typedef struct {
-  Atom incremental_atom, indirect_atom;
-} SelectionAtomRec;
+  int active_transfer_count;
+} RequestWindowRec;
 
 #define MAX_SELECTION_INCR(dpy) (((65536 < XMaxRequestSize(dpy)) ? \
 	(65536 << 2)  : (XMaxRequestSize(dpy) << 2))-100)
