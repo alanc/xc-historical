@@ -27,11 +27,13 @@
 #include <ctype.h>
 #include <X11/Xos.h>
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 extern int	errno;
+#else
+extern void *malloc();
+extern char *getenv();
 #endif
-#include <sys/fcntl.h>
 #include <sys/stat.h>
 
 #ifdef	ODT1_DISPLAY_HACK
@@ -176,7 +178,7 @@ Strdup(s)
 
     if (!s)
 	return s;
-    cs = (char *)malloc(strlen(s));
+    cs = malloc(strlen(s));
     strcpy(cs, s);
     return cs;
 }
