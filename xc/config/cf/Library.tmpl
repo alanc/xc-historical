@@ -6,7 +6,7 @@
  * DoNormalLib, DoSharedLib, DoDebugLib, DoProfileLib
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.13 92/05/28 12:04:33 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.14 92/06/28 17:39:33 rws Exp $
 
 #ifndef LibraryCcCmd
 #if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -26,7 +26,7 @@ XCOMM $XConsortium: Library.tmpl,v 1.13 92/05/28 12:04:33 rws Exp $
 #define LibraryDefines StandardDefines
 #endif
 #ifndef LibraryCDebugFlags
-#define LibraryCDebugFlags OptimizedCDebugFlags
+#define LibraryCDebugFlags DefaultCDebugFlags
 #endif
 #ifndef SeparateSharedCompile
 #define SeparateSharedCompile YES
