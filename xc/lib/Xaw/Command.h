@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Command.h,v 1.22 89/09/23 00:36:28 swick Exp $
+* $XConsortium: Command.h,v 1.23 89/09/25 12:22:28 swick Exp $
 */
 
 
@@ -75,6 +75,7 @@ SOFTWARE.
 
 #define XawShapeRectangular 1
 #define XawShapeOval 2
+#define XawShapeEllipse 3
 
 extern WidgetClass     commandWidgetClass;
 
