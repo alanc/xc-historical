@@ -1,4 +1,4 @@
-/* $XConsortium: TMgrab.c,v 1.2 91/01/10 17:16:11 converse Exp $ */
+/* $XConsortium: TMgrab.c,v 1.3 91/03/28 15:42:11 rws Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -168,9 +168,10 @@ void _XtRegisterGrabs(widget)
     TMShortCard		i;
     TMBindData   	bindData = (TMBindData) widget->core.tm.proc_table;
     XtActionProc	*procs;
-    
-    if (! XtIsRealized(widget)) return;
-    
+
+    if (! XtIsRealized(widget) || widget->core.being_destroyed)
+	return;
+
     /* walk the widget instance action bindings table looking for */
     /* actions registered as grab actions. */
     /* when you find one, do a grab on the triggering event */
