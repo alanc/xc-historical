@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.18 89/11/16 14:34:57 jim Exp $
+ * $XConsortium: parse.c,v 1.19 89/11/17 16:42:50 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.18 89/11/16 14:34:57 jim Exp $";
+"$XConsortium: parse.c,v 1.19 89/11/17 16:42:50 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -527,7 +527,7 @@ int parse_keyword (s, nump)
             upper = middle - 1;
         }
     }
-    return -1;
+    return ERRORTOKEN;
 }
 
 

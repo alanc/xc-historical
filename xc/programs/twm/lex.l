@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.57 89/11/13 18:11:23 jim Exp $
+ * $XConsortium: lex.l,v 1.58 89/11/16 19:26:06 jim Exp $
  *
  * .twmrc lex file
  *
@@ -37,7 +37,7 @@
  ***********************************************************************/
 
 static char RCSinfo[]=
-"$XConsortium: lex.l,v 1.57 89/11/13 18:11:23 jim Exp $";
+"$XConsortium: lex.l,v 1.58 89/11/16 19:26:06 jim Exp $";
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "gram.h"
@@ -60,7 +60,17 @@ number				[0-9]+
 "-"				{ return MINUS; }
 "|"				{ return OR; }
 
-[a-zA-Z\.]+			{ return parse_keyword (yytext, &yylval.num); }
+[a-zA-Z\.]+			{ int token = parse_keyword (yytext, 
+							     &yylval.num);
+				  if (token == ERRORTOKEN) {
+				      twmrc_error_prefix();
+				      fprintf (stderr,
+				       "ignoring unknown keyword:  %s\n", 
+					       yytext);
+				      ParseError = 1;
+				  } else 
+				    return token;
+				}
 
 "!"				{ yylval.num = F_EXEC; return FSKEYWORD; }
 "^"				{ yylval.num = F_CUT; return FSKEYWORD; }

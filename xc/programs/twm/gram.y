@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.75 89/11/16 19:26:22 jim Exp $
+ * $XConsortium: gram.y,v 1.76 89/11/19 15:34:07 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.75 89/11/16 19:26:22 jim Exp $";
+"$XConsortium: gram.y,v 1.76 89/11/19 15:34:07 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -86,7 +86,7 @@ extern int yylineno;
 %token <num> START_ICONIFIED NO_TITLE_HILITE TITLE_HILITE
 %token <num> MOVE RESIZE WAIT SELECT KILL LEFT_TITLEBUTTON RIGHT_TITLEBUTTON 
 %token <num> NUMBER KEYWORD NKEYWORD CKEYWORD CLKEYWORD FKEYWORD FSKEYWORD 
-%token <num> DKEYWORD JKEYWORD 
+%token <num> DKEYWORD JKEYWORD ERRORTOKEN
 %token <ptr> STRING SKEYWORD
 
 %type <ptr> string
