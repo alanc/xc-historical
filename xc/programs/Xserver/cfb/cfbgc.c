@@ -1,4 +1,4 @@
-/* $Header: cfbgc.c,v 1.2 87/07/13 17:58:07 toddb Locked $ */
+/* $Header: cfbgc.c,v 1.3 87/07/14 21:19:51 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -150,7 +150,7 @@ cfbDestroyGC(pGC, pQ)
 
     switch (pGC->depth) {
     case 1:
-	mfbDestroyGC(pGC);
+	mfbDestroyGC(pGC, pQ);
 	return;
     case PSZ:
 	break;
