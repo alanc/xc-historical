@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.h,v 1.10 94/04/17 20:13:30 rws Exp $ */
+/* $XConsortium: XawI18n.h,v 1.11 94/07/05 11:13:10 kaleb Exp kaleb $ */
 
 /************************************************************
 
@@ -73,6 +73,6 @@ extern wchar_t _Xaw_atowc (
 #ifndef HAS_ISW_FUNCS
 #include <ctype.h>
 #ifndef iswspace
-#define iswspace(c) (isascii(c) && isspace(c))
+#define iswspace(c) (isascii(c) && isspace(toascii(c)))
 #endif
 #endif
