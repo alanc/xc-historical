@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.117 91/05/13 08:51:09 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.118 91/05/13 11:27:20 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -136,9 +136,9 @@ XCOMM $XConsortium: Project.tmpl,v 1.117 91/05/13 08:51:09 rws Exp $
 #endif
 #ifndef DefaultFontPath
 #if PrimaryScreenResolution < 88		/* (75 + 100) / 2 */
-#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/speedo/,$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
+#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
 #else
-#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/speedo/,$(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
+#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
 #endif
 #endif
 #ifndef DefaultRGBDatabase
@@ -422,7 +422,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.117 91/05/13 08:51:09 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.117 91/05/13 08:51:09 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.118 91/05/13 11:27:20 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
