@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.67 89/07/05 16:02:29 jim Exp $
+ * $XConsortium: add_window.c,v 1.68 89/07/05 16:30:55 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.67 89/07/05 16:02:29 jim Exp $";
+"$XConsortium: add_window.c,v 1.68 89/07/05 16:30:55 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -472,8 +472,9 @@ IconMgr *iconp;
 #endif
 
     if (!Scr->ClientBorderWidth) {	/* need to adjust for twm borders */
-	tmp_win->attr.x += (gravx * tmp_win->attr.border_width);
-	tmp_win->attr.y += (gravy * tmp_win->attr.border_width);
+	int delta = tmp_win->attr.border_width - tmp_win->frame_bw;
+	tmp_win->attr.x += gravx * delta;
+	tmp_win->attr.y += gravy * delta;
     }
 
 					/* set up the configure */
