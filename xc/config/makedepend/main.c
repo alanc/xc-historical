@@ -1,5 +1,5 @@
 /*
- * $XConsortium: main.c,v 1.48 91/04/05 17:33:07 rws Exp $
+ * $XConsortium: main.c,v 1.49 91/04/10 09:55:08 rws Exp $
  */
 #ifdef SVR4
 #define _POSIX_SOURCE
@@ -203,7 +203,11 @@ main(argc, argv)
 #ifdef __GNUC__
 	if (incp >= includedirs + MAXDIRS)
 	    fatal("Too many -I flags.\n");
+#ifdef luna88k
+	*incp++ = "/usr/local/lib/gcc/gcc-include";
+#else
 	*incp++ = "/usr/local/lib/gcc-include";
+#endif
 #else
 #ifdef luna88k
 	if (incp >= includedirs + MAXDIRS)
