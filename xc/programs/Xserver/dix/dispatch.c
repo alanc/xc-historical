@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.4 89/07/03 18:45:10 rws Exp $ */
+/* $XConsortium: dispatch.c,v 5.5 89/07/03 19:52:39 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -535,8 +535,7 @@ ProcMapWindow(client)
     pWin = (WindowPtr)LookupWindow(stuff->id, client);
     if (!pWin)
         return(BadWindow);
-    MapWindow(pWin, HANDLE_EXPOSURES, BITS_DISCARDED,
-		  SEND_NOTIFICATION, client);
+    MapWindow(pWin, client);
            /* update cache to say it is mapped */
     return(client->noClientException);
 }
@@ -552,7 +551,7 @@ ProcMapSubwindows(client)
     pWin = (WindowPtr)LookupWindow( stuff->id, client);
     if (!pWin)
         return(BadWindow);
-    MapSubwindows(pWin, HANDLE_EXPOSURES, client);
+    MapSubwindows(pWin, client);
            /* update cache to say it is mapped */
     return(client->noClientException);
 }
@@ -568,7 +567,7 @@ ProcUnmapWindow(client)
     pWin = (WindowPtr)LookupWindow( stuff->id, client);
     if (!pWin)
         return(BadWindow);
-    UnmapWindow(pWin, HANDLE_EXPOSURES, SEND_NOTIFICATION, FALSE);
+    UnmapWindow(pWin, FALSE);
            /* update cache to say it is mapped */
     return(client->noClientException);
 }
@@ -584,7 +583,7 @@ ProcUnmapSubwindows(client)
     pWin = (WindowPtr)LookupWindow( stuff->id, client);
     if (!pWin)
         return(BadWindow);
-    UnmapSubwindows(pWin, HANDLE_EXPOSURES);
+    UnmapSubwindows(pWin);
     return(client->noClientException);
 }
 
