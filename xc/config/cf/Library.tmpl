@@ -9,7 +9,7 @@
  * LibName, SoRev, HasSharedData, and optionally HugLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.19 93/08/25 14:41:34 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.20 93/09/04 15:58:01 rws Exp $
 
 #ifndef LibraryCcCmd
 #if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -60,20 +60,30 @@ CDEBUGFLAGS = LibraryCDebugFlags
 #define _ProfiledCleanDir() $(_NULLCMD_)
 #endif
 
-#if DoSharedLib && DoNormalLib && SeparateSharedCompile
-#define _SharedLibMkdir() LibMkdir(shared)
-#define _SharedObjCompile(options) SharedLibObjCompile(options)
-#define _SharedCleanDir() LibCleanDir(shared)
+#if !DoNormalLib
+#define _NormalLibMkdir() $(_NULLCMD_)
+#define _NormalObjCompile(options) $(_NULLCMD_)
+#define _NormalCleanDir() $(_NULLCMD_)
 #else
-#define _SharedLibMkdir() $(_NULLCMD_)
-#define _SharedObjCompile(options) $(_NULLCMD_)
-#define _SharedCleanDir() $(_NULLCMD_)
+#if DoSharedLib && SeparateSharedCompile
+#define _NormalLibMkdir() LibMkdir(unshared)
+#define _NormalObjCompile(options) UnsharedLibObjCompile(options)
+#define _NormalCleanDir() LibCleanDir(unshared)
+#else
+#define _NormalLibMkdir() $(_NULLCMD_)
+#define _NormalObjCompile(options) NormalLibObjCompile(options)
+#define _NormalCleanDir() $(_NULLCMD_)
+#endif
 #endif
 
-#if DoSharedLib && !DoNormalLib && SeparateSharedCompile
-#define _NormalObjCompile(options) NormalSharedLibObjCompile(options)
+#if !DoSharedLib || (DoNormalLib && !SeparateSharedCompile)
+#define _SharedObjCompile(options) $(_NULLCMD_)
 #else
-#define _NormalObjCompile(options) NormalLibObjCompile(options)
+#if SeparateSharedCompile
+#define _SharedObjCompile(options) NormalSharedLibObjCompile(options)
+#else
+#define _SharedObjCompile(options) NormalLibObjCompile(options)
+#endif
 #endif
 
 #ifndef LibraryObjectRule
@@ -81,23 +91,23 @@ CDEBUGFLAGS = LibraryCDebugFlags
 all::									@@\
 	_DebuggedLibMkdir()						@@\
 	_ProfiledLibMkdir()						@@\
-	_SharedLibMkdir()						@@\
+	_NormalLibMkdir()						@@\
 									@@\
 includes::								@@\
 	_DebuggedLibMkdir()						@@\
 	_ProfiledLibMkdir()						@@\
-	_SharedLibMkdir()						@@\
+	_NormalLibMkdir()						@@\
 									@@\
 .c.Osuf:								@@\
 	_DebuggedObjCompile($(_NOOP_))					@@\
 	_ProfiledObjCompile($(_NOOP_))					@@\
-	_SharedObjCompile($(_NOOP_))					@@\
 	_NormalObjCompile($(_NOOP_))					@@\
+	_SharedObjCompile($(_NOOP_))					@@\
 									@@\
 clean::									@@\
 	_DebuggedCleanDir()						@@\
 	_ProfiledCleanDir()						@@\
-	_SharedCleanDir()						@@\
+	_NormalCleanDir()						@@\
 
 #endif /* LibraryObjectRule */
 
@@ -106,8 +116,8 @@ clean::									@@\
 objs: depends								@@\
 	_DebuggedObjCompile(options)					@@\
 	_ProfiledObjCompile(options)					@@\
-	_SharedObjCompile(options)					@@\
 	_NormalObjCompile(options)					@@\
+	_SharedObjCompile(options)					@@\
 
 #endif /* SpecialLibObjectRule */
 
@@ -125,22 +135,26 @@ LIBNAME = LibName
 LibraryObjectRule()
 
 #if DoSharedLib
-#if DoNormalLib
-SharedLibraryTarget($(LIBNAME),$(SoRev),$(OBJS),shared,..)
-#else
 SharedLibraryTarget($(LIBNAME),$(SoRev),$(OBJS),.,.)
-#endif
+InstallSharedLibrary($(LIBNAME),$(SoRev),$(SHLIBDIR))
 #if HasSharedData
 SharedLibraryDataTarget($(LIBNAME),$(SoRev),$(UNSHAREDOBJS))
 InstallSharedLibraryData($(LIBNAME),$(SoRev),$(SHLIBDIR))
 #endif
-InstallSharedLibrary($(LIBNAME),$(SoRev),$(SHLIBDIR))
 #endif
 #if DoNormalLib
 #if HugeLibrary
+#if DoSharedLibrary && SeparateSharedCompile
+UnsharedLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3),unshared,..)
+#else
 NormalLibraryTarget3(X11,$(OBJS1),$(OBJS2),$(OBJS3))
+#endif
+#else
+#if DoSharedLibrary && SeparateSharedCompile
+UnsharedLibraryTarget($(LIBNAME),$(OBJS),unshared,..)
 #else
 NormalLibraryTarget($(LIBNAME),$(OBJS))
+#endif
 #endif
 InstallLibrary($(LIBNAME),$(USRLIBDIR))
 #endif
