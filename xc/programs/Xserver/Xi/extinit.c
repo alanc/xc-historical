@@ -1,4 +1,4 @@
-/* $XConsortium: xextinit.c,v 1.5 89/11/21 13:48:41 rws Exp $ */
+/* $XConsortium: xextinit.c,v 1.6 89/12/02 15:20:48 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -370,7 +370,7 @@ SReplyIDispatch (client, len, rep)
     xGrabDeviceReply	*rep;		/* All we look at is the type field */
     {					/* This is common to all replies    */
     if (rep->RepType == X_GetExtensionVersion)
-	SRepXListInputDevices (client, len, rep);
+	SRepXGetExtensionVersion (client, len, rep);
     else if (rep->RepType == X_ListInputDevices)
 	SRepXListInputDevices (client, len, rep);
     else if (rep->RepType == X_OpenDevice)
@@ -422,36 +422,37 @@ SEventIDispatch (from, to)
     xEvent	*from;
     xEvent	*to;
     {
+    int		type = from->u.u.type & 0177;
 
-    if (from->u.u.type == DeviceValuator)
+    if (type == DeviceValuator)
 	SEventDeviceValuator (from, to);
-    else if (from->u.u.type == DeviceKeyPress)
+    else if (type == DeviceKeyPress)
         SKeyButtonPtrEvent (from, to);
-    else if (from->u.u.type == DeviceKeyRelease)
+    else if (type == DeviceKeyRelease)
         SKeyButtonPtrEvent (from, to);
-    else if (from->u.u.type == DeviceButtonPress)
+    else if (type == DeviceButtonPress)
         SKeyButtonPtrEvent (from, to);
-    else if (from->u.u.type == DeviceButtonRelease)
+    else if (type == DeviceButtonRelease)
         SKeyButtonPtrEvent (from, to);
-    else if (from->u.u.type == DeviceMotionNotify)
+    else if (type == DeviceMotionNotify)
         SKeyButtonPtrEvent (from, to);
-    else if (from->u.u.type == DeviceFocusIn)
+    else if (type == DeviceFocusIn)
         SEventFocus (from, to);
-    else if (from->u.u.type == DeviceFocusOut)
+    else if (type == DeviceFocusOut)
         SEventFocus (from, to);
-    else if (from->u.u.type == ProximityIn)
+    else if (type == ProximityIn)
         SKeyButtonPtrEvent (from, to);
-    else if (from->u.u.type == ProximityOut)
+    else if (type == ProximityOut)
         SKeyButtonPtrEvent (from, to);
-    else if (from->u.u.type == DeviceStateNotify)
+    else if (type == DeviceStateNotify)
         SDeviceStateNotifyEvent (from, to);
-    else if (from->u.u.type == DeviceKeyStateNotify)
+    else if (type == DeviceKeyStateNotify)
         SDeviceKeyStateNotifyEvent (from, to);
-    else if (from->u.u.type == DeviceButtonStateNotify)
+    else if (type == DeviceButtonStateNotify)
         SDeviceButtonStateNotifyEvent (from, to);
-    else if (from->u.u.type == DeviceMappingNotify)
+    else if (type == DeviceMappingNotify)
         SDeviceMappingNotifyEvent (from, to);
-    else if (from->u.u.type == ChangeDeviceNotify)
+    else if (type == ChangeDeviceNotify)
         SChangeDeviceNotifyEvent (from, to);
     else
 	{
