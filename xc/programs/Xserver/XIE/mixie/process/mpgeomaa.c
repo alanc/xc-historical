@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mpgeomaa.c,v 1.1 93/07/19 10:19:51 rws Exp $ */
 /**** module mpgeomaa.c ****/
 /******************************************************************************
 				NOTICE
@@ -525,7 +525,6 @@ static int InitializeGeomAA(flo,ped)
 
 	   if (a == 1 && d == 1) {
 	       /* just Cropping, no real resampling to be done */
-	       printf(" don't know how to handle Crop yet\n");
 	   }
 	   pvtband->linefunc =
 		scale_lines[IndexClass(pet->emitter[band].format->class)]; 
@@ -624,8 +623,6 @@ static int ActivateGeomAA(flo,ped)
 	   */
 	   if (!pvtband->yOut)  {
 	     if (!MapData(flo,pet,iband,0,0,iband->maxGlobal,KEEP)) {
-		   printf(" rats. Could not map from 0 to %d\n",
-			iband->maxGlobal);
       		   ImplementationError(flo,ped, return(FALSE));
 	     }
 	     pvtband->lo_src_available = 0;
@@ -734,8 +731,6 @@ static int ActivateGeomAA(flo,ped)
 	     pvtband->hi_src_available = iband->maxGlobal-1;
 
 	      if (sline != iband->current) {
-           	printf(" sline = %d,  iband->current = %d\n",
-           		sline, iband->current);
       		   ImplementationError(flo,ped, return(FALSE));
 	       }
 
@@ -1246,8 +1241,6 @@ register int i;
 register BytePixel constant = (BytePixel) pvtband->int_constant;
 register BytePixel *src = srcimg[sline];
 
-printf(" Faking it by writing a ramp of width %d into outp 0x%x\n",
-	width,outp);
         for (i=0; i < width; ++i) *outp++ = i%256;
 }
 /**********************************************************************/
