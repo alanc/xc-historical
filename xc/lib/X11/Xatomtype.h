@@ -1,4 +1,4 @@
-/* $Header: Xatomtype.h,v 11.7 87/09/11 08:15:34 toddb Exp $ */
+/* $Header: Xatomtype.h,v 11.8 88/06/29 09:19:30 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,50 +31,50 @@ SOFTWARE.
 
 /* this structure may be extended, but do not change the order */
 typedef struct {
-    CARD32 flags;
-    INT32 x, y;
-    CARD32 width, height;
-    CARD32 minWidth, minHeight;
-    CARD32 maxWidth, maxHeight;
-    CARD32 widthInc, heightInc;
-    CARD32 minAspectX, minAspectY;
-    CARD32 maxAspectX, maxAspectY;
+    CARD32 flags B32;
+    INT32 x B32, y B32;
+    CARD32 width B32, height B32;
+    CARD32 minWidth B32, minHeight B32;
+    CARD32 maxWidth B32, maxHeight B32;
+    CARD32 widthInc B32, heightInc B32;
+    CARD32 minAspectX B32, minAspectY B32;
+    CARD32 maxAspectX B32, maxAspectY B32;
     } xPropSizeHints;
 #define NumPropSizeElements 15	/* number of elements in this structure */
 
 /* this structure may be extended, but do not change the order */
 typedef struct {
-    CARD32 flags;
-    CARD32 input;
-    CARD32 initialState;
-    BITS32 iconPixmap;
-    BITS32 iconWindow;
-    INT32  iconX;
-    INT32  iconY;
-    BITS32 iconMask;
-    CARD32 windowGroup;
+    CARD32 flags B32;
+    CARD32 input B32;
+    CARD32 initialState B32;
+    BITS32 iconPixmap B32;
+    BITS32 iconWindow B32;
+    INT32  iconX B32;
+    INT32  iconY B32;
+    BITS32 iconMask B32;
+    CARD32 windowGroup B32;
   } xPropWMHints;
 #define NumPropWMHintsElements 9 /* number of elements in this structure */
 
 /* this structure defines the icon size hints information */
 typedef struct {
-    CARD32 minWidth, minHeight;
-    CARD32 maxWidth, maxHeight;
-    CARD32 widthInc, heightInc;
+    CARD32 minWidth B32, minHeight B32;
+    CARD32 maxWidth B32, maxHeight B32;
+    CARD32 widthInc B32, heightInc B32;
   } xPropIconSize;
 #define NumPropIconSizeElements 6 /* number of elements in this structure */
 
 /* this structure may be extended, but do not change the order */
 /* RGB properties */
 typedef struct {
-	BITS32 colormap;
-	CARD32 red_max;
-	CARD32 red_mult;
-	CARD32 green_max;
-	CARD32 green_mult;
-	CARD32 blue_max;
-	CARD32 blue_mult;
-	CARD32 base_pixel;
+	BITS32 colormap B32;
+	CARD32 red_max B32;
+	CARD32 red_mult B32;
+	CARD32 green_max B32;
+	CARD32 green_mult B32;
+	CARD32 blue_max B32;
+	CARD32 blue_mult B32;
+	CARD32 base_pixel B32;
 } xPropStandardColormap;
 #define NumPropStandardColormapElements 8
     
