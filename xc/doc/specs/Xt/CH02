@@ -1,4 +1,4 @@
-.\" $XConsortium: CH02,v 1.9 91/08/26 13:27:37 swick Exp $
+.\" $XConsortium: CH02,v 1.10 91/08/26 20:15:03 swick Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -111,10 +111,10 @@ Initializing the \*(tk
 Before an application can call any \*(xI function
 other than
 .PN XtSetLanguageProc ,
-it must initialize the \*(tk by using
+it must initialize the \*(xI by using
 .IP \(bu 5
 .PN XtToolkitInitialize ,
-which initializes the \*(tk internals.
+which initializes the \*(xI internals.
 .IP \(bu 5
 .PN XtCreateApplicationContext ,
 which initializes the per-application state.
@@ -163,7 +163,7 @@ The application context type
 is opaque to clients.
 .sp
 .LP
-To initialize the \*(tk internals, use
+To initialize the \*(xI internals, use
 .PN XtToolkitInitialize .
 .IN "XtToolkitInitialize" "" "@DEF@"
 .FD 0
@@ -842,13 +842,13 @@ Each entry in \fIspecification_list\fP points to a string in the format of
 .PN XrmPutLineResource .
 Following a call to
 .PN XtAppSetFallbackResources ,
-if
-.PN XtDisplayInitialize
-is not able
+when a resource database is being created for a particular screen and
+the \*(xI are not able
 to find or read an application-specific class resource file according to the
 rules given above and if \fIspecification_list\fP is not NULL the
-display-specific resource database will be initialized with the resource
-specifications in \fIspecification_list\fP.
+resource specifications in \fIspecification_list\fP will be merged
+into the screen resource database in place of the application-specific
+class resource file.
 .PN XtAppSetFallbackResources
 is not
 required to copy \fIspecification_list\fP; the caller must ensure that the
@@ -1108,7 +1108,7 @@ is as defined in Section 1.5.
 If the size of the resource is less than or equal to the size of an
 .PN XtArgVal ,
 the resource value is stored directly in \fIvalue\fP;
-otherwise, a pointer to it is stored into \fIvalue\fP.
+otherwise, a pointer to it is stored in \fIvalue\fP.
 .LP
 To set values in an
 .PN ArgList ,
@@ -1219,8 +1219,7 @@ calling convention.  The name of the analog is formed by prefixing
 ``Va'' to the name of the corresponding
 .PN ArgList
 procedure; e.g.,
-.br
-.PN XtVaCreateWidget .
+.PN \%XtVaCreateWidget .
 Each procedure named \fBXtVa\fP\fIsomething\fP takes as its
 last arguments, in place of the corresponding
 .PN ArgList /
@@ -1230,7 +1229,7 @@ value pairs where each name is of type
 .PN String
 and each value is of type
 .PN XtArgVal .
-The end of the list is identified by a name entry
+The end of the list is identified by a \fIname\fP entry
 containing NULL.  Developers writing in the C language wishing to pass
 resource name and value pairs to any of these interfaces may use the
 .PN ArgList
@@ -1417,7 +1416,7 @@ resource lists specified for the parent's class
 and all superclasses up to
 .PN constraintWidgetClass .
 .IP \(bu 5
-Calls the initialize procedures for the widget by starting at the 
+Calls the initialize procedures for the widget starting at the 
 Object
 initialize procedure on down to the widget's initialize procedure.
 .IP \(bu 5
@@ -1477,7 +1476,7 @@ Creating an Application Shell Instance
 .XE
 .LP
 An application can have multiple top-level widgets, each of which
-specifies a unique widget tree,
+specifies a unique widget tree
 which can potentially be on different screens or displays.
 An application uses 
 .PN XtAppCreateShell
@@ -1539,7 +1538,7 @@ class \fIClass\fP.Screen where \fIClass\fP is the specified
 \fIapplication_class\fP if \fIwidget_class\fP is
 .PN applicationShellWidgetClass
 or a subclass thereof.  If \fIwidget_class\fP is not
-.PN applicationShellWidgetClass
+.PN application\%Shell\%Widget\%Class
 or a subclass, \fIClass\fP is the \fIclass_name\fP
 field from the
 .PN CoreClassPart
@@ -1651,7 +1650,7 @@ Convenience Procedure to Initialize an Application
 \fB\*(SN Convenience Procedure to Initialize an Application\fP
 .XE
 .LP
-To initialize the \*(tk internals, create an application context,
+To initialize the \*(xI internals, create an application context,
 open and initialize a display, and create the initial application shell
 instance, an application may use
 .PN XtAppInitialize
@@ -1716,7 +1715,7 @@ with \fIdisplay_string\fP NULL and
 \fIapplication_name\fP NULL, and finally calls
 .PN XtAppCreateShell
 with \fIapplication_name\fP NULL, \fIwidget_class\fP
-.PN applicationShellWidgetClass ,
+.PN application\%Shell\%Widget\%Class ,
 and the specified \fIargs\fP and \fInum_args\fP
 and returns the created shell.  The modified \fIargc\fP and \fIargv\fP returned by
 .PN XtDisplayInitialize
@@ -1731,7 +1730,6 @@ is called with the value prior to calling
 .PN XtOpenDisplay .
 .sp
 .LP
-.PN XtVaAppInitialize .
 .IN "XtVaAppInitialize" "" "@DEF@"
 .FD 0
 Widget XtVaAppInitialize(\fIapp_context_return\fP, \fIapplication_class\fP, \
@@ -2066,11 +2064,11 @@ maps the widget window.
 .PN XtVaCreateWidget ,
 .PN XtRealizeWidget ,
 .PN XtManageChildren ,
-.PN XtUnmanageChildren ,
+.PN XtUnmanage\%Children ,
 .PN XtUnrealizeWidget ,
 .PN XtSetMappedWhenManaged ,
 and
-.PN XtDestroyWidget
+.PN XtDestroy\%Widget
 maintain the following invariants:
 .IP \(bu 5
 If a composite widget is realized, then all its managed children are realized.
@@ -2164,7 +2162,7 @@ The \fIbackground_pixmap\fP (or \fIbackground_pixel\fP if \fIbackground_pixmap\f
 .PN XtUnspecifiedPixmap )
 is filled in from the corresponding field.
 .IP \(bu 5
-The \fIborder_pixmap\fP (\fIor\fP border_pixel if \fIborder_pixmap\fP is
+The \fIborder_pixmap\fP (or \fIborder_pixel\fP if \fIborder_pixmap\fP is
 .PN XtUnspecifiedPixmap )
 is filled in from the corresponding field.
 .IP \(bu 5
@@ -2287,8 +2285,8 @@ Then, it assigns the created window to the widget's \fIwindow\fP field.
 .LP
 .PN XtCreateWindow
 evaluates the following fields of the widget core
-structure: \fIdepth\fP \fIscreen\fP \fIparent->core.window\fP \fIx\fP \fIy\fP
-\fIwidth\fP \fIheight\fP, and
+structure: \fIdepth\fP, \fIscreen\fP, \fIparent->core.window\fP, \fIx\fP,
+\fIy\fP, \fIwidth\fP, \fIheight\fP, and
 \fIborder_width\fP.
 
 .NH 2
@@ -2451,7 +2449,7 @@ call.
 The \fIx\fP, \fIy\fP, \fIwidth\fP, \fIheight\fP, and \fIborder_width\fP
 window attributes are available to
 geometry managers.
-These fields are maintained synchronously inside the \*(tk.
+These fields are maintained synchronously inside the \*(xI.
 When an
 .PN XConfigureWindow
 is issued by the \*(xI on the widget's window (on request of its parent),
@@ -2459,9 +2457,9 @@ these values are updated immediately rather than some time later
 when the server generates a
 .PN ConfigureNotify
 event.
-(In fact, most widgets do not have
+(In fact, most widgets do not select
 .PN SubstructureNotify
-turned on.)
+events.)
 This ensures that all geometry calculations are based on the internally
 consistent toolkit world rather than on either
 an inconsistent world updated by asynchronous
@@ -2593,7 +2591,7 @@ and all normal and pop-up descendants in postorder (it calls child
 callbacks before parent callbacks).
 .IP \(bu 5
 If the widget is not a pop-up child and the widget's parent is a subclass of 
-.PN compositeWidgetClass ,
+.PN composite\%WidgetClass ,
 and if the parent is not being destroyed, 
 it calls 
 .PN XtUnmanageChild 
@@ -2601,7 +2599,7 @@ on the widget and then calls the widget's parent's delete_child procedure
 (see Section 3.3).
 .IP \(bu 5
 If the widget is not a pop-up child and the widget's parent is a subclass of
-.PN constraintWidgetClass ,
+.PN constraint\%WidgetClass ,
 it calls the
 .PN ConstraintClassPart
 destroy procedure for the parent,
@@ -2760,7 +2758,7 @@ This constraint destroy procedure pointer is of type
 .PN XtWidgetProc .
 The constraint destroy procedures are called in subclass-to-superclass order,
 starting at the class of the widget's parent and ending at
-.PN constraintWidgetClass .
+.PN constraint\%WidgetClass .
 Therefore, a parent's constraint destroy procedure only should deallocate
 storage that is specific to the constraint subclass
 and not storage allocated by any of its superclasses.
@@ -2786,7 +2784,7 @@ for POSIX-based systems).
 The quickest way to make the windows disappear while exiting is to call
 .PN XtUnmapWidget
 on each top-level shell widget.
-The \*(tk has no resources beyond those in the program image,
+The \*(xI have no resources beyond those in the program image,
 and the X server will free its resources when its connection
 to the application is broken.
 .LP
