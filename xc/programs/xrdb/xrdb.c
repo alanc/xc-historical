@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: xrdb.c,v 11.11 88/01/27 11:42:27 jim Locked $";
+static char rcs_id[] = "$Header: xrdb.c,v 11.12 88/01/27 18:23:52 jim Locked $";
 #endif
 
 /*
@@ -206,7 +206,8 @@ void GetEntries(entries, buff)
 
 	AddEntry(entries, entry);
     }
-    qsort(entries->entry, entries->used, sizeof(Entry), CompareEntries);
+    if (entries->used > 0)
+      qsort(entries->entry, entries->used, sizeof(Entry), CompareEntries);
 }
 
 int MergeEntries(buffer, new, old)
@@ -350,10 +351,15 @@ Entry *FindEntry(db, b)
     Entries phoney;
     Entry entry;
 
+    entry.usable = 0;
+    entry.tag = NULL;
+    entry.value = NULL;
     phoney.used = 0;
     phoney.room = 1;
     phoney.entry = &entry;
     GetEntries(&phoney, b);
+    if (!entry.usable)
+	return (NULL);
     for (i = 0; i < db->used; i++) {
 	e = &db->entry[i];
 	if (!e->usable)
@@ -382,6 +388,7 @@ void EditFile(new, in, out)
     for (;;) {
 	b.used = 0;
 	while (1) {
+	    buff[0] ='\0';
 	    if (fgets(buff, BUFSIZ, in) == NULL)
 		goto cleanup;
 	    AppendToBuffer(&b, buff, strlen(buff));
