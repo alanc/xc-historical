@@ -164,7 +164,7 @@ InitOutput(pScreenInfo, argc, argv)
      *	excess of error messages to hang the server in
      *	deadlock.  So.......
      */
-    if (nonBlockConsole && (fcntl(fileno(stderr), F_SETFL, O_NDELAY) < 0)) {
+    if (nonBlockConsole && (fcntl(2, F_SETFL, O_NDELAY) < 0)) {
 	perror("fcntl");
 	ErrorF("InitOutput: can't put stderr in non-block mode\n");
     }
@@ -243,6 +243,7 @@ InitInput(argc, argv)
  *
  *-----------------------------------------------------------------------
  */
+/*ARGSUSED*/
 void
 sunQueryBestSize(class, pwidth, pheight)
 int class;
