@@ -2203,6 +2203,81 @@
 
 
 ;;-----------------------------------------------------------------------------
+;; WITH-STANDARD-IO-SYNTAX equivalent, used in (SETF WM-COMMAND)
+;;-----------------------------------------------------------------------------
+
+#-(or ansi-common-lisp Genera)
+(defun with-standard-io-syntax-function (function)
+  (let ((*package* (find-package :user))
+	(*print-array* t)
+	(*print-base* 10)
+	(*print-case* :upcase)
+	(*print-circle* nil)
+	(*print-escape* t)
+	(*print-gensym* t)
+	(*print-length* nil)
+	(*print-level* nil)
+	(*print-pretty* nil)
+	(*print-radix* nil)
+	(*read-base* 10)
+	(*read-default-float-format* 'single-float)
+	(*read-suppress* nil)
+	#+ticl (ticl:*print-structure* t)
+	#+lucid (lucid::*print-structure* t))
+    (funcall function)))
+
+#-(or ansi-common-lisp Genera)
+(defmacro with-standard-io-syntax (&body body)
+  `(flet ((.with-standard-io-syntax-body. () ,@body))
+     (with-standard-io-syntax-function #'.with-standard-io-syntax-body.)))
+
+
+;;-----------------------------------------------------------------------------
+;; DEFAULT-KEYSYM-TRANSLATE
+;;-----------------------------------------------------------------------------
+
+;;; If object is a character, char-bits are set from state.
+;;;
+;;; [the following isn't implemented (should it be?)]
+;;; If object is a list, it is an alist with entries:
+;;; (string-char [modifiers] [mask-modifiers])
+;;; When MODIFIERS are specified, this character translation
+;;; will only take effect when the specified modifiers are pressed.
+;;; MASK-MODIFIERS can be used to specify a set of modifiers to ignore.
+;;; When MASK-MODIFIERS is missing, all other modifiers are ignored.
+;;; In ambiguous cases, the most specific translation is used.
+
+#-(and ansi-common-lisp (not Genera))
+(defun default-keysym-translate (display state object)
+  (declare (type display display)
+	   (type card16 state)
+	   (type t object))
+  (declare (values t)) ;; Object returned by keycode->character
+  (when (characterp object)
+    (when (logbitp (position :control *state-mask-vector*) state)
+      (setf (char-bit object :control) 1))
+    (when (or (state-keysymp display state left-meta-keysym)
+	      (state-keysymp display state right-meta-keysym))
+      (setf (char-bit object :meta) 1))
+    (when (or (state-keysymp display state left-super-keysym)
+	      (state-keysymp display state right-meta-keysym))
+      (setf (char-bit object :super) 1))
+    (when (or (state-keysymp display state left-hyper-keysym)
+	      (state-keysymp display state right-hyper-keysym))
+      (setf (char-bit object :hyper) 1)))
+  object)
+
+#+(and ansi-common-lisp (not Genera))
+(defun default-keysym-translate (display state object)
+  (declare (type display display)
+	   (type card16 state)
+	   (type t object))
+  (declare (ignore display state)
+	   (values t)) ;; Object returned by keycode->character
+  object)
+
+
+;;-----------------------------------------------------------------------------
 ;; Image stuff
 ;;-----------------------------------------------------------------------------
 
@@ -3056,3 +3131,4 @@
 	(24 (copy pixarray-24 pixarray-24-element-type))
 	(32 (copy pixarray-32 pixarray-32-element-type)))
       t)))
+
