@@ -1,10 +1,83 @@
+/*
+ * $XConsortium$
+ *
+ * Copyright 1989 Massachusetts Institute of Technology
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of M.I.T. not be used in advertising or
+ * publicity pertaining to distribution of the software without specific,
+ * written prior permission.  M.I.T. makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * Author:  Jim Fulton, MIT X Consortium
+ *
+ * 
+ * 		       Xlib Extension-Writing Utilities
+ * 
+ * This package contains utilities for writing the client API for various
+ * protocol extensions.  Routines include:
+ * 
+ *         XextCreateExtension		called once per extension
+ *         XextDestroyExtension		if no longer using extension
+ *         XextAddDisplay		add another display
+ *         XextRemoveDisplay		remove a display
+ *         XextFindDisplay		is a display open
+ */
+
+#include <stdio.h>
+#include <X11/Xlib.h>
 #include "extutil.h"
 
-XExtDisplayInfo *XextInitDisplay (display_listp, lastp, dpy,
-				  ext_name, close_display, wire_to_event, 
-				  event_to_wire, nevents, data)
-    XExtDisplayInfo **display_list;
-    XExtDisplayIfno **lastp;
+
+/*
+ * XextCreateExtension - return an extension descriptor containing context
+ * information for this extension.  This object is passed to all Xext 
+ * routines.
+ */
+XExtensionInfo *XextCreateExtension ()
+{
+    register XExtensionInfo *info = Xmalloc (sizeof (XExtensionInfo));
+
+    if (info) {
+	info->head = NULL;
+	info->cur = NULL;
+	info->ndisplays = 0;
+    }
+    return info;
+}
+
+
+/*
+ * XextDestroyExtension - free memory the given extension descriptor
+ */
+void XextDestroyExtension (extinfo)
+    XExtensionInfo *extinfo;
+{
+    extinfo->head = NULL;		/* to catch refs after this */
+    extinfo->cur = NULL;
+    info->ndisplays = 0;
+    XFree ((char *) extinfo);
+}
+
+
+
+/*
+ * XextAddDisplay - add a display to this extension
+ */
+XExtDisplayInfo *XextAddDisplay (extinfo, dpy, ext_name, close_display,
+				 wire_to_event, event_to_wire, nevents, data)
+    XExtensionInfo *extinfo;
     Display *dpy;
     char *ext_name;
     int (*close_display)();
@@ -16,7 +89,7 @@ XExtDisplayInfo *XextInitDisplay (display_listp, lastp, dpy,
 
     dpyinfo = (XExtDisplayInfo *) Xmalloc (sizeof (XExtDisplayInfo));
     if (!dpyinfo) return NULL;
-    dpyinfo->next = (*display_listp);
+    dpyinfo->next = extinfo->head;
     dpyinfo->display = dpy;
     dpyinfo->data = data;
     dpyinfo->codes = XInitExtension (dpy, ext_name);
@@ -38,44 +111,18 @@ XExtDisplayInfo *XextInitDisplay (display_listp, lastp, dpy,
     /*
      * now, chain it onto the list
      */
-    *display_listp = dpyinfo;
-    *lastp = dpyinfo;
+    extinfo->head = dpyinfo;
+    extinfo->cur = dpyinfo;
+    extinfo->ndisplays++;
     return dpyinfo;
 }
 
 
-XExtDisplayInfo *XextFindDisplay (display_listp, lastp, dpy)
-    XExtDisplayInfo **display_list;
-    XExtDisplayIfno **lastp;
-    Display *dpy;
-{
-    XExtDisplayInfo *dpyinfo = *lastp;
-
-    /*
-     * see if this was the most recently accessed display
-     */
-    if (dpyinfo && dpyinfo->display == dpy) return dpyinfo;
-
-
-    /*
-     * look for display in list
-     */
-    for (dpyinfo = *display_listp; dpyinfo; dpyinfo = dpyinfo->next) {
-	if (dpyinfo->display == dpy) {
-	    *lastp = dpyinfo;
-	    return dpyinfo;
-	}
-    }
-
-    return NULL;
-}
-
-
-
-
-int XextCloseDisplay (display_listp, lastp, dpy)
-    XExtDisplayInfo **display_list;
-    XExtDisplayIfno **lastp;
+/*
+ * XextRemoveDisplay - remove the indicated display from the extension object
+ */
+int XextRemoveDisplay (extinfo, dpy)
+    XExtensionInfo *extinfo;
     Display *dpy;
 {
     XExtDisplayInfo *dpyinfo, *prev;
@@ -84,7 +131,7 @@ int XextCloseDisplay (display_listp, lastp, dpy)
      * locate this display and its back link so that it can be removed
      */
     prev = NULL;
-    for (dpyinfo = (*display_listp); dpyinfo; dpyinfo = dpyinfo->next) {
+    for (dpyinfo = extinfo->head; dpyinfo; dpyinfo = dpyinfo->next) {
 	if (dpyinfo->display == dpy) break;
 	prev = dpyinfo;
     }
@@ -96,10 +143,44 @@ int XextCloseDisplay (display_listp, lastp, dpy)
     if (prev)
 	prev->next = dpyinfo->next;
     else
-	*display_listp = dpyinfo->next;
+	extinfo->head = dpyinfo->next;
 
-    if (dpyinfo == *lastp) *lastp = NULL;
+    extinfo->ndisplays--;
+    if (dpyinfo == extinfo->cur) extinfo->cur = NULL;  /* flush cache */
 
     Xfree ((char *) dpyinfo);
-    return 0;
+    return 1;
 }
+
+
+/*
+ * XextFindDisplay - look for a display in this extension; keeps a cache
+ * of the most-recently used for efficiency.
+ */
+XExtDisplayInfo *XextFindDisplay (extinfo, dpy)
+    XExtensionInfo *extinfo;
+    Display *dpy;
+{
+    register XExtDisplayInfo *dpyinfo;
+
+    /*
+     * see if this was the most recently accessed display
+     */
+    if ((dpyinfo = extinfo->cur)&& dpyinfo->display == dpy) return dpyinfo;
+
+
+    /*
+     * look for display in list
+     */
+    for (dpyinfo = extinfo->head; dpyinfo; dpyinfo = dpyinfo->next) {
+	if (dpyinfo->display == dpy) {
+	    extinfo->cur = dpyinfo;	/* cache most recently used */
+	    return dpyinfo;
+	}
+    }
+
+    return NULL;
+}
+
+
+
