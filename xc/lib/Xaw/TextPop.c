@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.15 91/03/11 12:21:38 converse Exp $ */
+/* $XConsortium: TextPop.c,v 1.16 91/03/13 22:06:45 gildea Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -1238,7 +1238,7 @@ void (*func)();
   XtSetArg(args[num_args], XtNallowShellResize, TRUE); num_args++;
   XtSetArg(args[num_args], XtNtransientFor, GetShell(parent)); num_args++;
   popup = XtCreatePopupShell(name, transientShellWidgetClass, 
-			     parent, args, XtNumber(args) );
+			     parent, args, num_args);
   
   form = XtCreateManagedWidget(FORM_NAME, formWidgetClass, popup,
 			       NULL, ZERO);
