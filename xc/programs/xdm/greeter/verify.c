@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: verify.c,v 1.19 91/04/17 10:03:41 rws Exp $
+ * $XConsortium: verify.c,v 1.20 91/05/05 15:53:24 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,7 +29,7 @@
 # ifdef NGROUPS_MAX
 # include	<grp.h>
 # endif
-#ifdef SVR4
+#ifdef USESHADOW
 # include	<shadow.h>
 #endif
 #ifdef X_NOT_STDC_ENV
@@ -40,7 +40,7 @@ struct passwd joeblow = {
 	"Nobody", "***************"
 };
 
-#ifdef SVR4
+#ifdef USESHADOW
 struct spwd spjoeblow = {
 	"Nobody", "**************"
 };
@@ -52,7 +52,7 @@ struct greet_info	*greet;
 struct verify_info	*verify;
 {
 	struct passwd	*p;
-#ifdef SVR4
+#ifdef USESHADOW
 	struct spwd	*sp;
 #endif
 	char		*crypt ();
@@ -64,7 +64,7 @@ struct verify_info	*verify;
 	p = getpwnam (greet->name);
 	if (!p || strlen (greet->name) == 0)
 		p = &joeblow;
-#ifdef SVR4
+#ifdef USESHADOW
 	sp = getspnam(greet->name);
 	if (sp == NULL) {
 		sp = &spjoeblow;
