@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.34 89/12/14 21:14:13 converse Exp $
+ * $XConsortium: toc.c,v 2.35 89/12/16 19:19:54 rws Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -568,6 +568,20 @@ Toc toc;
 	EnableProperButtons(toc->scrn[i]);
     }
 }
+
+
+/*ARGSUSED*/
+void XmhReloadSeqLists(w, event, params, num_params)
+    Widget	w;
+    XEvent	*event;
+    String	*params;
+    Cardinal	*num_params;
+{
+    Scrn scrn = ScrnFromWidget(w);
+    TocReloadSeqLists(scrn->toc);
+    TUCheckSequenceMenu(scrn->toc);
+}
+
 
 
 /* Return TRUE if the toc has an interesting sequence. */
