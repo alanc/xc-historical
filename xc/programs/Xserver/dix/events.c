@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.188 89/04/29 18:14:11 rws Exp $ */
+/* $XConsortium: events.c,v 1.189 89/05/01 12:18:59 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -547,12 +547,12 @@ FreezeThaw(dev, frozen)
     Bool frozen;
 {
     dev->sync.frozen = frozen;
-    if (dev == inputInfo.pointer)
-	dev->public.processInputProc = frozen ? EnqueueEvent :
-						ProcessPointerEvent;
+    if (frozen)
+	dev->public.processInputProc = EnqueueEvent;
+    else if (dev == inputInfo.pointer)
+	dev->public.processInputProc = ProcessPointerEvent;
     else if (dev == inputInfo.keyboard)
-	dev->public.processInputProc = frozen ? EnqueueEvent :
-						ProcessKeyboardEvent;
+	dev->public.processInputProc = ProcessKeyboardEvent;
 }
 
 static void
