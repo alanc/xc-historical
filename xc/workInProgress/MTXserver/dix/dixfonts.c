@@ -40,7 +40,7 @@ OF THIS SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.43 93/09/20 18:03:12 dpw Exp $ */
+/* $XConsortium: dixfonts.c,v 1.2 94/01/17 23:58:17 rob Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -973,7 +973,7 @@ doListFontsWithInfo(client, c)
                 if (!msg_reply)
                 {
                     err = BadAlloc;
-		    X_MUTEX_UNLOCK(&FPEFuncLockMutex);
+		    MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
                     goto bail;
                 }
 
@@ -982,7 +982,7 @@ doListFontsWithInfo(client, c)
                 {
                     ReturnPooledMessage(msg);
                     err = BadAlloc;
-		    X_MUTEX_UNLOCK(&FPEFuncLockMutex);
+		    MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
                     goto bail;
                 }
 
@@ -1007,7 +1007,7 @@ doListFontsWithInfo(client, c)
 	    --c->current.max_names;
 	}
     }
-    X_MUTEX_UNLOCK(&FPEFuncLockMutex);
+    MTX_MUTEX_UNLOCK(&FPEFuncLockMutex);
 
 #ifdef XTHREADS
     if (!finalReply)
