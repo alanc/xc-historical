@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.32 89/03/23 11:41:30 jim Exp $
+ *	$XConsortium: misc.c,v 1.33 89/04/10 14:32:29 jim Exp $
  */
 
 
@@ -54,7 +54,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: misc.c,v 1.32 89/03/23 11:41:30 jim Exp $";
+static char rcs_id[] = "$XConsortium: misc.c,v 1.33 89/04/10 14:32:29 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -393,76 +393,6 @@ unsigned long fg, bg;
 	return (make_colored_cursor (XC_xterm, fg, bg));
 }
 
-char *uniquesuffix(name)
-char *name;
-{
-	register int *np, *fp, i;
-	register Window *cp;
-	register int temp, j, k, exact, *number;
-	char *wname;
-	Window *children, parent, root;
-	unsigned int nchildren;
-	static char *suffix, sufbuf[10];
-	TScreen *screen = &term->screen;
-	char *malloc();
-
-	if(suffix)
-		return(suffix);
-	suffix = sufbuf;
-	if(!XQueryTree(
-	    screen->display, 
-	    DefaultRootWindow(screen->display), 
-	    &root, &parent,
-	    &children, &nchildren) ||
-	 nchildren < 1 || (number = (int *)malloc((unsigned)nchildren * sizeof(int)))
-	 == NULL)
-		return(suffix);
-	exact = FALSE;
-	i = strlen(name);
-	for(np = number, cp = children, j = nchildren ; j > 0 ; cp++, j--) {
-		if(!XFetchName(screen->display, *cp, &wname) || wname == NULL)
-			continue;
-		if(strncmp(name, wname, i) == 0) {
-			if(wname[i] == 0 || XStrCmp(&wname[i], " (Tek)") == 0)
-				exact = TRUE;
-			else if(strncmp(&wname[i], " #", 2) == 0)
-				*np++ = atoi(&wname[i + 2]);
-		}
-		XFree(wname);
-	}
-	XFree((char *)children);
-	if(exact) {
-		if(np <= number)
-			strcpy(suffix, " #2");
-		else {
-			exact = np - number;
-			np = number;
-			/* shell sort */
-			for(i = exact / 2 ; i > 0 ; i /= 2)
-				for(k = i ; k < exact ; k++)
-					for(j = k - i ; j >= 0 &&
-					 np[j] > np[j + i] ; j -= i) {
-						temp = np[j];
-						np[j] = np[j + i];
-						np[j + i] = temp;
-					}
-			/* make numbers unique */
-			for(fp = np + 1, i = exact - 1 ; i > 0 ; fp++, i--)
-				if(*fp != *np)
-					*++np = *fp;
-			/* find least unique number */
-			for(i = 2, fp = number ; fp <= np ; fp++) {
-				if(i < *fp)
-					break;
-				if(i == *fp)
-					i++;
-			}
-			sprintf(suffix, " #%d", i);
-		}
-	}
-	free((char *)number);
-	return(suffix);
-}
 
 Bell()
 {
@@ -541,22 +471,6 @@ Redraw()
 		TekExpose (tekWidget, &event, NULL);
 	}
 }
-
-#ifdef obsolete
-SyncUnmap(win, mask)
-register Window win;
-register long int mask;
-{
-	XEvent ev;
-	register XEvent *rep = &ev;
-	register TScreen *screen = &term->screen;
-
-	do { /* ignore events through unmap */
-		XWindowEvent(screen->display, win, mask, rep);
-	} while(rep->type != UnmapNotify);
-	return;
-}
-#endif /* obsolete */
 
 StartLog(screen)
 register TScreen *screen;
@@ -699,6 +613,7 @@ int (*func)();
 	mode = 0;
 	while(isdigit(c = (*func)()))
 		mode = 10 * mode + (c - '0');
+	/* eat semicolon */
 	cp = buf;
 	while(isprint(c = (*func)()))
 		*cp++ = c;
