@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.59 91/06/11 15:08:00 converse Exp $ */
+/* $XConsortium: InitialI.h,v 1.60 91/07/05 14:42:15 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -198,6 +198,19 @@ extern XtAppContext _XtDefaultAppContext(
 extern ProcessContext _XtGetProcessContext(
 #if NeedFunctionPrototypes
     void
+#endif
+);
+
+Display *
+_XtAppInit(
+#if NeedFunctionPrototypes
+    XtAppContext*	/* app_context_return */,
+    String		/* application_class */,
+    XrmOptionDescRec*	/* options */,
+    Cardinal		/* num_options */,
+    int*		/* argc_in_out */,
+    String**		/* argv_in_out */,
+    String*		/* fallback_resources */
 #endif
 );
 
