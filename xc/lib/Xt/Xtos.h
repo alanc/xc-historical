@@ -1,6 +1,5 @@
 /*
-* $XConsortium: IntrinsicI.h,v 1.36 89/09/14 10:36:17 swick Exp $
-* $oHeader: IntrinsicI.h,v 1.5 88/08/31 16:21:08 asente Exp $
+* $XConsortium: Xtos.h,v 1.1 89/09/19 20:11:27 swick Exp $
 */
 
 /***********************************************************
@@ -79,8 +78,7 @@ pragma on(alloca);
 #if defined(vax) || defined(sun)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
- * decide that you don't want to use alloca, you might want to fix 
- * ../os/4.2bsd/Imakefile
+ * decide that you don't want to use alloca, you might want to fix it here.
  */
 char *alloca();
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
