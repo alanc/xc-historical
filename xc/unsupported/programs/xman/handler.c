@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: handler.c,v 1.4 89/02/15 16:06:41 kit Exp $
+ * $XConsortium: handler.c,v 1.5 89/02/15 20:00:42 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -230,6 +230,8 @@ caddr_t global_pointer,junk;
 
   man_globals = (ManpageGlobals *) global_pointer;
 
+  XtPopdown(  XtParent(XtParent(w)) );       /* popdown the search widget */
+
   if ( streq(Name(w),MANUALSEARCH) )
     file = DoSearch(man_globals,MANUAL);
   else if ( streq(Name(w),APROPOSSEARCH) )
@@ -238,10 +240,6 @@ caddr_t global_pointer,junk;
     file = NULL;
   else 
     PrintError("Unknown widget, in Search Box.");
-
-  /* popdown the search widget */
-
-  XtPopdown(  XtParent(XtParent(w)) );
 
   PutUpManpage(man_globals, file);
 }
