@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.63 89/07/05 11:26:21 jim Exp $
+ * $XConsortium: add_window.c,v 1.64 89/07/05 11:36:27 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.63 89/07/05 11:26:21 jim Exp $";
+"$XConsortium: add_window.c,v 1.64 89/07/05 11:36:27 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -992,6 +992,7 @@ TwmWindow *tmp_win;
     unsigned long valuemask;		/* mask for create windows */
     XSetWindowAttributes attributes;	/* attributes for create windows */
     int x, y;
+    int h = Scr->TitleHeight - Scr->FramePadding * 2;
 
     if (tmp_win->title_height == 0)
     {
@@ -1006,17 +1007,13 @@ TwmWindow *tmp_win;
 	GC gc, gcBack;
 	int w, x1, x2, y1, y2;
 
-	Scr->iconifyPm = XCreatePixmap(dpy, tmp_win->title_w,
-	    Scr->TitleHeight, Scr->TitleHeight, 1);
+	Scr->iconifyPm = XCreatePixmap (dpy, tmp_win->title_w, h, h, 1);
 	gc = XCreateGC (dpy, Scr->iconifyPm, 0L, NULL);
 	XSetForeground(dpy, gc, 0);
-	XFillRectangle(dpy, Scr->iconifyPm, gc, 0,0,
-	    Scr->TitleHeight, Scr->TitleHeight);
+	XFillRectangle (dpy, Scr->iconifyPm, gc, 0, 0, h, h);
 
-	Scr->resizePm = XCreatePixmap(dpy, tmp_win->title_w,
-	    Scr->TitleHeight, Scr->TitleHeight, 1);
-	XFillRectangle(dpy, Scr->resizePm, gc, 0,0,
-	    Scr->TitleHeight, Scr->TitleHeight);
+	Scr->resizePm = XCreatePixmap (dpy, tmp_win->title_w, h, h, 1);
+	XFillRectangle (dpy, Scr->resizePm, gc, 0, 0, h, h);
 
 	/* now draw the images in */
 	XSetForeground(dpy, gc, 1);
@@ -1029,26 +1026,20 @@ TwmWindow *tmp_win;
 	 * draw the logo large so that it gets as dense as possible; then white
 	 * out the edges so that they look crisp
 	 */
-	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, 0, 0,
-		     Scr->TitleHeight, Scr->TitleHeight);
-	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 0, 0,
-			Scr->TitleHeight - 1, Scr->TitleHeight - 1);
-	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 1, 1,
-			Scr->TitleHeight - 3, Scr->TitleHeight - 3);
-	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 3, 3,
-			Scr->TitleHeight - 7, Scr->TitleHeight - 7);
-	XDrawRectangle (dpy, Scr->iconifyPm, gc, 2, 2,
-			Scr->TitleHeight - 5, Scr->TitleHeight - 5);
+	XmuDrawLogo (dpy, Scr->iconifyPm, gc, gcBack, 0, 0, h, h);
+	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 0, 0, h - 1, h - 1);
+	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 1, 1, h - 3, h - 3);
+	XDrawRectangle (dpy, Scr->iconifyPm, gcBack, 3, 3, h - 7, h - 7);
+	XDrawRectangle (dpy, Scr->iconifyPm, gc,     2, 2, h - 5, h - 5);
 	XFreeGC (dpy, gcBack);
 
 	/*
 	 * draw the resize button, 
 	 */
-	XDrawRectangle (dpy, Scr->resizePm, gc, 2, 2, Scr->TitleHeight - 5, 
-			Scr->TitleHeight - 5);
+	XDrawRectangle (dpy, Scr->resizePm, gc, 2, 2, h - 5, h - 5);
 
 	/* (real size * 2 + .5) / 3 */
-	w = (((Scr->TitleHeight - 4) * (2 * 2)) + 1) / (3 * 2);
+	w = ((h * (2 * 2)) + 1) / (3 * 2);
 	XDrawRectangle (dpy, Scr->resizePm, gc, 2, 2, w, w);
 
 	w = (w + 1) / 2;
@@ -1061,25 +1052,28 @@ TwmWindow *tmp_win;
 	XFreeGC(dpy, gc);
     }
 
+    attributes.win_gravity = NorthEastGravity;
     attributes.background_pixmap = None;
     attributes.event_mask = (ButtonPressMask | ButtonReleaseMask |
 			     ExposureMask);
-    tmp_win->iconify_w = XCreateWindow (dpy, tmp_win->title_w, 0, 0, 
-					Scr->TitleHeight, Scr->TitleHeight, 0,
-					0, CopyFromParent, CopyFromParent,
-				       (CWBackPixmap | CWEventMask), 
-					&attributes);
+    valuemask = (CWWinGravity | CWBackPixmap | CWEventMask);
+    tmp_win->iconify_w = XCreateWindow (dpy, tmp_win->title_w, 
+					Scr->FramePadding, Scr->FramePadding, 
+					h, h, 0, 0, 
+					CopyFromParent, CopyFromParent,
+				        valuemask, &attributes);
 
-    tmp_win->resize_w = XCreateWindow (dpy, tmp_win->title_w, 0, 0, 
-				       Scr->TitleHeight, Scr->TitleHeight, 0,
-				       0, CopyFromParent, CopyFromParent,
-				       (CWBackPixmap | CWEventMask),
-				       &attributes);
+    attributes.win_gravity = NorthWestGravity;
+    tmp_win->resize_w = XCreateWindow (dpy, tmp_win->title_w, 
+				       (tmp_win->attr.width - Scr->FramePadding
+					- 1), Scr->FramePadding,
+					h, h, 0, 0, 
+					CopyFromParent, CopyFromParent,
+				        valuemask, &attributes);
     if (tmp_win->titlehighlight) {
 	XGCValues gcv;
 	GC gc;
 	Pixmap pm = None;
-	int h = Scr->TitleHeight - 4;
 
 	/*
 	 * If a special highlight pixmap was given, use that.  Otherwise,
