@@ -2447,3 +2447,17 @@ specifies the name of the widget class in the node list to search for
 .LP
 This function returns the WidgetNode in the list that matches the given
 widget name or widget class name.  If no match is found, it returns NULL.
+.LP
+.NH 1
+Participation in the Editres Protocol
+.LP
+To participate in the editres protocol, applications which are not based
+on the Athena widget set should include the header file
+.Pn < X11/Xmu/Editres.h >.
+.LP
+To participate in the editres protocol, Xt applications which do not rely
+on the Athena widget set should register the editres protocol handler on 
+each shell widget in the application, specifying an event mask of 0, 
+nonmaskable events, and client data as NULL:
+.LP
+XtAddEventHandler(shell, (EventMask) 0, True, _XEditResCheckMessages, NULL);
