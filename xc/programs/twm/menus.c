@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.159 90/04/17 12:11:45 jim Exp $
+ * $XConsortium: menus.c,v 1.160 90/04/24 09:28:53 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.159 90/04/17 12:11:45 jim Exp $";
+"$XConsortium: menus.c,v 1.160 90/04/24 09:28:53 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1131,7 +1131,6 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     int pulldown;
 {
     static Time last_time = 0;
-
     char tmp[200];
     char *ptr;
     char buff[MAX_FILE_SIZE];
@@ -1140,6 +1139,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
     int origX, origY;
     int do_next_action = TRUE;
     int moving_icon = FALSE;
+    Bool fromtitlebar = False;
     extern int ConstrainedMoveTime;
 
     RootFunction = NULL;
@@ -1290,8 +1290,6 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		0, 0, 0, 0, eventp->xbutton.x_root, eventp->xbutton.y_root);
 
 	if (w != tmp_win->icon_w) {	/* can't resize icons */
-	    Bool fromtitlebar = False;	/* controls AutoRelativeResizing */
-
 	    /*
 	     * see if this is being done from the titlebar
 	     */
@@ -1299,7 +1297,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		register TBWindow *tbw;
 		register int nb = Scr->TBInfo.nleft + Scr->TBInfo.nright;
 		for (tbw = tmp_win->titlebuttons; nb > 0; tbw++, nb--) {
-		    if (tbw->window == w) {
+		    if (tbw->window == eventp->xbutton.window) {
 			fromtitlebar = True;
 			break;
 		    }
@@ -1313,6 +1311,11 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 			 ButtonPressMask | ButtonReleaseMask |
 			 EnterWindowMask | LeaveWindowMask |
 			 ButtonMotionMask, &Event);
+
+		if (fromtitlebar && Event.type == ButtonPress) {
+		    fromtitlebar = False;
+		    continue;
+		}
 
 	    	if (Event.type == MotionNotify) {
 		    /* discard any extra motion events before a release */
@@ -1451,6 +1454,21 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	    }
 	}
 
+	/*
+	 * see if this is being done from the titlebar
+	 */
+	if (tmp_win && tmp_win->titlebuttons) {
+	    register TBWindow *tbw;
+	    register int nb = Scr->TBInfo.nleft + Scr->TBInfo.nright;
+	    for (tbw = tmp_win->titlebuttons; nb > 0; tbw++, nb--) {
+		if (tbw->window == eventp->xbutton.window) {
+		    fromtitlebar = True;
+		    break;
+		}
+	    }
+	}
+
+
 	while (TRUE)
 	{
 	    /* block until there is an interesting event */
@@ -1469,6 +1487,16 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		    ButtonMotionMask | ButtonReleaseMask, &Event))
 		    if (Event.type == ButtonRelease)
 			break;
+	    }
+
+	    if (fromtitlebar && Event.type == ButtonPress) {
+		fromtitlebar = False;
+		CurrentDragX = origX = Event.xbutton.x_root;
+		CurrentDragY = origY = Event.xbutton.y_root;
+		XTranslateCoordinates (dpy, rootw, tmp_win->frame,
+				       origX, origY,
+				       &DragX, &DragY, &JunkChild);
+		continue;
 	    }
 
 	    if (!DispatchEvent ()) continue;
