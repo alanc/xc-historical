@@ -1,6 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Popup.c,v 1.2 88/08/18 15:51:15 asente Exp $";
-/* $oHeader: Popup.c,v 1.2 88/08/18 15:51:15 asente Exp $ */
+static char rcsid[] =
+    "$XConsortium: Popup.c,v 1.16 88/09/04 12:21:11 swick Exp $";
+/* $oHeader: Popup.c,v 1.3 88/09/01 11:45:34 asente Exp $ */
 #endif lint
 
 /***********************************************************
@@ -40,7 +41,8 @@ void _XtPopup(widget, grab_kind, spring_loaded)
     register ShellWidget shell_widget = (ShellWidget) widget;
 
     if (! XtIsShell(widget)) {
-	XtErrorMsg("invalidClass","xtPopup","XtToolkitError",
+	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		"invalidClass","xtPopup","XtToolkitError",
                 "XtPopup requires a subclass of shellWidgetClass",
                   (String *)NULL, (Cardinal *)NULL);
     }
@@ -110,7 +112,8 @@ void XtPopdown(widget)
     register ShellWidget shell_widget = (ShellWidget) widget;
 
     if (! XtIsShell(widget)) {
-	XtErrorMsg("invalidClass","xtPopdown","XtToolkitError",
+	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		"invalidClass","xtPopdown","XtToolkitError",
             "XtPopdown requires a subclass of shellWidgetClass",
               (String *)NULL, (Cardinal *)NULL);
     }
