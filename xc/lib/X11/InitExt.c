@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XInitExt.c,v 11.22 89/12/08 18:08:59 converse Exp $ */
+/* $XConsortium: XInitExt.c,v 11.23 89/12/11 19:09:33 rws Exp $ */
 /* Copyright  Massachusetts Institute of Technology 1987 */
 
 #include "Xlibint.h"
@@ -9,6 +9,7 @@
 
 extern Bool _XUnknownWireEvent();
 extern Status _XUnknownNativeEvent();
+extern Bool _XDefaultWireError();
 
 /*
  * This routine is used to link a extension in so it will be called
@@ -239,6 +240,27 @@ Status (*XESetEventToWire(dpy, event_number, proc))()
 	UnlockDisplay(dpy);
 	return (oldproc);
 }
+Bool (*XESetWireToError(dpy, error_number, proc))()
+	Display *dpy;		/* display */
+	Bool (*proc)();		/* routine to call when converting error */
+	int error_number;	/* error routine to replace */
+{
+	register Bool (*oldproc)();
+	if (proc == NULL) proc = _XDefaultWireError;
+	LockDisplay (dpy);
+	if (!dpy->error_vec) {
+	    int i;
+	    dpy->error_vec = (Bool (**)())Xmalloc(256 * sizeof(oldproc));
+	    for (i = 1; i < 256; i++)
+		dpy->error_vec[i] = _XDefaultWireError;
+	}
+	if (dpy->error_vec) {
+	    oldproc = dpy->error_vec[error_number];
+	    dpy->error_vec[error_number] = proc;
+	}
+	UnlockDisplay (dpy);
+	return (oldproc);
+}
 int (*XESetError(dpy, extension, proc))()
 	Display *dpy;		/* display */
 	int extension;		/* extension number */
@@ -264,6 +286,20 @@ char *(*XESetErrorString(dpy, extension, proc))()
 	LockDisplay(dpy);
 	oldproc = e->error_string;
 	e->error_string = proc;
+	UnlockDisplay(dpy);
+	return (oldproc);
+}
+void (*XESetPrintErrorValues(dpy, extension, proc))()
+	Display *dpy;		/* display */
+	int extension;		/* extension number */
+	void (*proc)();		/* routine to call to print */
+{
+	register _XExtension *e;	/* for lookup of extension */
+	register void (*oldproc)();
+	if ((e = XLookupExtension (dpy, extension)) == NULL) return (NULL);
+	LockDisplay(dpy);
+	oldproc = e->error_values;
+	e->error_values = proc;
 	UnlockDisplay(dpy);
 	return (oldproc);
 }
