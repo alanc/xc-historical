@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.33 89/03/22 14:22:59 rws Exp $ */
+/* $XConsortium: cursor.c,v 1.34 89/07/03 13:25:04 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -249,17 +249,17 @@ AllocGlyphCursor(source, sourceChar, mask, maskChar,
 	}
 	if (sourcefont != maskfont)
 	{
-	    pCurs = (CursorPtr)xalloc(sizeof(CursorRec));
+	    pCurs = (CursorPtr)xalloc(sizeof(CursorRec) + sizeof(CursorBits));
 	    if (pCurs)
-		bits = (CursorBitsPtr)xalloc(sizeof(CursorBits));
+		bits = (CursorBitsPtr)((char *)pCurs + sizeof(CursorRec));
 	    else
 		bits = (CursorBitsPtr)NULL;
 	}
 	else
 	{
-	    pCurs = (CursorPtr)xalloc(sizeof(CursorRec) + sizeof(CursorBits));
+	    pCurs = (CursorPtr)xalloc(sizeof(CursorRec));
 	    if (pCurs)
-		bits = (CursorBitsPtr)((char *)pCurs + sizeof(CursorRec));
+		bits = (CursorBitsPtr)xalloc(sizeof(CursorBits));
 	    else
 		bits = (CursorBitsPtr)NULL;
 	}
