@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.21 94/07/28 11:25:21 mor Exp $ */
+/* $XConsortium: xsm.h,v 1.22 94/07/28 13:24:19 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -94,10 +94,12 @@ typedef struct _ClientRec {
     char		*saveDiscardCommand;
     struct _ClientRec	*next;
 
+    unsigned int	running : 1;
     unsigned int	restarted : 1;
     unsigned int	userIssuedCheckpoint : 1;
     unsigned int	interactPending : 1;
     unsigned int	wantsPhase2 : 1;
+    unsigned int	restartHint : 2;
 
 } ClientRec;
 
@@ -142,8 +144,6 @@ extern ClientRec	*ClientList;
 extern List	 	*PendingList;
 extern int		numClients;
 extern Bool		client_info_visible;
-extern String 		*clientNames;
-extern int		numClientNames;
 extern int		saveDoneCount;
 extern int		phase2RequestCount;
 
@@ -192,6 +192,11 @@ extern Widget			    cloneButton;
 extern Widget			    killClientButton;
 extern Widget			    clientInfoDoneButton;
 extern Widget			    clientListWidget;
+extern Widget			    restartHintLabel;
+extern Widget			    restartIfRunning;
+extern Widget			    restartAnyway;
+extern Widget			    restartImmediately;
+extern Widget			    restartNever;
 
 extern Widget		    clientPropPopup;
 
