@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.21 93/12/13 17:28:23 dpw Exp dpw $
+XCOMM $XConsortium: Imakefile,v 5.22 94/08/11 17:06:16 dpw Exp kaleb $
 #include <Server.tmpl>
 
 SRCS =  mivaltree.c mipolyseg.c mipolyrect.c \
@@ -35,5 +35,14 @@ all:: cbrt.o
 
 SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES))
 SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
+
+InstallLinkKitLibrary(mi,$(LINKKITDIR)/lib)
+InstallLinkKitLibrary(cbrt,$(LINKKITDIR)/lib)
+InstallLinkKitNonExecFile(mi.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mibstore.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mipointer.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(misprite.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mispritest.h,$(LINKKITDIR)/include)
+InstallLinkKitNonExecFile(mistruct.h,$(LINKKITDIR)/include)
 
 DependTarget()
