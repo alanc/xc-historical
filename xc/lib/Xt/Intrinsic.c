@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.129 89/09/11 17:43:08 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.130 89/09/12 16:47:58 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -426,20 +426,31 @@ Widget XtNameToWidget(root, name)
 
 /* Define user versions of intrinsics macros */
 
-#undef XtDisplay
+#undef XtDisplayOfObject
+Display *XtDisplayOfObject(object)
+     Widget object;
+{
+    return XtDisplay(XtIsWidget(object) ? object : _XtWindowedAncestor(object));
+}
 
+#undef XtDisplay
 Display *XtDisplay(widget)
 	Widget widget;
 {
     if (!XtIsWidget(widget))
 	widget = _XtWindowedAncestor(widget);
 
-    return widget->core.screen->display;
+    return DisplayOfScreen(widget->core.screen);
+}
 
+#undef XtScreenOfObject
+Screen *XtScreenOfObject(object)
+     Widget object;
+{
+    return XtScreen(XtIsWidget(object) ? object : _XtWindowedAncestor(object));
 }
 
 #undef XtScreen
-
 Screen *XtScreen(widget)
 	Widget widget;
 {
@@ -449,8 +460,15 @@ Screen *XtScreen(widget)
     return widget->core.screen;
 }
 
-#undef XtWindow
+#undef XtWindowOfObject
+Window XtWindowOfObject(object)
+     Widget object;
+{
+    return XtWindow(XtIsWidget(object) ? object : _XtWindowedAncestor(object));
+}
 
+
+#undef XtWindow
 Window XtWindow(widget)
 	Widget widget;
 {
@@ -461,7 +479,6 @@ Window XtWindow(widget)
 }
 
 #undef XtSuperclass
-
 WidgetClass XtSuperclass(widget)
 	Widget widget;
 {
@@ -469,7 +486,6 @@ WidgetClass XtSuperclass(widget)
 }
 
 #undef XtClass
-
 WidgetClass XtClass(widget)
 	Widget widget;
 {
@@ -477,27 +493,30 @@ WidgetClass XtClass(widget)
 }
 
 #undef XtIsManaged
-
-Boolean XtIsManaged(widget)
-	Widget widget;
+Boolean XtIsManaged(object)
+	Widget object;
 {
-	return widget->core.managed;
+    if (XtIsRectObj(object))
+	return object->core.managed;
+    else
+	return False;
 }
 
 #undef XtIsRealized
-
-Boolean XtIsRealized (widget)
-	Widget   widget;
+Boolean XtIsRealized (object)
+	Widget   object;
 {
-	return widget->core.window != NULL;
+    return XtWindowOfObject(object) != NULL;
 } /* XtIsRealized */
 
 #undef XtIsSensitive
-
-Boolean XtIsSensitive(widget)
-	Widget	widget;
+Boolean XtIsSensitive(object)
+	Widget	object;
 {
-	return widget->core.sensitive && widget->core.ancestor_sensitive;
+    if (XtIsRectObj(object))
+	return object->core.sensitive && object->core.ancestor_sensitive;
+    else
+	return False;
 }
 
 /*
@@ -521,7 +540,6 @@ Widget _XtWindowedAncestor(object)
 }
 
 #undef XtParent
-
 Widget XtParent(widget)
 	Widget widget;
 {
@@ -529,7 +547,6 @@ Widget XtParent(widget)
 }
 
 #undef XtName
-
 String XtName(object)
      Widget object;
 {
