@@ -1,5 +1,8 @@
 Xman*input:				TRUE
 
+! Just for fun.
+Xman*topBox*ShapeStyle:			Oval
+
 Xman*topBox.Title:			Xman
 Xman*topBox.IconName:			Xman
 Xman*manualBrowser.Title:		Manual Page
@@ -29,6 +32,9 @@ Xman*quitButton.Label:			Quit
 Xman*manpageButton.Label:		Manual Page
 Xman*manualBrowser.Label:		Manual Browser
 Xman*topLabel.Label:			Manual Browser
+
+Xman*SimpleMenu*menuLabel*vertSpace:	100
+Xman*SimpleMenu*menuLabel*leftMargin:	20
 
 Xman*displayDirectory.Label:		Display Directory
 Xman*displayManualPage.Label:		Display Manual Page
@@ -70,7 +76,6 @@ Xman*help*Paned.manualPage.translations:#override \
 				Ctrl<Key>d: GotoPage(Directory) \n\
 				Ctrl<Key>m: GotoPage(ManualPage) \n\
 				Ctrl<Key>v: ShowVersion() \n\
-				Ctrl<Key>s: PopupSearch() \n\
 				<Btn1Down>: Page(Forward)
 
 Xman*manualBrowser*manualPage.translations:  #override \
@@ -110,51 +115,51 @@ Xman*manualBrowser*directory.translations:   #override \
 				Ctrl<Key>v: ShowVersion() \n\
 				Ctrl<Key>s: PopupSearch()
 
-Xman*manualBrowser*search*manualPage.translations: 	#override \
-				<Btn1Up>: Search(Manpage) reset()
+Xman*manualBrowser*search*manualPage.translations: 	#augment \
+				<Btn1Down>,<Btn1Up>: Search(Manpage) reset()
 
-Xman*manualBrowser*search*apropos.translations:		#override \
-				<Btn1Up>: Search(Apropos) reset()
+Xman*manualBrowser*search*apropos.translations:		#augment \
+				<Btn1Down>,<Btn1Up>: Search(Apropos) reset()
 
-Xman*manualBrowser*search*cancel*translations:  	#override \
-				<Btn1Up>: Search(Cancel) reset()
+Xman*manualBrowser*search*cancel*translations:  	#augment \
+				<Btn1Down>,<Btn1Up>: Search(Cancel) reset()
 
 Xman*manualBrowser*search*value*translations:		#override \
 				<Key>Return: Search(Manpage) \n\
 				Ctrl<Key>m:  Search(Manpage)
 
-Xman*topBox*search*manualPage.translations: 		#override \
-				<Btn1Up>: Search(Manpage, Open) reset()
+Xman*topBox*search*manualPage.translations: 		#augment \
+			<Btn1Down>,<Btn1Up>: Search(Manpage, Open) reset()
 
-Xman*topBox*search*apropos.translations:		#override \
-				<Btn1Up>: Search(Apropos, Open) reset()
+Xman*topBox*search*apropos.translations:		#augment \
+			<Btn1Down>,<Btn1Up>: Search(Apropos, Open) reset()
 
-Xman*topBox*search*cancel*translations:  		#override \
-				<Btn1Up>: Search(Cancel, Open) reset()
+Xman*topBox*search*cancel*translations:  		#augment \
+			<Btn1Down>,<Btn1Up>: Search(Cancel, Open) reset()
 
 Xman*topBox*search*value*translations:			#override \
 				<Key>Return: Search(Manpage, Open) \n\
 				Ctrl<Key>m:  Search(Manpage, Open)
 
 Xman*manualBrowser*likeToSave*yes.translations:	#override \
-				<Btn1Up>: SaveFormattedPage(Save) reset() \n\
-				<Key>y:   SaveFormattedPage(Save) \n\
-				<Key>n:   SaveFormattedPage(Cancel) 
+		<Btn1Down>,<Btn1Up>: SaveFormattedPage(Save) reset() \n\
+		<Key>y:   SaveFormattedPage(Save) \n\
+		<Key>n:   SaveFormattedPage(Cancel) 
 
 Xman*manualBrowser*likeToSave*no.translations:	#override \
-				<Btn1Up>: SaveFormattedPage(Cancel) reset() \n\
-				<Key>y:	  SaveFormattedPage(Save) \n\
-				<Key>n:	  SaveFormattedPage(Cancel) 
+		<Btn1Down>,<Btn1Up>: SaveFormattedPage(Cancel) reset() \n\
+		<Key>y:	  SaveFormattedPage(Save) \n\
+		<Key>n:	  SaveFormattedPage(Cancel) 
 
 Xman*manualBrowser*likeToSave*translations:	#override \
 				<Key>y:	  SaveFormattedPage(Save) \n\
 				<Key>n:	  SaveFormattedPage(Cancel) 
 
-Xman*helpButton.translations:	#override \
-				<Btn1Up>: PopupHelp() reset()
+Xman*helpButton.translations:	#augment \
+			<Btn1Down>,<Btn1Up>: PopupHelp() reset()
 
-Xman*quitButton.translations:	#override \
-				<Btn1Up>: Quit() reset()
+Xman*quitButton.translations:	#augment \
+			<Btn1Down>,<Btn1Up>: Quit() reset()
 
-Xman*manpageButton.translations:#override \
-				<Btn1Up>: CreateNewManpage() reset()
+Xman*manpageButton.translations: #augment \
+			<Btn1Down>,<Btn1Up>: CreateNewManpage() reset()
