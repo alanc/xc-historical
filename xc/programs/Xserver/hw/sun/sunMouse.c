@@ -326,6 +326,7 @@ sunMouseProcessEvent (pMouse, fe)
     DevicePtr	  pMouse;   	/* Mouse from which the event came */
     Firm_event	  *fe;	    	/* Event to process */
 {
+    int      index;		/* screen index */
     xEvent		xE;
     register PtrPrivPtr	pPriv;	/* Private data for pointer */
     register SunMsPrivPtr pSunPriv; /* Private data for mouse */
@@ -385,9 +386,48 @@ sunMouseProcessEvent (pMouse, fe)
 	     * screen...
 	     */
 	    pPriv->x += MouseAccelerate (pMouse, fe->value);
+
+            /*
+             * Active Zaphod implementation:
+             *    increment or decrement the current screen
+             *    if the x is to the right or the left of
+             *    the current screen.
+             */
+            if (screenInfo.numScreens > 1 &&
+                (pPriv->x > pPriv->pScreen->width ||
+                 pPriv->x < 0)) {
+                sunRemoveCursor();
+                /* disable color plane if it's current */
+                index = pPriv->pScreen->myNum;
+                (*sunFbs[index].EnterLeave) (pPriv->pScreen, 1);
+                if (pPriv->x < 0) { 
+                     if (pPriv->pScreen->myNum != 0)
+                        (pPriv->pScreen)--;
+                     else
+                         pPriv->pScreen = &screenInfo.screen[screenInfo.numScreens -1];
+ 
+                     pPriv->x += pPriv->pScreen->width;
+                }
+                else {
+                    pPriv->x -= pPriv->pScreen->width;
+
+                    if (pPriv->pScreen->myNum != screenInfo.numScreens -1)
+                        (pPriv->pScreen)++;
+                    else
+                         pPriv->pScreen = &screenInfo.screen[0];
+                }
+
+                index = pPriv->pScreen->myNum;
+                /* enable color plane if new current screen */
+                (*sunFbs[index].EnterLeave) (pPriv->pScreen, 0);
+            }
+
 	    if (!sunConstrainXY (&pPriv->x, &pPriv->y)) {
 		return;
 	    }
+
+            NewCurrentScreen (pPriv->pScreen, pPriv->x, pPriv->y);
+
 #ifdef	SUN_ALL_MOTION
 	    xE.u.u.type = MotionNotify;
 	    sunMoveCursor (pPriv->pScreen, pPriv->x, pPriv->y);

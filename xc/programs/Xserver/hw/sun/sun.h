@@ -12,7 +12,7 @@
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- *	"$Header: sun.h,v 3.1 87/08/08 15:44:38 toddb Exp $ SPRITE (Berkeley)"
+ *	"$Header: sun.h,v 4.0 87/08/31 20:20:48 sun Locked $ SPRITE (Berkeley)"
  */
 #ifndef _SUN_H_
 #define _SUN_H_
@@ -199,8 +199,8 @@ typedef struct {
 				       * Screen structure */
     Bool	      	(*CreateWindow)();
     Bool		(*ChangeWindowAttributes)();
-    unsigned int  	*(*GetSpans)(); /* XXX: Shouldn't need this */
-    
+    unsigned int  	*(*GetSpans)();
+    void		(*EnterLeave)();
     Bool    	  	mapped;	    /* TRUE if frame buffer already mapped */
     Bool		parent;	    /* TRUE if fd is a SunWindows window */
     int	    	  	fd; 	    /* Descriptor open to frame buffer */

@@ -379,8 +379,8 @@ sunUnrealizeCursor (pScreen, pCursor)
     /*
      * XXX: Deallocate pixels 
      */
-    FreeScratchGC(pPriv->srcGC);
-    FreeScratchGC(pPriv->invSrcGC);
+    FreeGC(pPriv->srcGC);
+    FreeGC(pPriv->invSrcGC);
 
     Xfree(pPriv);
 

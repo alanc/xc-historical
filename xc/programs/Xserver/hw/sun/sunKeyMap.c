@@ -31,6 +31,40 @@
 #include	"sun.h"
 #include	"keysym.h"
 
+/*
+ *	XXX - Its not clear what to map these to for now.
+ *	keysyms.h doesn't define enough function key names.
+ */
+
+
+#ifndef	XK_L1
+#define	XK_L1	XK_Cancel
+#define	XK_L2	XK_Redo
+#define	XK_R1	NoSymbol
+#define	XK_R2	NoSymbol
+#define	XK_R3	NoSymbol
+#define	XK_L3	XK_Menu
+#define	XK_L4	XK_Undo
+#define	XK_R4	NoSymbol
+#define	XK_R5	NoSymbol
+#define	XK_R6	NoSymbol
+#define	XK_L5	XK_Insert
+#define	XK_L6	XK_Select
+#define	XK_R7	NoSymbol
+#define	XK_R8	XK_Up
+#define	XK_R9	NoSymbol
+#define	XK_L7	XK_Execute
+#define	XK_L8	XK_Print
+#define	XK_R10	XK_Left
+#define	XK_R11	XK_Home
+#define	XK_R12	XK_Right
+#define	XK_L9	XK_Find
+#define	XK_L10	XK_Help
+#define	XK_R13	NoSymbol
+#define	XK_R14	XK_Down
+#define	XK_R15	NoSymbol
+#endif
+
 #ifdef	notdef
 static KeySym KlunkMap[] = {
 };
