@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.10 91/07/18 18:50:17 rws Exp $
+ * $XConsortium: protodpy.c,v 1.11 93/09/20 18:02:59 hersh Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -98,7 +98,11 @@ NewProtoDisplay (address, addrlen, displayNumber,
     CARD32	    sessionID;
 {
     struct protoDisplay	*pdpy;
+#if defined(sony) || defined(luna)
     long    date;
+#else
+    time_t date;
+#endif
 
     Debug ("NewProtoDisplay\n");
     time (&date);

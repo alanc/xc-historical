@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: genauth.c,v 1.12 94/01/01 17:30:14 rws Exp $
+ * $XConsortium: genauth.c,v 1.13 94/01/09 18:07:20 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -80,10 +80,16 @@ InitXdmcpWrapper ()
 {
     long	    sum[2];
     unsigned char   tmpkey[8];
+
+#if defined(sony) || defined(luna)
+#define TIME_T long
+#else
+#define TIME_T time_t
+#endif
     
     if (!sumFile (randomFile, sum)) {
-	sum[0] = time ((long *) 0);
-	sum[1] = time ((long *) 0);
+	sum[0] = time ((TIME_T *) 0);
+	sum[1] = time ((TIME_T *) 0);
     }
     longtochars (sum[0], tmpkey+0);
     longtochars (sum[1], tmpkey+4);
