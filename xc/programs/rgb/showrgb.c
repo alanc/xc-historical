@@ -1,5 +1,5 @@
 /*
- * $XConsortium: showrgb.c,v 1.3 89/10/26 17:44:28 jim Exp $
+ * $XConsortium: showrgb.c,v 1.4 89/10/26 17:47:27 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,7 +45,6 @@ main (argc, argv)
     int argc;
     char *argv[];
 {
-    int i;
     char *dbname = RGB_DB;
 
     ProgramName = argv[0];
@@ -101,5 +100,7 @@ dumprgb (filename)
 	}
     }
 
+#ifndef ibm
     dbm_close (rgb_dbm);
+#endif
 }
