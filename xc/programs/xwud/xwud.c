@@ -1,7 +1,7 @@
 /* 
- * $Locker: dkk $ 
+ * $Locker: rws $ 
  */ 
-static char	*rcsid = "$Header: xwud.c,v 1.10 87/08/29 21:07:36 dkk Locked $";
+static char	*rcsid = "$Header: xwud.c,v 1.11 87/09/05 22:35:26 rws Locked $";
 #include <X11/copyright.h>
 
 /* Copyright 1985, 1986, Massachusetts Institute of Technology */
@@ -32,7 +32,7 @@ static char	*rcsid = "$Header: xwud.c,v 1.10 87/08/29 21:07:36 dkk Locked $";
  */
 
 #ifndef lint
-static char *rcsid_xwud_c = "$Header: xwud.c,v 1.10 87/08/29 21:07:36 dkk Locked $";
+static char *rcsid_xwud_c = "$Header: xwud.c,v 1.11 87/09/05 22:35:26 rws Locked $";
 #endif
 
 #include <X11/Xlib.h>
@@ -48,13 +48,6 @@ extern char *calloc();
 #define MAX(a, b) (a) > (b) ? (a) : (b)
 #define MIN(a, b) (a) < (b) ? (a) : (b)
 #define ABS(a) (a) < 0 ? -(a) : (a)
-
-#define UBPS (sizeof(short)/2) /* useful bytes per short */
-#define BitmapSize(width, height) (((((width) + 32) >> 3) &~ 1) * (height) * UBPS)
-#define XYPixmapSize(width, height, planes) (BitmapSize(width, height) * (planes))
-#define BZPixmapSize(width, height) ((width) * (height))
-#define WZPixmapSize(width, height) (((width) * (height)) << 1)
-
 
 #define FAILURE 0
 
@@ -74,8 +67,7 @@ main(argc, argv)
     register int i;
     register int *histbuffer;
     register u_short *wbuffer;
-    XImage *image;
-    XImage *XCreateImage();
+    XImage image;
     XSetWindowAttributes attributes;
     Visual *visual;
     register char *buffer;
@@ -87,7 +79,7 @@ main(argc, argv)
     int backpixel;
     int planeno;      /*  Number of planes from DisplayPlanes() macro */
     int offset;
-    unsigned buffer_size, total_buffer_size;
+    unsigned buffer_size;
     unsigned long gc_value_mask = 0;
     unsigned long *cplanes, *cpixels;
     long tmp;
@@ -100,7 +92,6 @@ main(argc, argv)
 
     XColor *pixcolors, *newpixcolors;
     Window image_win;
-    Pixmap image_pixmap;
     Colormap colormap;
     XEvent event;
     register XExposeEvent *xevent = (XExposeEvent *)&event;
@@ -160,30 +151,13 @@ main(argc, argv)
      */
     if (header.file_version != XWD_FILE_VERSION) {
 	fprintf(stderr,"xwud: XWD file format version missmatch.");
-	if((header.file_version == 5 ||header.file_version == 6)
-	   && header.display_planes == 1)
-	  fprintf(stderr,"\n      (monochrome works anyway)\n");
-	else Error("exiting.");
+	Error("exiting.");
       }
 
+    visual = DefaultVisual(dpy, screen);
     colormap = DefaultColormap(dpy, screen);
-    if((planeno = DisplayPlanes(dpy, screen)) < header.display_planes)
-      Error("Windump has more planes than display.");
 
-    /*
-     * Check to see if we are in the right pixmap format for the
-     * display type.
-     */
-    if ((planeno != 1) && ((header.pixmap_format != XYPixmap))){
-	Error(
-	 "Windump is in ZFormat which is not valid on a monochrome display.");
-    }
-    else if ((planeno == 1) && ((header.pixmap_format != XYBitmap))) {
-      header.pixmap_format = XYBitmap;
-      /*  This is a terrible kludge.  xwd should give the right format
-	  value, but do to some confusion, monochrome windows (bitmaps)
-	  are being dumped as Z-format pixmaps.                    %%*/
-    }
+    /* XXX check for supported window depth */
 
     /*
      * Calloc window name.
@@ -198,41 +172,22 @@ main(argc, argv)
     if(fread(win_name, sizeof(char), win_name_size, in_file) != win_name_size)
       Error("Unable to read window name from dump file.");
 
-    /*
-     * Determine the pixmap size.
-     */
-    if (header.pixmap_format == XYBitmap) {
-        total_buffer_size = buffer_size = BitmapSize(
-	    header.pixmap_width,
-	    header.pixmap_height);
-    }
-    else if (header.pixmap_format == XYPixmap) {
-	buffer_size =
-	  XYPixmapSize(
-	    header.pixmap_width,
-	    header.pixmap_height,
-	    header.display_planes);
-	total_buffer_size = 
-	  XYPixmapSize(
-	    header.pixmap_width,
-	    header.pixmap_height,
-	    planeno );
-    }
-    else if (header.display_planes < 9) {
-	total_buffer_size = buffer_size = BZPixmapSize(
-	    header.pixmap_width,
-	    header.pixmap_height
-	);
-    }
-    else if(header.display_planes < 17) {
-	total_buffer_size = buffer_size = WZPixmapSize(
-	    header.pixmap_width,
-	    header.pixmap_height
-	);
-    }
-    else {
-	Error("Can't undump pixmaps more than 16 bits deep.\n");
-    } 
+    image.width = header.pixmap_width;
+    image.height = header.pixmap_height;
+    image.xoffset = header.xoffset;
+    image.format = header.pixmap_format;
+    image.byte_order = header.byte_order;
+    image.bitmap_unit = header.bitmap_unit;
+    image.bitmap_bit_order = header.bitmap_bit_order;
+    image.bitmap_pad = header.bitmap_pad;
+    image.depth = header.pixmap_depth;
+    image.bits_per_pixel = header.bits_per_pixel;
+    image.bytes_per_line = header.bytes_per_line;
+    image.red_mask = header.red_mask;
+    image.green_mask = header.green_mask;
+    image.blue_mask = header.blue_mask;
+    image.obdata = NULL;
+    _XInitImageFuncPtrs(&image);
 
 
     /* Calloc the color map buffer.
@@ -264,9 +219,10 @@ main(argc, argv)
     /*
      * Calloc the pixel buffer.
      */
-    if((buffer = calloc(total_buffer_size, 1)) == NULL)
+    buffer_size = Image_Size(&image);
+    if((buffer = calloc(buffer_size, 1)) == NULL)
       Error("Can't calloc data buffer.");
-    bzero(buffer,total_buffer_size);
+    image.data = buffer;
 
     /*
      * Read in the pixmap buffer.
@@ -281,6 +237,7 @@ main(argc, argv)
      */
     (void) fclose(in_file);
 
+#ifdef notdef
     /*
      * If necessary, get and store the new colors, convert the pixels to the
      * new colors appropriately.
@@ -334,6 +291,7 @@ main(argc, argv)
 	bcopy(newpixcolors, pixcolors, sizeof(XColor)*header.window_ncolors);
 	free(newpixcolors);
     }
+#endif
 
 
     /*
@@ -341,14 +299,14 @@ main(argc, argv)
      */
 
     attributes.override_redirect = True;
-    attributes.background_pixmap = BlackPixel(dpy, screen);
+    attributes.background_pixel = BlackPixel(dpy, screen);
 
     image_win = XCreateWindow(dpy,
 	RootWindow(dpy, screen),
 	header.window_x, header.window_y,
 	header.pixmap_width, header.pixmap_height,
-	0, 0, CopyFromParent, CopyFromParent,
-	CWOverrideRedirect + CWBackPixmap, &attributes);
+	0, header.pixmap_depth, InputOutput, visual,
+	CWOverrideRedirect + CWBackPixel, &attributes);
 
     if (image_win == FAILURE) Error("Can't create image window.");
 
@@ -368,140 +326,29 @@ main(argc, argv)
      */
     XMapWindow(dpy, image_win);
 
+    gc_value_mask |= GCForeground;
+    gc_value_mask |= GCBackground;
+
+    gc_val.foreground = (unsigned long) WhitePixel (dpy, screen); 
+						     /*  Default  */
+    gc_val.background = (unsigned long) BlackPixel (dpy, screen); 
+						     /*  Default  */
+    gc = XCreateGC (dpy, image_win, gc_value_mask, &gc_val);
+
     /*
      * Set up a while loop to maintain the image.
      */
+
     while (True) {
-	int i, nbytes;
 	/*
 	 * Wait on mouse input event to terminate.
 	 */
 	XNextEvent(dpy, &event);
 	if (event.type == ButtonPress) break;
 
-	gc_value_mask |= GCForeground;
-	gc_value_mask |= GCBackground;
-
-	gc_val.foreground = (unsigned long) WhitePixel (dpy, screen); 
-	                                                 /*  Default  */
-	gc_val.background = (unsigned long) BlackPixel (dpy, screen); 
-	                                                 /*  Default  */
-	gc = XCreateGC (dpy, image_win, gc_value_mask, &gc_val);
-
-	visual = DefaultVisual(dpy, screen);
-	offset = 0;
-
-	image = XCreateImage(dpy, visual, 1 /* depth %%*/,
-		     header.pixmap_format, offset, buffer,
-		     header.pixmap_width, header.pixmap_height,
-		     dpy->bitmap_pad, 0);
-
 	switch((int)event.type) {
-/*	  case ExposeWindow: %*/ /* Copy the data into the window. */
 	  case Expose:  /* simpler to copy from x=0 for full width */
-/*   %%*/
-	    if(header.pixmap_format == XYBitmap) {
-	        onebufsize = BitmapSize(header.pixmap_width,
-					header.pixmap_height);
-		nbytes = BitmapSize(header.pixmap_width, 1);
-	        forepixel = WhitePixel(dpy, screen);
-		backpixel = BlackPixel(dpy, screen);
-		planes = AllPlanes;
-		for(j=0; j<header.display_planes; j++) {	
-		    if(header.display_planes > 1)
-			planes >>= 1; /* shift down a bit */
-/* (just once:)		    for(i=0; i<xevent->height; i+=100) {  %%*/
-		      if(inverse) {
-			tmp = gc_val.foreground;
-/*  Here we reverse video.
-%*/
-			gc_val.foreground = gc_val.background;
-			gc_val.background = tmp;
-
-			XChangeGC(dpy, gc, gc_value_mask, &gc_val);
-			XPutImage(dpy, image_win, gc, image, 0, 0, 0, 0,
-				       (unsigned int) header.pixmap_width, 
-				       (unsigned int) header.pixmap_height);
-		      }
-		      else {
-			XPutImage(dpy, image_win, gc, image, 0, 0, 0, 0,
-				       (unsigned int) header.pixmap_width, 
-				       (unsigned int) header.pixmap_height);
-		      }
-/*		  } %%*/
-	        }
-	      }
-	    else if(header.pixmap_format == XYPixmap) {
-		onebufsize =  /* size of each bitmap */
-		  XYPixmapSize(header.pixmap_width,
-			       header.pixmap_height, 1);
-		nbytes = BitmapSize(header.pixmap_width,1);
-/*		if(header.display_planes > 1) {
-		    forepixel = -1;
-		    backpixel = 0;
-		    planes = 1<<(planeno);%*/ /* MSB << 1 */
-/*		}
-		else {
-		    forepixel = WhitePixel(dpy, screen);
-		    backpixel = BlackPixel(dpy, screen);
-		    planes = AllPlanes;
-
-		}
-%*/
-		for(j=0; j<header.display_planes; j++) {	
-		    if(header.display_planes > 1)
-			planes >>= 1; /* shift down a bit */
-		    for(i=0; i<xevent->height; i+=100)
-		      if(inverse) {
-			tmp = gc_val.foreground;
-/*  Here we reverse video.
-%*/
-			gc_val.foreground = gc_val.background;
-			gc_val.background = tmp;
-
-			XChangeGC(dpy, gc, gc_value_mask, &gc_val);
-			XPutImage(dpy, image_win, gc, image, 0, 0, 0, 0,
-				       header.pixmap_width, 
-				       header.pixmap_height);
-		      }
-		      else
-			XPutImage(dpy, image_win, gc, image, 0, 0, 0, 0,
-				       header.pixmap_width, 
-				       header.pixmap_height);
-
-/*			XBitmapBitsPut(image_win,
-				       0, i + xevent->y,
-				       header.pixmap_width, 
-				       MIN(100, xevent->height - i),
-				       buffer+((i+xevent->y)* nbytes)
-				          + (onebufsize * j), 
-				       forepixel, backpixel,
-				       0, GXcopy, planes);
-%*/
-		}
-	    } 
-	    else if(planeno < 9) {
-/*		nbytes = BZPixmapSize(header.pixmap_width,1);
-		for(i=0; i<xevent->height; i+=100)
-		  XPixmapBitsPutZ(image_win, 
-				  0, i + xevent->y,
-				  header.pixmap_width,
-				  MIN(100, xevent->height - i),
-				  buffer+((i+xevent->y)* nbytes),
-				  0, GXcopy, AllPlanes);
-%*/
-	    }
-	    else {  /* Display Planes > 8 */
-/*		nbytes = WZPixmapSize(header.pixmap_width, 1);
-		for(i=0; i<xevent->height; i+=100)
-		  XPixmapBitsPutZ(image_win, 
-				  0, i + xevent->y,
-				  header.pixmap_width,
-				  MIN(50, xevent->height - i),
-				  buffer+((i+xevent->y)* nbytes),
-				  0, GXcopy, AllPlanes);
-%*/
-	    }
+	      XPutImage(dpy, image_win, gc, &image, 0, 0, 0, 0, image.width, image.height);
 	}
     }
 
@@ -534,6 +381,16 @@ ColorEqual(color1, color2)
 	   color1->blue  == color2->blue);
 }
 
+
+int Image_Size(image)
+     XImage *image;
+{
+    if (image->format != ZPixmap)
+      return(image->bytes_per_line * image->height * image->depth);
+
+    return(image->bytes_per_line * image->height);
+
+}
 
 /*
  * Error - Fatal xwud error.
