@@ -1,5 +1,5 @@
 /*
-* $XConsortium: IntrinsicP.h,v 1.40 89/09/13 15:45:27 swick Exp $
+* $XConsortium: IntrinsicP.h,v 1.41 89/09/13 16:27:57 swick Exp $
 * $oHeader: IntrinsicP.h,v 1.4 88/08/26 14:49:52 asente Exp $
 */
 
@@ -133,25 +133,10 @@ extern Widget _XtWindowedAncestor(); /* internal */
 #define XtScreen(widget)	((widget)->core.screen)
 #define XtWindow(widget)	((widget)->core.window)
 
-#define XtDisplayOfObject(object) \
-    ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
-     ->core.screen->display)
-#define XtScreenOfObject(object) \
-    ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
-     ->core.screen)
-#define XtWindowOfObject(object) \
-    ((XtIsWidget(object) ? (object) : _XtWindowedAncestor(object)) \
-     ->core.window)
-
 #define XtClass(widget)		((widget)->core.widget_class)
 #define XtSuperclass(widget)	(XtClass(widget)->core_class.superclass)
-#define XtIsManaged(object)	(XtIsRectObj(object) ? (object)->core.managed : False)
 #define XtIsRealized(object)	(XtWindowOfObject(object) != NULL)
-#define XtIsSensitive(object) \
-    (XtIsRect(object) ? ((object)->core.sensitive && \
-			 (object)->core.ancestor_sensitive) : False)
 #define XtParent(widget)	((widget)->core.parent)
-#define XtName(object)		(XtIsWidget(object) ? (object)->core.name : XrmQuarkToString((object)->core.xrm_name))
 
 #undef XtIsRectObj
 #define XtIsRectObj(obj) \
@@ -189,8 +174,8 @@ extern Widget _XtWindowedAncestor(); /* internal */
 	    params[0] = (w)->core.widget_class->core_class.class_name;	     \
 	    params[1] = (widget_class_ptr)->core_class.class_name;	     \
 	    params[2] = (message);					     \
-	    XtErrorMsg("subclassMismatch", "xtCheckSubclass",		     \
-		    "XtToolkitError",					     \
+	    XtAppErrorMsg(XtWidgetToApplicationContext(w),		     \
+		    "subclassMismatch", "xtCheckSubclass", "XtToolkitError", \
 		    "Widget class %s found when subclass of %s expected: %s",\
 		    params, &num_params);		\
 	}
