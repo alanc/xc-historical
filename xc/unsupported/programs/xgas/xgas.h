@@ -13,7 +13,7 @@
 #include <X11/Xaw/Box.h>
 #include <X11/Xaw/AsciiText.h>
 #include <X11/Xaw/Toggle.h>
-#include "XGas.h"
+#include "Gas.h"
 #include <X11/Xutil.h>
 #include <X11/Xlib.h>
 #include <math.h>
