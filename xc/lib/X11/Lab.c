@@ -1,4 +1,4 @@
-/* $XConsortium: CIELab.c,v 1.5 91/02/12 16:08:59 dave Exp $ */
+/* $XConsortium: CIELab.c,v 1.6 91/05/13 22:19:59 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -67,8 +67,6 @@ extern char	XcmsCIELab_prefix[];
 
 static int CIELab_ParseString();
 Status XcmsCIELab_ValidSpec();
-Status XcmsCIELabToCIEXYZ();
-Status XcmsCIEXYZToCIELab();
 
 
 /*
@@ -79,7 +77,7 @@ Status XcmsCIEXYZToCIELab();
     /*
      * NULL terminated list of functions applied to get from CIELab to CIEXYZ
      */
-static XcmsFuncPtr Fl_CIELab_to_CIEXYZ[] = {
+static XcmsConversionProc Fl_CIELab_to_CIEXYZ[] = {
     XcmsCIELabToCIEXYZ,
     NULL
 };
@@ -87,7 +85,7 @@ static XcmsFuncPtr Fl_CIELab_to_CIEXYZ[] = {
     /*
      * NULL terminated list of functions applied to get from CIEXYZ to CIELab
      */
-static XcmsFuncPtr Fl_CIEXYZ_to_CIELab[] = {
+static XcmsConversionProc Fl_CIEXYZ_to_CIELab[] = {
     XcmsCIEXYZToCIELab,
     NULL
 };
