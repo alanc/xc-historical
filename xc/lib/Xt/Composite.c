@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Composite.c,v 1.9 88/09/16 08:33:59 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Composite.c,v 1.10 89/06/16 19:34:02 jim Exp $";
 /* $oHeader: Composite.c,v 1.2 88/08/18 15:35:39 asente Exp $ */
 #endif /* lint */
 
@@ -94,23 +94,10 @@ void CompositeClassPartInitialize(widgetClass)
     register CompositePartPtr wcPtr;
     register CompositePartPtr superPtr;
 
-    if (_XtClassIsSubclass(widgetClass,compositeWidgetClass)) {
-        wcPtr =  (CompositePartPtr)&(((CompositeWidgetClass)widgetClass)
+    wcPtr =  (CompositePartPtr)&(((CompositeWidgetClass)widgetClass)
                            ->composite_class);
-        superPtr = (CompositePartPtr)&(((CompositeWidgetClass)widgetClass
+    superPtr = (CompositePartPtr)&(((CompositeWidgetClass)widgetClass
             ->core_class.superclass)->composite_class);
-    }
-    else /* gadget composite */ {
-        wcPtr = (CompositePartPtr)&(((CompositeObjectClass)widgetClass)
-                           ->composite_class);
-        superPtr = (CompositePartPtr)&(((CompositeObjectClass)widgetClass
-            ->core_class.superclass)->composite_class);
-    };
-/*    register CompositeWidgetClass wc = (CompositeWidgetClass) widgetClass;
-      register CompositeWidgetClass super =
-	    (CompositeWidgetClass) wc->core_class.superclass;
-*/
-
 
     /* We don't need to check for null super since we'll get to composite
        eventually, and it had better define them!  */
