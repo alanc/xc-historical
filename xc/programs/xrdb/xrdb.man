@@ -12,7 +12,25 @@ xrdb - Server Resource Database Utility.
 .I Xrdb
 is used to get or set the contents of the RESOURCE_MANAGER property
 on the root window of screen 0.  You would normally run this program from 
-your .login script.
+your .login script.  
+.LP
+The resource manager (used by the Xlib routine XGetDefault and the
+Xtk toolkit) uses the RESOURCE_MANAGER property to get user preferences about 
+color, fonts, and so on for applications.  Having this information in
+the server, where it is available to all clients, 
+solves the problem in Version 10 of X which required you to 
+maintain up to date default files on all of the machines you
+used in your network.
+.LP
+Although the defaults file may be named 
+.I \.Xdefaults,
+this is no longer a requirement.
+This allows you have to have different defaults files for different situations.
+If there is no RESOURCE_MANAGER property (either because xrdb was not run
+or if the property was removed), the resource manager will look for a file
+called 
+.I \.Xdefaults
+in your home directory.
 .LP
 The
 .I filename
@@ -48,14 +66,6 @@ DirectColor}.
 only defined if the default visual's type is one of the color options.
 .LP
 Lines that begin with a "!" character are discarded.
-.LP
-The resource manager (used by the Xlib routine XGetDefault and the
-Xtk toolkit) uses the RESOURCE_MANAGER property to get user preferences about 
-color, fonts, and so on for applications.  Having this information in
-the server, where it is available to all clients, 
-solves the problem in Version 10 of X which required you to 
-maintain up to date default files on all of the machines you
-used in your network.
 .SH "OPTIONS"
 .PP
 The 
@@ -108,8 +118,8 @@ from its window.
 .B \-edit \fIfilename\fP
 This option indicates that the contents of the RESOURCE_MANAGER property
 should be edited into the given file, replacing any values already listed
-there.  This is the opposite of 
-.B \-merge.
+there.  This allows you to put changes that you have made to your defaults
+back into your source file, preserving any comments or preprocessor lines.
 .TP
 .B \-backup \fIstring\fP
 This option specifies a suffix to be appended to the filename used with
@@ -130,7 +140,7 @@ This option is passed through to the preprocessor and is used to specify
 a directory to search for files that are referenced with 
 .I #include.
 .SH FILES
-Generalizes the ~/.Xdefaults notion.
+Generalizes ~/.Xdefaults
 .SH "SEE ALSO"
 XGetDefault(3X)
 .SH ENVIRONMENT
