@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.61 89/11/30 18:03:31 jim Exp $
+ * $XConsortium: lex.l,v 1.62 89/12/10 17:46:33 jim Exp $
  *
  * .twmrc lex file
  *
@@ -74,7 +74,7 @@ number				[0-9]+
 "^"				{ yylval.num = F_CUT; return FSKEYWORD; }
 
 {string}			{ yylval.ptr = (char *)yytext; return STRING; }
-{number}			{ (void)sscanf(yytext, "%d", &yylval.num);
+{number}			{ (void)sscanf((char *)yytext, "%d", &yylval.num);
 				  return (NUMBER);
 				}
 \#[^\n]*\n			{;}
