@@ -1,5 +1,5 @@
 /*
- * $XHeader: charproc.c,v 1.37 88/07/12 11:53:09 jim Exp $
+ * $XHeader: charproc.c,v 1.38 88/07/12 16:43:01 jim Exp $
  */
 
 
@@ -122,7 +122,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XHeader: charproc.c,v 1.37 88/07/12 11:53:09 jim Exp $";
+static char rcs_id[] = "$XHeader: charproc.c,v 1.38 88/07/12 16:43:01 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1240,8 +1240,10 @@ int		(*func)();
 				if((j = func == bitset ? 132 : 80) !=
 				 ((term->flags & IN132COLUMNS) ? 132 : 80) ||
 				 j != screen->max_col + 1) {
-				        Dimension junk;
-					(void) XtMakeResizeRequest (
+				        Dimension replyWidth, replyHeight;
+					XtGeometryResult status;
+
+					status = XtMakeResizeRequest (
 					    (Widget) term, 
 					    (unsigned) FontWidth(screen) * j
 					        + 2*screen->border
@@ -1249,10 +1251,15 @@ int		(*func)();
 					    (unsigned) FontHeight(screen)
 						* (screen->max_row + 1)
 						+ 2 * screen->border,
-					    &junk, &junk);
-					XSync(screen->display, FALSE);
-					if(QLength(screen->display) > 0)
-						xevents();
+					    &replyWidth, &replyHeight);
+
+					if (status == XtGeometryYes ||
+					    status == XtGeometryDone) {
+					    ScreenResize (&term->screen,
+							  replyWidth,
+							  replyHeight,
+							  &term->flags);
+					}
 				}
 				(*func)(&term->flags, IN132COLUMNS);
 			}
@@ -1435,8 +1442,9 @@ XtermWidget term;
 				if((j = (screen->save_modes[1] & IN132COLUMNS)
 				 ? 132 : 80) != ((term->flags & IN132COLUMNS)
 				 ? 132 : 80) || j != screen->max_col + 1) {
-				        Dimension junk;
-					(void) XtMakeResizeRequest (
+				        Dimension replyWidth, replyHeight;
+					XtGeometryResult status;
+					status = XtMakeResizeRequest (
 					    (Widget) term,
 					    (unsigned) FontWidth(screen) * j 
 						+ 2*screen->border
@@ -1444,10 +1452,15 @@ XtermWidget term;
 					    (unsigned) FontHeight(screen)
 						* (screen->max_row + 1)
 						+ 2*screen->border,
-					    &junk, &junk);
-					XSync(screen->display, FALSE);	/* synchronize */
-					if(QLength(screen->display) > 0)
-						xevents();
+					    &replyWidth, &replyHeight);
+
+					if (status == XtGeometryYes ||
+					    status == XtGeometryDone) {
+					    ScreenResize (&term->screen,
+							  replyWidth,
+							  replyHeight,
+							  &term->flags);
+					}
 				}
 				term->flags &= ~IN132COLUMNS;
 				term->flags |= screen->save_modes[1] &
