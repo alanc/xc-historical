@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 1.156 88/09/27 17:43:47 jim Exp $ */
+/* $XConsortium: events.c,v 1.157 88/10/02 17:29:34 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1465,6 +1465,8 @@ ProcessPointerEvent (xE, mouse)
     register GrabPtr	grab = mouse->grab;
     Bool		moveIt = FALSE;
     Bool                deactivateGrab = FALSE;
+    register BYTE	*kptr;
+    int			bit;
 
     if (xE->u.keyButtonPointer.rootX < sprite.physLimits.x1)
     {
@@ -1497,12 +1499,15 @@ ProcessPointerEvent (xE, mouse)
     }
     NoticeTimeAndState(xE);
     key = xE->u.u.detail;
+    kptr = &mouse->down[key >> 3];
+    bit = 1 << (key & 7);
     switch (xE->u.u.type)
     {
 	case ButtonPress: 
 	    motionHintWindow = NullWindow;
 	    buttonsDown++;
 	    buttonMotionMask = ButtonMotionMask;
+	    *kptr |= bit;
 	    xE->u.u.detail = mouse->u.ptr.map[key];
 	    if (xE->u.u.detail <= 5)
 		keyButtonState |= keyModifiersList[xE->u.u.detail];
@@ -1516,6 +1521,7 @@ ProcessPointerEvent (xE, mouse)
 	    buttonsDown--;
 	    if (!buttonsDown)
 		buttonMotionMask = 0;
+	    *kptr &= ~bit;
 	    xE->u.u.detail = mouse->u.ptr.map[key];
 	    if (xE->u.u.detail <= 5)
 		keyButtonState &= ~keyModifiersList[xE->u.u.detail];
