@@ -1,4 +1,4 @@
-/**/# site:  $XConsortium: site.def,v 1.19 89/11/22 09:53:47 jim Exp $
+/**/# site:  $XConsortium: site.def,v 1.20 89/12/05 11:22:00 jim Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -104,7 +104,11 @@
 
 #if HasGcc
 #ifndef CcCmd
+#ifdef UseInstalled		/* if outside the tree */
 #define CcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return -fwritable-strings -traditional
+#else				/* server won't compile with -traditional */
+#define CcCmd gcc -DNOSTDHDRS -fstrength-reduce -fpcc-struct-return 
+#endif
 #endif
 #endif
 
