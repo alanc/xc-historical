@@ -45,10 +45,10 @@ static void CopyFromArg(src, dst, size)
 {
     if (size == sizeof(XtArgVal))
 	*(XtArgVal *)dst = src;
-#ifdef BIGENDIAN
     else if (size == sizeof(short)) 
 	*(short *)dst = (short)src;
-#endif BIGENDIAN
+    else if (size == sizeof(char))
+        *(char *)dst = (char)src;
     else if (size < sizeof(XtArgVal))
 	bcopy((char *) &src, (char *) dst, (int) size);
     else
@@ -66,10 +66,10 @@ static void CopyToArg(src, dst, size)
 
     if (size == sizeof(XtArgVal))
 	*dst = *(XtArgVal *)src;
-#ifdef BIGENDIAN
     else if (size == sizeof(short)) 
 	*dst = (XtArgVal) *((short *) src);
-#endif BIGENDIAN
+    else if (size == sizeof(char))
+        *dst = (XtArgVal) *((char *) src);
     else if (size < sizeof(XtArgVal))
 	bcopy((char *) src, (char *) dst, (int) size);
     else
@@ -285,12 +285,15 @@ static void XrmGetResources(widget, base, names, classes, length,
 		if (value.addr) {
 		    if (res->xrm_type == QString) {
 		       *((caddr_t *)(base - res->xrm_offset - 1)) = value.addr;
-#ifdef BIGENDIAN
-/* ||| Why? This should be handled by string to short, etc. conversions */
+/* ||| Why? casts should be handled by string to short, etc. conversions
+ *     XtArgVals are, however, always sizeof(caddr_t), and this keeps
+ *     things consistent, having conversion procs produce the same size. */
           	    } else if (res->xrm_size == sizeof(short)) {
 		        *(short *) (base - res->xrm_offset - 1) =
 				(short)*((int *)value.addr);
-#endif BIGENDIAN
+          	    } else if (res->xrm_size == sizeof(char)) {
+		        *(char *) (base - res->xrm_offset - 1) =
+				(char)*((int *)value.addr);
 		    } else {
 			XtBCopy(value.addr, base - res->xrm_offset - 1,
 			    res->xrm_size);
