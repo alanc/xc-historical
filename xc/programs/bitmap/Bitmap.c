@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.36 91/07/22 20:43:38 converse Exp $
+ * $XConsortium: Bitmap.c,v 1.37 91/07/24 15:13:26 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,12 +23,11 @@
  * Author:  Davor Matic, MIT X Consortium
  */
 
-
-
 #include <X11/IntrinsicP.h>
-#include <X11/Xaw/XawInit.h>
-#include <X11/Xmu/Converters.h>
 #include <X11/StringDefs.h>
+#include <X11/Xaw/XawInit.h>
+#include <X11/Xmu/CharSet.h>
+#include <X11/Xmu/Drawing.h>
 #include <X11/Xatom.h>
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -38,7 +37,6 @@
 #include <string.h>
 #include <math.h>
 
-#define XtStrlen(s)                   ((s) ? strlen(s) : 0)
 #ifndef abs
 #define abs(x)                        ((((int)(x)) > 0) ? (x) : -(x))
 #endif
@@ -841,7 +839,8 @@ static void Initialize(request, new, argv, argc)
     {
 	int status;
 	XImage *image, *buffer;
-	char *image_data, *buffer_data;
+	unsigned char *image_data;
+	char *buffer_data;
 	unsigned int width, height;
 	int x_hot, y_hot;
 	
@@ -943,12 +942,12 @@ int BWStoreFile(w, filename, basename)
 {
     BitmapWidget BW = (BitmapWidget) w;
     int status;
-    char *storage_data;
+    unsigned char *storage_data;
     unsigned int width, height;
     int x_hot, y_hot;
     
-    status = XmuReadBitmapDataFromFile(filename, &width, &height, &storage_data,
-				       &x_hot, &y_hot);
+    status = XmuReadBitmapDataFromFile(filename, &width, &height,
+				       &storage_data, &x_hot, &y_hot);
     if (status == BitmapSuccess) {
 
 	DestroyBitmapImage(&BW->bitmap.storage);
@@ -1009,7 +1008,8 @@ int BWReadFile(w, filename, basename) /* ARGSUSED */
     BitmapWidget BW = (BitmapWidget) w;
     int status;
     XImage *image, *buffer;
-    char *image_data, *buffer_data;
+    unsigned char *image_data;
+    char *buffer_data;
     unsigned int width, height;
     int x_hot, y_hot;
     
