@@ -1,5 +1,6 @@
 /*
-* $Header: StringDefs.h,v 1.31 88/02/26 12:51:19 swick Exp $
+* $xHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
+* $oHeader: StringDefs.h,v 1.3 88/08/19 16:39:44 asente Exp $
 */
 
 /***********************************************************
@@ -26,22 +27,23 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifndef _XtStringDefs_h_
-#define _XtStringDefs_h_
+#ifndef _XtAtom_h_
+#define _XtAtom_h_
 
 /* Resource names */
 
+#define XtNaccelerators         "accelerators"
 #define XtNallowHoriz		"allowHoriz"
 #define XtNallowVert		"allowVert"
 #define XtNancestorSensitive	"ancestorSensitive"
 #define XtNbackground		"background"
 #define XtNbackgroundPixmap     "backgroundPixmap"
-#define XtNbackingStore		"backingStore"
-#define XtNborder		"borderColor"
 #define XtNborderColor		"borderColor"
+#define XtNborder		"borderColor"
 #define XtNborderPixmap		"borderPixmap"
 #define XtNborderWidth		"borderWidth"
 #define XtNcallback		"callback"
+#define XtNcolormap		"colormap"
 #define XtNdepth		"depth"
 #define XtNdestroyCallback      "destroyCallback"
 #define XtNeditType		"editType"
@@ -49,7 +51,6 @@ SOFTWARE.
 #define XtNforceBars		"forceBars"
 #define XtNforeground		"foreground"
 #define XtNfunction		"function"
-#define XtNgripIndent		"gripIndent"
 #define XtNheight		"height"
 #define XtNhSpace		"hSpace"
 #define XtNindex		"index"
@@ -60,11 +61,14 @@ SOFTWARE.
 #define XtNinternalHeight	"internalHeight"
 #define XtNinternalWidth	"internalWidth"
 #define XtNjustify		"justify"
+#define XtNknobHeight		"knobHeight"
+#define XtNknobIndent		"knobIndent"
+#define XtNknobPixel		"knobPixel"
+#define XtNknobWidth		"knobWidth"
 #define XtNlabel		"label"
 #define XtNlength		"length"
 #define XtNlowerRight		"lowerRight"
 #define XtNmappedWhenManaged	"mappedWhenManaged"
-#define XtNmaximumLength	"maximumLength"
 #define XtNmenuEntry		"menuEntry"
 #define XtNname			"name"
 #define XtNnotify		"notify"
@@ -73,6 +77,7 @@ SOFTWARE.
 #define XtNpopupCallback	"popupCallback"
 #define XtNpopdownCallback	"popdownCallback"
 #define XtNreverseVideo		"reverseVideo"
+#define XtNscreen               "screen"
 #define XtNscrollProc		"scrollProc"
 #define XtNscrollDCursor	"scrollDownCursor"
 #define XtNscrollHCursor	"scrollHorizontalCursor"
@@ -81,10 +86,9 @@ SOFTWARE.
 #define XtNscrollUCursor	"scrollUpCursor"
 #define XtNscrollVCursor	"scrollVerticalCursor"
 #define XtNselection		"selection"
-#define XtNselectTypes		"selectTypes"
+#define XtNselectionArray	"selectionArray"
 #define XtNsensitive		"sensitive"
 #define XtNshown		"shown"
-#define XtNskipAdjust		"skipAdjust"
 #define XtNspace		"space"
 #define XtNstring		"string"
 #define XtNtextOptions		"textOptions"
@@ -105,17 +109,18 @@ SOFTWARE.
 #define XtNy			"y"
 
 /* Class types */ 
-
+#define XtCAccelerators         "Accelerators"
 #define XtCBackground		"Background"
-#define XtCBackingStore		"BackingStore"
 #define XtCBoolean		"Boolean"
 #define XtCBorderColor		"BorderColor"
 #define XtCBorderWidth		"BorderWidth"
 #define XtCCallback             "Callback"
+#define XtCColormap		"Colormap"
 #define XtCColor		"Color"
 #define XtCCursor		"Cursor"
 #define XtCDepth		"Depth"
 #define XtCEditType		"EditType"
+#define XtCEventBindings	"EventBindings"
 #define XtCFile			"File"
 #define XtCFont			"Font"
 #define XtCForeground		"Foreground"
@@ -126,20 +131,19 @@ SOFTWARE.
 #define XtCIndex		"Index"
 #define XtCInterval		"Interval"
 #define XtCJustify		"Justify"
-#define XtCGripIndent		"GripIndent"
+#define XtCKnobIndent		"KnobIndent"
+#define XtCKnobPixel		"KnobPixel"
 #define XtCLabel		"Label"
 #define XtCLength		"Length"
 #define XtCMappedWhenManaged	"MappedWhenManaged"
 #define XtCMargin		"Margin"
-#define XtCMax			"Max"
 #define XtCMenuEntry		"MenuEntry"
-#define XtCMin			"Min"
 #define XtCNotify		"Notify"
 #define XtCOrientation		"Orientation"
 #define XtCParameter		"Parameter"
 #define XtCPixmap		"Pixmap"
 #define XtCPosition		"Position"
-#define XtCReverseVideo		"ReverseVideo"
+#define XtCScreen               "Screen"
 #define XtCScrollProc		"ScrollProc"
 #define XtCScrollDCursor	"ScrollDownCursor"
 #define XtCScrollHCursor	"ScrollHorizontalCursor"
@@ -149,7 +153,7 @@ SOFTWARE.
 #define XtCScrollVCursor	"ScrollVerticalCursor"
 #define XtCSelection		"Selection"
 #define XtCSensitive		"Sensitive"
-#define XtCSelectTypes		"SelectTypes"
+#define XtCSelectionArray	"SelectionArray"
 #define XtCSpace		"Space"
 #define XtCString		"String"
 #define XtCTextOptions		"TextOptions"
@@ -161,7 +165,6 @@ SOFTWARE.
 #define XtCTranslations		"Translations"
 #define XtCValue		"Value"
 #define XtCVSpace		"VSpace"
-#define XtCWidget		"Widget"
 #define XtCWidth		"Width"
 #define XtCWindow		"Window"
 #define XtCX			"X"
@@ -169,31 +172,35 @@ SOFTWARE.
 
 /* Representation types */
 
-#define XtRBackingStore		"BackingStore"
+#define XtRAcceleratorTable     "AcceleratorTable"
+#define XtRBool			"Bool"
 #define XtRBoolean		"Boolean"
-#define XtRLongBoolean		"LongBoolean"
-#define XtRCallback		"Callback"
+#define XtRCallback             "Callback"
+#define XtRCallProc             "CallProc"
 #define XtRColor		"Color"
 #define XtRCursor		"Cursor"
-#define XtRDefaultColor         "DefaultColor"
+#define XtRDimension		"Dimension"
 #define XtRDisplay		"Display"
 #define XtREditMode		"EditMode"
 #define XtRFile			"File"
-#define XtRFloat		"Float"
 #define XtRFont			"Font"
 #define XtRFontStruct		"FontStruct"
 #define XtRFunction		"Function"
 #define XtRGeometry		"Geometry"
+#define XtRImmediate		"Immediate"
 #define XtRInt			"Int"
 #define XtRJustify		"Justify"
+#define XtRLongBoolean		XtRBool		/* Compatibility */
 #define XtROrientation		"Orientation"
 #define XtRPixel		"Pixel"
 #define XtRPixmap		"Pixmap"
 #define XtRPointer		"Pointer"
+#define XtRPosition		"Position"
+#define XtRShort                "Short"
 #define XtRString		"String"
 #define XtRStringTable		"StringTable"
+#define XtRUnsignedChar         "UnsignedChar"
 #define XtRTranslationTable     "TranslationTable"
-#define XtRWidget		"Widget"
 #define XtRWindow		"Window"
 
 
@@ -217,11 +224,13 @@ SOFTWARE.
 #define XtEtextAppend		"append"
 #define XtEtextEdit		"edit"
 
-/* backing store enumeration constants */
+/* color enumeration constants */
 
-#define XtEnotUseful	"notuseful"
-#define XtEwhenMapped	"whenmapped"
-#define XtEalways	"always"
-#define XtEdefault	"default"
+#define XtExtdefaultbackground  "xtdefaultbackground"
+#define XtExtdefaultforeground  "xtdefaultforeground"
 
-#endif _XtStringDefs_h_
+/* font constant */
+
+#define XtExtdefaultfont	"xtdefaultfont"
+
+#endif _XtAtom_h_
