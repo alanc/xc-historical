@@ -15,8 +15,12 @@ OS_NAME_DEFINES = OsNameDefines
 
 #if HasDESLibrary
 DESDEFS = -DHASDES
+DESSRCS = Encrypt.c Decrypt.c
+DESOBJS = Encrypt.o Decrypt.o
 #else
 DESDEFS =
+DESSRCS =
+DESOBJS =
 #endif
 
 DEFINES = $(DESDEFS)
@@ -59,11 +63,10 @@ SRCS = \
 	Whead.c \
 	Alloc.c \
 	CmpKey.c \
-	Encrypt.c \
-	Decrypt.c \
 	DecKey.c \
 	GenKey.c \
-	IncKey.c
+	IncKey.c \
+	$(DESSRCS)
 
 OBJS = \
 	A8Eq.o \
@@ -101,11 +104,10 @@ OBJS = \
 	Whead.o \
 	Alloc.o \
 	CmpKey.o \
-	Encrypt.o \
-	Decrypt.o \
 	DecKey.o \
 	GenKey.o \
-	IncKey.o
+	IncKey.o \
+	$(DESOBJS)
 
 all::
 #if DebugLibXdmcp && ProfileLibXdmcp
