@@ -24,7 +24,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: multibuf.c,v 1.14 92/10/19 09:11:54 rws Exp $ */
+/* $XConsortium: multibuf.c,v 1.15 92/11/06 18:24:55 rws Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>
@@ -124,6 +124,8 @@ static Bool		QueueDisplayRequest ();
 
 static void		BumpTimeStamp ();
 
+void			MultibufferExpose ();
+void			MultibufferUpdate ();
 static void		AliasMultibuffer ();
 int			CreateImageBuffers ();
 void			DestroyImageBuffers ();
@@ -295,7 +297,7 @@ CreateImageBuffers (pWin, nbuf, ids, action, hint)
     MultibufferPtr	pMultibuffer;
     ScreenPtr		pScreen;
     int			width, height, depth;
-    int			i, j;
+    int			i;
 
     DestroyImageBuffers(pWin);
     pMultibuffers = (MultibuffersPtr) xalloc (sizeof (MultibuffersRec) +
@@ -426,7 +428,7 @@ ProcDisplayImageBuffers (client)
     int		    nbuf;
     XID		    *ids;
     int		    i, j;
-    CARD32	    minDelay, maxDelay;
+    CARD32	    minDelay;
     TimeStamp	    activateTime, bufferTime;
     
     REQUEST_AT_LEAST_SIZE (xMbufDisplayImageBuffersReq);
@@ -434,7 +436,6 @@ ProcDisplayImageBuffers (client)
     if (!nbuf)
 	return Success;
     minDelay = stuff->minDelay;
-    maxDelay = stuff->maxDelay;
     ids = (XID *) &stuff[1];
     ppMultibuffers = (MultibuffersPtr *) xalloc (nbuf * sizeof (MultibuffersPtr));
     pMultibuffer = (MultibufferPtr *) xalloc (nbuf * sizeof (MultibufferPtr));
@@ -1212,11 +1213,12 @@ QueueDisplayRequest (client, activateTime)
     return TRUE;
 }
 
+/*ARGSUSED*/
 static void
 MultibufferBlockHandler (data, wt, LastSelectMask)
     pointer	    data;		/* unused */
     struct timeval  **wt;		/* wait time */
-    long	    *LastSelectMask;
+    long	    *LastSelectMask;	/* unused */
 {
     DisplayRequestPtr	    pReq, pNext;
     unsigned long	    newdelay, olddelay;
@@ -1254,6 +1256,7 @@ MultibufferBlockHandler (data, wt, LastSelectMask)
     }
 }
 
+/*ARGSUSED*/
 static void
 MultibufferWakeupHandler (data, i, LastSelectMask)
     pointer	    data;
@@ -1562,6 +1565,7 @@ MultibufferPositionWindow (pWin, x, y)
 }
 
 /* Resource delete func for MultibufferDrawableResType */
+/*ARGSUSED*/
 static void
 MultibufferDrawableDelete (pDrawable, id)
     DrawablePtr	pDrawable;
@@ -1585,6 +1589,7 @@ MultibufferDrawableDelete (pDrawable, id)
 }
 
 /* Resource delete func for MultibufferResType */
+/*ARGSUSED*/
 static void
 MultibufferDelete (pMultibuffer, id)
     MultibufferPtr	pMultibuffer;
@@ -1602,6 +1607,7 @@ MultibufferDelete (pMultibuffer, id)
 }
 
 /* Resource delete func for MultibuffersResType */
+/*ARGSUSED*/
 static void
 MultibuffersDelete (pMultibuffers, id)
     MultibuffersPtr	pMultibuffers;
@@ -1617,6 +1623,7 @@ MultibuffersDelete (pMultibuffers, id)
 }
 
 /* Resource delete func for DisplayRequestResType */
+/*ARGSUSED*/
 static void
 DisplayRequestDelete (pRequest, id)
     DisplayRequestPtr	pRequest;
