@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rcsid_xinit_c = "$Header: xinit.c,v 11.8 88/02/09 16:40:31 jim Locked $";
+static char *rcsid_xinit_c = "$Header: xinit.c,v 11.9 88/02/09 17:02:06 jim Exp $";
 #endif /* lint */
 #include <X11/copyright.h>
 
@@ -301,11 +301,7 @@ startClient(client)
 	int	clientpid;
 
 	if ((clientpid = vfork()) == 0) {
-#ifdef SYSV
 		setuid(getuid());
-#else
-		setreuid(-1, -1);
-#endif /* SYSV */
 		setpgrp(0, getpid());
 		execvp(client[0], client);
 		Fatal("Client \"%s\" died on startup\n", client[0]);
