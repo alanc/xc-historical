@@ -43,13 +43,13 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: events.c,v 1.3 94/01/11 20:45:58 rob Exp $ */
+/* $XConsortium: events.c,v 1.4 94/01/19 17:17:29 rob Exp $ */
 
 #include "X.h"
 #include "misc.h"
-#include "resource.h"
 #define NEED_EVENTS
 #define NEED_REPLIES
+#include "resource.h"
 #include "Xproto.h"
 #include "windowstr.h"
 #include "inputstr.h"

@@ -43,14 +43,14 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: devices.c,v 1.3 94/01/11 20:45:23 rob Exp $ */
+/* $XConsortium: devices.c,v 1.4 94/01/17 23:56:28 rob Exp $ */
 
 #include "X.h"
 #include "misc.h"
-#include "resource.h"
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include "Xproto.h"
+#include "resource.h"
 #include "windowstr.h"
 #include "inputstr.h"
 #include "scrnintstr.h"
