@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Ximint.h,v 1.1 93/09/17 13:33:12 rws Exp $ */
 /******************************************************************
 
                 Copyright 1992 by FUJITSU LIMITED
@@ -32,6 +32,8 @@ PERFORMANCE OF THIS SOFTWARE.
 
 #ifndef _XIMINT_H
 #define _XIMINT_H
+
+#include <X11/Xutil.h>
 
 #define Public /**/
 #define Private static
