@@ -1,4 +1,4 @@
-/* $XConsortium: ThreadsI.h,v 1.7 93/11/22 10:59:39 kaleb Exp $ */
+/* $XConsortium: ThreadsI.h,v 1.6 93/11/15 10:13:09 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
@@ -31,7 +31,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifdef XTHREADS
 
 typedef struct _LockRec *LockPtr;
-typedef struct _ThreadStack *ThreadStackPtr;
 
 typedef void (*ThreadAppProc)(
 #if NeedFunctionPrototypes
@@ -91,10 +90,8 @@ extern void (*_XtInitAppLock)(
 #define POP_THREAD(app) if(app && app->pop_thread)(*app->pop_thread)(app) 
 #define IS_TOP_THREAD(app) (app && app->is_top_thread ? (*app->is_top_thread)(app): TRUE) 
 
-#define WAIT_THREAD(app) if(app && app->wait_thread)(*app->wait_thread)(app)
-
 #define WIDGET_TO_APPCON(w) \
-    XtAppContext app = (w && _XtProcessLock ? 
+    XtAppContext app = (w && _XtProcessLock ? \
 	XtWidgetToApplicationContext(w) : NULL)
 
 #define DPY_TO_APPCON(d) \
