@@ -1,5 +1,5 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.13 91/05/06 19:43:23 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.14 91/07/12 17:39:05 rws Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium
@@ -74,32 +74,17 @@ HDRS =  \
   PEXINCLUDE = -I../../../include/PEX
     INCLUDES = $(PEXAPIINC) $(PEXINCLUDE) -I../../../../X11
 
-all:: errnum.h PHIGSerr.txt
-
-includes:: errnum.h
-
-extract: $(HDRS) PHIGSerr.txt PHIGSfnc.txt 
-
-errnum.h: errgen.awk phigserr.h
-	awk -f errgen.awk phigserr.h > errnum.h
-
-PHIGSerr.txt: errmsgen.awk phigserr.h
-	awk -f errmsgen.awk phigserr.h > PHIGSerr.txt
-
-lint lint-x : 
-	@echo "no include lint needed"
-
-lintlib : 
-	@echo "no include lint library"
-
-#ifdef HPArchitecture
-SpecialObjectRule(hpext.o, $(IRULESRC)/$(MACROFILE), $(EXT_DEFINES))
-#endif
-
-depend::
-
 CLIENTHEADERS = phigs.h attr.h phigscfunc.h phigsextrn.h phigserr.h errnum.h
+
+all::
 
 BuildIncludes($(CLIENTHEADERS),phigs,..)
 InstallMultiple($(CLIENTHEADERS),$(INCDIR)/phigs)
 
+lint lint-x: 
+	@echo "no include lint needed"
+
+lintlib: 
+	@echo "no include lint library"
+
+depend::
