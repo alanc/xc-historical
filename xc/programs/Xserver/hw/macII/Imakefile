@@ -1,7 +1,6 @@
 SRCS =	\
 	macIIInit.c \
 	macIIMono.c \
-	macIIMonoz.c \
 	macIICrsr.c \
 	macIIIo.c \
 	macIIKbd.c \
@@ -17,7 +16,6 @@ OFILES = macIIInit.o
 
 OBJS = \
 	macIIMono.o \
-	macIIMonoz.o \
 	macIICrsr.o \
 	macIIIo.o \
 	macIIKbd.o \
