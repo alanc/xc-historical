@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Event.c,v 1.84 88/10/10 18:17:19 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Event.c,v 1.85 88/10/18 08:06:43 swick Exp $";
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 #endif lint
 
@@ -811,6 +811,7 @@ static Boolean InsertFocusEntry(widget, keyboard_focus)
     for (gl = focusList; gl != NULL; gl = gl->next) {
 	if (gl->widget == widget) {
 	    if (gl->keyboard_focus == keyboard_focus) return False;
+	    SendFocusNotify(gl->keyboard_focus, FocusOut);
 	    gl->keyboard_focus = keyboard_focus;
 	    focusTraceGood = False; /* invalidate the cache */
 	    return True;
@@ -1015,7 +1016,7 @@ static void ForwardEvent(widget, client_data, event)
 
     if (XtIsSensitive(widget)) {
 	ConvertTypeToMask(event->xany.type, &mask, &grabType);
-	DispatchEvent(event, (Widget)client_data, mask);
+	DispatchEvent(event, FindKeyboardFocus((Widget)client_data), mask);
     }
 }
 
@@ -1155,7 +1156,7 @@ static SendFocusNotify(child, type)
     EventMask mask;
     GrabType grabType;
 
-    if (XtBuildEventMask(child) && FocusChangeMask) {
+    if (XtBuildEventMask(child) & FocusChangeMask) {
 	event.xfocus.serial = LastKnownRequestProcessed(XtDisplay(child));
 	event.xfocus.send_event = True;
 	event.xfocus.display = XtDisplay(child);
