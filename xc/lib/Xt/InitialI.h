@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.27 89/10/05 18:58:14 rws Exp $ */
+/* $XConsortium: InitialI.h,v 1.28 89/10/09 13:35:57 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -209,7 +209,7 @@ extern XtAppContext XtDisplayToApplicationContext();
 extern void _XtDisplayInitialize();
     /* 	Display *dpy; */
     /* 	String name, classname; */
-    /* 	XrmOptionDescRec *urlist */;
+    /* 	XrmOptionDescRec *urlist; */
     /* 	Cardinal num_urs; */
     /* 	Cardinal *argc; */
     /* 	char *argv[];  */
