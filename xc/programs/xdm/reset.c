@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: $
+ * $XConsortium: pseudoreset.c,v 1.1 88/10/15 19:06:00 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -31,6 +31,7 @@ ignoreErrors (dpy, event)
 Display	*dpy;
 XErrorEvent	*event;
 {
+	Debug ("ignoring error\n");
 }
 
 /*
@@ -50,8 +51,10 @@ Window	window;
 	while (XQueryTree (dpy, window, &root, &parent, &children, &nchildren)
 	       && nchildren > 0)
 	{
-		for (child = 0; child < nchildren; child++)
+		for (child = 0; child < nchildren; child++) {
+			Debug ("XKillClient 0x%x\n", children[child]);
 			XKillClient (dpy, children[child]);
+		}
 		XFree (children);
 	}
 }
@@ -68,9 +71,12 @@ Display	*dpy;
 
 	XSetErrorHandler (ignoreErrors);
 	for (screen = 0; screen < ScreenCount (dpy); screen++) {
+		Debug ("pseudoReset screen %d\n", screen);
 		root = RootWindow (dpy, screen);
 		killWindows (dpy, root);
 	}
+	Debug ("before XSync\n");
 	XSync (dpy, False);
 	XSetErrorHandler ((int (*)) 0);
+	Debug ("pseudoReset done\n");
 }

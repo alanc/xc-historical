@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.7 88/10/20 17:36:49 keith Exp $
+ * $XConsortium: dm.h,v 1.8 88/10/22 21:49:03 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -96,6 +96,7 @@ struct display {
 	FileState	state;		/* state during HUP processing */
 	char		*resources;	/* resource file */
 	char		*xrdb;		/* xrdb program */
+	char		*cpp;		/* cpp program */
 	char		*startup;	/* Xstartup program */
 	char		*reset;		/* Xreset program */
 	char		*session;	/* Xsession program */
@@ -107,6 +108,7 @@ struct display {
 	int		openRepeat;	/* open attempts to make */
 	int		openTimeout;	/* abort open attempt timeout */
 	int		terminateServer;/* restart for each session */
+	int		grabTimeout;	/* time to wait for grab */
 	DisplayType	displayType;	/* method to handle with */
 #ifdef UDP_SOCKET
 	struct sockaddr_in	addr;	/* address used in connection */
@@ -150,6 +152,7 @@ extern int	request_port;
 extern int	debugLevel;
 extern char	*errorLogFile;
 extern int	daemonMode;
+extern char	*pidFile;
 
 extern struct display	*FindDisplayByName (),
 			*FindDisplayByPid (),

@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: resource.c,v 1.8 88/10/23 13:20:23 jim Exp $
+ * $XConsortium: resource.c,v 1.9 88/10/25 11:48:47 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -33,6 +33,7 @@ int	request_port;
 int	debugLevel;
 char	*errorLogFile;
 int	daemonMode;
+char	*pidFile;
 
 # define DM_STRING	0
 # define DM_INT		1
@@ -67,7 +68,9 @@ int	daemonMode;
 #ifndef DEF_XDM_CONFIG
 #define DEF_XDM_CONFIG "/usr/lib/X11/xdm/xdm-config"
 #endif
-
+#ifndef CPP_PROGRAM
+#define CPP_PROGRAM "/lib/cpp"
+#endif
 
 struct dmResources {
 	char	*name, *class;
@@ -84,7 +87,9 @@ struct dmResources {
 "errorLogFile",	"ErrorLogFile",	DM_STRING,	&errorLogFile,
 				"",
 "daemonMode",	"DaemonMode",	DM_BOOL,	(char **) &daemonMode,
-				"true"
+				"true",
+"pidFile",	"PidFile",	DM_STRING,	&pidFile,
+				"",
 };
 
 # define NUM_DM_RESOURCES	(sizeof DmResources / sizeof DmResources[0])
@@ -101,6 +106,8 @@ struct displayResources {
 				"",
 "xrdb",		"Xrdb",		DM_STRING,	boffset(xrdb),
 				XRDB_PROGRAM,
+"cpp",		"Cpp",		DM_STRING,	boffset(cpp),
+				CPP_PROGRAM,
 "startup",	"Startup",	DM_STRING,	boffset(startup),
 				"",
 "reset",	"Reset",	DM_STRING,	boffset(reset),
@@ -123,6 +130,8 @@ struct displayResources {
 				DEF_SYSTEM_SHELL,
 "failsafeClient","FailsafeClient",	DM_STRING,	boffset(failsafeClient),
 				DEF_FAILSAFE_CLIENT,
+"grabTimeout",	"GrabTimeout",	DM_INT,		boffset(grabTimeout),
+				"3",
 };
 
 # define NUM_DISPLAY_RESOURCES	(sizeof DisplayResources/\

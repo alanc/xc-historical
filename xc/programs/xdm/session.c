@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.6 88/10/20 17:37:24 keith Exp $
+ * $XConsortium: session.c,v 1.7 88/10/22 21:49:29 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -25,6 +25,8 @@
 # include "dm.h"
 # include <X11/Xlib.h>
 # include <signal.h>
+# include <X11/Xatom.h>
+# include <setjmp.h>
 
 static int	clientPid;
 
@@ -34,12 +36,14 @@ struct display	*d;
 	struct greet_info	greet;
 	struct verify_info	verify;
 	int			pid;
+	Display			*dpy, *InitGreet ();
 
+	Debug ("ManageSession %s\n", d->name);
 	/*
 	 * Step 5: Load system default Resources
 	 */
 	LoadXloginResources (d);
-	InitGreet (d);
+	dpy = InitGreet (d);
 	for (;;) {
 		/*
 		 * Step 6: Greet user, requesting name/password
@@ -53,13 +57,14 @@ struct display	*d;
 		else
 			FailedLogin (d, &greet);
 	}
+	DeleteXloginResources (d, dpy);
 	CloseGreet (d);
 	Debug ("Greet loop finished\n");
 	/*
 	 * Step 8: Run system-wide initialization file
 	 */
 	if (source (&verify, d->startup) != 0)
-		exit (OBEYTERM_DISPLAY);
+		SessionExit (OBEYTERM_DISPLAY);
 	/*
 	 * Step 9: Start the clients, changing uid/groups
 	 *	   setting up environment and running the session
@@ -81,7 +86,7 @@ struct display	*d;
 	 * Step 15: run system-wide reset file
 	 */
 	source (&verify, d->reset);
-	exit (OBEYTERM_DISPLAY);
+	SessionExit (OBEYTERM_DISPLAY);
 }
 
 LoadXloginResources (d)
@@ -90,11 +95,69 @@ struct display	*d;
 	char	cmd[1024];
 
 	if (d->resources[0] && access (d->resources, 4) == 0) {
-		sprintf (cmd, "%s -display %s -merge %s",
+		sprintf (cmd, "%s -display %s -load %s",
 				d->xrdb, d->name, d->resources);
 		Debug ("Loading resource file: %s\n", cmd);
 		system (cmd);
 	}
+}
+
+DeleteXloginResources (d, dpy)
+struct display	*d;
+Display		*dpy;
+{
+	XDeleteProperty(dpy, RootWindow (dpy, 0), XA_RESOURCE_MANAGER);
+}
+
+static jmp_buf syncJump;
+
+static
+syncTimeout ()
+{
+	longjmp (syncJump, 1);
+}
+
+SecureDisplay (d, dpy)
+struct display	*d;
+Display		*dpy;
+{
+	Debug ("SecureDisplay\n");
+	signal (SIGALRM, syncTimeout);
+	if (setjmp (syncJump)) {
+		LogError ("WARNING: display %s could not be secured\n",
+				d->name);
+		SessionExit (ABORT_DISPLAY);
+	}
+	alarm (d->grabTimeout);
+	Debug ("Before XGrabServer\n");
+	XGrabServer (dpy);
+	if (XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync,
+			   GrabModeAsync, CurrentTime) != GrabSuccess)
+ 	{
+		alarm (0);
+		signal (SIGALRM, SIG_DFL);
+		LogError ("WARNING: keyboard on display %s could not be secured\n",
+				d->name);
+		SessionExit (ABORT_DISPLAY);
+	}
+	Debug ("XGrabKeyboard succeeded\n");
+	alarm (0);
+	signal (SIGALRM, SIG_DFL);
+	pseudoReset (dpy);
+}
+
+UnsecureDisplay (d, dpy)
+struct display	*d;
+Display		*dpy;
+{
+	Debug ("Unsecure display %s\n", d->name);
+	XUngrabServer (dpy);
+	XSync (dpy, 0);
+}
+
+SessionExit (status)
+{
+	exit (status);
 }
 
 StartClient (verify, d, pidp)

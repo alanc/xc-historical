@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: Login.c,v 1.9 88/10/22 10:41:01 rws Exp $
+ * $XConsortium: Login.c,v 1.10 88/11/01 17:17:54 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -50,13 +50,13 @@ static XtResource resources[] = {
     {XtNfailColor, XtCForeground, XtRPixel, sizeof (Pixel),
 	offset(failpixel), XtRString,	"Black"},
     {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (font), XtRString,	"*-new century schoolbook-medium-r-normal-*-18-*"},
+    	offset (font), XtRString,	"*-new century schoolbook-medium-r-normal-*-180-*"},
     {XtNpromptFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (promptFont), XtRString, "*-new century schoolbook-bold-r-normal-*-18-*"},
+    	offset (promptFont), XtRString, "*-new century schoolbook-bold-r-normal-*-180-*"},
     {XtNgreetFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-    	offset (greetFont), XtRString,	"*-new century schoolbook-bold-i-normal-*-24-*"},
+    	offset (greetFont), XtRString,	"*-new century schoolbook-bold-i-normal-*-240-*"},
     {XtNfailFont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
-	offset (failFont), XtRString,	"*-new century schoolbook-bold-r-normal-*-18-*"},
+	offset (failFont), XtRString,	"*-new century schoolbook-bold-r-normal-*-180-*"},
     {XtNgreeting, XtCGreeting, XtRString, sizeof (char *),
     	offset(greeting), XtRString, "Welcome to the X Window System"},
     {XtNnamePrompt, XtCNamePrompt, XtRString, sizeof (char *),
@@ -271,7 +271,20 @@ draw_it (w)
 	DrawFail (w);
     DrawName (w, 0);
     XorCursor (w);
-    XSetInputFocus (XtDisplay (w), XtWindow (w), RevertToPointerRoot, CurrentTime);
+    /*
+     * The GrabKeyboard here is needed only because of
+     * a bug in the R3 server -- the keyboard is grabbed on
+     * the root window, and the server won't dispatch events
+     * to the focus window unless the focus window is a ancestor
+     * of the grab window.  Bug in server already found and fixed,
+     * compatibility until at least R4.
+     */
+    if (XGrabKeyboard (XtDisplay (w), XtWindow (w), False, GrabModeAsync,
+		       GrabModeAsync, CurrentTime) != GrabSuccess)
+    {
+	XSetInputFocus (XtDisplay (w), XtWindow (w),
+			RevertToPointerRoot, CurrentTime);
+    }
 }
 
 static void

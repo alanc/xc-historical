@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.c,v 1.8 88/10/20 17:36:43 keith Exp $
+ * $XConsortium: dm.c,v 1.9 88/10/22 21:48:44 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -41,6 +41,7 @@ char	**argv;
 	if (debugLevel == 0 && daemonMode)
 		BecomeDaemon ();
 	InitErrorLog ();
+	StorePid ();
 	signal (SIGTERM, TerminateAll);
 	signal (SIGINT, TerminateAll);
 	/*
@@ -276,4 +277,20 @@ CloseOnFork ()
 			close (fd);
 	FD_ZERO (&CloseMask);
 	max = 0;
+}
+
+StorePid ()
+{
+	FILE	*f;
+
+	if (pidFile[0] != '\0') {
+		f = fopen (pidFile, "w");
+		if (!f) {
+			LogError ("process-id file %s cannot be opened\n",
+				  pidFile);
+		} else {
+			fprintf (f, "%d\n", getpid ());
+			fclose (f);
+		}
+	}
 }

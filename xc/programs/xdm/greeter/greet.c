@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: greet.c,v 1.5 88/10/15 19:10:59 keith Exp $
+ * $XConsortium: greet.c,v 1.6 88/10/20 17:37:02 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -41,6 +41,7 @@ static Widget		toplevel;
 static Widget		login;
 static Widget		logoToplevel;
 static Widget		logo;
+static XtAppContext	context;
 
 GreetDone (w, data, status)
     Widget	w;
@@ -66,26 +67,42 @@ GreetDone (w, data, status)
 	}
 }
 
+Display *
 InitGreet (d)
 struct display	*d;
 {
 	Arg		arglist[10];
 	int		i;
 	int		argc;
+	Screen		*scrn;
 	static char	*argv[] = { "xlogin", "-display", 0, 0 };
+	Display		*dpy;
 
 	Debug ("greet %s\n", d->name);
 	argv[2] = d->name;
 	argc = 3;
-	toplevel = XtInitialize ("main", "Xlogin", 0, 0, &argc, argv);
-	Debug ("top level shell created\n");
+	XtToolkitInitialize ();
+	context = XtCreateApplicationContext();
+	dpy = XtOpenDisplay (context, d->name, "xlogin", "Xlogin", 0,0,
+				&argc, argv);
+
+	SecureDisplay (d, dpy);
+
+	i = 0;
+	scrn = DefaultScreenOfDisplay(dpy);
+        XtSetArg(arglist[i], XtNscreen, scrn);	i++;
+	XtSetArg(arglist[i], XtNargc, argc);	i++;
+	XtSetArg(arglist[i], XtNargv, argv);	i++;
+
+	toplevel = XtAppCreateShell ((String) NULL, "Xlogin",
+			applicationShellWidgetClass, dpy, arglist, i);
 
 	i = 0;
 	XtSetArg (arglist[i], XtNnotifyDone, GreetDone); i++;
-
 	login = XtCreateManagedWidget ("login", loginWidgetClass, toplevel,
 					arglist, i);
 	XtRealizeWidget (toplevel);
+
 #ifdef DRAWLOGO
 	i = 0;
 	XtSetArg (arglist[i], XtNgeometry, "100x100-0-0"); i++;
@@ -96,11 +113,13 @@ struct display	*d;
 					arglist, i);
 	XtRealizeWidget (logoToplevel);
 #endif
+	return dpy;
 }
 
 CloseGreet (d)
 struct display	*d;
 {
+	UnsecureDisplay (d, XtDisplay (toplevel));
 	XCloseDisplay (XtDisplay (toplevel));
 }
 
@@ -109,19 +128,19 @@ struct display		*d;
 struct greet_info	*greet;
 {
 	XEvent		event;
-	Arg		args[1];
+	Arg		arglist[1];
 
 	Debug ("dispatching\n");
 	done = 0;
 	while (!done) {
-		XtAppNextEvent (_XtDefaultAppContext(), &event);
+		XtAppNextEvent (context, &event);
 		XtDispatchEvent (&event);
 	}
 	XFlush (XtDisplay (toplevel));
 	greet->name = name;
 	greet->password = password;
-	XtSetArg (args[0], XtNsessionArgument, (char *) &(greet->string));
-	XtGetValues (login, args, 1);
+	XtSetArg (arglist[0], XtNsessionArgument, (char *) &(greet->string));
+	XtGetValues (login, arglist, 1);
 	Debug ("sessionArgument: %s\n", greet->string ? greet->string : "<NULL>");
 }
 
