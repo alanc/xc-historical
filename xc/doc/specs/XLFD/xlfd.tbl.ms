@@ -1,14 +1,14 @@
 .\" Use tbl and -ms and macros.t
-.\" $XConsortium: xlfd.tbl.ms,v 1.17 93/12/28 17:20:00 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.17 93/12/28 17:31:04 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0		\" make tall enough to span paragraph skip
 ..
 .de eC			\" end change
 .mc
 ..
-.nr sP 4		\" section on Polymorphic font support
-.nr sM 5		\" section on Matrix Transformations
-.nr sS 6		\" section on Scalable fonts
+.nr sM 4		\" section on Matrix Transformations
+.nr sS 5		\" section on Scalable fonts
+.nr sP 6		\" section on Polymorphic font support
 .EH ''''
 .OH ''''
 .EF ''''
@@ -502,7 +502,11 @@ that is, the nominal blackness of the font,
 according to the FOUNDRY's judgment.
 This name must be human-understandable and suitable for presentation to a 
 font user.
-.LP 
+.sC
+The value \*Q0\*U is used to indicate a polymorphic font; see section \n(sP.
+.br
+.eC
+.LP
 The interpretation of this field is somewhat problematic 
 because the typographic judgment of weight has traditionally 
 depended on the overall design of the typeface family in question;
@@ -550,6 +554,9 @@ T}
 Obliqued upright design, slanted counterclockwise from the vertical
 T}
 ``OT''	Other	Other
+.sC
+numeric	Polymorphic	See section \n(sP on polymorphic font support.
+.eC
 .sp 6p
 _
 .TE
@@ -566,6 +573,10 @@ SETWIDTH_NAME Field
 SETWIDTH_NAME is a string that gives the font's typographic 
 proportionate width, that is, the nominal width per horizontal unit of the 
 font, according to the FOUNDRY's judgment.
+.sC
+The value \*Q0\*U is used to indicate a polymorphic font; see section \n(sP.
+.br
+.eC
 .LP
 As with WEIGHT_NAME, the interpretation of this field or font property is 
 somewhat problematic, because the designer's judgment of setwidth has 
@@ -594,6 +605,10 @@ ADD_STYLE_NAME Field
 ADD_STYLE_NAME is a string that identifies additional typographic 
 style information that is not captured by other fields but is needed 
 to identify the particular font.
+.sC
+The value \*Q%0%\*U is used to indicate a polymorphic font; see section \n(sP.
+.br
+.eC
 .LP
 ADD_STYLE_NAME is not a typeface classification field 
 and is only used for uniqueness. 
@@ -736,6 +751,9 @@ Also, the vertical extents of the font do not exceed the vertical spacing
 ascent <= font-ascent and descent <= font-descent). 
 The cell height = font-descent + font-ascent, and the width = AVERAGE_WIDTH.
 T}
+.sC
+numeric	Polymorphic	See section \n(sP on polymorphic font support.
+.eC
 .sp 6p
 _
 .TE
@@ -1958,10 +1976,17 @@ DEFAULT_CHAR	CARD32
 .sp 6p
 _
 .TE
-.\" section \n(sM
 .br
+.\" section \n(sM
 .sC
-.nH 1 "Matrix Transformations"
+.NH 1
+Matrix Transformations
+.br
+.eC
+.XS
+\*(SN Matrix Transformations
+.XE
+.sC
 .LP
 An XLFD name presented to the server can have the POINT_SIZE or PIXEL_SIZE
 field begin with the character \*Q[\*U.  If the first character of the field
@@ -2003,8 +2028,15 @@ where
 If either the POINT_SIZE or PIXEL_SIZE field is unspecified (either \*Q0\*U or
 wildcarded) the preceding formulas can be used to compute one from the
 other.
-
-.nH 2 "Metrics and Font Properties"
+.\"
+.NH 2
+Metrics and Font Properties
+.br
+.eC
+.XS
+\*(SN Metrics and Font Properties
+.XE
+.sC
 .LP
 In this section, the phrase \*Qcorresponding 1000 pixel metrics\*U means the
 metrics that would be obtained if the rasterizer took the base untransformed
@@ -2187,6 +2219,144 @@ pattern is only required to return the list obtained by performing
 a simple pattern match against the global list.
 X servers are permitted, but not required,
 to use a more sophisticated matching algorithm.
+.br
+.\" section \n(sP
+.sC
+.NH 1
+Polymorphic Fonts
+.br
+.eC
+.XS
+\*(SN Polymorphic Fonts
+.XE
+.sC
+.LP
+Fonts that can be varied in ways other than size or resolution are called
+\*Qpolymorphic fonts.\*U  Multiple Master Type 1 font programs are one type of
+a polymorphic font.  Current examples of axes along which the fonts can be
+varied are width, weight, and optical size; others might include formality
+or x-height.
+.LP
+To support polymorphic fonts, special values indicating variability are
+defined for the following XLFD fields:
+.nf
+	WEIGHT_NAME
+	SLANT
+	SETWIDTH_NAME
+	ADD_STYLE_NAME
+	SPACING
+.fi
+.LP
+The string \*Q0\*U is the special polymorphic value.  In the WEIGHT_NAME, SLANT,
+SETWIDTH_NAME, or SPACING field, 0 must be the entire field.  In the
+ADD_STYLE_NAME field 0 is the polymorphic value whenever it is surrounded
+by percent signs, as \*Q%0%\*U.  %0% may coexist with other data in the field
+(including other polymorphic fields).
+.LP
+The font matching algorithms for a font with polymorphic fields are
+identical to the matching algorithms for a font with scalable fields.
+.LP
+There are three new font properties to describe the axes of variation,
+AXIS_NAMES, AXIS_LIMITS, and AXIS_TYPES.  AXIS_NAMES is a list of all the
+names of the axes for the font, separated by 0 bytes, in the order that
+they occur in the font name.  These names are suitable for presentation in
+a user interface.  AXIS_LIMITS is a list of integers, two for each axis,
+giving the minimum and maximum allowable values for that axis, also in the
+order that they occur in the font name.  AXIS_TYPES is like AXIS_NAMES,
+but can be registered as having specific semantics.
+.LP
+Examples:
+.LP
+The Adobe Myriad MM font program has width and weight axes.  Weight can
+vary from 215 to 830, and width from 300 to 700.
+.nf
+Name:
+	-Adobe-Myriad MM-0-R-0--0-0-0-0-P-0-ISO8859-1
+AXIS_NAMES:
+	Weight\0Width\0
+AXIS_LIMITS:
+	215,830,300,700
+AXIS_TYPES:
+	Adobe-Weight\0Adobe-Width\0
+Sample derived instance:
+	-Adobe-Myriad MM-412-R-575--*-120-100-100-P-*-ISO8859-1
+.fi
+.LP
+The Adobe Minion MM Italic font program had width, weight, and optical
+size axes.
+.nf
+Name:
+	-Adobe-Minion MM-0-I-0-%0%-0-0-0-0-P-0-ISO8859-1
+AXIS_NAMES:
+	Weight\0Width\0Optical size\0
+AXIS_LIMITS:
+	345,620,450,600,6,72
+AXIS_TYPES:
+	Adobe-Weight\0Adobe-Width\0Adobe-OpticalSize\0
+Sample derived instance:
+	-Adobe-Minion MM-550-I-480-%18%-*-180-100-100-P-*-ISO8859-1
+.fi
+.LP
+The Adobe Minion MM Swash Italic font program has the same axes and
+values.  This shows how %0% in the ADD_STYLE_NAME field can coexist with
+other words.
+.nf
+Name:
+	-Adobe-Minion MM-0-I-0-Swash %0%-0-0-0-0-P-0-
+		ISO8859-1
+AXIS_NAMES:
+	Weight\0Width\0Optical size\0
+AXIS_LIMITS:
+	345,620,450,600,6,72
+AXIS_TYPES:
+	Adobe-Weight\0Adobe-Width\0Adobe-OpticalSize\0
+Sample derived instance:
+	-Adobe-Minion MM-550-I-480-Swash %18%-*-180-100-100-P-*-ISO8859-1
+.fi
+.LP
+The XYZ Abc font, a hypothetical font, has optical size and x-height axes.
+This shows how there can be more than one %0% in the ADD_STYLE_NAME field.
+.nf
+Name:
+	-XYZ-Abc-Medium-R-Normal-%0% %0%-0-0-0-0-P-0-ISO8859-1
+AXIS_NAMES:
+	Optical size\0X-height\0
+AXIS_LIMITS:
+	6,72,400,600
+AXIS_TYPES:
+	XYZ-OpticalSize\0XYZ-Xheight\0
+Sample derived instance:
+	-XYZ-Abc-Medium-R-Normal-%14% %510%-*-140-100-100-P-*-ISO8859-1
+.fi
+.LP
+If an axis allows negative values, a client requests a negative value by
+using a tilde (~) as a minus sign.
+.LP
+Axis types can be registered with the X Consortium, along with their
+semantics.
+.LP
+If a font name that contains the polymorphic value or a wildcard in a
+polymorphic field is presented to a font source, the font source is free
+to substitute any value that is convenient.  However, font sources should
+try to use a value that would be considered \fInormal\fP or \fImedium\fP for the
+particular font.  For example, if an optical size variable is unresolved,
+the font source should provide a value appropriate to the size of the
+font.
+.LP
+The result of specifying an out-of-range value for a polymorphic field is
+undefined.  The font source may treat this as a \fBBadName\fP error, treat the
+value as if it were the closest legal value, or extrapolate to try to
+accomodate the value.
+.LP
+With this degree of variability, the enumerations for the
+RELATIVE_SETWIDTH and RELATIVE_WEIGHT properties are no longer sufficient.
+The restrictions on the values of these properties are relaxed to allow
+any integer between 10 and 90, inclusive, instead of just multiples of 10.
+The meanings for the multiples of 10 remain, so, for example, a
+RELATIVE_WEIGHT of 35 indicates a point midway between 30 and 40.  This is
+not required to be a linear function of the weight axis.
+.br
+.eC
 .NH 1
 Affected Elements of Xlib and the X Protocol
 .XS
