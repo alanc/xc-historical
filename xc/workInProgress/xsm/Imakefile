@@ -30,3 +30,6 @@ LOCAL_LIBRARIES = XawClientLibs
 
 ComplexProgramTarget_1(xsm,$(LOCAL_LIBRARIES),NullParameter)
 ComplexProgramTarget_2(xsmclient,$(LOCAL_LIBRARIES),NullParameter)
+#if !HasPutenv
+SpecialCObjectRule(xsm,NullParameter,-DNOPUTENV)
+#endif

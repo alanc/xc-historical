@@ -20,7 +20,7 @@ XCOMM PROFITS, EVEN IF ADVISED OF THE POSSIBILITY THEREOF, AND REGARDLESS
 XCOMM OF WHETHER IN AN ACTION IN CONTRACT, TORT OR NEGLIGENCE, ARISING OUT
 XCOMM OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-XCOMM $XConsortium: Imakefile,v 1.2 94/02/04 15:23:30 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 94/02/04 23:03:29 rws Exp $
 
 XCOMM Having had to change the name once, I don't want it to be tough
 XCOMM the next time...
@@ -56,11 +56,16 @@ STRERRORO=strerror.o
            SRCS = server.c $(STRERRORO) auth.c
            OBJS = server.o $(STRERRORO) auth.o
 
+SRVDEFS = -DSERVERNAME=\"$(SERVERNAME)\" -DDEFAULT_CONFIG=\"$(MYLIBDIR)/config\"
+#if !HasPutenv
+PEDEFS = -DNOPUTENV
+#endif
+
 AllTarget($(SERVERNAME).real)
 NormalProgramTarget($(SERVERNAME).real, $(OBJS),NullParameter,NullParameter,NullParameter)
 InstallProgram($(SERVERNAME).real,$(MYLIBDIR))
 
-SpecialCObjectRule(server,NullParameter,-DSERVERNAME=\"$(SERVERNAME)\" -DDEFAULT_CONFIG=\"$(MYLIBDIR)/config\")
+SpecialCObjectRule(server,NullParameter,$(SRVDEFS) $(PEDEFS))
 
 AllTarget($(SERVERNAME))
 CppScriptTarget($(SERVERNAME),server.cpp,-DLIBDIR=$(MYLIBDIR) -DSERVERNAME=$(SERVERNAME),NullParameter)
