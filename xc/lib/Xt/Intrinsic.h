@@ -60,7 +60,7 @@
 #endif
 
 #define XtNumber(arr)			(sizeof(arr) / sizeof(arr[0]))
-
+#define Offset(type,field)    ((unsigned int)&(((type)NULL)->field))
 typedef char *String;
 typedef caddr_t         EventTable;
 typedef unsigned long   Cardinal;
@@ -69,13 +69,14 @@ typedef char*           Opaque;
 typedef Opaque          Translations;
 typedef Opaque          CallbackList;
 typedef Opaque          XrmExtra;
+typedef unsigned long   ValueMask;
 typedef unsigned long   XtIntervalId;
 typedef unsigned long   GeometryMask;
 typedef unsigned long   GCMask;     /* Mask of values that are used by widget*/
 typedef unsigned long   EventMask;
 typedef unsigned long   Pixel;	    /* Index into colormap	      */
 typedef int		Position;   /* Offset from 0 coordinate	      */
-typedef unsigned int	Dimension;  /* Size in pixels		      */
+typedef int	Dimension;  /* Size in pixels		      */
 typedef void (*WidgetProc)(); /* widget */
 typedef void (*SetValuesProc)();
 
@@ -91,7 +92,13 @@ typedef void (*WidgetGeometryProc) ();
     /* Widget    widget; */
     /* WidgetGeometry geometry; */
 
-typedef void (*XtGeometryHandler)();
+typedef enum  {
+    XtgeometryYes,        /* Request accepted. */
+    XtgeometryNo,         /* Request denied. */
+    XtgeometryAlmost,     /* Request denied, but willing to take replyBox. */
+} XtGeometryReturnCode;
+
+typedef XtGeometryReturnCode (*XtGeometryHandler)();
     /*  widget, requestBox, replyBox */
     /* Widget		    widget */
     /* WidgetGeometry       *request */
@@ -182,7 +189,7 @@ typedef struct _WidgetClassData {
       CoreClass coreClass;
  } WidgetClassData, *WidgetClass;
 
-WidgetClassData widgetClassData;
+extern WidgetClassData widgetClassData;
 WidgetClass widgetClass = &widgetClassData;
 
 /*********************************************************************
@@ -245,7 +252,8 @@ extern Widget XtWidgetCreate ();
 
 extern void XtWidgetRealize ();
     /* Widget widget */
-
+    /* ValueMask valuemask; */
+    /* XSetWindowAttributes *values; */
 
 extern Boolean XtWidgetIsRealized ();
     /* Widget    widget; */
@@ -456,12 +464,6 @@ typedef struct {
     int stack_mode;	/* Above, Below, TopIf, BottomIf, Opposite */
 } WidgetGeometry;
 
-typedef enum  {
-    XtgeometryYes,        /* Request accepted. */
-    XtgeometryNo,         /* Request denied. */
-    XtgeometryAlmost,     /* Request denied, but willing to take replyBox. */
-} XtGeometryReturnCode;
-
 
 
 
@@ -502,7 +504,7 @@ typedef struct _Resource {
     XrmAtom		resource_class;	/* Resource class		    */
     XrmAtom		resource_type;	/* Representation type desired      */
     Cardinal		resource_size;	/* Size in bytes of representation  */
-    caddr_t		resource_offset;/* Where to put resource value      */
+    unsigned int	resource_offset;/* Where to put resource value      */
     XrmAtom		default_type;	/* representation type of specified default */
     caddr_t		default_addr;    /* Default resource value (or addr) */
 } Resource, *ResourceList;
