@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.16 94/12/01 18:26:50 kaleb Exp kaleb $
+XCOMM $XConsortium: Imake.cf,v 1.14 94/12/02 11:35:06 kaleb Exp kaleb $
 /*
  * To add support for another platform:
  * 
@@ -125,8 +125,17 @@ XCOMM $XConsortium: Imake.cf,v 1.16 94/12/01 18:26:50 kaleb Exp kaleb $
 #define MacroIncludeFile <usl.cf>
 #define MacroFile usl.cf
 #undef USL
+#undef SVR4
 #define SVR4Architecture
 #endif /* USL */
+
+#ifdef NCR
+#define MacroIncludeFile <ncr.cf>
+#define MacroFile ncr.cf
+#undef NCR
+#undef SVR4
+#define SVR4Architecture
+#endif /* NCR */
 
 #ifdef apollo
 #define MacroIncludeFile <apollo.cf>
@@ -268,19 +277,23 @@ XCOMM $XConsortium: Imake.cf,v 1.16 94/12/01 18:26:50 kaleb Exp kaleb $
 # endif
 #endif /* MOTOROLA */
 
-#ifdef i386
-# ifdef SVR4
+#ifdef SVR4
+# ifdef i386
 #  define i386Architecture
 #  define i386SVR4Architecture
-#  define MacroIncludeFile <svr4.cf>
-#  define MacroFile svr4.cf
-#  undef SVR4
-# else
+# endif
+# define MacroIncludeFile <svr4.cf>
+# define MacroFile svr4.cf
+# undef SVR4
+#endif /* SVR4 */
+
+#ifdef SYSV
+# ifdef i386
 #  define MacroIncludeFile <x386.cf>
 #  define MacroFile x386.cf
 #  define i386SVR3Architecture
 # endif
-#endif /* i386 */
+#endif /* SYSV */
 
 #ifdef SYSV386
 # ifdef SVR4
@@ -339,13 +352,6 @@ XCOMM $XConsortium: Imake.cf,v 1.16 94/12/01 18:26:50 kaleb Exp kaleb $
 #define MacroFile Win32.cf
 #define Win32Architecture
 #endif /* WIN32 */
-
-#ifdef NCR
-#define MacroIncludeFile <ncr.cf>
-#define MacroFile ncr.cf
-#undef NCR
-#define SVR4Architecture
-#endif /* NCR */
 
 #ifdef linux 
 #define MacroIncludeFile <linux.cf>
