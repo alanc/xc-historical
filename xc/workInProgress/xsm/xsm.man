@@ -1,4 +1,4 @@
-.\" $XConsortium: xsm.man,v 1.2 94/04/18 18:24:31 rws Exp $
+.\" $XConsortium: xsm.man,v 1.3 94/07/25 12:11:55 mor Exp $
 .\" Copyright (c) 1994  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -39,11 +39,11 @@ save and restore sessions.
 .SS .xsession file
 Using \fIxsm\fP requires a few changes to your \fI.xsession\fP file:
 .PP
-First, the last program executed by your \fI.xsession\fP file should
+The last program executed by your \fI.xsession\fP file should
 be \fIxsm\fP.  With this configuration, when the user chooses to shut
 down the session using \fIxsm\fP, the session will truly be over.
 .PP
-Second, since the goal of the session manager is to restart clients when
+Since the goal of the session manager is to restart clients when
 logging into a session, your .xsession file, in general, should not directly
 start up applications.  Rather, the applications should be started within
 a session.  When \fIxsm\fP shuts down the session, \fIxsm\fP will know to
