@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 5.14 89/10/20 15:04:34 rws Exp $ */
+/* $XConsortium: mfbgc.c,v 5.15 89/10/29 16:47:16 rws Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"
@@ -37,8 +37,6 @@ SOFTWARE.
 #include "mistruct.h"
 
 #include "maskbits.h"
-
-extern void mfbPolyFillArcSolid();
 
 static void mfbDestroyOps();
 
