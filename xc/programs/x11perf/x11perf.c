@@ -267,6 +267,7 @@ void usage()
 "    -time <s>			do tests for <s> seconds each (default = 5)",
 /*"    -draw			draw after each test -- pmax only",*/
 "    -all			do all tests",
+"    -start <test>		like all, but start at <test>",
 "    -labels			generate test labels for use by fillblanks.sh",
 "    -fg			the foreground color to use",
 "    -bg		        the background color to use",
@@ -609,7 +610,23 @@ main(argc, argv)
 	    foundOne = True;
 	} else if (strcmp (argv[i], "-labels") == 0) {
 	    labels = True;
-	} else if (strcmp (argv[i], "-sync") == 0) {
+    } else if (strcmp(argv[i], "-start") == 0) {
+        if (argc <= i)
+	    usage();
+        i++;
+        ForEachTest (j) {
+	    if (strcmp (argv[i], test[j].option) == 0) {
+		int k;
+		for (k = j; test[k].option != NULL; k++) {
+		    doit[k] = True;
+		}
+		break;
+	    }
+        }
+        if (test[j].option == NULL)
+	    usage();
+        foundOne = True;
+    } else if (strcmp (argv[i], "-sync") == 0) {
 	    synchronous = True;
 	} else if (strcmp (argv[i], "-draw") == 0) {
 	    drawToFakeServer = True;
@@ -788,6 +805,7 @@ main(argc, argv)
 		    /* Test failed to initialize properly */
 		}
 		printf ("\n");
+		fflush(stdout);
 		if (!test[i].children)
 		    break;
 		child++;

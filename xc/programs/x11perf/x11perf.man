@@ -114,6 +114,11 @@ Specifies how long in seconds each test should be run (default 5 seconds).
 .B \-all
 Runs all tests.  This may take a while.
 .TP 14
+.B \-start \fI<test>\fP
+Runs all tests starting at
+.I test.
+``x11perf -start -dot'' is equivalent to ``x11perf -all''.
+.TP 14
 .B \-labels
 Generates just the descriptive labels for each test.  See
 .I x11perfcomp
