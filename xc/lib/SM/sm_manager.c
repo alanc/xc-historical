@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.4 93/09/12 16:22:40 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.5 93/09/13 16:52:47 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -19,38 +19,46 @@ purpose.  It is provided "as is" without express or implied warranty.
 
 
 Status
-SmsInitialize (vendor, release, callbacks)
+SmsInitialize (vendor, release, newClientProc, managerData,
+    errorLength, errorStringRet)
 
-char 		*vendor;
-char 		*release;
-SmsCallbacks 	*callbacks;
+char 		 *vendor;
+char 		 *release;
+SmsNewClientProc newClientProc;
+SmPointer	 managerData;
+int  		 errorLength;
+char 		 *errorStringRet;
 
 {
-    if (!callbacks || !callbacks->new_client ||
-        !callbacks->register_client || !callbacks->interact_request ||
-        !callbacks->interact_done || !callbacks->save_yourself_done ||
-        !callbacks->close_connection || !callbacks->set_properties ||
-        !callbacks->get_properties)
+    if (errorStringRet && errorLength > 0)
+	*errorStringRet = '\0';
+
+    if (!newClientProc)
     {
-	/* We need callbacks!  Otherwise, we can't do anything */
+	strncpy (errorStringRet,
+	    "The SmsNewClientProc callback can't be NULL", errorLength);
 
 	return (0);
     }
 
     if (!_SmsOpcode)
     {
-	void _SmsProtocolSetupNotifyCB ();
+	void _SmsProtocolSetupNotifyProc ();
 
 	if ((_SmsOpcode = IceRegisterForProtocolReply ("XSMP",
 	    vendor, release, _SmVersionCount, _SmsVersions,
-	    _SmsProtocolSetupNotifyCB, _SmAuthCount, _SmsAuthRecs, NULL)) < 0)
+	    _SmsProtocolSetupNotifyProc,
+	    _SmAuthCount, _SmsAuthRecs, NULL)) < 0)
 	{
-	   return (0);
+	    strncpy (errorStringRet,
+	        "Could not register XSMP protocol with ICE", errorLength);
+
+	    return (0);
 	}
     }
 
-    bcopy ((char *) callbacks,
-	(char *) &_SmsCallbacks, sizeof (SmsCallbacks));
+    _SmsNewClientProc = newClientProc;
+    _SmsNewClientData = managerData;
 
     return (1);
 }
@@ -58,7 +66,7 @@ SmsCallbacks 	*callbacks;
 
 
 void
-_SmsProtocolSetupNotifyCB (iceConn,
+_SmsProtocolSetupNotifyProc (iceConn,
     majorVersion, minorVersion, vendor, release)
 
 IceConn iceConn;
@@ -87,10 +95,11 @@ char 	*release;
 
 
     /*
-     * Now give the session manager the new smsConn
+     * Now give the session manager the new smsConn and get back the
+     * callbacks to invoke when messages arrive from the client.
      */
 
-    (*_SmsCallbacks.new_client) (smsConn, &smsConn->manager_data);
+    (*_SmsNewClientProc) (smsConn, _SmsNewClientData, &smsConn->callbacks);
 }
 
 
