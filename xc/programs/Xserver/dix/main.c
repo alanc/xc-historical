@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: main.c,v 1.116 87/08/15 16:35:14 newman Locked $ */
+/* $Header: main.c,v 1.117 87/08/21 15:26:54 toddb Locked $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -211,7 +211,7 @@ main(argc, argv)
         {
 	    FreeGCperDepth(i);
 	}
-	CloseDownDevices(argv, argc);
+	CloseDownDevices(argc, argv);
 	for (i = 0; i < screenInfo.numScreens; i++)
 	    (* screenInfo.screen[i].CloseScreen)(i, &screenInfo.screen[i]);
 	Xfree(screenInfo.screen);
