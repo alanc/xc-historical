@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.37 90/09/28 10:21:32 swick Exp $ */
+/* $XConsortium: Destroy.c,v 1.38 90/12/03 16:31:03 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -67,9 +67,8 @@ static void Phase2Callbacks(widget)
     Widget    widget;
 {
     if (widget->core.destroy_callbacks != NULL) {
-	_XtCallCallbacks(widget, (InternalCallbackList)
-			 widget->core.destroy_callbacks, 
-			 (XtPointer) NULL);
+	XtCallCallbackList(widget,
+			   widget->core.destroy_callbacks, (XtPointer) NULL);
     }
 } /* Phase2Callbacks */
 
