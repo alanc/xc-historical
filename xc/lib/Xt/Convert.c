@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Convert.c,v 1.31 89/10/09 10:07:06 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Convert.c,v 1.32 89/10/09 11:47:05 swick Exp $";
 /* $oHeader: Convert.c,v 1.4 88/09/01 11:10:44 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -596,8 +596,13 @@ XtCallConverter(dpy, converter, args, num_args, from, to, cache_ref_return)
 		}
 		if (i == num_args) {	 
 		    /* Perfect match */
-		    if (p->flags & CONVERSION_SUCCEEDED)
-			XtBCopy(p->to.addr, to->addr, to->size);
+		    if (p->flags & CONVERSION_SUCCEEDED) {
+			if (to->addr != NULL) {	/* new-style call */
+			    XtBCopy(p->to.addr, to->addr, to->size);
+			}
+			else	/* old-style call */
+			    *to = p->to;
+		    }
 		    if (p->flags & IS_REFCOUNTED) {
 			p->more.ref_count++;
 			if (cache_ref_return != NULL)
