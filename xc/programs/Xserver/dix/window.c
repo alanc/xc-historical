@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.175 87/11/05 11:47:32 rws Locked $ */
+/* $Header: window.c,v 1.176 87/11/05 11:59:38 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -71,7 +71,7 @@ typedef struct _ScreenSaverStuff {
 #define USE_GRAVITY   1
 
 extern int ScreenSaverBlanking, ScreenSaverAllowExposures;
-int screenIsSaved = FALSE;
+int screenIsSaved = SCREEN_SAVER_OFF;
 
 static ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 
