@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: genauth.c,v 1.13 94/01/09 18:07:20 gildea Exp $
+ * $XConsortium: genauth.c,v 1.14 94/01/17 16:35:47 kaleb Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -21,6 +21,13 @@
 # include   <X11/Xauth.h>
 # include   <X11/Xos.h>
 # include   "dm.h"
+#ifdef X_NOT_STDC_ENV
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
 
 static unsigned char	key[8];
 
@@ -81,15 +88,9 @@ InitXdmcpWrapper ()
     long	    sum[2];
     unsigned char   tmpkey[8];
 
-#if defined(sony) || defined(luna)
-#define TIME_T long
-#else
-#define TIME_T time_t
-#endif
-    
     if (!sumFile (randomFile, sum)) {
-	sum[0] = time ((TIME_T *) 0);
-	sum[1] = time ((TIME_T *) 0);
+	sum[0] = time ((Time_t *) 0);
+	sum[1] = time ((Time_t *) 0);
     }
     longtochars (sum[0], tmpkey+0);
     longtochars (sum[1], tmpkey+4);

@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.5 93/11/05 17:08:22 rws Exp $ */
+/* $XConsortium: events.c,v 1.6 94/01/12 20:46:21 rws Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 				NOTICE
@@ -53,6 +53,13 @@ terms and conditions:
 #include <stdio.h>
 #include <ctype.h>
 #include "xieperf.h"
+#ifdef X_NOT_STDC_ENV
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
+#endif
 #ifdef WIN32
 #define BOOL wBOOL
 #undef Status
@@ -151,7 +158,7 @@ Bool	verbose;
 	XieImportObscuredEvent *ImportObscured = 
 		(XieImportObscuredEvent *) &event;
 	int retval, xie_event;
-	long endtime, curtime, delta;
+	Time_t endtime, curtime, delta;
 	struct timeval tv;
 	Bool done;
 #ifdef WIN32
@@ -168,7 +175,7 @@ Bool	verbose;
 	/* set up for the select */
 
 	Xsocket = ConnectionNumber(xp->d);	
-	endtime = time( ( long * ) NULL ) + timeout;
+	endtime = time( ( Time_t * ) NULL ) + timeout;
 	while ( done == False )
 	{
 		/* see if there is anything for us in the event queue... */	
@@ -176,7 +183,7 @@ Bool	verbose;
 		if ( XCheckTypedEvent( xp->d, xieInfo->first_event + which, 
 			&event ) == False )
 		{
-			curtime = time( ( long * ) NULL );
+			curtime = time( ( Time_t * ) NULL );
 			delta = endtime - curtime;
 			if ( delta <= 0 )
 			{

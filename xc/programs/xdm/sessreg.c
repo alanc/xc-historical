@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sessreg.c,v 1.8 91/07/18 22:00:12 rws Exp $
+ * $XConsortium: sessreg.c,v 1.9 93/09/20 18:03:09 hersh Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -63,7 +63,11 @@
 #endif
 
 #ifdef X_NOT_STDC_ENV
-extern long	time ();
+#define Time_t long
+extern Time_t time ();
+#else
+#include <time.h>
+#define Time_t time_t
 #endif
 #ifdef X_NOT_POSIX
 extern long	lseek ();
@@ -144,7 +148,7 @@ char	**argv;
 #endif
 	char		*line_tmp;
 	int		wtmp;
-	long		current_time;
+	Time_t		current_time;
 	struct utmp	utmp_entry;
 
 	program_name = argv[0];
@@ -216,7 +220,7 @@ char	**argv;
 		else
 			line = line_tmp;
 	}
-	current_time = time ((long *) 0);
+	current_time = time ((Time_t *) 0);
 	set_utmp (&utmp_entry, line, user_name, host_name, current_time, aflag);
 	if (!utmp_none) {
 #ifdef SYSV
@@ -253,7 +257,7 @@ char	**argv;
 set_utmp (u, line, user, host, date, addp)
 struct utmp	*u;
 char		*line, *user, *host;
-long		date;
+Time_t		date;
 {
 	if (line)
 		(void) strncpy (u->ut_line, line, sizeof (u->ut_line));
