@@ -2223,8 +2223,7 @@
 ;; GC stuff
 ;;-----------------------------------------------------------------------------
 
-#+Genera
-(si:define-gc-cleanup clx-cleanup ("CLX Cleanup")
+(defun gc-cleanup ()
   (declare (special *event-free-list*
 		    *pending-command-free-list*
 		    *reply-buffer-free-lists*
@@ -2232,9 +2231,15 @@
 		    *temp-gcontext-cache*))
   (setq *event-free-list* nil)
   (setq *pending-command-free-list* nil)
-  (fill *reply-buffer-free-lists* nil)
+  (when (boundp '*reply-buffer-free-lists*)
+    (fill *reply-buffer-free-lists* nil))
   (setq *gcontext-local-state-cache* nil)
-  (setq *temp-gcontext-cache* nil))
+  (setq *temp-gcontext-cache* nil)
+  nil)
+
+#+Genera
+(si:define-gc-cleanup clx-cleanup ("CLX Cleanup")
+  (gc-cleanup))
 
 
 ;;-----------------------------------------------------------------------------
@@ -2320,23 +2325,103 @@
 ;; Image stuff
 ;;-----------------------------------------------------------------------------
 
+;;; Types
+
+(deftype pixarray-1-element-type ()
+  'bit)
+
+(deftype pixarray-4-element-type ()
+  '(unsigned-byte 4))
+
+(deftype pixarray-8-element-type ()
+  '(unsigned-byte 8))
+
+(deftype pixarray-16-element-type ()
+  '(unsigned-byte 16))
+
+(deftype pixarray-24-element-type ()
+  #-Genera '(unsigned-byte 24)
+  #+Genera 'fixnum)
+
+(deftype pixarray-32-element-type ()
+  #-Genera '(unsigned-byte 32)
+  #+Genera 'fixnum)
+
+(deftype pixarray-1  ()
+  '(array pixarray-1-element-type (* *)))
+
+(deftype pixarray-4  ()
+  '(array pixarray-4-element-type (* *)))
+
+(deftype pixarray-8  ()
+  '(array pixarray-8-element-type (* *)))
+
+(deftype pixarray-16 ()
+  '(array pixarray-16-element-type (* *)))
+
+(deftype pixarray-24 ()
+  '(array pixarray-24-element-type (* *)))
+
+(deftype pixarray-32 ()
+  '(array pixarray-32-element-type (* *)))
+
+(deftype pixarray ()
+  '(or pixarray-1 pixarray-4 pixarray-8 pixarray-16 pixarray-24 pixarray-32))
+
+(deftype bitmap ()
+  'pixarray-1)
+
+;;; WITH-UNDERLYING-SIMPLE-VECTOR 
+
+#+Genera
+(defmacro with-underlying-simple-vector
+	  ((variable element-type pixarray) &body body)
+  (let ((bits-per-element
+	  (sys:array-bits-per-element
+	    (symbol-value (sys:type-array-element-type element-type)))))
+    `(scl:stack-let ((,variable
+		      (make-array
+			(index-ceiling
+			  (index* (array-total-size ,pixarray)
+				  (sys:array-element-size ,pixarray))
+			  ,bits-per-element)
+			:element-type ',element-type
+			:displaced-to ,pixarray)))
+       (declare (array-register ,variable))
+       ,@body)))
+
+#+lcl3.0
+(defmacro with-underlying-simple-vector
+	  ((variable element-type pixarray) &body body)
+  `(let ((,variable (sys:underlying-simple-vector ,pixarray)))
+     (declare (type (simple-array ,element-type (*)) ,variable))
+     ,@body))
+
+#+excl
+(defmacro with-underlying-simple-vector
+	  ((variable element-type pixarray) &body body)
+  `(let ((,variable (cdr (excl::ah_data ,pixarray))))
+     (declare (type (simple-array ,element-type (*)) ,variable))
+     ,@body))
+
 ;;; These are used to read and write pixels from and to CARD8s.
 
 ;;; READ-IMAGE-LOAD-BYTE is used to extract 1 and 4 bit pixels from CARD8s.
 
 (defmacro read-image-load-byte (size position integer)
+  (unless *image-bit-lsb-first-p* (setq position (- 7 position)))
   `(the (unsigned-byte ,size)
 	(#-Genera ldb #+Genera sys:%logldb
-	 (byte ,size ,(if *image-bit-lsb-first-p* position (- 7 position)))
+	 (byte ,size ,position)
 	 (the card8 ,integer))))
 
 ;;; READ-IMAGE-ASSEMBLE-BYTES is used to build 16, 24 and 32 bit pixels from
 ;;; the appropriate number of CARD8s.
 
 (defmacro read-image-assemble-bytes (&rest bytes)
-  (let* ((bytes (if *image-byte-lsb-first-p* bytes (reverse bytes)))
-	 (it (first bytes))
-	 (count 0))
+  (unless *image-byte-lsb-first-p* (setq bytes (reverse bytes)))
+  (let ((it (first bytes))
+	(count 0))
     (dolist (byte (rest bytes))
       (setq it
 	    `(#-Genera dpb #+Genera sys:%logdpb 
@@ -2351,29 +2436,118 @@
 
 (defmacro write-image-load-byte (position integer integer-size)
   integer-size
+  (unless *image-byte-lsb-first-p* (setq position (- integer-size 8 position)))
   `(the card8
 	(#-Genera ldb #+Genera sys:%logldb
-	  (byte 8 ,(if *image-byte-lsb-first-p*
-		       position
-		     (- integer-size 8 position)))
-	  #-Genera (the (unsigned-byte ,integer-size) ,integer)
-	  #+Genera ,integer
-	  )))
+	 (byte 8 ,position)
+	 #-Genera (the (unsigned-byte ,integer-size) ,integer)
+	 #+Genera ,integer
+	 )))
 
 ;;; WRITE-IMAGE-ASSEMBLE-BYTES is used to build a CARD8 from 1 or 4 bit
 ;;; pixels.
 
 (defmacro write-image-assemble-bytes (&rest bytes)
-  (let* ((bytes (if *image-bit-lsb-first-p* bytes (reverse bytes)))
-	 (size (floor 8 (length bytes)))
-	 (it (first bytes))
-	 (count 0))
+  (unless *image-bit-lsb-first-p* (setq bytes (reverse bytes)))
+  (let ((size (floor 8 (length bytes)))
+	(it (first bytes))
+	(count 0))
     (dolist (byte (rest bytes))
       (setq it `(#-Genera dpb #+Genera sys:%logdpb
 		 (the (unsigned-byte ,size) ,byte)
 		 (byte ,size ,(incf count size))
 		 (the (unsigned-byte ,count) ,it))))
     `(the card8 ,it)))
+
+#+(or Genera lcl3.0 excl)
+(progn
+
+(defvar *computed-image-byte-lsb-first-p* *image-byte-lsb-first-p*)
+
+(defvar *computed-image-bit-lsb-first-p* *image-bit-lsb-first-p*)
+
+;;; The following table gives the bit ordering within bytes (when accessed
+;;; sequentially) for a scanline containing 32 bits, with bits numbered 0 to
+;;; 31, where bit 0 should be leftmost on the display.  For a given byte
+;;; labelled A-B, A is for the most significant bit of the byte, and B is
+;;; for the least significant bit.
+;;; 
+;;; legend:
+;;; 	1   scanline-unit = 8
+;;; 	2   scanline-unit = 16
+;;; 	4   scanline-unit = 32
+;;; 	M   byte-order = MostSignificant
+;;; 	L   byte-order = LeastSignificant
+;;; 	m   bit-order = MostSignificant
+;;; 	l   bit-order = LeastSignificant
+;;; 
+;;; 
+;;; format	ordering
+;;; 
+;;; 1Mm	00-07 08-15 16-23 24-31
+;;; 2Mm	00-07 08-15 16-23 24-31
+;;; 4Mm	00-07 08-15 16-23 24-31
+;;; 1Ml	07-00 15-08 23-16 31-24
+;;; 2Ml	15-08 07-00 31-24 23-16
+;;; 4Ml	31-24 23-16 15-08 07-00
+;;; 1Lm	00-07 08-15 16-23 24-31
+;;; 2Lm	08-15 00-07 24-31 16-23
+;;; 4Lm	24-31 16-23 08-15 00-07
+;;; 1Ll	07-00 15-08 23-16 31-24
+;;; 2Ll	07-00 15-08 23-16 31-24
+;;; 4Ll	07-00 15-08 23-16 31-24
+
+(defconstant
+  *image-bit-ordering-table*
+  '(((1 (00 07) (08 15) (16 23) (24 31)) (nil nil))
+    ((2 (00 07) (08 15) (16 23) (24 31)) (nil nil))
+    ((4 (00 07) (08 15) (16 23) (24 31)) (nil nil))
+    ((1 (07 00) (15 08) (23 16) (31 24)) (nil t))
+    ((2 (15 08) (07 00) (31 24) (23 16)) (nil t))
+    ((4 (31 24) (23 16) (15 08) (07 00)) (nil t))
+    ((1 (00 07) (08 15) (16 23) (24 31)) (t   nil))
+    ((2 (08 15) (00 07) (24 31) (16 23)) (t   nil))
+    ((4 (24 31) (16 23) (08 15) (00 07)) (t   nil))
+    ((1 (07 00) (15 08) (23 16) (31 24)) (t   t))
+    ((2 (07 00) (15 08) (23 16) (31 24)) (t   t))
+    ((4 (07 00) (15 08) (23 16) (31 24)) (t   t))))
+  
+(defun compute-image-byte-and-bit-ordering ()
+  (declare (values image-byte-lsb-first-p image-bit-lsb-first-p))
+  ;; First compute the ordering 
+  (let ((ordering nil)
+	(a (make-array '(1 32) :element-type 'bit :initial-element 0)))
+    (dotimes (i 4)
+      (push (flet ((bitpos (a i n)
+		     (declare (optimize (speed 3) (safety 0) (space 0)))
+		     (declare (type (simple-array bit (* *)) a)
+			      (type fixnum i n))
+		     (with-underlying-simple-vector (v (unsigned-byte 8) a)
+		       (prog2
+			 (setf (aref v i) n)
+			 (dotimes (i 32)
+			   (unless (zerop (aref a 0 i))
+			     (return i)))
+			 (setf (aref v i) 0)))))
+	      (list (bitpos a i #b10000000)
+		    (bitpos a i #b00000001)))
+	    ordering))
+    (setq ordering (cons (floor *image-unit* 8) (nreverse ordering)))
+    ;; Now from the ordering, compute byte-lsb-first-p and bit-lsb-first-p
+    (let ((byte-and-bit-ordering
+	    (second (assoc ordering *image-bit-ordering-table*
+			   :test #'equal))))
+      (unless byte-and-bit-ordering
+	(error "Couldn't determine image byte and bit ordering~@
+                measured image ordering = ~A"
+	       ordering))
+      (values-list byte-and-bit-ordering))))
+
+(multiple-value-setq
+  (*computed-image-byte-lsb-first-p* *computed-image-bit-lsb-first-p*)
+  (compute-image-byte-and-bit-ordering))
+
+)
 
 ;;; If you can write fast routines that can read and write pixarrays out of a
 ;;; buffer-bytes, do it!  It makes the image code a lot faster.  The
@@ -2384,11 +2558,13 @@
 
 #+(or lcl3.0 excl)
 (defun fast-read-pixarray-1 (buffer-bbuf index array x y width height  
-			     padded-bytes-per-line)
+			     padded-bytes-per-line bits-per-pixel)
   (declare (type buffer-bytes buffer-bbuf)
 	   (type pixarray-1 array)
 	   (type card16 x y width height)
-	   (type array-index index padded-bytes-per-line))
+	   (type array-index index padded-bytes-per-line)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (ignore bits-per-pixel))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
     (with-underlying-simple-vector (vector pixarray-1-element-type array)
@@ -2517,11 +2693,13 @@
 
 #+(or lcl3.0 excl)
 (defun fast-read-pixarray-4 (buffer-bbuf index array x y width height 
-			     padded-bytes-per-line)
+			     padded-bytes-per-line bits-per-pixel)
   (declare (type buffer-bytes buffer-bbuf)
 	   (type pixarray-4 array)
 	   (type card16 x y width height)
-	   (type array-index index padded-bytes-per-line))
+	   (type array-index index padded-bytes-per-line)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (ignore bits-per-pixel))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
     (with-underlying-simple-vector (vector pixarray-4-element-type array)
@@ -2560,11 +2738,13 @@
 
 #+(or Genera lcl3.0 excl)
 (defun fast-read-pixarray-24 (buffer-bbuf index array x y width height 
-			      padded-bytes-per-line)
+			      padded-bytes-per-line bits-per-pixel)
   (declare (type buffer-bytes buffer-bbuf)
 	   (type pixarray-24 array)
 	   (type card16 width height)
-	   (type array-index index padded-bytes-per-line))
+	   (type array-index index padded-bytes-per-line)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (ignore bits-per-pixel))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
     (with-underlying-simple-vector (vector pixarray-24-element-type array)
@@ -2587,89 +2767,57 @@
 		  (aref buffer-bbuf (index+ i 2))))))))
   t)
 
-(defun fast-read-pixarray (bbuf boffset pixarray
-			   x y width height padded-bytes-per-line
-			   bits-per-pixel)
-  (declare (type buffer-bytes bbuf)
-	   (type array-index boffset
-		 padded-bytes-per-line)
-	   (type pixarray pixarray)
-	   (type card16 x y width height)
-	   (type (member 1 4 8 16 24 32) bits-per-pixel))
-  (progn bbuf boffset pixarray x y width height padded-bytes-per-line
-	 bits-per-pixel)
-  (or
-    #+lispm
-    (let* ((padded-bits-per-line (* padded-bytes-per-line 8))
-	   (padded-pixels-per-line
-	     (floor padded-bits-per-line bits-per-pixel))
-	   (pixarray-padded-pixels-per-line
-	     #+Genera (sys:array-row-span pixarray)
-	     #-Genera (array-dimension pixarray 1))
-	   (pixarray-padded-bits-per-line
-	     (* pixarray-padded-pixels-per-line bits-per-pixel)))
-      (when (and (= (sys:array-element-size pixarray) bits-per-pixel)
-		 (zerop (index-mod padded-bits-per-line 32))
-		 (zerop (index-mod pixarray-padded-bits-per-line 32)))
-	(#+Genera sys:stack-let* #-Genera let*
-	 ((dimensions (list (+ y height) padded-pixels-per-line))
-	  (a (make-array
-	       dimensions
-	       :element-type (array-element-type pixarray)
-	       :displaced-to bbuf
-	       :displaced-index-offset (floor (* boffset 8) bits-per-pixel))))
-	 (sys:bitblt boole-1 width height a x y pixarray 0 0))
-	t))
-    #+(or lcl3.0 excl)
-    (fast-read-pixarray-with-swap
-      bbuf boffset pixarray x y width height padded-bytes-per-line
-      bits-per-pixel 'image-noswap nil)
-    #+(or lcl3.0 excl)
-    (when (index= bits-per-pixel 1)
-      (fast-read-pixarray-1
-	bbuf boffset pixarray x y width height padded-bytes-per-line))
-    #+(or lcl3.0 excl)
-    (when (index= bits-per-pixel 4)
-      (fast-read-pixarray-4
-	bbuf boffset pixarray x y width height padded-bytes-per-line))
-    #+(or Genera lcl3.0 excl)
-    (when (index= bits-per-pixel 24)
-      (fast-read-pixarray-24
-	bbuf boffset pixarray x y width height padded-bytes-per-line))
-    ))
+#+lispm
+(defun fast-read-pixarray-using-bitblt
+       (bbuf boffset pixarray x y width height padded-bytes-per-line
+	bits-per-pixel)
+  (#+Genera sys:stack-let* #-Genera let*
+   ((dimensions (list (+ y height)
+		      (floor (* padded-bytes-per-line 8) bits-per-pixel)))
+    (a (make-array
+	 dimensions
+	 :element-type (array-element-type pixarray)
+	 :displaced-to bbuf
+	 :displaced-index-offset (floor (* boffset 8) bits-per-pixel))))
+   (sys:bitblt boole-1 width height a x y pixarray 0 0))
+  t)
 
-;;; FAST-READ-PIXARRAY-WITH-SWAP - swaps as well as reads
-
+#+(or Genera lcl3.0 excl)
 (defun fast-read-pixarray-with-swap
        (bbuf boffset pixarray x y width height padded-bytes-per-line
-	bits-per-pixel image-swap-function image-swap-lsb-first-p)
+	bits-per-pixel unit byte-lsb-first-p bit-lsb-first-p)
   (declare (type buffer-bytes bbuf)
 	   (type array-index boffset
 		 padded-bytes-per-line)
 	   (type pixarray pixarray)
 	   (type card16 x y width height)
 	   (type (member 1 4 8 16 24 32) bits-per-pixel)
-	   (type symbol image-swap-function)
-	   (type boolean image-swap-lsb-first-p))
-  (progn bbuf boffset pixarray x y width height padded-bytes-per-line
-	 bits-per-pixel image-swap-function image-swap-lsb-first-p)
-  (or
-    #+(or Genera lcl3.0 excl)
-    (unless (index= bits-per-pixel 24)
-      (let ((pixarray-padded-bits-per-line
-	      (if (index= height 1) 0
-		(index* (index- (array-row-major-index pixarray 1 0)
-				(array-row-major-index pixarray 0 0))
-			bits-per-pixel)))
-	    (x-bits (index* x bits-per-pixel)))
-	(declare (type array-index pixarray-padded-bits-per-line x-bits))
-	(when (if (eq (bits-per-pixel-image-byte-lsb-first-p bits-per-pixel)
-		      (bits-per-pixel-image-byte-lsb-first-p 8))
-		  (and (index-zerop (index-mod pixarray-padded-bits-per-line 8))
-		       (index-zerop (index-mod x-bits 8)))
-		(and (index-zerop
-		       (index-mod pixarray-padded-bits-per-line *image-unit*))
-		     (index-zerop (index-mod x-bits *image-unit*))))
+	   (type (member 8 16 32) unit)
+	   (type boolean byte-lsb-first-p bit-lsb-first-p))
+  (unless (index= bits-per-pixel 24)
+    (let ((pixarray-padded-bits-per-line
+	    (if (index= height 1) 0
+	      (index* (index- (array-row-major-index pixarray 1 0)
+			      (array-row-major-index pixarray 0 0))
+		      bits-per-pixel)))
+	  (x-bits (index* x bits-per-pixel)))
+      (declare (type array-index pixarray-padded-bits-per-line x-bits))
+      (when (if (or (index>= bits-per-pixel 8)
+		    (eq *computed-image-byte-lsb-first-p*
+			*computed-image-bit-lsb-first-p*))
+		(and (index-zerop (index-mod pixarray-padded-bits-per-line 8))
+		     (index-zerop (index-mod x-bits 8)))
+	      (and (index-zerop
+		     (index-mod pixarray-padded-bits-per-line *image-unit*))
+		   (index-zerop (index-mod x-bits *image-unit*))))
+	(multiple-value-bind (image-swap-function image-swap-lsb-first-p)
+	    (image-swap-function
+	      bits-per-pixel 
+	      unit byte-lsb-first-p bit-lsb-first-p
+	      *image-unit* *computed-image-byte-lsb-first-p*
+	      *computed-image-bit-lsb-first-p*)
+	  (declare (type symbol image-swap-function)
+		   (type boolean image-swap-lsb-first-p))
 	  (with-underlying-simple-vector (dst card8 pixarray)
 	    (funcall
 	      (symbol-function image-swap-function) bbuf dst
@@ -2679,18 +2827,65 @@
 	      0 (index-ceiling (index* width bits-per-pixel) 8)
 	      padded-bytes-per-line
 	      (index-floor pixarray-padded-bits-per-line 8)
-	      height image-swap-lsb-first-p))
-	  t)))))
+	      height image-swap-lsb-first-p)))
+	t))))
+
+(defun fast-read-pixarray (bbuf boffset pixarray
+			   x y width height padded-bytes-per-line
+			   bits-per-pixel
+			   unit byte-lsb-first-p bit-lsb-first-p)
+  (declare (type buffer-bytes bbuf)
+	   (type array-index boffset
+		 padded-bytes-per-line)
+	   (type pixarray pixarray)
+	   (type card16 x y width height)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (type (member 8 16 32) unit)
+	   (type boolean byte-lsb-first-p bit-lsb-first-p))
+  (progn bbuf boffset pixarray x y width height padded-bytes-per-line
+	 bits-per-pixel unit byte-lsb-first-p bit-lsb-first-p)
+  (or
+    #+(or Genera lcl3.0 excl)
+    (fast-read-pixarray-with-swap
+      bbuf boffset pixarray x y width height padded-bytes-per-line
+      bits-per-pixel unit byte-lsb-first-p bit-lsb-first-p)
+    (let ((function
+	    (or #+lispm
+		(and (= (sys:array-element-size pixarray) bits-per-pixel)
+		     (zerop (index-mod padded-bytes-per-line 4))
+		     (zerop (index-mod
+			      (* #+Genera (sys:array-row-span pixarray)
+				 #-Genera (array-dimension pixarray 1)
+				 bits-per-pixel)
+			      32))
+		     #'fast-read-pixarray-using-bitblt)
+		#+(or lcl3.0 excl)
+		(and (index= bits-per-pixel 1)
+		     #'fast-read-pixarray-1)
+		#+(or lcl3.0 excl)
+		(and (index= bits-per-pixel 4)
+		     #'fast-read-pixarray-4)
+		#+(or Genera lcl3.0 excl)
+		(and (index= bits-per-pixel 24)
+		     #'fast-read-pixarray-24))))
+      (when function
+	(read-pixarray-internal
+	  bbuf boffset pixarray x y width height padded-bytes-per-line
+	  bits-per-pixel function
+	  unit byte-lsb-first-p bit-lsb-first-p
+	  *image-unit* *image-byte-lsb-first-p* *image-bit-lsb-first-p*)))))
 
 ;;; FAST-WRITE-PIXARRAY - copy part of a pixarray into an array of CARD8s
 
 #+(or lcl3.0 excl)
 (defun fast-write-pixarray-1 (buffer-bbuf index array x y width height
-			      padded-bytes-per-line)
+			      padded-bytes-per-line bits-per-pixel)
   (declare (type buffer-bytes buffer-bbuf)
 	   (type pixarray-1 array)
 	   (type card16 x y width height)
-	   (type array-index index padded-bytes-per-line))
+	   (type array-index index padded-bytes-per-line)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (ignore bits-per-pixel))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
     (with-underlying-simple-vector (vector pixarray-1-element-type array)
@@ -2749,12 +2944,14 @@
 
 #+(or lcl3.0 excl)
 (defun fast-write-pixarray-4 (buffer-bbuf index array x y width height
-			      padded-bytes-per-line)
+			      padded-bytes-per-line bits-per-pixel)
   (declare (type buffer-bytes buffer-bbuf)
 	   (type pixarray-4 array)
 	   (type int16 x y)
 	   (type card16 width height)
-	   (type array-index index padded-bytes-per-line))
+	   (type array-index index padded-bytes-per-line)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (ignore bits-per-pixel))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
     (with-underlying-simple-vector (vector pixarray-4-element-type array)
@@ -2786,12 +2983,14 @@
 
 #+(or Genera lcl3.0 excl)
 (defun fast-write-pixarray-24 (buffer-bbuf index array x y width height
-			       padded-bytes-per-line)
+			       padded-bytes-per-line bits-per-pixel)
   (declare (type buffer-bytes buffer-bbuf)
 	   (type pixarray-24 array)
 	   (type int16 x y)
 	   (type card16 width height)
-	   (type array-index index padded-bytes-per-line))
+	   (type array-index index padded-bytes-per-line)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (ignore bits-per-pixel))
   #.(declare-buffun)
   (with-vector (buffer-bbuf buffer-bytes)
     (with-underlying-simple-vector (vector pixarray-24-element-type array)
@@ -2815,90 +3014,61 @@
 		  (write-image-load-byte 16 pixel 24)))))))
   t)
 
-(defun fast-write-pixarray (bbuf boffset pixarray x y width height
-			    padded-bytes-per-line bits-per-pixel)
-  (declare (type buffer-bytes bbuf)
-	   (type pixarray pixarray)
-	   (type card16 x y width height)
-	   (type array-index boffset padded-bytes-per-line)
-	   (type (member 1 4 8 16 24 32) bits-per-pixel))
-  (progn bbuf boffset pixarray x y width height padded-bytes-per-line
-	 bits-per-pixel)
-  (or
-    #+lispm
-    (let* ((padded-bits-per-line (* padded-bytes-per-line 8))
-	   (padded-pixels-per-line
-	     (floor padded-bits-per-line bits-per-pixel))
-	   (pixarray-padded-pixels-per-line
-	     #+Genera (sys:array-row-span pixarray)
-	     #-Genera (array-dimension pixarray 1))
-	   (pixarray-padded-bits-per-line
-	     (* pixarray-padded-pixels-per-line bits-per-pixel)))
-      (when (and (= (sys:array-element-size pixarray) bits-per-pixel)
-		 (zerop (index-mod padded-bits-per-line 32))
-		 (zerop (index-mod pixarray-padded-bits-per-line 32)))
-	(#+Genera sys:stack-let* #-Genera let*
-	 ((dimensions (list (+ y height) padded-pixels-per-line))
-	  (a (make-array
-	       dimensions
-	       :element-type (array-element-type pixarray)
-	       :displaced-to bbuf
-	       :displaced-index-offset (floor (* boffset 8) bits-per-pixel))))
-	 (sys:bitblt boole-1 width height pixarray x y a 0 0))
-	t))
-    #+(or lcl3.0 excl)
-    (fast-write-pixarray-with-swap
-      bbuf boffset pixarray x y width height padded-bytes-per-line
-      bits-per-pixel 'image-noswap nil)
-    #+(or lcl3.0 excl)
-    (when (index= bits-per-pixel 1)
-      (fast-write-pixarray-1
-	bbuf boffset pixarray x y width height padded-bytes-per-line))
-    #+(or lcl3.0 excl)
-    (when (index= bits-per-pixel 4)
-      (fast-write-pixarray-4
-	bbuf boffset pixarray x y width height padded-bytes-per-line))
-    #+(or Genera lcl3.0 excl)
-    (when (index= bits-per-pixel 24)
-      (fast-write-pixarray-24
-	bbuf boffset pixarray x y width height padded-bytes-per-line))
-    ))
+#+lispm
+(defun fast-write-pixarray-using-bitblt
+       (bbuf boffset pixarray x y width height padded-bytes-per-line
+	bits-per-pixel)
+  (#+Genera sys:stack-let* #-Genera let*
+   ((dimensions (list (+ y height)
+		      (floor (* padded-bytes-per-line 8) bits-per-pixel)))
+    (a (make-array
+	 dimensions
+	 :element-type (array-element-type pixarray)
+	 :displaced-to bbuf
+	 :displaced-index-offset (floor (* boffset 8) bits-per-pixel))))
+   (sys:bitblt boole-1 width height pixarray x y a 0 0))
+  t)
 
-;;; FAST-READ-PIXARRAY-WITH-SWAP - swaps as well as reads
-
+#+(or Genera lcl3.0 excl)
 (defun fast-write-pixarray-with-swap
        (bbuf boffset pixarray x y width height padded-bytes-per-line
-	bits-per-pixel image-swap-function image-swap-lsb-first-p)
+	bits-per-pixel unit byte-lsb-first-p bit-lsb-first-p)
   (declare (type buffer-bytes bbuf)
 	   (type pixarray pixarray)
 	   (type card16 x y width height)
 	   (type array-index boffset padded-bytes-per-line)
 	   (type (member 1 4 8 16 24 32) bits-per-pixel)
-	   (type symbol image-swap-function)
-	   (type boolean image-swap-lsb-first-p))
-  (progn bbuf boffset pixarray x y width height padded-bytes-per-line
-	 bits-per-pixel image-swap-function image-swap-lsb-first-p)
-  (or
-    #+(or Genera lcl3.0 excl)
-    (unless (index= bits-per-pixel 24)
-      (let ((pixarray-padded-bits-per-line
-	      (if (index= height 1) 0
-		(index* (index- (array-row-major-index pixarray 1 0)
-				(array-row-major-index pixarray 0 0))
-			bits-per-pixel)))
-	    (pixarray-start-bit-offset
-	      (index* (array-row-major-index pixarray y x)
+	   (type (member 8 16 32) unit)
+	   (type boolean byte-lsb-first-p bit-lsb-first-p))
+  #+(or Genera lcl3.0 excl)
+  (unless (index= bits-per-pixel 24)
+    (let ((pixarray-padded-bits-per-line
+	    (if (index= height 1) 0
+	      (index* (index- (array-row-major-index pixarray 1 0)
+			      (array-row-major-index pixarray 0 0))
 		      bits-per-pixel)))
-	(declare (type array-index pixarray-padded-bits-per-line
-		       pixarray-start-bit-offset))
-	(when (if (eq (bits-per-pixel-image-byte-lsb-first-p bits-per-pixel)
-		      (bits-per-pixel-image-byte-lsb-first-p 8))
-		  (and (index-zerop (index-mod pixarray-padded-bits-per-line 8))
-		       (index-zerop (index-mod pixarray-start-bit-offset 8)))
-		(and (index-zerop
-		       (index-mod pixarray-padded-bits-per-line *image-unit*))
-		     (index-zerop
-		       (index-mod pixarray-start-bit-offset *image-unit*))))
+	  (pixarray-start-bit-offset
+	    (index* (array-row-major-index pixarray y x)
+		    bits-per-pixel)))
+      (declare (type array-index pixarray-padded-bits-per-line
+		     pixarray-start-bit-offset))
+      (when (if (or (index>= bits-per-pixel 8)
+		    (eq *computed-image-byte-lsb-first-p*
+			*computed-image-bit-lsb-first-p*))
+		(and (index-zerop (index-mod pixarray-padded-bits-per-line 8))
+		     (index-zerop (index-mod pixarray-start-bit-offset 8)))
+	      (and (index-zerop
+		     (index-mod pixarray-padded-bits-per-line *image-unit*))
+		   (index-zerop
+		     (index-mod pixarray-start-bit-offset *image-unit*))))
+	(multiple-value-bind (image-swap-function image-swap-lsb-first-p)
+	    (image-swap-function
+	      bits-per-pixel
+	      *image-unit* *computed-image-byte-lsb-first-p*
+	      *computed-image-bit-lsb-first-p*
+	      unit byte-lsb-first-p bit-lsb-first-p)
+	  (declare (type symbol image-swap-function)
+		   (type boolean image-swap-lsb-first-p))
 	  (with-underlying-simple-vector (src card8 pixarray)
 	    (funcall
 	      (symbol-function image-swap-function)
@@ -2907,6 +3077,49 @@
 	      (index-floor pixarray-padded-bits-per-line 8)
 	      padded-bytes-per-line height image-swap-lsb-first-p))
 	  t)))))
+
+(defun fast-write-pixarray (bbuf boffset pixarray x y width height
+			    padded-bytes-per-line bits-per-pixel
+			    unit byte-lsb-first-p bit-lsb-first-p)
+  (declare (type buffer-bytes bbuf)
+	   (type pixarray pixarray)
+	   (type card16 x y width height)
+	   (type array-index boffset padded-bytes-per-line)
+	   (type (member 1 4 8 16 24 32) bits-per-pixel)
+	   (type (member 8 16 32) unit)
+	   (type boolean byte-lsb-first-p bit-lsb-first-p))
+  (progn bbuf boffset pixarray x y width height padded-bytes-per-line
+	 bits-per-pixel unit byte-lsb-first-p bit-lsb-first-p)
+  (or
+    #+(or Genera lcl3.0 excl)
+    (fast-write-pixarray-with-swap
+      bbuf boffset pixarray x y width height padded-bytes-per-line
+      bits-per-pixel unit byte-lsb-first-p bit-lsb-first-p)
+    (let ((function
+	    (or #+lispm
+		(and (= (sys:array-element-size pixarray) bits-per-pixel)
+		     (zerop (index-mod padded-bytes-per-line 4))
+		     (zerop (index-mod
+			      (* #+Genera (sys:array-row-span pixarray)
+				 #-Genera (array-dimension pixarray 1)
+				 bits-per-pixel)
+			      32))
+		     #'fast-write-pixarray-using-bitblt)
+		#+(or lcl3.0 excl)
+		(and (index= bits-per-pixel 1)
+		     #'fast-write-pixarray-1)
+		#+(or lcl3.0 excl)
+		(and (index= bits-per-pixel 4)
+		     #'fast-write-pixarray-4)
+		#+(or Genera lcl3.0 excl)
+		(and (index= bits-per-pixel 24)
+		     #'fast-write-pixarray-24))))
+      (when function
+	(write-pixarray-internal
+	  bbuf boffset pixarray x y width height padded-bytes-per-line
+	  bits-per-pixel function
+	  *image-unit* *image-byte-lsb-first-p* *image-bit-lsb-first-p*
+	  unit byte-lsb-first-p bit-lsb-first-p)))))
 
 ;;; FAST-COPY-PIXARRAY - copy part of a pixarray into another
 
@@ -2949,8 +3162,9 @@
 		      bits-per-pixel)))
 	(declare (type array-index pixarray-padded-bits-per-line
 		       copy-padded-bits-per-line pixarray-start-bit-offset))
-	(when (if (eq (bits-per-pixel-image-byte-lsb-first-p bits-per-pixel)
-		      (bits-per-pixel-image-byte-lsb-first-p 8))
+	(when (if (or (index>= bits-per-pixel 8)
+		      (eq *computed-image-byte-lsb-first-p*
+			  *computed-image-bit-lsb-first-p*))
 		  (and (index-zerop (index-mod pixarray-padded-bits-per-line 8))
 		       (index-zerop (index-mod copy-padded-bits-per-line 8))
 		       (index-zerop (index-mod pixarray-start-bit-offset 8)))
