@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: Xct.c,v 1.2 89/05/09 09:16:21 rws Exp $
+ * $XConsortium: Xct.c,v 1.3 89/05/09 09:33:26 rws Exp $
  * Copyright 1989 by the Massachusetts Institute of Technology
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -17,9 +17,13 @@
 #include <stdio.h>
 #include "Xct.h"
 
+#define UsedGraphic	0x0001
+#define UsedDirection	0x0002
+
 typedef struct _XctPriv {
     XctString		ptr;
     XctString		ptrend;
+    unsigned		flags;
     XctHDirection	*dirstack;
     unsigned		dirsize;
 } *XctPriv;
@@ -305,6 +309,7 @@ XctReset(data)
     data->char_size = 1;
     data->horizontal = XctUnspecified;
     data->horz_depth = 0;
+    priv->flags = 0;
     data->GL_set_size = data->GR_set_size = 0; /* XXX */
     (void)HandleGL(data, (unsigned char)0x42);
     (void)Handle96GR(data, (unsigned char)0x41);
@@ -346,11 +351,11 @@ XctNextItem(data)
 		NEXT;
 	    }
 	    if (!IsMore(priv))
-		return XctSyntaxError;
+		return XctError;
 	    c = *priv->ptr;
 	    NEXT;
 	    if (!IsESCF(c))
-		return XctSyntaxError;
+		return XctError;
 	    switch (data->item[1]) {
 	    case 0x24:
 		if (data->item_length > 3) {
@@ -368,18 +373,21 @@ XctNextItem(data)
 		    (c <= 0x3f)) {
 		    if ((AmountLeft(priv) < 2) ||
 			(priv->ptr[0] < 0x80) || (priv->ptr[1] < 0x80))
-			return XctSyntaxError;
+			return XctError;
 		    len = *priv->ptr - 0x80;
 		    NEXT;
 		    len = (len << 7) + (*priv->ptr - 0x80);
 		    NEXT;
 		    if (AmountLeft(priv) < len)
-			return XctSyntaxError;
+			return XctError;
 		    data->item_length += len;
 		    priv->ptr += len;
 		    if (c <= 0x34) {
-			if (!HandleExtended(data, c))
-			    return XctSyntaxError;
+			if (!HandleExtended(data, c) ||
+			    ((data->horz_depth == 0) &&
+			     (priv->flags & UsedDirection)))
+			    return XctError;
+			priv->flags |= UsedGraphic;
 			return XctExtendedSegment;
 		    }
 		}
@@ -406,14 +414,15 @@ XctNextItem(data)
 		NEXT;
 	    }
 	    if (!IsMore(priv))
-		return XctSyntaxError;
+		return XctError;
 	    c = *priv->ptr;
 	    NEXT;
 	    if (!IsCSIF(c))
-		return XctSyntaxError;
+		return XctError;
 	    if (c == 0x5d) {
 		if ((data->item_length == 3) &&
 		    ((data->item[1] == 0x31) || (data->item[1] == 0x32))) {
+		    priv->flags |= UsedDirection;
 		    data->horz_depth++;
 		    if (priv->dirsize < data->horz_depth) {
 			priv->dirsize += 10;
@@ -458,9 +467,12 @@ XctNextItem(data)
 		while (IsMore(priv) && IsGL(*priv->ptr)) {
 		    NEXT;
 		}
-		if ((data->char_size > 1) &&
-		    (data->item_length % data->char_size))
-		    return XctSyntaxError;
+		if (((data->char_size > 1) &&
+		     (data->item_length % data->char_size)) ||
+		    ((data->horz_depth == 0) &&
+		     (priv->flags & UsedDirection)))
+		    return XctError;
+		priv->flags |= UsedGraphic;
 		return XctGLSegment;
 	    } else if (IsC1(c)) {
 		data->encoding = (char *)NULL;
@@ -473,9 +485,12 @@ XctNextItem(data)
 		while (IsMore(priv) && IsGR(*priv->ptr)) {
 		    NEXT;
 		}
-		if ((data->char_size > 1) &&
-		    (data->item_length % data->char_size))
-		    return XctSyntaxError;
+		if (((data->char_size > 1) &&
+		     (data->item_length % data->char_size)) ||
+		    ((data->horz_depth == 0) &&
+		     (priv->flags & UsedDirection)))
+		    return XctError;
+		priv->flags |= UsedGraphic;
 		return XctGRSegment;
 	    }
 	} else {
@@ -498,7 +513,7 @@ XctNextItem(data)
 			}
 			if ((data->GL_char_size > 1) &&
 			    ((data->item_length - len) % data->GL_char_size))
-			    return XctSyntaxError;
+			    return XctError;
 		    } else {
 			bits |= HasGR;
 			while (IsMore(priv) && IsGR(*priv->ptr)) {
@@ -506,7 +521,7 @@ XctNextItem(data)
 			}
 			if ((data->GR_char_size > 1) &&
 			    ((data->item_length - len) % data->GR_char_size))
-			    return XctSyntaxError;
+			    return XctError;
 		    }
 		}
 		if (!IsMore(priv))
@@ -514,6 +529,12 @@ XctNextItem(data)
 		c = *priv->ptr;
 	    }
 	    if (data->item_length) {
+		if (bits & (HasGL|HasGR)) {
+		    priv->flags |= UsedGraphic;
+		    if ((data->horz_depth == 0) &&
+			(priv->flags & UsedDirection))
+			return XctError;
+		}
 		if ((bits == (HasGL|HasGR)) ||
 		    (data->GLGR_encoding && !(bits & HasC))) {
 		    data->encoding = data->GLGR_encoding;
@@ -542,7 +563,7 @@ XctNextItem(data)
 	    NEXT;
 	}
 	if (data->version <= XctVersion)
-	    return XctSyntaxError;
+	    return XctError;
 	if (data->flags & XctProvideExtensions)
 	    return XctExtension;
 	if (!data->can_ignore_exts)
