@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.31 93/09/22 18:56:37 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.32 93/09/22 22:00:48 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -116,7 +116,13 @@ typedef long BytesReadable_t;
 
 #if !defined(USE_POLL) || defined(STREAMSCONN)
 
-#define MSKCNT ((OPEN_MAX + 31) / 32)
+#ifdef WORD64
+#define NMSKBITS 64
+#else
+#define NMSKBITS 32
+#endif
+
+#define MSKCNT ((OPEN_MAX + NMSKBITS - 1) / NMSKBITS)
 
 #ifdef LONG64
 typedef unsigned int FdSet[MSKCNT];
@@ -129,8 +135,8 @@ typedef unsigned long FdSet[MSKCNT];
 #define MASKIDX(i) 0
 #endif
 #if (MSKCNT>1)
-#define BITMASK(i) (1 << ((i) & 31))
-#define MASKIDX(i) ((i) >> 5)
+#define BITMASK(i) (1 << ((i) & (NMSKBITS - 1)))
+#define MASKIDX(i) ((i) / NMSKBITS)
 #endif
 
 #define MASKWORD(buf, i) buf[MASKIDX(i)]
