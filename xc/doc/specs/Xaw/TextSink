@@ -228,11 +228,11 @@ reference position.
 Specifies the distance, in pixels, from the reference position to the
 desired character position.
 .IP \fIstopAtWordBreak\fP 1.25i
-Specifies whether or not the position that we return should be forced
+Specifies whether or not the position that is returned should be forced
 to be on a word boundry.
 .IP \fIpos_return\fP 1.25i
 Returns the character position that corresponds to the
-location that we have specified, or the work break immediately to the
+location that has been specified, or the work break immediately to the
 left of the position if \fIstopAtWordBreak\fP is \fBTrue\fP.
 .IP \fIwidth_return\fP 1.25i
 Returns the actual distance between \fIfromPos\fP
@@ -272,8 +272,8 @@ reference position.
 Specifies the distance, in pixels, from the reference position to the
 desired character position.
 .IP \fIpos_return\fP 1i
-Returnd the character position that corresponds to the
-location that we have specified, or the word break immediately to the left
+Returns the character position that corresponds to the
+location that has been specified, or the word break immediately to the left
 if \fIstopAtWordBreak\fP is \fBTrue\fP.
 .LP
 This function need make no attempt to deal with line feeds.  The text

@@ -18,13 +18,12 @@ Chapter 4 - Menus
 .XE
 .LP
 The Athena widget set provides support for single paned non-hierarchical
-popup and pulldown menus.  We realized the support for menus must be
-provided in even  
-the most basic of widget sets, and that this has long been perceived as
-a serious flaw in the Athena widget set.  Since the resources
-available for this task were limited we decided to provide only the
-basic functionality, and deliberately did not attempt to solve the
-entire problem.
+popup and pulldown menus.  Since menus are such a common user
+interface tool, support for them must be provided in even  
+the most basic widget sets.  Since the resources
+available for this task were limited, it was decided that the Athena
+widget set would provide only the basic functionality, and
+deliberately did not attempt to solve the entire problem.
 .LP
 Menus in the Athena widget set are implemented as a Menu container (the
 SimpleMenu widget) and a collection of objects that will comprise the

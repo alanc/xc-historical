@@ -302,9 +302,9 @@ Do no adjust panes with \fBskipAdjust\fP set.
 Do not adjust panes away from their preferred size, although moving one
 closer to its preferred size is fine. 
 .LP
-When searching the children we look for panes that satisfy all the
-rules, and if unsuccessful then we eliminate rule 3 and then 2.  Rule 1
-is always enforced. 
+When searching the children the Paned widget looks for panes that
+satisfy all the rules, and if unsuccessful then it eliminates rule 3
+and then 2.  Rule 1 is always enforced. 
 .LP
 If the relayout is due to a resize or change is management then the
 panes are searched from bottom to top.
