@@ -60,7 +60,7 @@ _
 .nr PS 11
 .vs 13
 .nr VS 13
-.De
+.Dc
 .IP \fBforeground\fP 1.5i
 A pixel value which indexes the SimpleMenu's colormap to derive the
 foreground color used to draw the separator line.

@@ -60,8 +60,7 @@ _
 .vs 13
 .nr VS 13
 .As
-.IP destroyCallback 1.5i
-All callback functions on this list are called when this object is destroyed.
+.Dc
 .Hw
 Keep in mind that the SimpleMenu widget will force all menu items to
 be the width of the widest entry. 

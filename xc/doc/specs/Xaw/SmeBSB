@@ -73,7 +73,7 @@ _
 .IP \fBcallback\fP 1.5i
 All callback functions on this list are called when the SimpleMenu
 \fInotifies\fP this entry that the user has selected it.
-.De
+.Dc
 .IP \fBfont\fP 1.5i
 The font used to display the text label.
 .IP \fBforeground\fP 1.5i
