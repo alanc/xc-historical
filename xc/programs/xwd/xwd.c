@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.6 87/05/22 14:06:44 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.7 87/05/27 09:54:15 dkk Locked $";
 #endif
 
 #include <X11/X.h>
@@ -41,11 +41,6 @@ static char *rcsid_xwd_c = "$Header: xwd.c,v 1.6 87/05/22 14:06:44 dkk Locked $"
 char *calloc();
 
 /*  typedef enum _bool {FALSE, TRUE} Bool;   %%*/
-
-/*
-#include "target.cursor"
-#include "target_mask.cursor"
- %%*/
 
 #include "XWDFile.h"
 
@@ -98,7 +93,7 @@ main(argc, argv)
     char *str_index;
     char *file_name;
     char display[256];
-    char *win_name[256];
+    char win_name[32];
     char *data;
     Bool nobdrs = False;
     Bool debug = False;
@@ -154,7 +149,7 @@ main(argc, argv)
 	    standard_out = False;
 	    continue;
 	}
-	if(strncmp(argv[i], "-xy") == 0) {
+	if(strncmp(argv[i], "-xy", 3) == 0) {
 	    pixmap_format = XYPixmap;
 	    continue;
 	}
@@ -243,14 +238,13 @@ main(argc, argv)
      Error("Can't query target window.\n");
 
     if(XFetchName(dpy, target_win, win_name) == FAILURE) {
-      strcpy(win_name, "xwdump");
+      (void) strncpy(win_name, "xwdump", sizeof (win_name));
     }
 
     /*
      * sizeof(char) is included for the null string terminator.
      */
     win_name_size = strlen(win_name) + sizeof(char);
-    printf("Window name size: %d", win_name_size);
 
     /*
      * Calculate the virtual x, y, width and height of the window pane image
@@ -320,34 +314,11 @@ main(argc, argv)
     height = virt_height;
     plane_mask = 1;
 
-    image = XCreateImage ( dpy, visual, depth, format, offset,
-			   data, width, height);
-
     image = XGetImage ( dpy, image_win, virt_x, virt_y, width, 
 		       height, plane_mask, format);
 
     if (debug) fprintf(stderr,"xwd: Getting pixmap.\n");
 
-/*    if (DisplayPlanes(dpy, screen) == 1) {
-	(void) XGetImage(
-	    dpy, image_win,
-	    virt_x, virt_y,
-	    virt_width, virt_height,
-	    plane_mask,
-	    format
- %%*/
-/*	    (short *)buffer  %%*/
-/*	);
-    }
-    else {
-	(void) XPixmapGetZ(
-	    image_win,
-	    virt_x, virt_y,
-	    virt_width, virt_height,
-	    (caddr_t)buffer
-	);
-    }
- %%*/
     /*
      * Find the number of colors used, then write them out to the file.
      */
@@ -417,7 +388,7 @@ if(DisplayPlanes(dpy, screen) > 16)
 	}
  %%*/
 
-	free(histbuffer);
+/*	free(histbuffer);  %%*/
 /*
  * }
  %%*/    
@@ -427,7 +398,7 @@ if(DisplayPlanes(dpy, screen) > 16)
      */
     XBell(dpy, FEEP_VOLUME);
     XBell(dpy, FEEP_VOLUME);
-    XFlush();
+    XFlush(dpy);
 
     /*
      * Calculate header size.
@@ -466,7 +437,7 @@ if(DisplayPlanes(dpy, screen) > 16)
      * Write out the buffer.
      */
     if (debug) fprintf(stderr,"xwd: Dumping pixmap.\n");
-    (void) fwrite(buffer, (int) buffer_size, 1, out_file);
+    (void) fwrite(image->data, (int) buffer_size, 1, out_file);
 
     /*
      * Close the output file.
@@ -492,6 +463,7 @@ if(DisplayPlanes(dpy, screen) > 16)
     if (debug) fprintf(stderr,"xwd: Freeing window name string.\n");
     free(win_name);
     exit(0);
+
 }
 
 /*
