@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.20 91/01/09 17:20:45 rws Exp $
+ * $XConsortium: xclipboard.c,v 1.21 91/01/10 15:30:53 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -25,7 +25,7 @@
  * Reauthored by: Keith Packard, MIT X Consortium.
  */
 
-/* $XConsortium: xclipboard.c,v 1.20 91/01/09 17:20:45 rws Exp $ */
+/* $XConsortium: xclipboard.c,v 1.21 91/01/10 15:30:53 gildea Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -604,12 +604,16 @@ typedef struct {
   Boolean wrap;
 } ResourceData, *ResourceDataPtr;
 
-ResourceData userOptions;
+static ResourceData userOptions;
+
+#define Offset(field) XtOffsetOf(ResourceData, field)
 
 XtResource resources[] = {
   {"wrap", "Wrap", XtRBoolean, sizeof(Boolean),
-     XtOffset(ResourceDataPtr, wrap), XtRImmediate, (XtPointer)False}
+     Offset(wrap), XtRImmediate, (XtPointer)False}
 };
+
+#undef Offset
 
 void
 main(argc, argv)

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.13 91/01/10 16:03:59 gildea Exp $
+ * $XConsortium: xcutsel.c,v 1.13 91/01/10 16:06:17 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -36,7 +36,7 @@
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xfuncs.h>
 
-static XrmOptionDescRec options[] = {
+static XrmOptionDescRec optionDesc[] = {
     {"-selection", "selection",	XrmoptionSepArg, NULL},
     {"-select",    "selection",	XrmoptionSepArg, NULL},
     {"-sel",	   "selection",	XrmoptionSepArg, NULL},
@@ -44,21 +44,26 @@ static XrmOptionDescRec options[] = {
     {"-cutbuffer", "cutBuffer",	XrmoptionSepArg, NULL},
 };
 
-
-struct _app_resources {
+typedef struct {
     String  selection_name;
     int	    buffer;
     Atom    selection;
     char*   value;
     int     length;
-} app_resources;
+} OptionsRec;
+
+OptionsRec options;
+
+#define Offset(field) XtOffsetOf(OptionsRec, field)
 
 static XtResource resources[] = {
     {"selection", "Selection", XtRString, sizeof(String),
-       XtOffset(struct _app_resources*, selection_name), XtRString, "PRIMARY"},
+       Offset(selection_name), XtRString, "PRIMARY"},
     {"cutBuffer", "CutBuffer", XtRInt, sizeof(int),
-       XtOffset(struct _app_resources*, buffer), XtRImmediate, (caddr_t)0},
+       Offset(buffer), XtRImmediate, (caddr_t)0},
 };
+
+#undef Offset
 
 typedef struct {
     Widget button;
@@ -91,7 +96,7 @@ static void StoreBuffer(w, client_data, selection, type, value, length, format)
     }
 
     XStoreBuffer( XtDisplay(w), (char*)value, (int)(*length),
-		  app_resources.buffer );
+		  options.buffer );
    
     XtFree(value);
 }
@@ -133,8 +138,8 @@ static Boolean ConvertSelection(w, selection, target,
     }
     if (*target == XA_STRING || *target == XA_TEXT(d)) {
 	*type = XA_STRING;
-	*value = app_resources.value;
-	*length = app_resources.length;
+	*value = options.value;
+	*length = options.length;
 	*format = 8;
 	return True;
     }
@@ -149,7 +154,7 @@ static Boolean ConvertSelection(w, selection, target,
     }
     if (*target == XA_LENGTH(d)) {
 	long *temp = (long *) XtMalloc (sizeof(long));
-	*temp = app_resources.length;
+	*temp = options.length;
 	*value = (caddr_t) temp;
 	*type = XA_INTEGER;
 	*length = 1;
@@ -199,8 +204,8 @@ static void LoseSelection(w, selection)
     Widget w;
     Atom *selection;
 {
-    XtFree( app_resources.value );
-    app_resources.value = NULL;
+    XtFree( options.value );
+    options.value = NULL;
     SetButton(&state, False);
 }
 
@@ -222,7 +227,7 @@ static void GetSelection(w, closure, callData)
     XtPointer closure;		/* unused */
     XtPointer callData;		/* unused */
 {
-    XtGetSelectionValue(w, app_resources.selection, XA_STRING,
+    XtGetSelectionValue(w, options.selection, XA_STRING,
 			StoreBuffer, NULL,
 			XtLastTimestampProcessed(XtDisplay(w)));
 }
@@ -234,11 +239,11 @@ static void GetBuffer(w, closure, callData)
     XtPointer closure;
     XtPointer callData;		/* unused */
 {
-    XtFree( app_resources.value );
-    app_resources.value =
-	XFetchBuffer(XtDisplay(w), &app_resources.length, app_resources.buffer);
-    if (app_resources.value != NULL) {
-	if (XtOwnSelection(w, app_resources.selection,
+    XtFree( options.value );
+    options.value =
+	XFetchBuffer(XtDisplay(w), &options.length, options.buffer);
+    if (options.value != NULL) {
+	if (XtOwnSelection(w, options.selection,
 			   XtLastTimestampProcessed(XtDisplay(w)),
 			   ConvertSelection, LoseSelection, NULL))
 	    SetButton((ButtonState*)closure, True);
@@ -254,19 +259,19 @@ void main(argc, argv)
     Widget box, button;
     XtAppContext appcon;
     Widget shell =
-	XtAppInitialize( &appcon, "XCutsel", options, XtNumber(options),
+	XtAppInitialize( &appcon, "XCutsel", optionDesc, XtNumber(optionDesc),
 			 &argc, argv, NULL, NULL, 0 );
     XrmDatabase rdb = XtDatabase(XtDisplay(shell));
 
     if (argc != 1) Syntax(argv[0]);
 
-    XtGetApplicationResources( shell, (caddr_t)&app_resources,
+    XtGetApplicationResources( shell, (caddr_t)&options,
 			       resources, XtNumber(resources),
 			       NULL, ZERO );
 
-    app_resources.value = NULL;
-    XmuInternStrings( XtDisplay(shell), &app_resources.selection_name, ONE,
-		      &app_resources.selection );
+    options.value = NULL;
+    XmuInternStrings( XtDisplay(shell), &options.selection_name, ONE,
+		      &options.selection );
 
     box = XtCreateManagedWidget("box", boxWidgetClass, shell, NULL, ZERO);
 
@@ -276,8 +281,8 @@ void main(argc, argv)
 
     /* %%% hack alert... */
     sprintf(label, "*label:copy %s to %d",
-	    app_resources.selection_name,
-	    app_resources.buffer);
+	    options.selection_name,
+	    options.buffer);
     XrmPutLineResource( &rdb, label );
 
     button =
@@ -285,8 +290,8 @@ void main(argc, argv)
 	XtAddCallback( button, XtNcallback, GetSelection, NULL );
 
     sprintf(label, "*label:copy %d to %s",
-	    app_resources.buffer,
-	    app_resources.selection_name);
+	    options.buffer,
+	    options.selection_name);
     XrmPutLineResource( &rdb, label );
 
     button =
