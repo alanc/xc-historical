@@ -5,10 +5,10 @@
 #if InstallxdmConfig
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
-
-   XDMCONFIGDIR = config/default
-        SUBDIRS = $(XDMCONFIGDIR)
 #endif
+
+   XDMCONFIGDIR = XdmConfigurationSubdirectory
+        SUBDIRS = $(XDMCONFIGDIR)
 
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
           SRCS1 = buf.c daemon.c display.c displaylist.c dm.c error.c \
@@ -43,20 +43,15 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 secure $(DEF_SERVER) :0"' \
 		  '-DDEF_FAILSAFE_CLIENT="$(BINDIR)/xterm"' \
 		  '-DDEF_XDM_CONFIG="$(XDMDIR)/xdm-config"'
 
-#ifdef IHaveSubdirs
-MakeSubdirs($(SUBDIRS))
-
-install:: $(XDMDIR)
-	cd $(XDMCONFIGDIR); make install XDMDIR=$(XDMDIR)
-
-$(XDMDIR):
-	-mkdir $(XDMDIR)
-#endif
-
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),)
 SingleProgramTarget(xdmshell,$(OBJS2),,)
 
 SpecialObjectRule(resource.o, $(ICONFIGFILES), $(RES_DEFINES))
+
+#ifdef IHaveSubdirs
+MakeDirectories(install,$(XDMDIR))
+MakeSubdirs($(SUBDIRS))
+#endif
 
 /*
  * Don't install; let people read the instructions about putting in the
