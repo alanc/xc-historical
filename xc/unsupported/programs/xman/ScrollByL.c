@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium$
+ * $XConsortium: ScrollByL.c,v 1.3 88/09/04 19:11:02 swick Exp $
  * $oHeader: ScrollByL.c,v 4.0 88/08/31 22:11:02 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -729,7 +729,7 @@ static void
 VerticalThumb(w,junk,percent)
 Widget w;
 caddr_t junk;
-float percent;
+float *percent;
 {
   int new_line;			/* The new location for the line pointer. */
   float location;		/* The location of the thumb. */
@@ -739,7 +739,7 @@ float percent;
 
   vbar =  sblw->composite.children[0];
 
-  new_line = (int) ((float) sblw->scroll_by_line.lines * percent);
+  new_line = (int) ((float) sblw->scroll_by_line.lines * (*percent));
 
   if (ScrollVerticalText( (Widget) sblw, new_line, FALSE)) {
 /* reposition the thumb */
@@ -806,7 +806,7 @@ static void
 HorizontalThumb(w,junk,percent)
 Widget w;
 caddr_t junk;
-float percent;
+float *percent;
 {
   int x, y;
   Widget child,vbar;
@@ -817,7 +817,7 @@ float percent;
   vbar =  sblw->composite.children[0];
   child = sblw->composite.children[2];
 
-  x = (int) ( (0.0 - percent) * ((float) child->core.width));
+  x = (int) ( (0.0 - (*percent)) * ((float) child->core.width));
   y = child->core.y;
 
 /* 
@@ -927,7 +927,7 @@ static void InitializeHook(new, args, num_args)
   scrollbar_num++;
   thumbcallback[0].callback = VerticalThumb;  
   scrollcallback[0].callback = VerticalScroll;
-  XtSetArg(arglist[scrollbar_num], XtNthumbProc, thumbcallback);
+  XtSetArg(arglist[scrollbar_num], XtNjumpProc, thumbcallback);
   scrollbar_num++;
   XtSetArg(arglist[scrollbar_num], XtNscrollProc, scrollcallback);
   scrollbar_num++;
@@ -952,7 +952,7 @@ static void InitializeHook(new, args, num_args)
   scrollbar_num++;
   thumbcallback[0].callback = HorizontalThumb;
   scrollcallback[0].callback = HorizontalScroll;
-  XtSetArg(arglist[scrollbar_num], XtNthumbProc, thumbcallback);
+  XtSetArg(arglist[scrollbar_num], XtNjumpProc, thumbcallback);
   scrollbar_num++;
   XtSetArg(arglist[scrollbar_num], XtNscrollProc, scrollcallback);
   scrollbar_num++;
