@@ -1,4 +1,4 @@
-/* $XConsortium: cOCTables.ci,v 1.2 91/07/19 21:06:43 rws Exp $ */
+/* $XConsortium: cOCTables.ci,v 1.3 93/05/07 16:07:54 hersh Exp $ */
 /* Automatically generated OC table
  */
 /******************************************************************
@@ -110,7 +110,8 @@ extern ErrorCode
 	SWAP_OC_PREFIX(CellArray2D) (),
 	SWAP_OC_PREFIX(ExtCellArray) (),
 	SWAP_OC_PREFIX(Gdp) (),
-	SWAP_OC_PREFIX(Gdp2D) ();
+	SWAP_OC_PREFIX(Gdp2D) (),
+	SwapPEXRenderingColourModel();
 
 OCFunction SWAP_OC_PREFIX(OutputCmd) [] = {
 	SwapPEXOCUnused,
@@ -184,7 +185,7 @@ OCFunction SWAP_OC_PREFIX(OutputCmd) [] = {
 	SwapPEXPickId,
 	SwapPEXHlhsrIdentifier,
 	SwapPEXMarkerBundleIndex,	/* ColourApproxIndex */
-	SWAP_OC_PREFIX(MarkerColour),	/* RenderingColourModel */
+	SwapPEXRenderingColourModel,	/* RenderingColourModel */
 	SWAP_OC_PREFIX(ParaSurfCharacteristics),
 	SWAP_OC_PREFIX(AddToNameSet),
 	SWAP_OC_PREFIX(AddToNameSet),	/* RemoveFromNameSet */

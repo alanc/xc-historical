@@ -1,4 +1,4 @@
-/* $XConsortium: OCattr.c,v 5.4 91/07/19 17:14:01 hersh Exp $ */
+/* $XConsortium: OCattr.c,v 5.5 93/05/07 16:07:45 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -482,7 +482,7 @@ SwapPEXRenderingColourModel (swapPtr, strmPtr)
 pexSwap			*swapPtr;
 pexRenderingColourModel	*strmPtr;
 {
-    SWAP_CARD16(strmPtr->model);
+    SWAP_INT16(strmPtr->model);
 }
 
 ErrorCode
