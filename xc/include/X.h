@@ -1,5 +1,5 @@
 /*
- *	$Header: X.h,v 1.62 87/08/26 21:31:43 toddb Locked $
+ *	$Header: X.h,v 1.63 87/08/26 21:32:09 toddb Exp $
  */
 
 /* Definitions for the X window system likely to be used by applications */
@@ -276,6 +276,8 @@ are reserved in the protocol for errors and replies. */
 #define AsyncKeyboard		3
 #define SyncKeyboard		4
 #define ReplayKeyboard		5
+#define AsyncBoth		6
+#define SyncBoth		7
 
 /* Used in SetInputFocus, GetInputFocus */
 
