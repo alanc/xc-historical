@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 #include <Server.tmpl>
 
 OSDEP_SRC = AIXV3.c AIXinit.c aixMsg.c aixError.c aixWrap.c

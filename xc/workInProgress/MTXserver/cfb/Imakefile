@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 #include <Server.tmpl>
 
 SRCS =	 cfbgc.c cfbrrop.c cfbwindow.c \

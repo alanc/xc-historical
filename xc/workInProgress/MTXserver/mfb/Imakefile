@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \

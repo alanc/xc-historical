@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 XCOMM
 XCOMM This library contains miscellaneous utility routines and is not part
 XCOMM of the Xlib standard.

@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 XCOMM Use -DARRAYPERSTR if you want a separate global symbol per string.
 XCOMM You must manually insert ShellStr.h contents into Shell.h
 
