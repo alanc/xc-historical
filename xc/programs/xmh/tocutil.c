@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocutil.c,v 1.14 87/07/16 10:11:01 weissman Exp $";
+static char rcs_id[] = "$Header: tocutil.c,v 1.14 87/09/11 08:19:27 toddb Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -32,7 +32,9 @@ static char rcs_id[] = "$Header: tocutil.c,v 1.14 87/07/16 10:11:01 weissman Exp
 #include "toc.h"
 #include "tocutil.h"
 #include "tocintrnl.h"
+#ifdef X10
 #include <sys/file.h>
+#endif	/* X10 */
 
 Toc TUMalloc()
 {

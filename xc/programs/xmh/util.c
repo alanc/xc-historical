@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: util.c,v 1.14 87/09/11 08:18:35 swick Locked $";
+static char rcs_id[] = "$Header: util.c,v 1.15 87/10/13 12:42:24 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -29,10 +29,12 @@ static char rcs_id[] = "$Header: util.c,v 1.14 87/09/11 08:18:35 swick Locked $"
 /* util.c -- little miscellaneous utilities. */
 
 #include "xmh.h"
+#ifdef X10
 #include <sys/file.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/time.h>
+#endif	/* X10 */
+#include <sys/stat.h>
 #include <errno.h>
 #include <ctype.h>
 
