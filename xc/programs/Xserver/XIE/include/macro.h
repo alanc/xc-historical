@@ -1,4 +1,4 @@
-/* $XConsortium: macro.h,v 1.1 93/07/19 10:12:03 rws Exp $ */
+/* $XConsortium: macro.h,v 1.2 93/07/19 11:31:37 rws Exp $ */
 /**** module macro.h ****/
 /******************************************************************************
 				NOTICE
@@ -65,8 +65,8 @@ terms and conditions:
  */
 #define ddInput(flo,ped,band,data,bytes,final) \
   		(*flo->dataVec->input)(flo,ped,band,data,bytes,final)
-#define ddOutput(flo,ped,band,data,bytes,maxLen,term,free) \
-  		(*flo->dataVec->output)(flo,ped,band,data,bytes,maxLen,term,free)
+#define ddOutput(flo,ped,band,data,bytes,maxLen,term) \
+  		(*flo->dataVec->output)(flo,ped,band,data,bytes,maxLen,term)
 #define ddQuery(flo,lst,im,ex) (*flo->dataVec->query)(flo,lst,im,ex)
 
 /* List management macros
