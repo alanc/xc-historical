@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.17 93/10/11 11:51:15 rws Exp $ */
+/* $XConsortium: sunIo.c,v 5.18 93/10/29 17:40:29 kaleb Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.
@@ -45,9 +45,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
 
 #include    "sun.h"
-#ifndef i386 
-#include	<sys/resource.h>
-#endif
 
 /*-
  *-----------------------------------------------------------------------
@@ -198,16 +195,6 @@ ddxProcessArgument (argc, argv, i)
     extern Bool FlipPixels;
     extern Bool FbInfo;
 
-#ifndef i386 /* { */
-    struct rlimit rl;
-    /* one per client, screen, keyboard, mouse, stdin, stdout, stderr */
-    int maxfds = MAXCLIENTS + MAXSCREENS + 5;
-
-    if (getrlimit (RLIMIT_NOFILE, &rl) == 0) {
-	rl.rlim_cur = maxfds < rl.rlim_max ? maxfds : rl.rlim_max;
-	(void) setrlimit (RLIMIT_NOFILE, &rl);
-    }
-#endif /* } */
 #ifndef XKB
     if (strcmp (argv[i], "-ar1") == 0) {	/* -ar1 int */
 	if (++i >= argc) UseMsg ();

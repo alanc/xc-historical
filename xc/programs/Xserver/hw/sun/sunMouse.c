@@ -66,7 +66,6 @@ miPointerScreenFuncRec sunPointerScreenFuncs = {
 };
 
 static PtrPrivRec sysMousePriv = {
-    -1,	/* Descriptor to device */
     0	/* Current button state */
 };
 
@@ -129,7 +128,6 @@ int sunMouseProc (device, what)
 #endif
 {
     DevicePtr	  pMouse = (DevicePtr) device;
-    register int  fd;
     int	    	  format;
     static int	  oformat;
     BYTE    	  map[4];
@@ -141,27 +139,8 @@ int sunMouseProc (device, what)
 		ErrorF ("Cannot open non-system mouse");	
 		return !Success;
 	    }
-	    if (sysMousePriv.fd >= 0) {
-		fd = sysMousePriv.fd;
-	    } else {
-		if (!(dev = getenv ("MOUSE")))
-		    dev = "/dev/mouse";
-		if ((fd = open (dev, O_RDWR, 0)) == -1) {
-		    Error ("sunMouseProc");
-		    ErrorF ("opening %s", dev);
-		    return !Success;
-		}
-		if (fcntl (fd, F_SETFL, FNDELAY | FASYNC) == -1
-#ifdef SVR4
-		    || ioctl(fd, I_SETSIG, S_INPUT | S_HIPRI) < 0) {
-#else
-		    || fcntl(fd, F_SETOWN, getpid()) == -1) {
-#endif
-		    Error("sunMouseProc");
-		    ErrorF("Can't set up mouse on fd %d\n", fd);
-		}
-		sysMousePriv.fd = fd;
-	    }
+	    if (sunPtrFd == -1)
+		return !Success;
 	    pMouse->devicePrivate = (pointer) &sysMousePriv;
 	    pMouse->on = FALSE;
 	    map[1] = 1;
@@ -173,34 +152,31 @@ int sunMouseProc (device, what)
 	    break;
 
 	case DEVICE_ON:
-	    if (ioctl (((PtrPrivPtr)pMouse->devicePrivate)->fd,
-		VUIDGFORMAT, &oformat) == -1) {
+	    if (ioctl (sunPtrFd, VUIDGFORMAT, &oformat) == -1) {
 		Error ("sunMouseProc ioctl VUIDGFORMAT");
 		return !Success;
 	    }
 	    format = VUID_FIRM_EVENT;
-	    if (ioctl (((PtrPrivPtr)pMouse->devicePrivate)->fd,
-		VUIDSFORMAT, &format) == -1) {
+	    if (ioctl (sunPtrFd, VUIDSFORMAT, &format) == -1) {
 		Error ("sunMouseProc ioctl VUIDSFORMAT");
 		return !Success;
 	    }
 	    sysMousePriv.bmask = 0;
-	    AddEnabledDevice (((PtrPrivPtr)pMouse->devicePrivate)->fd);
+	    AddEnabledDevice (sunPtrFd);
 	    pMouse->on = TRUE;
 	    break;
 
 	case DEVICE_CLOSE:
-	    if (ioctl (((PtrPrivPtr)pMouse->devicePrivate)->fd,
-		VUIDSFORMAT, &oformat) == -1)
+	    if (ioctl (sunPtrFd, VUIDSFORMAT, &oformat) == -1)
 		Error ("sunMouseProc ioctl VUIDSFORMAT");
 	    break;
 
 	case DEVICE_OFF:
 	    pMouse->on = FALSE;
-	    RemoveEnabledDevice (((PtrPrivPtr)pMouse->devicePrivate)->fd);
+	    RemoveEnabledDevice (sunPtrFd);
 	    break;
     }
-    return (Success);
+    return Success;
 }
     
 /*-
@@ -231,12 +207,9 @@ Firm_event* sunMouseGetEvents (pMouse, pNumEvents, pAgain)
 #endif
 {
     int	    	  nBytes;	    /* number of bytes of events available. */
-    register PtrPrivPtr	  pPriv;
     static Firm_event	evBuf[MAXEVENTS];   /* Buffer for Firm_events */
 
-    pPriv = (PtrPrivPtr) pMouse->devicePrivate;
-
-    if ((nBytes = read (pPriv->fd, (char *)evBuf, sizeof(evBuf))) == -1) {
+    if ((nBytes = read (sunPtrFd, (char *)evBuf, sizeof(evBuf))) == -1) {
 	if (errno == EWOULDBLOCK) {
 	    *pNumEvents = 0;
 	    *pAgain = FALSE;

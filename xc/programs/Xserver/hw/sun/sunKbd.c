@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.32 93/10/18 11:42:32 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.33 93/10/29 17:40:32 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -93,15 +93,14 @@ static int		autoRepeatFirst;
 static struct timeval	autoRepeatLastKeyDownTv;
 static struct timeval	autoRepeatDeltaTv;
 #endif
-static KeybdCtrl*	pKbdCtrl;
 
 static KbPrivRec  	sysKbPriv = {
-    -1,			/* Type of keyboard */
-    -1,			/* Layout of keyboard */
-    -1,			/* Descriptor open to device */
-    0,			/* offset for device keycodes */
-    (Bool)0,		/* Mapped queue */
-    (Bool)0,		/* initial keyclick off */
+    -1,			/* Type */
+    -1,			/* Layout */
+    0,			/* offset */
+    0,			/* click */
+    (Leds)0,		/* leds */
+    (Bool)0,		/* map_q */
 };
 
 static void kbdWait()
@@ -153,31 +152,33 @@ static void SwapKeys(keysyms)
 	}
 }
 
-static void SetLights (fd)
-    int		fd;
+static void SetLights (ctrl)
+    KeybdCtrl*	ctrl;
 {
-    char request = pKbdCtrl->leds & 0x0f;
-
 #ifdef KIOCSLED
-    if (ioctl (fd, KIOCSLED, &request) == -1)
+    char request = ctrl->leds & 0x0f;
+    if (ioctl (sunKbdFd, KIOCSLED, &request) == -1)
 	Error("Failed to set keyboard lights");
 #endif
 }
 
 
-static void ModLight (pPriv, on, led)
-    KbPrivPtr	pPriv;
+static void ModLight (pKeyboard, on, led)
+    DeviceIntPtr pKeyboard;
     Bool	on;
     int		led;
 {
+    KeybdCtrl*	ctrl = &pKeyboard->kbdfeed->ctrl;
+    KbPrivPtr	pPriv = (KbPrivPtr) pKeyboard->public.devicePrivate;
+
     if(on) {
-	pKbdCtrl->leds |= led;
+	ctrl->leds |= led;
 	pPriv->leds |= led;
     } else {
-	pKbdCtrl->leds &= ~led;
+	ctrl->leds &= ~led;
 	pPriv->leds &= ~led;
     }
-    SetLights (pPriv->fd);
+    SetLights (ctrl);
 }
 
 /*-
@@ -204,48 +205,25 @@ static void sunBell (
 #else
 static void sunBell (percent, device, ctrl, unused)
     int		    percent;	    /* Percentage of full volume */
-    DevicePtr	    device;	    /* Keyboard to ring */
+    DeviceIntPtr    device;	    /* Keyboard to ring */
     KeybdCtrl*	    ctrl;
     int		    unused;
 #endif
 {
-    DevicePtr	    pKeyboard = (DevicePtr) device;
-    KbPrivPtr	    pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
     int		    kbdCmd;   	    /* Command to give keyboard */
-    int		    kbdOpenedHere; 
  
     if (percent == 0 || ctrl->bell == 0)
  	return;
 
-    kbdOpenedHere = (pPriv->fd == -1);
-    if ( kbdOpenedHere ) {
-	pPriv->fd = open("/dev/kbd", O_RDWR, 0);
-	if (pPriv->fd == -1) {
-	    ErrorF("bell: can't open keyboard\n");
-	    return;
-	}
-    }	
- 
     kbdCmd = KBD_CMD_BELL;
-    if (ioctl (pPriv->fd, KIOCCMD, &kbdCmd) == -1) {
+    if (ioctl (sunKbdFd, KIOCCMD, &kbdCmd) == -1) {
  	Error("Failed to activate bell");
-	goto bad;
+	return;
     }
- 
-    /*
-     * Leave the bell on for a while == duration (ms) 
-     */
     usleep (ctrl->bell_duration * 1000);
- 
     kbdCmd = KBD_CMD_NOBELL;
-    if (ioctl (pPriv->fd, KIOCCMD, &kbdCmd) == -1)
+    if (ioctl (sunKbdFd, KIOCCMD, &kbdCmd) == -1)
 	Error ("Failed to deactivate bell");
-
-bad:
-    if ( kbdOpenedHere ) {
-	(void) close(pPriv->fd);
-	pPriv->fd = -1;
-    }
 }
 
 static KeyCode LookupKeyCode (keysym, keysymsrec)
@@ -307,78 +285,71 @@ static void sunKbdCtrl (device, ctrl)
     KeybdCtrl*	    ctrl;
 #endif
 {
-    DevicePtr	    pKeyboard = (DevicePtr) device;
-    KbPrivPtr	    pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
+    KbPrivPtr pPriv = (KbPrivPtr) device->public.devicePrivate;
 
-    if (pPriv->fd < 0) return;
+    if (sunKbdFd < 0) return;
 
     if (ctrl->click != pPriv->click) {
     	int kbdClickCmd;
 
 	pPriv->click = ctrl->click;
 	kbdClickCmd = pPriv->click ? KBD_CMD_CLICK : KBD_CMD_NOCLICK;
-    	if (ioctl (pPriv->fd, KIOCCMD, &kbdClickCmd) == -1)
+    	if (ioctl (sunKbdFd, KIOCCMD, &kbdClickCmd) == -1)
  	    Error("Failed to set keyclick");
     }
-    if (pKbdCtrl != NULL && pPriv->leds != pKbdCtrl->leds & 0x0f) {
+#ifndef XKB
+    if (ctrl != NULL && pPriv->leds != ctrl->leds & 0x0f) {
 	xEvent xE;
 	struct timeval tv;
 	KeySymsPtr keysymsrec = &device->key->curKeySyms;
 
 	GETTIMEOFDAY(&tv);
 	xE.u.keyButtonPointer.time =  TVTOMILLI(tv);
-	if ((pKbdCtrl->leds & LED_CAPS_LOCK) &&
-	    !(pPriv->leds & LED_CAPS_LOCK)) {
+	if ((ctrl->leds & LED_CAPS_LOCK) && !(pPriv->leds & LED_CAPS_LOCK)) {
 	    /* send a Caps_Lock keypress */
 	    xE.u.u.type = KeyPress;
 	    xE.u.u.detail = LookupKeyCode(XK_Caps_Lock, keysymsrec);
 	}
-	if (!(pKbdCtrl->leds & LED_CAPS_LOCK) &&
-	    (pPriv->leds & LED_CAPS_LOCK)) {
+	if (!(ctrl->leds & LED_CAPS_LOCK) && (pPriv->leds & LED_CAPS_LOCK)) {
 	    /* send a Caps_Lock keyrelease */
 	    xE.u.u.type = KeyRelease;
 	    xE.u.u.detail = LookupKeyCode(XK_Caps_Lock, keysymsrec);
 	}
-	if ((pKbdCtrl->leds & LED_NUM_LOCK) &&
-	    !(pPriv->leds & LED_NUM_LOCK)) {
+	if ((ctrl->leds & LED_NUM_LOCK) && !(pPriv->leds & LED_NUM_LOCK)) {
 	    /* send a Num_Lock keypress */
 	    xE.u.u.type = KeyPress;
 	    xE.u.u.detail = LookupKeyCode(XK_Num_Lock, keysymsrec);
 	}
-	if (!(pKbdCtrl->leds & LED_NUM_LOCK) &&
-	    (pPriv->leds & LED_NUM_LOCK)) {
+	if (!(ctrl->leds & LED_NUM_LOCK) && (pPriv->leds & LED_NUM_LOCK)) {
 	    /* send a Num_Lock keyrelease */
 	    xE.u.u.type = KeyRelease;
 	    xE.u.u.detail = LookupKeyCode(XK_Num_Lock, keysymsrec);
 	}
-	if ((pKbdCtrl->leds & LED_SCROLL_LOCK) &&
-	    !(pPriv->leds & LED_SCROLL_LOCK)) {
+	if ((ctrl->leds & LED_SCROLL_LOCK) && !(pPriv->leds & LED_SCROLL_LOCK)) {
 	    /* send a Scroll_Lock keypress */
 	    xE.u.u.type = KeyPress;
 	    xE.u.u.detail = LookupKeyCode(XK_Scroll_Lock, keysymsrec);
 	}
-	if (!(pKbdCtrl->leds & LED_SCROLL_LOCK) &&
-	    (pPriv->leds & LED_SCROLL_LOCK)) {
+	if (!(ctrl->leds & LED_SCROLL_LOCK) && (pPriv->leds & LED_SCROLL_LOCK)) {
 	    /* send a Scroll_Lock keyrelease */
 	    xE.u.u.type = KeyRelease;
 	    xE.u.u.detail = LookupKeyCode(XK_Scroll_Lock, keysymsrec);
 	}
-	if ((pKbdCtrl->leds & LED_COMPOSE) &&
-	    !(pPriv->leds & LED_COMPOSE)) {
+	if ((ctrl->leds & LED_COMPOSE) && !(pPriv->leds & LED_COMPOSE)) {
 	    /* send a Compose keypress */
 	    xE.u.u.type = KeyPress;
 	    xE.u.u.detail = LookupKeyCode(SunXK_Compose, keysymsrec);
 	}
-	if (!(pKbdCtrl->leds & LED_COMPOSE) &&
-	    (pPriv->leds & LED_COMPOSE)) {
+	if (!(ctrl->leds & LED_COMPOSE) && (pPriv->leds & LED_COMPOSE)) {
 	    /* send a Compose keyrelease */
 	    xE.u.u.type = KeyRelease;
 	    xE.u.u.detail = LookupKeyCode(SunXK_Compose, keysymsrec);
 	}
 	EnqueueEvent(&xE);
-	pPriv->leds = pKbdCtrl->leds & 0x0f;
-	SetLights (pPriv->fd);
+	pPriv->leds = ctrl->leds & 0x0f;
+	SetLights (ctrl);
     }
+#endif
 }
 
 /*-
@@ -402,10 +373,12 @@ int sunKbdProc (device, what)
     int	    	  what;	    	/* What to do to it */
 #endif
 {
-    KbPrivPtr pPriv;
-    int kbdFd, i;
+    int i;
     DevicePtr pKeyboard = (DevicePtr) device;
-    static CARD8 *workingModMap = 0;
+    KbPrivPtr pPriv;
+    KeybdCtrl*	ctrl = &device->kbdfeed->ctrl;
+
+    static CARD8 *workingModMap = NULL;
     static KeySymsRec *workingKeySyms;
 
     switch (what) {
@@ -427,17 +400,9 @@ int sunKbdProc (device, what)
 #if !defined(i386) && !defined(KIOCGKEY)
 #define TYPE4KEYBOARDOVERRIDE
 #endif
-	if (sysKbPriv.fd >= 0) {
-	    kbdFd = sysKbPriv.fd;
-	} else {
-	    kbdFd = open ("/dev/kbd", O_RDWR, 0);
-	    if (kbdFd == -1) {
-		Error ("Opening /dev/kbd");
-		return (!Success);
-	    }
-	    sysKbPriv.fd = kbdFd;
+	if (!workingKeySyms) {
 	    kbdWait();
-	    (void) ioctl (kbdFd, KIOCTYPE, &sysKbPriv.type);
+	    (void) ioctl (sunKbdFd, KIOCTYPE, &sysKbPriv.type);
 #ifdef TYPE4KEYBOARDOVERRIDE
             /*
              * Magic. Look for a key which is non-existent on a real type
@@ -448,7 +413,7 @@ int sunKbdProc (device, what)
 
 		key.kio_tablemask = 0;
 		key.kio_station = 118;
-		if (ioctl(kbdFd, KIOCGETKEY, &key) == -1) {
+		if (ioctl(sunKbdFd, KIOCGETKEY, &key) == -1) {
 		    Error( "ioctl KIOCGETKEY" );
 		    FatalError("Can't KIOCGETKEY on fd %d\n", kbdFd);
                 }
@@ -465,7 +430,7 @@ int sunKbdProc (device, what)
 	    }
 
 	    if (sysKbPriv.type == KB_SUN4) {
-		(void) ioctl (kbdFd, KIOCLAYOUT, &sysKbPriv.layout);
+		(void) ioctl (sunKbdFd, KIOCLAYOUT, &sysKbPriv.layout);
 		if (sysKbPriv.layout < 0 ||
 		    sysKbPriv.layout > sunMaxLayout ||
 		    sunType4KeyMaps[sysKbPriv.layout] == NULL)
@@ -474,14 +439,6 @@ int sunKbdProc (device, what)
 		sunKeySyms[KB_SUN4].map = sunType4KeyMaps[sysKbPriv.layout];
 		sunModMaps[KB_SUN4] = sunType4ModMaps[sysKbPriv.layout];
 	    }
-
-	    if (fcntl(kbdFd, F_SETFL, FNDELAY | FASYNC) == -1
-#ifdef SVR4
-		|| ioctl(kbdFd, I_SETSIG, S_INPUT | S_HIPRI) == -1)
-#else
-		|| fcntl(kbdFd, F_SETOWN, getpid()) == -1)
-#endif
-		FatalError("can't set up kbd\n");
 
 	    /*
 	     * Perform final initialization of the system private keyboard
@@ -534,38 +491,33 @@ int sunKbdProc (device, what)
 
     case DEVICE_ON:
 	pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
-	kbdFd = pPriv->fd;
-	pKbdCtrl = &((DeviceIntPtr) pKeyboard)->kbdfeed->ctrl;
 	/*
 	 * Set the keyboard into "direct" mode and turn on
 	 * event translation.
 	 */
 	if (sunChangeKbdTranslation(pKeyboard,TRUE) == -1)
 	    FatalError("Can't set keyboard translation\n");
-	(void) AddEnabledDevice(kbdFd);
+	(void) AddEnabledDevice(sunKbdFd);
 	pKeyboard->on = TRUE;
 	break;
 
     case DEVICE_CLOSE:
     case DEVICE_OFF:
 	pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
-	kbdFd = pPriv->fd;
 
 	/* 
 	 * dumb bug in Sun's keyboard! Turn off LEDS before resetting
 	 */
 	pPriv->leds = 0;
-	pKbdCtrl->leds = 0;
-	SetLights(kbdFd);
+	ctrl->leds = 0;
+	SetLights(ctrl);
 
-	/* invalidate pKbdCtrl */
-	pKbdCtrl = NULL;
 	/*
 	 * Restore original keyboard directness and translation.
 	 */
 	if (sunChangeKbdTranslation(pKeyboard,FALSE) == -1)
 	    FatalError("Can't reset keyboard translation\n");
-	RemoveEnabledDevice(kbdFd);
+	RemoveEnabledDevice(sunKbdFd);
 	pKeyboard->on = FALSE;
 	break;
     default:
@@ -602,11 +554,9 @@ Firm_event* sunKbdGetEvents (pKeyboard, pNumEvents, pAgain)
 #endif
 {
     int	    	  nBytes;	    /* number of bytes of events available. */
-    KbPrivPtr	  pPriv;
     static Firm_event	evBuf[MAXEVENTS];   /* Buffer for Firm_events */
 
-    pPriv = (KbPrivPtr) pKeyboard->devicePrivate;
-    if ((nBytes = read (pPriv->fd, evBuf, sizeof(evBuf))) == -1) {
+    if ((nBytes = read (sunKbdFd, evBuf, sizeof(evBuf))) == -1) {
 	if (errno == EWOULDBLOCK) {
 	    *pNumEvents = 0;
 	    *pAgain = FALSE;
@@ -648,6 +598,7 @@ void sunKbdEnqueueEvent (pKeyboard, fe)
     KeySym		ksym;
     int			map_index;
     DeviceIntPtr	dev;
+    KeybdCtrl*		ctrl = &((DeviceIntPtr)pKeyboard)->kbdfeed->ctrl;
 
     pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
     key = (fe->id & 0x7f) + pPriv->offset;
@@ -686,20 +637,20 @@ void sunKbdEnqueueEvent (pKeyboard, fe)
 	|| (keyModifiers & LockMask))) 
 	return;
 
-    if ((ksym == XK_Num_Lock && pKbdCtrl->leds & LED_NUM_LOCK) 
-	|| (ksym == XK_Scroll_Lock && pKbdCtrl->leds & LED_SCROLL_LOCK) 
-	|| (ksym == SunXK_Compose && pKbdCtrl->leds & LED_COMPOSE)
-	|| ((keyModifiers & LockMask) && pKbdCtrl->leds & LED_CAPS_LOCK))
+    if ((ksym == XK_Num_Lock && ctrl->leds & LED_NUM_LOCK) ||
+	(ksym == XK_Scroll_Lock && ctrl->leds & LED_SCROLL_LOCK) ||
+	(ksym == SunXK_Compose && ctrl->leds & LED_COMPOSE) ||
+	((keyModifiers & LockMask) && ctrl->leds & LED_CAPS_LOCK))
 	xE.u.u.type = KeyRelease;
 
     if (ksym == XK_Num_Lock)
-	ModLight (pPriv, xE.u.u.type == KeyPress, LED_NUM_LOCK);
+	ModLight (pKeyboard, xE.u.u.type == KeyPress, LED_NUM_LOCK);
     else if (ksym == XK_Scroll_Lock)
-	ModLight (pPriv, xE.u.u.type == KeyPress, LED_SCROLL_LOCK);
+	ModLight (pKeyboard, xE.u.u.type == KeyPress, LED_SCROLL_LOCK);
     else if (ksym == SunXK_Compose)
-	ModLight (pPriv, xE.u.u.type == KeyPress, LED_COMPOSE);
+	ModLight (pKeyboard, xE.u.u.type == KeyPress, LED_COMPOSE);
     else if (keyModifiers & LockMask)
-	ModLight (pPriv, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
+	ModLight (pKeyboard, xE.u.u.type == KeyPress, LED_CAPS_LOCK);
     else if ((xE.u.u.type == KeyPress) && (keyModifiers == 0)) {
 	/* initialize new AutoRepeater event & mark AutoRepeater on */
 	autoRepeatEvent = xE;
@@ -716,14 +667,15 @@ void sunEnqueueAutoRepeat ()
 {
     int	delta;
     int	i, mask;
+    KeybdCtrl* ctrl = &((DeviceIntPtr)LookupKeyboardDevice())->kbdfeed->ctrl;
 
-    if (pKbdCtrl->autoRepeat != AutoRepeatModeOn) {
+    if (ctrl->autoRepeat != AutoRepeatModeOn) {
 	autoRepeatKeyDown = 0;
 	return;
     }
     i=(autoRepeatEvent.u.u.detail >> 3);
     mask=(1 << (autoRepeatEvent.u.u.detail & 7));
-    if (!(pKbdCtrl->autoRepeats[i] & mask)) {
+    if (!(ctrl->autoRepeats[i] & mask)) {
 	autoRepeatKeyDown = 0;
 	return;
     }
@@ -782,10 +734,7 @@ int sunChangeKbdTranslation(pKeyboard, makeTranslated)
     Bool makeTranslated;
 #endif
 {   
-    KbPrivPtr	pPriv;
-    int 	kbdFd;
     int 	tmp;
-    int		kbdOpenedHere;
 #ifndef i386 /* { */
     sigset_t	hold_mask, old_mask;
 #else /* }{ */
@@ -793,7 +742,6 @@ int sunChangeKbdTranslation(pKeyboard, makeTranslated)
 #endif /* } */
     int		toread;
     char	junk[8192];
-    int		ret = 0;
 
 #ifndef i386 /* { */
     (void) sigfillset(&hold_mask);
@@ -802,20 +750,6 @@ int sunChangeKbdTranslation(pKeyboard, makeTranslated)
     old_mask = sigblock (~0);
 #endif /* } */
     kbdWait();
-    kbdFd = -1;
-    if (pKeyboard) {
-    	pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
-	if (pPriv)
-	    kbdFd = pPriv->fd;
-    }
-    kbdOpenedHere = (kbdFd == -1);
-    if (kbdOpenedHere) {
-	if ((kbdFd = open("/dev/kbd", O_RDONLY, 0)) == -1) {
-	    Error("sunChangeKbdTranslation: Can't open keyboard" );
-	    ret = -1;
-	    goto bad;
-	}
-    }
     if (makeTranslated) {
         /*
          * Next set the keyboard into "direct" mode and turn on
@@ -823,17 +757,15 @@ int sunChangeKbdTranslation(pKeyboard, makeTranslated)
          * on.
          */
 	tmp = 1;
-	if (ioctl (kbdFd, KIOCSDIRECT, &tmp) == -1) {
+	if (ioctl (sunKbdFd, KIOCSDIRECT, &tmp) == -1) {
 	    Error ("Setting keyboard direct mode");
-	    ret = -1;
-	    goto bad;
+	    return -1;
 	}
 	tmp = TR_UNTRANS_EVENT;
-	if (ioctl (kbdFd, KIOCTRANS, &tmp) == -1) {
+	if (ioctl (sunKbdFd, KIOCTRANS, &tmp) == -1) {
 	    Error ("Setting keyboard translation");
-	    ErrorF ("sunChangeKbdTranslation: kbdFd=%d\n",kbdFd);
-	    ret = -1;
-	    goto bad;
+	    ErrorF ("sunChangeKbdTranslation: kbdFd=%d\n",sunKbdFd);
+	    return -1;
 	}
     } else {
         /*
@@ -841,28 +773,25 @@ int sunChangeKbdTranslation(pKeyboard, makeTranslated)
          * event translation.
          */
 	tmp = 0;
-	(void)ioctl (kbdFd, KIOCSDIRECT, &tmp);
+	(void)ioctl (sunKbdFd, KIOCSDIRECT, &tmp);
 	tmp = TR_ASCII;
-	(void)ioctl (kbdFd, KIOCTRANS, &tmp);
+	(void)ioctl (sunKbdFd, KIOCTRANS, &tmp);
     }
-    if (ioctl (kbdFd, FIONREAD, &toread) != -1 && toread > 0) {
+    if (ioctl (sunKbdFd, FIONREAD, &toread) != -1 && toread > 0) {
 	while (toread) {
 	    tmp = toread;
 	    if (toread > sizeof (junk))
 		tmp = sizeof (junk);
-	    (void) read (kbdFd, junk, tmp);
+	    (void) read (sunKbdFd, junk, tmp);
 	    toread -= tmp;
 	}
     }
-bad:
-    if (kbdOpenedHere)
-	(void) close(kbdFd);
 #ifndef i386 /* { */
     (void) sigprocmask(SIG_SETMASK, &old_mask, (sigset_t *)NULL);
 #else /* }{ */
     sigsetmask (old_mask);
 #endif /* } */
-    return ret;
+    return 0;
 }
 
 /*ARGSUSED*/
@@ -881,12 +810,13 @@ void sunBlockHandler(nscreen, pbdata, pptv, pReadmask)
     struct timeval **pptv;
     pointer pReadmask;
 {
+    KeybdCtrl* ctrl = &((DeviceIntPtr)LookupKeyboardDevice())->kbdfeed->ctrl;
     static struct timeval artv = { 0, 0 };	/* autorepeat timeval */
 
     if (!autoRepeatKeyDown)
 	return;
 
-    if (pKbdCtrl->autoRepeat != AutoRepeatModeOn)
+    if (ctrl->autoRepeat != AutoRepeatModeOn)
 	return;
 
     if (autoRepeatFirst == TRUE)
@@ -904,9 +834,10 @@ void sunWakeupHandler(nscreen, pbdata, err, pReadmask)
     unsigned long err;
     pointer pReadmask;
 {
+    KeybdCtrl* ctrl = &((DeviceIntPtr)LookupKeyboardDevice())->kbdfeed->ctrl;
     struct timeval tv;
 
-    if (pKbdCtrl->autoRepeat != AutoRepeatModeOn)
+    if (ctrl->autoRepeat != AutoRepeatModeOn)
 	return;
 
     if (autoRepeatKeyDown) {

@@ -1,5 +1,5 @@
 
-/* $XConsortium: sun.h,v 5.26 93/10/12 11:24:54 dpw Exp $ */
+/* $XConsortium: sun.h,v 5.27 93/10/29 17:37:56 kaleb Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -166,14 +166,15 @@ extern int monitorResolution;
  *	map_q is TRUE if the event queue for the keyboard is memory mapped.
  */
 typedef struct kbPrivate {
-    int		fd;		/* Descriptor open to device */
     int		type;		/* Type of keyboard */
     int		layout;		/* The layout of the keyboard */
     int		offset;		/* to be added to device keycodes */
     int		click;		/* kbd click save state */
-    Leds	leds;		/* last known led state */
     Bool	map_q;		/* TRUE if has a mapped event queue */
+    Leds	leds;		/* last known led state */
 } KbPrivRec, *KbPrivPtr;
+
+extern int sunKbdFd;
 
 typedef struct {
     BYTE	key;
@@ -189,9 +190,10 @@ typedef struct {
  *	dx and dy are relative coordinates on that screen (they may be negative)
  */
 typedef struct ptrPrivate {
-    int		fd;		/* Descriptor to device */
     int		bmask;		/* Current button state */
 } PtrPrivRec, *PtrPrivPtr;
+
+extern int sunPtrFd;
 
 typedef struct {
     int		    width, height;

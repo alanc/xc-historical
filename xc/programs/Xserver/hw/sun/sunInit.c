@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.38 93/10/11 11:51:21 rws Exp $ */
+/* $XConsortium: sunInit.c,v 5.39 93/10/29 17:40:28 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -120,6 +120,7 @@ Bool sunAutoRepeatHandlersInstalled;	/* FALSE each time InitOutput called */
 Bool sunSwapLkeys = FALSE;
 Bool FlipPixels = FALSE;
 Bool FbInfo = FALSE;
+int sunKbdFd = -1, sunPtrFd = -1;
 
 /*
  * The name member in the following table correspond to the 
@@ -360,6 +361,48 @@ static char** GetDeviceList (argc, argv)
 	deviceList[FALLBACK_LIST_LEN] = NULL;
     }
     return deviceList;
+}
+
+void OsVendorInit(
+#if NeedFunctionPrototypes
+    void
+#endif
+)
+{
+#ifndef i386
+    struct rlimit rl;
+
+    /* 
+     * one per client, one per screen, plus keyboard, mouse, & stderr
+     */
+    int maxfds = MAXCLIENTS + MAXSCREENS + 3;
+
+    if (getrlimit (RLIMIT_NOFILE, &rl) == 0) {
+	rl.rlim_cur = maxfds < rl.rlim_max ? maxfds : rl.rlim_max;
+	(void) setrlimit (RLIMIT_NOFILE, &rl);
+    }
+#endif
+    (void) close (0); (void) close (1);
+#define SET_FLOW(fd) fcntl(fd, F_SETFL, FNDELAY | FASYNC)
+#ifdef SVR4
+#define WANT_SIGNALS(fd) ioctl(fd, I_SETSIG, S_INPUT | S_HIPRI)
+#else
+#define WANT_SIGNALS(fd) fcntl(fd, F_SETOWN, getpid())
+#endif
+    if ((sunKbdFd = open ("/dev/kbd", O_RDWR, 0)) >= 0) {
+	if (SET_FLOW(sunKbdFd) == -1 || WANT_SIGNALS(sunKbdFd) == -1) {	
+	    (void) close (sunKbdFd);
+	    sunKbdFd = -1;
+	}
+    }
+    if ((sunPtrFd = open ("/dev/mouse", O_RDWR, 0)) >= 0) {
+	if (SET_FLOW(sunPtrFd) == -1 || WANT_SIGNALS(sunPtrFd) == -1) {	
+	    (void) close (sunPtrFd);
+	    sunPtrFd = -1;
+	}
+    }
+#undef SET_FLOW
+#undef WANT_SIGNALS
 }
 
 /*-
