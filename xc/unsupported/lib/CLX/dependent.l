@@ -2950,7 +2950,8 @@
 	     ((index>= dst-idx dst-end))
 	  (declare (type array-index dst-idx src-idx dst-end))
 	  (setf (sys:%1d-aref dest dst-idx)
-		(sys:%1d-aref src src-idx)))))
+		(sys:%1d-aref src src-idx))))
+      t)
     #+(or lcl3.0 excl)
     (macrolet
       ((copy (type element-type)
