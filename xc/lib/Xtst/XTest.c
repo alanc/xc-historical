@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.4 92/02/01 15:07:41 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.5 92/02/05 16:17:47 rws Exp $ */
 /*
 
 Copyright 1990, 1991 by UniSoft Group Limited
@@ -194,9 +194,37 @@ XTestFakeMotionEvent(dpy, screen, x, y, delay)
     req->reqType = info->codes->major_opcode;
     req->xtReqType = X_XTestFakeInput;
     req->type = MotionNotify;
-    req->root = RootWindow(dpy, screen);
+    req->detail = False;
+    if (screen == -1)
+	req->root = None;
+    else
+	req->root = RootWindow(dpy, screen);
     req->rootX = x;
     req->rootY = y;
+    req->time = delay;
+    UnlockDisplay(dpy);
+    SyncHandle();
+}
+
+XTestFakeRelativeMotionEvent(dpy, dx, dy, delay)
+    Display *dpy;
+    int dx, dy;
+    unsigned long delay;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    register xXTestFakeInputReq *req;
+
+    XTestCheckExtension (dpy, info, 0);
+
+    LockDisplay(dpy);
+    GetReq(XTestFakeInput, req);
+    req->reqType = info->codes->major_opcode;
+    req->xtReqType = X_XTestFakeInput;
+    req->type = MotionNotify;
+    req->detail = True;
+    req->root = None;
+    req->rootX = dx;
+    req->rootY = dy;
     req->time = delay;
     UnlockDisplay(dpy);
     SyncHandle();
