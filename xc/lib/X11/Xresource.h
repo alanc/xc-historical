@@ -1,5 +1,5 @@
-/* $Header: Xresource.h,v 1.1 87/09/12 12:27:11 swick Locked $ */
-/* $Header: Xresource.h,v 1.1 87/09/12 12:27:11 swick Locked $ */
+/* $Header: Xresource.h,v 1.2 87/11/18 13:35:56 swick Locked $ */
+/* $Header: Xresource.h,v 1.2 87/11/18 13:35:56 swick Locked $ */
 /*
  *	sccsid:	%W%	%G%
  */
@@ -201,7 +201,7 @@ extern void XrmGetSearchResource();
  ****************************************************************/
 
 typedef struct		_XrmResourceDataBase *XrmResourceDataBase;
-typedef int		unspecified;
+typedef caddr_t		unspecified;
 
 extern XrmResourceDataBase XrmGetDataBase(); /* filename*/
     /* char *filename; /*  file name */
