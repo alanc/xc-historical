@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.145 90/12/17 12:00:21 rws Exp $
+* $XConsortium: Intrinsic.h,v 1.146 90/12/19 15:16:46 converse Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -1677,7 +1677,7 @@ extern Widget XtAppInitialize(
     Cardinal 		/* num_options */,
     Cardinal*		/* argc_in_out */,
     String*		/* argv_in_out */,
-    _Xconst String *	/* fallback_resources */,
+    String*		/* fallback_resources */,
     ArgList 		/* args */,
     Cardinal 		/* num_args */
 #endif
@@ -1691,7 +1691,7 @@ extern Widget XtVaAppInitialize(
     Cardinal		/* num_options */,
     Cardinal*		/* argc_in_out */,
     String*		/* argv_in_out */,
-    _Xconst String *	/* fallback_resources */,
+    String*		/* fallback_resources */,
     ...
 #endif
 );
@@ -1728,8 +1728,8 @@ extern XtAppContext XtCreateApplicationContext(
 
 extern void XtAppSetFallbackResources(
 #if NeedFunctionPrototypes
-    XtAppContext 		/* app_context */,
-    _Xconst String *		/* specification_list */
+    XtAppContext 	/* app_context */,
+    String*		/* specification_list */
 #endif
 );
 
