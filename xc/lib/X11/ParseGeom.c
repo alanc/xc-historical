@@ -1,11 +1,12 @@
 #include "copyright.h"
 
 /* Copyright 	Massachusetts Institute of Technology  1985, 1986, 1987 */
-/* $Header: XParseGeom.c,v 11.10 87/09/11 08:05:25 rws Locked $ */
+/* $Header: XParseGeom.c,v 11.11 88/01/30 17:36:27 jim Locked $ */
 
 #include "Xlibint.h"
 #include "Xutil.h"
 
+#ifdef notdef
 /* 
  *Returns pointer to first char ins search which is also in what, else NULL.
  */
@@ -21,6 +22,7 @@ char *search, *what;
 				return (--search);
 	return (NULL);
 }
+#endif
 
 /*
  *    XParseGeometry parses strings of the form

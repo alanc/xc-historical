@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XKeyBind.c,v 11.35 87/09/08 20:17:55 rws Locked $ */
+/* $Header: XKeyBind.c,v 11.36 87/09/29 07:56:36 jim Locked $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /* Beware, here be monsters (still under construction... - JG */
@@ -175,12 +175,16 @@ int XLookupString (event, buffer, nbytes, keysym, status)
      char *buffer;	/* buffer */
      int nbytes;	/* space in buffer for characters */
      KeySym *keysym;
-     XComposeStatus *status;
+     XComposeStatus *status;	/* not implemented */
 {
      register KeySym symbol, lsymbol, usymbol;
      int length = 0;
      char buf[BUFSIZ];
      unsigned char byte3, byte4;
+
+#ifdef lint
+     status = status;
+#endif
 
      if (event->display->keysyms == NULL)
          Initialize(event->display);

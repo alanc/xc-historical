@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.59 88/02/03 20:45:01 rws Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.60 88/02/05 16:13:01 jim Locked $";
 #endif
 
 /*
@@ -537,6 +537,9 @@ register Display *dpy;	/* pointer to display structure */
 register XEvent *re;	/* pointer to where event should be reformatted */
 register xEvent *event;	/* wire protocol event */
 {
+#ifdef lint
+	re = re;
+#endif
 	(void) fprintf(stderr, 
 	    "Xlib: unhandled wire event! event number = %d, display = %x\n.",
 			event->u.u.type, dpy);
@@ -549,6 +552,9 @@ register Display *dpy;	/* pointer to display structure */
 register XEvent *re;	/* pointer to where event should be reformatted */
 register xEvent *event;	/* wire protocol event */
 {
+#ifdef lint
+	event = event;
+#endif
 	(void) fprintf(stderr, 
  	   "Xlib: unhandled native event! event number = %d, display = %x\n.",
 			re->type, dpy);

@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XEvToWire.c,v 11.12 87/10/20 16:32:23 newman Locked $";
+static char rcsid[] = "$Header: XEvToWire.c,v 11.13 87/10/28 12:54:38 jim Locked $";
 #endif
 
 /*
@@ -23,7 +23,9 @@ register Display *dpy;	/* pointer to display structure */
 register XEvent *re;	/* pointer to where event should be reformatted */
 register xEvent *event;	/* wire protocol event */
 {
-	
+#ifdef lint
+	dpy = dpy;
+#endif
 	switch (event->u.u.type = re->type) {
 	      case KeyPress:
 	      case KeyRelease:

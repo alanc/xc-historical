@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.40 87/12/23 11:25:02 rws Locked $ */
+/* $Header: XPutImage.c,v 11.41 88/01/04 08:59:27 jim Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -396,7 +396,7 @@ SendXYImage(dpy, req, image, req_xoffset, req_yoffset)
     register int j;
     long total_xoffset, bytes_per_src, bytes_per_dest, length;
     long bytes_per_line, bytes_per_src_plane, bytes_per_dest_plane;
-    char *src, *dest, *buf, *temp;
+    char *src, *dest, *buf;
     char *extra = (char *)NULL;
     register int (*swapfunc)();
 
