@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: miarc.c,v 1.47 87/12/09 18:15:44 rws Locked $ */
+/* $Header: miarc.c,v 1.48 87/12/09 18:56:45 rws Exp $ */
 /* Author: Todd Newman */
 #include "X.h"
 #include "Xprotostr.h"
@@ -53,11 +53,9 @@ typedef struct
 #define GCValsLineWidth 	3
 #define GCValsCapStyle 		4
 #define GCValsJoinStyle		5
-#define GCValsArcMode		6
 #define GCValsMask		(GCFunction | GCForeground | GCBackground | \
-				 GCLineWidth | GCCapStyle | GCJoinStyle | \
-				 GCArcMode)
-static CARD32 gcvals[]= {GXcopy, 1, 0, 0, 0, 0, ArcChord};
+				 GCLineWidth | GCCapStyle | GCJoinStyle)
+static CARD32 gcvals[]= {GXcopy, 1, 0, 0, 0, 0};
 
 /* MIPOLYARC -- Public entry for the polyarc call.
  * Strategy: Similar in many ways to that for wide lines.
@@ -71,8 +69,6 @@ static CARD32 gcvals[]= {GXcopy, 1, 0, 0, 0, 0, ArcChord};
  * if it involves the destination, then we use PushPixels to move the bits
  * from the scratch drawable to pDraw. (See the wide line code for a
  * fuller explanation of this.)
- * Note that changing the arcmode below isn't required, but assuming the
- * mi line code will be used, this will save changing it N times.
  */
 void
 miPolyArc(pDraw, pGC, narcs, parcs)
@@ -89,7 +85,6 @@ miPolyArc(pDraw, pGC, narcs, parcs)
     DDXPointPtr			pPts;	/* Points for the current arc */
     int				xMin, xMax, yMin, yMax, yOrg, xOrg, dx, dy,
     				ifirst, count, width;
-    CARD32			arcmode;
     Bool			fTricky;
     DrawablePtr			pDrawTo;
     GCPtr			pGCTo;
@@ -143,12 +138,6 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	    fTricky = FALSE;
 	    pDrawTo = pDraw;
 	    pGCTo = pGC;
-	    arcmode = (CARD32)pGCTo->arcMode;
-	    if(arcmode != ArcChord)
-	    {
-		DoChangeGC(pGCTo, GCArcMode, &gcvals[GCValsArcMode], 0);
-		ValidateGC(pDrawTo, pGCTo);
-	    }
 	    break;
 	  default:
 	    fTricky = TRUE;
@@ -252,11 +241,6 @@ miPolyArc(pDraw, pGC, narcs, parcs)
 	{
 	    (*pGCTo->pScreen->DestroyPixmap)((PixmapPtr)pDrawTo);
 	    FreeScratchGC(pGCTo);
-	}
-	else if(arcmode != ArcChord)
-	{
-	    DoChangeGC(pGCTo, GCArcMode, &arcmode, 0);
-	    ValidateGC(pDrawTo, pGCTo);
 	}
 	DEALLOCATE_LOCAL(polyarcs);
     }
