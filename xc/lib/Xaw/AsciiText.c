@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.31 89/09/06 17:29:52 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiText.c,v 1.32 89/09/08 17:20:25 kit Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -62,7 +62,7 @@ static void ClassInitialize(), Initialize(), CreateSourceSink(), Destroy();
 AsciiTextClassRec asciiTextClassRec = {
   { /* core fields */
     /* superclass       */      (WidgetClass) &textClassRec,
-    /* class_name       */      "AsciiText",
+    /* class_name       */      "Text",
     /* widget_size      */      sizeof(AsciiRec),
     /* class_initialize */      ClassInitialize,
     /* class_part_init  */	NULL,
@@ -76,7 +76,7 @@ AsciiTextClassRec asciiTextClassRec = {
     /* num_ resource    */      0,
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
-    /* compress_exposure*/      FALSE,
+    /* compress_exposure*/      XtExposeGraphicsExpose,
     /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      Destroy,
@@ -180,7 +180,7 @@ AsciiStringClassRec asciiStringClassRec = {
     /* num_ resource    */      0,
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
-    /* compress_exposure*/      FALSE,
+    /* compress_exposure*/      XtExposeGraphicsExpose,
     /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      NULL,
@@ -233,7 +233,7 @@ AsciiDiskClassRec asciiDiskClassRec = {
     /* num_ resource    */      0,
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
-    /* compress_exposure*/      FALSE,
+    /* compress_exposure*/      XtExposeGraphicsExpose,
     /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      NULL,
