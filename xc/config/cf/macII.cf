@@ -13,11 +13,11 @@
 #define XmacIIServer      XmacII
 #define CcCmd             cc -B /usr/lib/big/
 #define LnCmd             ln -s
-#define ExecableScripts   YES
+#define ExecableScripts   NO
 #define NeedBerklibInXlib YES
 #define HasSockets        YES
 
-/**/# platform:  $XConsortium: macII.cf,v 1.4 89/01/18 11:47:47 jim Exp $
+/**/# platform:  $XConsortium: macII.cf,v 1.5 89/01/27 11:08:45 jim Exp $
 /**/# operating system:  OSName
 
 /*****************************************************************************
