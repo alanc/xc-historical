@@ -1,4 +1,4 @@
-/* $XConsortium: xprop.c,v 1.39 93/09/11 13:28:01 rws Exp $*/
+/* $XConsortium: xprop.c,v 1.40 93/09/20 17:57:46 hersh Exp $*/
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -266,7 +266,8 @@ typedef struct _propertyRec {
 ?m5(\t\tbitmap id # of mask for icon: $7\n)\
 ?m3(\t\twindow id # to use for icon: $4\n)\
 ?m4(\t\tstarting position for icon: $5, $6\n)\
-?m6(\t\twindow id # of group leader: $8\n)"
+?m6(\t\twindow id # of group leader: $8\n)\
+?m8(\t\tThe visible hint bit is set\n)"
 
 #define WM_ICON_SIZE_DFORMAT	":\n\
 \t\tminimum icon size: $0 by $1\n\
