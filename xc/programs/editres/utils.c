@@ -697,8 +697,26 @@ static void
 FreeResources(resources) 
 WidgetResources * resources;
 {
-    if (resources->num_normal > 0)
+    int i;
+
+    if (resources->num_normal > 0) {
+	for (i = 0; i < resources->num_normal; i++) {
+	    XtFree(resources->normal[i].name);
+	    XtFree(resources->normal[i].class);
+	    XtFree(resources->normal[i].type);
+	}
 	XFree(resources->normal);
+    }
+
+    if (resources->num_constraint > 0) {
+	for (i = 0; i < resources->num_constraint; i++) {
+	    XtFree(resources->constraint[i].name);
+	    XtFree(resources->constraint[i].class);
+	    XtFree(resources->constraint[i].type);
+	}
+	XFree(resources->constraint);
+    }
+
     XFree(resources);
 }
 	
