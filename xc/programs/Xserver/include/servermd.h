@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.64 92/08/14 14:45:35 rws Exp $ */
+/* $XConsortium: servermd.h,v 1.65 93/09/18 15:45:25 rws Exp $ */
 
 /*
  * Machine dependent values:
@@ -232,6 +232,31 @@ SOFTWARE.
 
 #endif /* mips */
 
+#if defined(__alpha) || defined(__alphaCross)
+# define IMAGE_BYTE_ORDER	LSBFirst	/* Values for the Alpha only */
+# define BITMAP_BIT_ORDER	LSBFirst
+# define GLYPHPADBYTES		4
+# define GETLEFTBITS_ALIGNMENT	1
+# define FAST_CONSTANT_OFFSET_MODE
+# define LARGE_INSTRUCTION_CACHE
+# define PLENTIFUL_REGISTERS
+
+/* pad scanline to a longword */
+#define BITMAP_SCANLINE_UNIT			64
+
+#define BITMAP_SCANLINE_PAD 			64
+#define LOG2_BITMAP_PAD				6
+#define LOG2_BYTES_PER_SCANLINE_PAD		3
+
+/* Add for handling protocol XPutImage and XGetImage */
+#define BITMAP_SCANLINE_UNIT_PROTO		32
+
+#define BITMAP_SCANLINE_PAD_PROTO 	 	32
+#define LOG2_BITMAP_PAD_PROTO			5
+#define LOG2_BYTES_PER_SCANLINE_PAD_PROTO	2
+
+#endif /* alpha */
+
 #ifdef stellar
 
 #define IMAGE_BYTE_ORDER	MSBFirst       /* Values for the stellar only*/
@@ -312,9 +337,11 @@ SOFTWARE.
 #define BITMAP_SCANLINE_UNIT	32
 #endif
 
+#ifndef BITMAP_SCANLINE_PAD
 #define BITMAP_SCANLINE_PAD  32
 #define LOG2_BITMAP_PAD		5
 #define LOG2_BYTES_PER_SCANLINE_PAD	2
+#endif
 
 /* 
  *   This returns the number of padding units, for depth d and width w.
