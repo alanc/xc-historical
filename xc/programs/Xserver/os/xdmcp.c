@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.28 93/09/23 17:13:49 rws Exp $ */
+/* $XConsortium: xdmcp.c,v 1.29 94/03/26 17:23:51 rws Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -1272,4 +1272,6 @@ get_manager_by_name(argc, argv, i)
 	exit (1);
     }
 }
+#else
+static int xdmcp_non_empty; /* avoid complaint by ranlib */
 #endif /* XDMCP */
