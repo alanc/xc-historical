@@ -1,4 +1,4 @@
-/* $XConsortium: phigsmon.c,v 5.1 91/02/16 09:48:35 rws Exp $ */
+/* $XConsortium: phigsmon.c,v 5.2 91/02/18 11:11:44 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -206,7 +206,11 @@ set_up( s, es)
 		CPR_CMD_TIMEOUT;
 
 	    fdflags = fcntl( s, F_GETFL, 0);
+#ifdef O_NONBLOCK
+	    fdflags |= O_NONBLOCK;
+#else
 	    fdflags |= FNDELAY;
+#endif
 	    fcntl( s, F_SETFL, fdflags);
 
 	    if ( getenv( "PEX_SI_API_SYNC" ) )

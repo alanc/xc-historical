@@ -1,4 +1,4 @@
-/* $XConsortium: cp_ccom.c,v 5.3 91/02/18 20:59:49 rws Exp $ */
+/* $XConsortium: cp_ccom.c,v 5.4 91/02/18 21:50:20 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -53,6 +53,12 @@ typedef int		waitType;
 typedef union wait	waitType;
 #endif /* USE_POSIX_STYLE_WAIT else */
 
+#ifdef O_NONBLOCK
+#define E_BLOCKED EAGAIN
+#else
+#define E_BLOCKED EWOULDBLOCK
+#endif
+
 #define CPC_SEND( cph, msg, size) \
     phg_cpxc_send( (cph)->data.client.sfd, (char*)(msg), (size))
 
@@ -103,7 +109,7 @@ phg_cpxc_send( s, msg, size)
 		    break;
 		}
 	    }
-	} else if ( errno == EWOULDBLOCK || errno == EINTR) {
+	} else if ( errno == E_BLOCKED || errno == EINTR) {
 		continue;
 	} else {
 		perror("phg_cpxc_send(write)");
@@ -150,7 +156,7 @@ phg_cpxc_recv( s, msg, size)
 	if ( (wc = read( s, msg + c, size - c)) > 0) {
 	    c += wc;
 	} else if ( wc < 0) {
-	    if ( errno == EWOULDBLOCK)
+	    if ( errno == E_BLOCKED)
 		break;
 	    else if ( errno == EINTR)
 		continue;
@@ -1326,7 +1332,11 @@ fork_monitor( cph, argv )
 	    cph->erh->data.client.sfd = spe[0];
 	    {   int	fdflags;
 		fdflags = fcntl( spe[0], F_GETFL, 0);
+#ifdef O_NONBLOCK
+		fdflags |= O_NONBLOCK;
+#else
 		fdflags |= FNDELAY;
+#endif
 		(void)fcntl( spe[0], F_SETFL, fdflags);
 	    }
 	    phg_register_signal_func((unsigned long)pid, sig_wait, SIGCHLD);

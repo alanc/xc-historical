@@ -1,4 +1,4 @@
-/* $XConsortium: cp_rcom.c,v 5.1 91/02/16 09:48:24 rws Exp $ */
+/* $XConsortium: cp_rcom.c,v 5.2 91/02/18 11:11:59 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -30,6 +30,12 @@ SOFTWARE.
 #include "cp.h"
 #include "cp_priv.h"
 #include <memory.h>
+
+#ifdef O_NONBLOCK
+#define E_BLOCKED EAGAIN
+#else
+#define E_BLOCKED EWOULDBLOCK
+#endif
 
 #ifdef DEBUG
 int	cpr_print_trace = 0;
@@ -94,7 +100,7 @@ cpr_fill_buffer( f)
     f->ptr = f->base;
     if ( (f->cnt = recv( f->fd, f->base, f->bufsize, 0)) >= 0) {
 	return f->cnt;
-    } else if ( errno == EWOULDBLOCK || errno == EINTR) {
+    } else if ( errno == E_BLOCKED || errno == EINTR) {
 	return (f->cnt = 0);
     } else {
 	return f->cnt;
@@ -144,7 +150,7 @@ phg_cpr_send( s, msg, size)
 	if ( select( s+1, NULL, wfd, NULL, (struct timeval *)NULL) == 1) {
 	    if ( (wc = write( s, msg + c, size - c)) >= 0) {
 		c += wc;
-	    } else if ( errno == EWOULDBLOCK || errno == EINTR) {
+	    } else if ( errno == E_BLOCKED || errno == EINTR) {
 		continue;
 	    } else {
 		perror("phg_cpr_send()");
