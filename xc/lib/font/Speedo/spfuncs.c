@@ -1,4 +1,4 @@
-/* $XConsortium: spfuncs.c,v 1.11 94/02/04 17:07:22 gildea Exp $ */
+/* $XConsortium: spfuncs.c,v 1.12 94/04/17 20:17:49 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -86,18 +86,19 @@ SpeedoOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask,
  * and to simply save the values without doing the work.
  */
 static int
-get_font_info(pinfo, fontname, filename, entry, spfont)
+get_font_info(pinfo, fontname, filename, entry, vals, spfont)
     FontInfoPtr pinfo;
     char       *fontname;
     char       *filename;
     FontEntryPtr	entry;
+    FontScalablePtr	vals;
     SpeedoFontPtr *spfont;
 {
     SpeedoFontPtr spf;
     int         err;
     long	sWidth;
 
-    err = sp_open_font(fontname, filename, entry,
+    err = sp_open_font(fontname, filename, entry, vals,
 	       (fsBitmapFormat) 0, (fsBitmapFormatMask) 0, (unsigned long) 0,
 		       &spf);
 
@@ -137,7 +138,7 @@ SpeedoGetInfoScaleable(fpe, pFontInfo, entry, fontName, fileName, vals)
     strcpy(fullName, entry->name.name);
     FontParseXLFDName(fullName, vals, FONT_XLFD_REPLACE_VALUE);
 
-    err = get_font_info(pFontInfo, fullName, fileName, entry, &spf);
+    err = get_font_info(pFontInfo, fullName, fileName, entry, vals, &spf);
 
     if (spf)
 	sp_close_font(spf);
