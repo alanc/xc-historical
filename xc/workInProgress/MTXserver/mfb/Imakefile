@@ -1,4 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.34 92/05/28 12:23:48 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.35 93/09/04 17:18:20 rws Exp $
+#define DoThreadedServer XServerThreaded
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \
@@ -80,5 +81,40 @@ ObjectFromSpecialSource(mfbbltG,mfbblt,-DMROP=0)
 ObjectFromSpecialSource(mfbtileC,mfbtile,-DMROP=Mcopy)
 
 ObjectFromSpecialSource(mfbtileG,mfbtile,-DMROP=0)
+
+LinkSourceFile(fastblt.h,$(SERVERSRC)/mfb)
+LinkSourceFile(maskbits.c,$(SERVERSRC)/mfb)
+LinkSourceFile(maskbits.h,$(SERVERSRC)/mfb)
+LinkSourceFile(mergerop.h,$(SERVERSRC)/mfb)
+LinkSourceFile(mfb.h,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbbitblt.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbblt.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbbres.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbbresd.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbbstore.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbclip.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbcmap.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbfillarc.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbfillrct.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbfont.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbgetsp.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbhrzvert.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbimage.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbimggblt.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbline.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbmisc.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbpixmap.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbply1rct.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbplygblt.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbpntarea.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbpntwin.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbpolypnt.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbscrclse.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbscrinit.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbsetsp.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbtegblt.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbtile.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbwindow.c,$(SERVERSRC)/mfb)
+LinkSourceFile(mfbzerarc.c,$(SERVERSRC)/mfb)
 
 DependTarget()

@@ -1,6 +1,6 @@
-XCOMM $XConsortium: Imakefile,v 1.167 93/11/07 11:02:20 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.168 93/12/13 17:34:34 dpw Exp $
 /*
- * Server Master Makefile
+ * Merged X Server Master Makefile
  */
 
 #include <Server.tmpl>
@@ -16,6 +16,11 @@ XCOMM $XConsortium: Imakefile,v 1.167 93/11/07 11:02:20 rws Exp $
 #define CFB16Libs CFB16BareLibs $(EXTENSIONS)
 #define CFB32BareLibs $(DIX) $(OS) $(FONT) $(CFB32) $(MFB) $(MI)
 #define CFB32Libs CFB32BareLibs $(EXTENSIONS)
+
+#if XServerThreaded
+   THREADS_LIBS = ThreadsLibraries
+THREADS_LDFLAGS = ThreadsLoadFlags
+#endif
 
 #if BuildPexExt
          PEXLIBS = PEX5/dipex/dispatch/libdidipex.a \
@@ -43,11 +48,6 @@ XCOMM $XConsortium: Imakefile,v 1.167 93/11/07 11:02:20 rws Exp $
         DEPDIRS = $(FONTLIBSRC)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
-#if HasKrb5
-         DBMLIB =
-#else
-         DBMLIB = -ldbm
-#endif
        XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
              OS = os/libos.a $(XAULIB) $(XDMCPLIB)
         BSDEMUL = $(DEPXBSDLIB)
@@ -59,11 +59,11 @@ XCOMM $XConsortium: Imakefile,v 1.167 93/11/07 11:02:20 rws Exp $
              MI = mi/libmi.a
             DIX = dix/libdix.a
            FONT = $(DEPFONTLIB)
-#if XirisServer || XhpServer || SystemV4 || defined(BSD386Architecture)
-        SYSLIBS = MathLibrary Krb5Libraries
-#else
-        SYSLIBS = MathLibrary Krb5Libraries DBMLibrary
+  LOCAL_LDFLAGS = $(THREADS_LDFLAGS)
+#if !XirisServer && !XhpServer && !SystemV4 && !defined(BSD386Architecture) && !HasKrb5
+        DBM_LIBRARY = DBMLibrary
 #endif
+        SYSLIBS = MathLibrary Krb5Libraries $(THREADS_LIBS) $(DBM_LIBRARY)
            CBRT = mi/cbrt.o
         STDDIRS = dix os mi $(EXTDIRS)
 

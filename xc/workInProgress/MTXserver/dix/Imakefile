@@ -1,16 +1,22 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/01/10 18:16:33 rob Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/01/10 18:17:06 rob Exp $
+#define DoThreadedServer XServerThreaded
 #include <Server.tmpl>
+
+#if DoThreadedServer
+MT_SRCS = POQ.c cit.c mtxlock.c
+MT_OBJS = POQ.o cit.o mtxlock.o
+#endif
 
 SRCS = atom.c colormap.c cursor.c devices.c dispatch.c dixutils.c events.c \
 	extension.c gc.c globals.c glyphcurs.c grabs.c \
 	main.c property.c resource.c swaprep.c swapreq.c \
 	tables.c window.c initatoms.c dixfonts.c privates.c pixmap.c \
-	POQ.c cit.c mtxlock.c
+	$(MT_SRCS)
 OBJS = atom.o colormap.o cursor.o devices.o dispatch.o dixutils.o events.o \
 	extension.o gc.o globals.o glyphcurs.o grabs.o \
 	main.o property.o resource.o swaprep.o swapreq.o \
 	tables.o window.o initatoms.o dixfonts.o privates.o pixmap.o \
-	POQ.o cit.o mtxlock.o
+	$(MT_OBJS)
 
     INCLUDES = -I../include -I$(INCLUDESRC) -I$(FONTINCSRC) -I$(EXTINCSRC)
     LINTLIBS = ../os/llib-los.ln
@@ -57,5 +63,17 @@ NormalLintTarget($(SRCS))
 SpecialCObjectRule(globals,$(ICONFIGFILES),$(SITE_DEFINES))
 SpecialCObjectRule(tables,$(ICONFIGFILES),$(K5DEFS))
 SpecialCObjectRule(dispatch,$(ICONFIGFILES),$(K5DEFS))
+
+LinkSourceFile(atom.c,$(SERVERSRC)/dix)
+LinkSourceFile(colormap.c,$(SERVERSRC)/dix)
+LinkSourceFile(globals.c,$(SERVERSRC)/dix)
+LinkSourceFile(glyphcurs.c,$(SERVERSRC)/dix)
+LinkSourceFile(grabs.c,$(SERVERSRC)/dix)
+LinkSourceFile(swaprep.c,$(SERVERSRC)/dix)
+LinkSourceFile(swapreq.c,$(SERVERSRC)/dix)
+LinkSourceFile(initatoms.c,$(SERVERSRC)/dix)
+LinkSourceFile(dixfonts.c,$(SERVERSRC)/dix)
+LinkSourceFile(privates.c,$(SERVERSRC)/dix)
+LinkSourceFile(pixmap.c,$(SERVERSRC)/dix)
 
 DependTarget()
