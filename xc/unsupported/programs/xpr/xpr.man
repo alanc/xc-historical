@@ -100,8 +100,8 @@ Forces the window to printed in landscape mode.  By default
 a window is printed such that its longest side follows the long side of
 the paper.
 .IP "\fB\-plane\fP \fInumber\fP"
-Specifies which bit plane to use in a Z format image.  The default is
-bit plane zero, which is the least significant bit plane.
+Specifies which bit plane to use in an image.  The default is to use the
+entire image and map values into black and white based on color intensities.
 .IP "\fB\-portrait\fP"
 Forces the window to be printed in portrait mode.  By default
 a window is printed such that its longest side follows the long side of
