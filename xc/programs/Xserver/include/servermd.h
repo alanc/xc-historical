@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.61 91/11/09 16:32:37 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.62 91/12/19 19:02:40 keith Exp $ */
 
 /*
  * Machine dependent values:
@@ -180,7 +180,8 @@ SOFTWARE.
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for the HP only */
 #define BITMAP_BIT_ORDER	MSBFirst
 #define	GLYPHPADBYTES		2		/* to match product server */
-#define	GETLEFTBITS_ALIGNMENT	1
+#define	GETLEFTBITS_ALIGNMENT	4		/* PA forces longs to 4 */
+						/* byte boundries */
 
 #endif /* hpux */
 
