@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.84 90/07/15 21:44:05 swick Exp $ */
+/* $XConsortium: NextEvent.c,v 1.85 90/07/31 10:46:51 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -572,6 +572,20 @@ void XtRemoveInput( id )
 		   (String *)NULL, (Cardinal *)NULL);
 }
 
+void _XtRemoveAllInputs(app)
+    XtAppContext app;
+{
+    int i;
+    for (i = 0; i < NOFILE; i++) {
+	InputEvent* ep = app->input_list[i];
+	while (ep) {
+	    InputEvent *next = ep->ie_next;
+	    XtFree( (char*)ep );
+	    ep = next;
+	}
+    }
+}
+
 /* Do alternate input and timer callbacks if there are any */
 
 static void DoOtherSources(app)
@@ -730,7 +744,7 @@ void XtAppProcessEvent(app, mask)
 		    TimerEventRec *te_ptr = app->timerQueue;
 		    app->timerQueue = app->timerQueue->te_next;
 		    te_ptr->te_next = NULL;
-                    if (te_ptr->te_proc != 0)
+                    if (te_ptr->te_proc != NULL)
 		        TeCallProc(te_ptr);
 		    te_ptr->te_next = freeTimerRecs;
 		    freeTimerRecs = te_ptr;
