@@ -1,4 +1,4 @@
-/* $XConsortium: XQuKeybd.c,v 11.10 88/09/06 16:09:57 jim Exp $ */
+/* $XConsortium: QuKeybd.c,v 11.11 91/01/06 11:47:33 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -32,7 +32,7 @@ XQueryKeymap(dpy, keys)
     GetEmptyReq(QueryKeymap, req);
     (void) _XReply(dpy, (xReply *)&rep, 
        (SIZEOF(xQueryKeymapReply) - SIZEOF(xReply)) >> 2, xTrue);
-    *(struct kmap *) keys = *(struct kmap *)rep.map;  /* faster than bcopy */
+    *(struct kmap *) keys = *(struct kmap *)rep.map;  /* faster than memcpy */
     UnlockDisplay(dpy);
     SyncHandle();
 }

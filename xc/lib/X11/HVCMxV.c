@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCMxV.c,v 1.7 91/07/12 08:51:50 rws Exp $" */
+/* $XConsortium: HVCMxV.c,v 1.8 91/07/25 01:08:14 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -121,7 +121,7 @@ XcmsTekHVCQueryMaxV(ccc, hue, chroma, pColor_return)
     }
 
     /* setup the CCC to use for the conversions. */
-    bcopy ((char *) ccc, (char *) &myCCC, sizeof(XcmsCCCRec));
+    memcpy ((char *) &myCCC, (char *) ccc, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;
     myCCC.gamutCompProc = (XcmsCompressionProc) NULL;
 
@@ -137,7 +137,7 @@ XcmsTekHVCQueryMaxV(ccc, hue, chroma, pColor_return)
 
     /* Step 1: compute the maximum value and chroma for this hue. */
     /*         This copy may be overkill but it preserves the pixel etc. */
-    bcopy((char *)&tmp, (char *)&max_vc, sizeof(XcmsColor));
+    memcpy((char *)&max_vc, (char *)&tmp, sizeof(XcmsColor));
     hue = max_vc.spec.TekHVC.H;
     if (_XcmsTekHVCQueryMaxVCRGB(&myCCC, max_vc.spec.TekHVC.H, &max_vc, &rgb_saved)
 	    == XcmsFailure) {
@@ -154,7 +154,7 @@ XcmsTekHVCQueryMaxV(ccc, hue, chroma, pColor_return)
 	 */
 	tmp.spec.TekHVC.C = max_vc.spec.TekHVC.C;
 	tmp.spec.TekHVC.V = max_vc.spec.TekHVC.V;
-	bcopy ((char *) &tmp, (char *) pColor_return, sizeof (XcmsColor));
+	memcpy ((char *) pColor_return, (char *) &tmp, sizeof (XcmsColor));
 	return(XcmsSuccess);
     } else if (max_vc.spec.TekHVC.C == tmp.spec.TekHVC.C) {
 	/*
@@ -163,7 +163,7 @@ XcmsTekHVCQueryMaxV(ccc, hue, chroma, pColor_return)
 	 *  the value for the maximum value, chroma point.
 	 */
 	tmp.spec.TekHVC.V = max_vc.spec.TekHVC.V;
-	bcopy ((char *) &tmp, (char *) pColor_return, sizeof (XcmsColor));
+	memcpy ((char *) pColor_return, (char *) &tmp, sizeof (XcmsColor));
 	return(XcmsSuccess);
     } else {
 	/* must do a bisection here to compute the maximum value */
@@ -197,7 +197,7 @@ XcmsTekHVCQueryMaxV(ccc, hue, chroma, pColor_return)
 	    if (tmp.spec.TekHVC.C <= savedChroma + EPS &&
 		tmp.spec.TekHVC.C >= savedChroma - EPS) {
 		tmp.spec.TekHVC.H = hue;  /* use the saved hue */
-		bcopy ((char *) &tmp, (char *) pColor_return, sizeof (XcmsColor));
+		memcpy ((char *) pColor_return, (char *) &tmp, sizeof (XcmsColor));
 		return(XcmsSuccess);
 	    } 
 	    nChroma += savedChroma - tmp.spec.TekHVC.C;
@@ -221,7 +221,7 @@ XcmsTekHVCQueryMaxV(ccc, hue, chroma, pColor_return)
 		if (!_XcmsTekHVC_CheckModify(&tmp)) {
 		    return(XcmsFailure);
 		}
-		bcopy ((char *) &tmp, (char *) pColor_return, sizeof (XcmsColor));
+		memcpy ((char *) pColor_return, (char *) &tmp, sizeof (XcmsColor));
 		return(XcmsSuccess);
 	    } else if (tmp.spec.TekHVC.C <= prevChroma + EPS &&
 		       tmp.spec.TekHVC.C >= prevChroma - EPS) {
@@ -245,6 +245,6 @@ XcmsTekHVCQueryMaxV(ccc, hue, chroma, pColor_return)
 
     /* make sure to return the input hue */
     tmp.spec.TekHVC.H = hue;
-    bcopy ((char *) &tmp, (char *) pColor_return, sizeof (XcmsColor));
+    memcpy ((char *) pColor_return, (char *) &tmp, sizeof (XcmsColor));
     return(XcmsSuccess);
 }

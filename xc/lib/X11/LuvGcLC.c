@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuvGcLC.c,v 1.1 91/07/24 23:26:43 rws Exp $ */
+/* $XConsortium: LuvGcLC.c,v 1.2 91/07/25 01:07:36 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -96,7 +96,7 @@ XcmsCIELuvClipLuv (ccc, pColors_in_out, nColors, i, pCompressed)
     int		nCount, nMaxCount, nI, nILast;
 
     /* Use my own CCC */
-    bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
+    memcpy ((char *)&myCCC, (char *)ccc, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;/* inherit screen white */
     myCCC.gamutCompProc = (XcmsCompressionProc)NULL;/* no gamut compression func */
 
@@ -139,7 +139,7 @@ XcmsCIELuvClipLuv (ccc, pColors_in_out, nColors, i, pCompressed)
 				  pColor->spec.CIELuv.v_star);
     chroma = XCMS_CIELUV_PMETRIC_CHROMA(pColor->spec.CIELuv.u_star,
 					pColor->spec.CIELuv.v_star);
-    bcopy((char *)pColor, (char *)&Luv_max, sizeof(XcmsColor));
+    memcpy((char *)&Luv_max, (char *)pColor, sizeof(XcmsColor));
     if (_XcmsCIELuvQueryMaxLCRGB (&myCCC, hue, &Luv_max, &rgb_max) 
 	    == XcmsFailure) {
 	return (XcmsFailure);
@@ -150,7 +150,7 @@ XcmsCIELuvClipLuv (ccc, pColors_in_out, nColors, i, pCompressed)
     if (saveLstar == maxLstar) {
 	/* When the L* input is equal to the maximum L* */
 	/* merely return the maximum Luv point. */
-	bcopy((char *)&Luv_max, (char *)pColor, sizeof(XcmsColor));
+	memcpy((char *)pColor, (char *)&Luv_max, sizeof(XcmsColor));
 	retval = _XcmsDIConvertColors(&myCCC, pColor,
 		           ScreenWhitePointOfCCC(&myCCC), 1, XcmsCIEXYZFormat);
     } else {

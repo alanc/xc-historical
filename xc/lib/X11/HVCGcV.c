@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCGcV.c,v 1.6 91/06/27 10:52:18 dave Exp $" */
+/* $XConsortium: HVCGcV.c,v 1.7 91/07/25 01:08:03 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -105,7 +105,7 @@ XcmsTekHVCClipV (ccc, pColors_in_out, nColors, i, pCompressed)
     }
 
     /* Use my own CCC */
-    bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
+    memcpy ((char *)&myCCC, (char *)ccc, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;/* Inherit Screen WP */
     myCCC.gamutCompProc = (XcmsCompressionProc)NULL;/* no gamut compression */
 
@@ -141,7 +141,7 @@ XcmsTekHVCClipV (ccc, pColors_in_out, nColors, i, pCompressed)
 
 	/* Step 1: compute the maximum value and chroma for this hue. */
 	/*         This copy may be overkill but it preserves the pixel etc. */
-	bcopy((char *)pColor, (char *)&hvc_max, sizeof(XcmsColor));
+	memcpy((char *)&hvc_max, (char *)pColor, sizeof(XcmsColor));
 	if (_XcmsTekHVCQueryMaxVCRGB (&myCCC, hvc_max.spec.TekHVC.H, &hvc_max,
 		(XcmsRGBi *)NULL) == XcmsFailure) {
 	    return (XcmsFailure);

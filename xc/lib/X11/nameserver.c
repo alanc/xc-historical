@@ -1,4 +1,4 @@
-/* $XConsortium: nameserver.c,v 1.2 91/07/17 15:07:11 gildea Exp $ */
+/* $XConsortium: nameserver.c,v 1.3 91/07/23 11:50:04 rws Exp $ */
 /*	nameserver.c - included by Xstreams.c			*/
 /*	Used for System V Release 3.2 networking code ONLY	*/
 
@@ -78,7 +78,7 @@ _XsSetupTliStream(display, stype)
 			return(-2);
 			}
 
-	bcopy(stype, Network._net[type], n);
+	memcpy(Network._net[type], stype, n);
 
 	bind_ret.addr.buf = ret_buf;
 	call.addr.buf	  = call_buf;
@@ -477,7 +477,7 @@ OpenAndBind(name, port, maxcon, nettype, type)
 	   }
 	   bind_req.addr.buf = bind_buf;
 	   bind_req.addr.len = ((xHostEntry *) retptr)->length;
-	   bcopy (retptr+sizeof(xHostEntry), bind_buf, bind_req.addr.len);
+	   memcpy (bind_buf, retptr+sizeof(xHostEntry), bind_req.addr.len);
 	   free(retptr);
 	   bind_buf[bind_req.addr.len] = '\0';
 #ifdef DEBUG

@@ -1,4 +1,4 @@
-/* $XConsortium: TextToStr.c,v 1.2 91/01/06 11:43:58 rws Exp $ */
+/* $XConsortium: TextToStr.c,v 1.3 91/01/08 14:40:22 gildea Exp $ */
 /* Copyright 1989 Massachusetts Institute of Technology */
 
 /*
@@ -69,7 +69,7 @@ Status XTextPropertyToStringList (tp, list_return, count_return)
     /*
      * copy data
      */
-    bcopy ((char *) tp->value, start, tp->nitems);
+    memcpy (start, (char *) tp->value, tp->nitems);
     start[datalen] = '\0';
 
     /*

@@ -1,4 +1,4 @@
-/* $XConsortium: XText16.c,v 11.21 91/01/06 11:48:27 rws Exp $ */
+/* $XConsortium: Text16.c,v 11.22 92/04/13 19:59:02 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -87,7 +87,7 @@ XDrawString16(dpy, d, gc, x, y, string, length)
 		}
 	    }
 #else
-            bcopy ((char *)CharacterOffset, (char *) (elt + 1), 254 * 2);
+            memcpy ((char *) (elt + 1), (char *)CharacterOffset, 254 * 2);
 #endif
 	    PartialNChars = PartialNChars - 254;
 	    CharacterOffset += 254;
@@ -110,7 +110,7 @@ XDrawString16(dpy, d, gc, x, y, string, length)
 		}
 	    }
 #else
-            bcopy ((char *)CharacterOffset, (char *) (elt + 1), PartialNChars * 2);
+            memcpy((char *)(elt + 1), (char *)CharacterOffset, PartialNChars * 2);
 #endif
 	 }
     }

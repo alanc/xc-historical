@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.27 93/08/16 14:12:25 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.28 93/08/18 15:07:45 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -191,8 +191,8 @@ typedef unsigned long FdSet[MSKCNT];
 #endif
 
 #if (MSKCNT>4)
-#define COPYBITS(src, dst) bcopy((char *) src, (char *) dst,\
-				 MSKCNT*sizeof(long))
+#define COPYBITS(src, dst) memcpy((char *) dst, (char *) src,\
+				  MSKCNT*sizeof(long))
 #define CLEARBITS(buf) bzero((char *) buf, MSKCNT*sizeof(long))
 #define MASKANDSETBITS(dst, b1, b2)  \
 		      { int cri;			\

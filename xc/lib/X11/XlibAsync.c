@@ -1,4 +1,4 @@
-/* $XConsortium: XlibAsync.c,v 1.2 92/01/20 16:57:22 rws Exp $ */
+/* $XConsortium: XlibAsync.c,v 1.3 92/01/21 17:06:50 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -83,13 +83,13 @@ _XGetAsyncReply(dpy, replbuf, rep, buf, len, extra, discard)
     if (extra <= rep->generic.length) {
 	int size = SIZEOF(xReply) + (extra << 2);
 	if (size > len) {
-	    bcopy(buf, replbuf, len);
+	    memcpy(replbuf, buf, len);
 	    _XRead(dpy, replbuf + len, size - len);
 	    buf = replbuf;
 	    len = size;
 #ifdef MUSTCOPY
 	} else {
-	    bcopy(buf, replbuf, size);
+	    memcpy(replbuf, buf, size);
 	    buf = replbuf;
 #endif
 	}

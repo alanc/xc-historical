@@ -1,4 +1,4 @@
-/* $XConsortium: XRegion.c,v 11.35 92/04/20 15:59:19 rws Exp $ */
+/* $XConsortium: Region.c,v 11.36 92/10/21 10:05:54 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -460,8 +460,8 @@ miRegionCopy(dstrgn, rgn)
         dstrgn->extents.x2 = rgn->extents.x2;
         dstrgn->extents.y2 = rgn->extents.y2;
 
-	bcopy((char *) rgn->rects, (char *) dstrgn->rects,
-	      (int) (rgn->numRects * sizeof(BOX)));
+	memcpy((char *) dstrgn->rects, (char *) rgn->rects,
+	       (int) (rgn->numRects * sizeof(BOX)));
     }
 }
 

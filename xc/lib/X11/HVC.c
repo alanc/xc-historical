@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVC.c,v 1.11 92/08/16 13:41:57 rws Exp $ */
+/* $XConsortium: HVC.c,v 1.12 92/08/17 09:40:28 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -349,7 +349,7 @@ XcmsTekHVCToCIEuvY(ccc, pHVC_WhitePt, pColors_in_out, nColors)
      */
     if (pHVC_WhitePt->format != XcmsCIEuvYFormat) {
 	/* Make copy of the white point because we're going to modify it */
-	bcopy((char *)pHVC_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
+	memcpy((char *)&whitePt, (char *)pHVC_WhitePt, sizeof(XcmsColor));
 	if (!_XcmsDIConvertColors(ccc, &whitePt, (XcmsColor *)NULL, 1,
 		XcmsCIEuvYFormat)) {
 	    return(XcmsFailure);
@@ -418,7 +418,7 @@ XcmsTekHVCToCIEuvY(ccc, pHVC_WhitePt, pColors_in_out, nColors)
 	}
 
 	/* Copy result to pColor */
-	bcopy ((char *)&uvY_return, (char *)&pColor->spec, sizeof(XcmsCIEuvY));
+	memcpy((char *)&pColor->spec, (char *)&uvY_return, sizeof(XcmsCIEuvY));
 
 	/* Identify that the format is now CIEuvY */
 	pColor->format = XcmsCIEuvYFormat;
@@ -468,7 +468,7 @@ XcmsCIEuvYToTekHVC(ccc, pHVC_WhitePt, pColors_in_out, nColors)
      */
     if (pHVC_WhitePt->format != XcmsCIEuvYFormat) {
 	/* Make copy of the white point because we're going to modify it */
-	bcopy((char *)pHVC_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
+	memcpy((char *)&whitePt, (char *)pHVC_WhitePt, sizeof(XcmsColor));
 	if (!_XcmsDIConvertColors(ccc, &whitePt, (XcmsColor *)NULL, 1,
 		XcmsCIEuvYFormat)) {
 	    return(XcmsFailure);
@@ -551,7 +551,7 @@ XcmsCIEuvYToTekHVC(ccc, pHVC_WhitePt, pColors_in_out, nColors)
 	}
 
 	/* Copy result to pColor */
-	bcopy ((char *)&HVC_return, (char *)&pColor->spec, sizeof(XcmsTekHVC));
+	memcpy((char *)&pColor->spec, (char *)&HVC_return, sizeof(XcmsTekHVC));
 
 	/* Identify that the format is now CIEuvY */
 	pColor->format = XcmsTekHVCFormat;

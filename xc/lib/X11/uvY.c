@@ -1,4 +1,4 @@
-/* $XConsortium: CIEuvY.c,v 1.8 92/06/11 12:09:31 converse Exp $ */
+/* $XConsortium: uvY.c,v 1.9 92/06/11 16:26:27 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -271,7 +271,7 @@ XcmsCIEuvYToCIEXYZ(ccc, puvY_WhitePt, pColors_in_out, nColors)
 	     */
 	    if (puvY_WhitePt->format != XcmsCIEuvYFormat) {
 		/* Make copy of the white point because we're going to modify it */
-		bcopy((char *)puvY_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
+		memcpy((char *)&whitePt, (char *)puvY_WhitePt, sizeof(XcmsColor));
 		if (!_XcmsDIConvertColors(ccc, &whitePt, (XcmsColor *)NULL, 1,
 			XcmsCIEuvYFormat)) {
 		    return(XcmsFailure);
@@ -310,7 +310,7 @@ XcmsCIEuvYToCIEXYZ(ccc, puvY_WhitePt, pColors_in_out, nColors)
 	    XYZ_return.Z = z;
 	}
 
-	bcopy((char *)&XYZ_return, (char *)&pColor->spec.CIEXYZ, sizeof(XcmsCIEXYZ));
+	memcpy((char *)&pColor->spec.CIEXYZ, (char *)&XYZ_return, sizeof(XcmsCIEXYZ));
 	/* Identify that format is now CIEXYZ */
 	pColor->format = XcmsCIEXYZFormat;
     }
@@ -380,7 +380,7 @@ XcmsCIEXYZToCIEuvY(ccc, puvY_WhitePt, pColors_in_out, nColors)
 	     */
 	    if (puvY_WhitePt->format != XcmsCIEuvYFormat) {
 		/* Make copy of the white point because we're going to modify it */
-		bcopy((char *)puvY_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
+		memcpy((char *)&whitePt, (char *)puvY_WhitePt, sizeof(XcmsColor));
 		if (!_XcmsDIConvertColors(ccc, &whitePt, (XcmsColor *)NULL, 1,
 			XcmsCIEuvYFormat)) {
 		    return(XcmsFailure);
@@ -400,7 +400,7 @@ XcmsCIEXYZToCIEuvY(ccc, puvY_WhitePt, pColors_in_out, nColors)
 	    uvY_return.Y = pColor->spec.CIEXYZ.Y;
 	}
 
-	bcopy((char *)&uvY_return, (char *)&pColor->spec.CIEuvY, sizeof(XcmsCIEuvY));
+	memcpy((char *)&pColor->spec.CIEuvY, (char *)&uvY_return, sizeof(XcmsCIEuvY));
 	/* Identify that format is now CIEuvY */
 	pColor->format = XcmsCIEuvYFormat;
     }

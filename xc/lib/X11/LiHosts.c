@@ -1,4 +1,4 @@
-/* $XConsortium: XLiHosts.c,v 11.19 91/01/06 11:46:46 rws Exp $ */
+/* $XConsortium: LiHosts.c,v 11.20 92/07/29 11:01:18 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -61,7 +61,7 @@ XHostAddress *XListHosts (dpy, nhosts, enabled)
 	for (i = 0; i < reply.nHosts; i++) {
 #ifdef WORD64
 	    xHostEntry xhe;
-	    bcopy(bp, (char *)&xhe, SIZEOF(xHostEntry));
+	    memcpy((char *)&xhe, bp, SIZEOF(xHostEntry));
 	    op->family = xhe.family;
 	    op->length = xhe.length;
 #else

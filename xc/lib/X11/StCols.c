@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsStCols.c,v 1.5 91/02/12 16:13:51 dave Exp $" */
+/* $XConsortium: StCols.c,v 1.7 91/05/13 23:29:57 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -87,8 +87,8 @@ XcmsStoreColors(dpy, colormap, pColors_in,
     } else {
 	pColors_tmp = &Color1;
     }
-    bcopy((char *)pColors_in, (char *)pColors_tmp,
-	    nColors * sizeof(XcmsColor));
+    memcpy((char *)pColors_tmp, (char *)pColors_in,
+ 	    nColors * sizeof(XcmsColor));
 
     /*
      * Call routine to store colors using the copied color structures

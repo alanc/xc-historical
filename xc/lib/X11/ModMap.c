@@ -1,4 +1,4 @@
-/* $XConsortium: XModMap.c,v 11.11 90/06/30 10:56:02 rws Exp $ */
+/* $XConsortium: ModMap.c,v 11.12 91/01/06 11:47:03 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -66,8 +66,9 @@ XSetModifierMapping(dpy, modifier_map)
 
     req->numKeyPerModifier = modifier_map->max_keypermod;
 
-    bcopy ((char *) modifier_map->modifiermap, 
-    	   (char *) NEXTPTR(req,xSetModifierMappingReq), mapSize);
+    memcpy((char *) NEXTPTR(req,xSetModifierMappingReq),
+	   (char *) modifier_map->modifiermap,
+	   mapSize);
 
     (void) _XReply(dpy, (xReply *) & rep,
 	(SIZEOF(xSetModifierMappingReply) - SIZEOF(xReply)) >> 2, xTrue);

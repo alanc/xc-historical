@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xrm.c,v 1.77 93/08/14 10:08:41 rws Exp $
+ * $XConsortium: Xrm.c,v 1.78 93/09/07 20:03:30 rws Exp $
  */
 
 /***********************************************************
@@ -866,7 +866,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 		    if (!entry->string)
 			RepType(entry) = type;
 		    /* identical size, just overwrite value */
-		    bcopy((char *)value->addr, RawValue(entry), value->size);
+		    memcpy(RawValue(entry), (char *)value->addr, value->size);
 		    return;
 		}
 		/* splice out and free old entry */
@@ -920,7 +920,7 @@ static void PutEntry(db, bindings, quarks, type, value)
 	RepType(entry) = type;
     }
     /* save a copy of the value */
-    bcopy((char *)value->addr, RawValue(entry), value->size);
+    memcpy(RawValue(entry), (char *)value->addr, value->size);
     (*pprev)->entries++;
     /* this is a new leaf, need to remember it for search lists */
     if (q > maxResourceQuark) {

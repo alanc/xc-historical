@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCMxVs.c,v 1.5 91/05/13 22:48:15 rws Exp $" */
+/* $XConsortium: HVCMxVs.c,v 1.6 91/07/25 01:08:19 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -119,7 +119,7 @@ XcmsTekHVCQueryMaxVSamples(ccc, hue, pColor_in_out, nSamples)
     }
 
     /* setup the CCC to use for the conversions. */
-    bcopy ((char *) ccc, (char *) &myCCC, sizeof(XcmsCCCRec));
+    memcpy ((char *) &myCCC, (char *) ccc, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;
     myCCC.gamutCompProc = (XcmsCompressionProc) NULL;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCMxVC.c,v 1.5 91/05/13 22:47:44 rws Exp $" */
+/* $XConsortium: HVCMxVC.c,v 1.6 91/07/25 01:08:17 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -171,7 +171,7 @@ _XcmsTekHVCQueryMaxVCRGB(ccc, hue, pColor_return, pRGB_return)
 
     /* make sure to return the input hue */
     tmp.spec.TekHVC.H = hue;
-    bcopy((char *)&tmp, (char *)pColor_return, sizeof(XcmsColor));
+    memcpy((char *)pColor_return, (char *)&tmp, sizeof(XcmsColor));
     return (XcmsSuccess);    
 }
 
@@ -228,7 +228,7 @@ XcmsTekHVCQueryMaxVC (ccc, hue, pColor_return)
     }
     
     /* Use my own CCC */
-    bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
+    memcpy ((char *)&myCCC, (char *)ccc, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;
     myCCC.gamutCompProc = (XcmsCompressionProc)NULL;
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.107 93/07/11 13:34:44 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.108 93/07/12 11:53:37 gildea Exp $ */
 /* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
@@ -448,9 +448,9 @@ extern int errno;			/* Internal system error number. */
     char _BRdat[4]; \
     unsigned long _BRlen = req->length - 1; \
     req->length = 0; \
-    bcopy(((char *)req) + (_BRlen << 2), _BRdat, 4); \
-    bcopy(((char *)req) + 4, ((char *)req) + 8, _BRlen << 2); \
-    bcopy(_BRdat, ((char *)req) + 4, 4); \
+    memcpy(_BRdat, ((char *)req) + (_BRlen << 2), 4); \
+    memmove(((char *)req) + 8, ((char *)req) + 4, _BRlen << 2); \
+    memcpy(((char *)req) + 4, _BRdat, 4); \
     Data32(dpy, (long *)&_BRdat, 4); \
     }
 #else
@@ -460,7 +460,7 @@ extern int errno;			/* Internal system error number. */
     unsigned long _BRlen = req->length - 1; \
     req->length = 0; \
     _BRdat = ((long *)req)[_BRlen]; \
-    bcopy(((char *)req) + 4, ((char *)req) + 8, _BRlen << 2); \
+    memmove(((char *)req) + 8, ((char *)req) + 4, _BRlen << 2); \
     ((unsigned long *)req)[1] = _BRlen + n + 2; \
     Data32(dpy, &_BRdat, 4); \
     }
@@ -489,12 +489,11 @@ extern int errno;			/* Internal system error number. */
  * "dpy" is a pointer to a Display.
  * "data" is a pinter to a data buffer.
  * "len" is the length of the data buffer.
- * we can presume buffer less than 2^16 bytes, so bcopy can be used safely.
  */
 #ifndef DataRoutineIsProcedure
 #define Data(dpy, data, len) \
 	if (dpy->bufptr + (len) <= dpy->bufmax) {\
-		bcopy(data, dpy->bufptr, (int)len);\
+		memcpy(dpy->bufptr, data, (int)len);\
 		dpy->bufptr += ((len) + 3) & ~3;\
 	} else\
 		_XSend(dpy, data, len)

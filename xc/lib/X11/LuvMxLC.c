@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuvMxLC.c,v 1.1 91/07/24 23:26:51 rws Exp $ */
+/* $XConsortium: LuvMxLC.c,v 1.2 91/07/25 01:07:45 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -160,7 +160,7 @@ _XcmsCIELuvQueryMaxLCRGB(ccc, hue, pColor_return, pRGB_return)
 	return (XcmsFailure);
     }
 
-    bcopy((char *)&tmp, (char *)pColor_return, sizeof(XcmsColor));
+    memcpy((char *)pColor_return, (char *)&tmp, sizeof(XcmsColor));
     return (XcmsSuccess);    
 }
 
@@ -210,7 +210,7 @@ XcmsCIELuvQueryMaxLC (ccc, hue_angle, pColor_return)
     }
     
     /* Use my own CCC */
-    bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
+    memcpy ((char *)&myCCC, (char *)ccc, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;
     myCCC.gamutCompProc = (XcmsCompressionProc)NULL;
 

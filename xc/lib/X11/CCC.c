@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCCC.c,v 1.11 91/12/20 15:58:21 rws Exp $" */
+/* $XConsortium: CCC.c,v 1.12 92/06/04 16:25:16 converse Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -88,14 +88,14 @@ XcmsCreateCCC(dpy, screenNumber, visual, clientWhitePt, gamutCompProc,
     } 
 
     /*
-     * Should inherit the following as result of a bcopy():
+     * Should inherit the following as result of a memmove():
      *		dpy
      *		screenNumber
      *		pPerScrnInfo
      */
-    bcopy((char *)pDefaultCCC, (char *)newccc, sizeof(XcmsCCCRec));
+    memcpy((char *)newccc, (char *)pDefaultCCC, sizeof(XcmsCCCRec));
     if (clientWhitePt) {
-	bcopy((char *)clientWhitePt, (char *)&newccc->clientWhitePt,
+	memcpy((char *)&newccc->clientWhitePt, (char *)clientWhitePt,
 		sizeof(XcmsColor));
     }
     if (gamutCompProc) {
@@ -121,7 +121,7 @@ XcmsCreateCCC(dpy, screenNumber, visual, clientWhitePt, gamutCompProc,
 	    Xfree(newccc);
 	    return(NULL);
 	}
-	bcopy((char *)newccc->pPerScrnInfo, (char *)pNewScrnInfo, 
+	memcpy((char *)pNewScrnInfo, (char *)newccc->pPerScrnInfo,
 		sizeof(XcmsPerScrnInfo));
 	pNewScrnInfo->screenData = pIMap->screenData;
 	newccc->pPerScrnInfo = pNewScrnInfo;

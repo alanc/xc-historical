@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCMnV.c,v 1.5 91/05/13 22:46:09 rws Exp $" */
+/* $XConsortium: HVCMnV.c,v 1.6 91/07/25 01:08:09 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -120,7 +120,7 @@ XcmsTekHVCQueryMinV (ccc, hue, chroma, pColor_return)
     }
 
     /* Use my own CCC */
-    bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
+    memcpy ((char *)&myCCC, (char *)ccc, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;/* inherit screen white pt */
     myCCC.gamutCompProc = (XcmsCompressionProc)NULL;/* no gamut comp func */
 
@@ -138,7 +138,7 @@ XcmsTekHVCQueryMinV (ccc, hue, chroma, pColor_return)
 
     /* Step 1: compute the maximum value and chroma for this hue. */
     /*         This copy may be overkill but it preserves the pixel etc. */
-    bcopy((char *)&tmp, (char *)&max_vc, sizeof(XcmsColor));
+    memcpy((char *)&max_vc, (char *)&tmp, sizeof(XcmsColor));
     if (_XcmsTekHVCQueryMaxVCRGB (&myCCC, max_vc.spec.TekHVC.H, &max_vc,
 	    (XcmsRGBi *)NULL) == XcmsFailure) {
 	return(XcmsFailure);
@@ -159,7 +159,7 @@ XcmsTekHVCQueryMinV (ccc, hue, chroma, pColor_return)
 	}
     }
     if (_XcmsTekHVC_CheckModify (&tmp)) {
-	bcopy ((char *) &tmp, (char *) pColor_return, sizeof (XcmsColor));
+	memcpy ((char *) pColor_return, (char *) &tmp, sizeof (XcmsColor));
 	return(XcmsSuccess);
     } else {
 	return(XcmsFailure);

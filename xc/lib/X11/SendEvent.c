@@ -1,4 +1,4 @@
-/* $XConsortium: XSendEvent.c,v 11.10 88/09/06 16:10:01 jim Exp $ */
+/* $XConsortium: SendEvent.c,v 11.11 91/01/06 11:47:51 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -49,7 +49,7 @@ XSendEvent(dpy, w, propagate, event_mask, event)
 	req->eventMask = event_mask;
 #ifdef WORD64
 	/* avoid quad-alignment problems */
-	bcopy ((char *) &ev, (char *) req->eventdata, SIZEOF(xEvent));
+	memcpy ((char *) req->eventdata, (char *) &ev, SIZEOF(xEvent));
 #else
 	req->event = ev;
 #endif /* WORD64 */

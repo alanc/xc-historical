@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLkCol.c,v 1.11 91/07/22 15:48:23 rws Exp $ */
+/* $XConsortium: XcmsLkCol.c,v 1.12 93/07/05 11:44:13 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -127,8 +127,8 @@ XcmsLookupColor(dpy, cmap, colorname, pColor_exact_return, pColor_scrn_return,
     /*
      * Convert to RGB, adjusting for white point differences if necessary.
      */
-    bcopy((char *)pColor_exact_return, (char *)pColor_scrn_return,
-	    sizeof(XcmsColor));
+    memcpy((char *)pColor_scrn_return, (char *)pColor_exact_return,
+	   sizeof(XcmsColor));
     if (pColor_scrn_return->format == XcmsRGBFormat) {
 	retval2 = XcmsSuccess;
     } else if ((retval2 = XcmsConvertColors(ccc, pColor_scrn_return, 1,

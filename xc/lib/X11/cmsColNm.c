@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.25 92/03/03 12:16:07 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.26 92/04/13 19:09:29 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -967,8 +967,9 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
 	 */
 
 	if (_XcmsLookupColorName(ccc, &strptr, &dbWhitePt) != 1) {
-	    bcopy((char *)&ccc->pPerScrnInfo->screenWhitePt, (char *)&dbWhitePt,
-		    sizeof(XcmsColor));
+	    memcpy((char *)&dbWhitePt,
+		   (char *)&ccc->pPerScrnInfo->screenWhitePt,
+		   sizeof(XcmsColor));
 	}
 	if (XCMS_DD_ID(result_format)) {
 	    /*

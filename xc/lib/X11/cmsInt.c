@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsInt.c,v 1.9 92/01/02 19:27:32 rws Exp $" */
+/* $XConsortium: XcmsInt.c,v 1.10 92/06/04 16:25:23 converse Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -92,7 +92,8 @@ _XcmsCopyPointerArray(pap)
     n++; /* add 1 to include the NULL pointer */
 
     if (newArray = (XPointer *)Xmalloc(n * sizeof(XPointer))) {
-	bcopy((char *)pap, (char *)newArray, (unsigned)(n * sizeof(XPointer)));
+	memcpy((char *)newArray, (char *)pap,
+	       (unsigned)(n * sizeof(XPointer)));
     }
     return((XPointer *)newArray);
 }
@@ -150,8 +151,8 @@ _XcmsPushPointerArray(pap, p, papNoFree)
     n += 2;
 
     if (newArray = (XPointer *)Xmalloc(n * sizeof(XPointer))) {
-	bcopy((char *)pap, (char *)(newArray+1),
-		(unsigned)((n-1) * sizeof(XPointer)));
+	memcpy((char *)(newArray+1),(char *)pap,
+	       (unsigned)((n-1) * sizeof(XPointer)));
 	*newArray = p;
     }
     if (pap != papNoFree) {

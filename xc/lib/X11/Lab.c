@@ -1,4 +1,4 @@
-/* $XConsortium: CIELab.c,v 1.9 92/06/11 12:07:13 converse Exp $ */
+/* $XConsortium: Lab.c,v 1.10 92/06/11 16:26:15 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -251,7 +251,7 @@ XcmsCIELabToCIEXYZ(ccc, pLab_WhitePt, pColors_in_out, nColors)
      */
     if (pLab_WhitePt->format != XcmsCIEXYZFormat) {
 	/* Make a copy of the white point because we're going to modify it */
-	bcopy((char *)pLab_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
+	memcpy((char *)&whitePt, (char *)pLab_WhitePt, sizeof(XcmsColor));
 	if (!_XcmsDIConvertColors(ccc, &whitePt,
 		(XcmsColor *)NULL, 1, XcmsCIEXYZFormat)) {
 	    return(XcmsFailure);
@@ -302,8 +302,8 @@ XcmsCIELabToCIEXYZ(ccc, pLab_WhitePt, pColors_in_out, nColors)
 	    XYZ_return.Z = pLab_WhitePt->spec.CIEXYZ.Z * tmpFloat * tmpFloat * tmpFloat;
 	}
 
-	bcopy((char *)&XYZ_return, (char *)&pColor->spec.CIEXYZ,
-		sizeof(XcmsCIEXYZ));
+	memcpy((char *)&pColor->spec.CIEXYZ, (char *)&XYZ_return,
+	       sizeof(XcmsCIEXYZ));
 	pColor->format = XcmsCIEXYZFormat;
     }
 
@@ -354,7 +354,7 @@ XcmsCIEXYZToCIELab(ccc, pLab_WhitePt, pColors_in_out, nColors)
      */
     if (pLab_WhitePt->format != XcmsCIEXYZFormat) {
 	/* Make a copy of the white point because we're going to modify it */
-	bcopy((char *)pLab_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
+	memcpy((char *)&whitePt, (char *)pLab_WhitePt, sizeof(XcmsColor));
 	if (!_XcmsDIConvertColors(ccc, &whitePt, (XcmsColor *)NULL,
 		1, XcmsCIEXYZFormat)) {
 	    return(XcmsFailure);
@@ -407,8 +407,8 @@ XcmsCIEXYZToCIELab(ccc, pLab_WhitePt, pColors_in_out, nColors)
 	Lab_return.a_star = 5.0 * (fX_Xn - fY_Yn);
 	Lab_return.b_star = 2.0 * (fY_Yn - fZ_Zn);
 
-	bcopy((char *)&Lab_return, (char *)&pColor->spec.CIELab,
-		sizeof(XcmsCIELab));
+	memcpy((char *)&pColor->spec.CIELab, (char *)&Lab_return,
+	       sizeof(XcmsCIELab));
 	pColor->format = XcmsCIELabFormat;
     }
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XKeyBind.c,v 11.67 92/05/19 11:23:14 converse Exp $ */
+/* $XConsortium: KeyBind.c,v 11.68 92/12/14 11:01:27 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -408,7 +408,7 @@ XTranslateKeySym(dpy, symbol, modifiers, buffer, nbytes)
 	if (((modifiers & AllMods) == p->state) && (symbol == p->key)) {
 	    length = p->len;
 	    if (length > nbytes) length = nbytes;
-	    bcopy (p->string, buffer, length);
+	    memcpy (buffer, p->string, length);
 	    return length;
 	}
     }
@@ -530,9 +530,9 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
     dpy->key_bindings = p;
     dpy->free_funcs->key_bindings = _XFreeKeyBindings;
     p->next = tmp;	/* chain onto list */
-    bcopy ((char *) str, p->string, nbytes);
+    memcpy (p->string, (char *) str, nbytes);
     p->len = nbytes;
-    bcopy ((char *) mlist, (char *) p->modifiers, nb);
+    memcpy ((char *) p->modifiers, (char *) mlist, nb);
     p->key = keysym;
     p->mlen = nm;
     ComputeMaskFromKeytrans(dpy, p);

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XEvToWire.c,v 11.18 90/08/22 11:49:03 rws Exp $
+ * $XConsortium: EvToWire.c,v 11.19 91/01/06 11:45:24 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -121,9 +121,9 @@ register xEvent *event;	/* wire protocol event */
 	      case KeymapNotify:
 		{
 			register XKeymapEvent *ev = (XKeymapEvent *) re;
-			bcopy ( &ev->key_vector[1], 
-				(char *)(((xKeymapEvent *) event)->map),
-			       sizeof (((xKeymapEvent *) event)->map));
+			memcpy ((char *)(((xKeymapEvent *) event)->map),
+				&ev->key_vector[1],
+				sizeof (((xKeymapEvent *) event)->map));
 		}
 		break;
 	      case Expose:

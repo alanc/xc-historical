@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCvCols.c,v 1.10 92/06/04 16:25:19 converse Exp $" */
+/* $XConsortium: CvCols.c,v 1.11 93/07/05 11:44:02 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -387,8 +387,8 @@ _XcmsEqualWhitePts(ccc, pWhitePt1, pWhitePt2)
 {
     XcmsColor tmp1, tmp2;
 
-    bcopy((char *)pWhitePt1, (char *)&tmp1, sizeof(XcmsColor));
-    bcopy((char *)pWhitePt2, (char *)&tmp2, sizeof(XcmsColor));
+    memcpy((char *)&tmp1, (char *)pWhitePt1, sizeof(XcmsColor));
+    memcpy((char *)&tmp2, (char *)pWhitePt2, sizeof(XcmsColor));
 
     if (tmp1.format != XcmsCIEXYZFormat) {
 	if (_XcmsDIConvertColors(ccc, &tmp1, (XcmsColor *) NULL, 1,
@@ -787,8 +787,8 @@ XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
      */
     if ((contents_flag & DI_FORMAT) || XCMS_DI_ID(targetFormat)) {
 	/* To proceed, we need to get the Client White Point */
-	bcopy((char *)&ccc->clientWhitePt, (char *)&clientWhitePt,
-		sizeof(XcmsColor));
+	memcpy((char *)&clientWhitePt, (char *)&ccc->clientWhitePt,
+	       sizeof(XcmsColor));
 	if (clientWhitePt.format == XcmsUndefinedFormat) {
 	    /*
 	     * Client White Point is undefined, therefore set to the Screen
@@ -796,8 +796,9 @@ XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
 	     * Since Client White Point == Screen White Point, WhiteAdjustProc
 	     *   is not called.
 	     */
-	    bcopy((char *)&ccc->pPerScrnInfo->screenWhitePt, (char *)&clientWhitePt,
-		    sizeof(XcmsColor));
+	    memcpy((char *)&clientWhitePt,
+		   (char *)&ccc->pPerScrnInfo->screenWhitePt,
+		   sizeof(XcmsColor));
 	} else if ((ccc->whitePtAdjProc != NULL) && !_XcmsEqualWhitePts(ccc,
 		&clientWhitePt, ScreenWhitePointOfCCC(ccc))) {
 	    /*
@@ -817,8 +818,8 @@ XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
     } else {
 	pColors_tmp = &Color1;
     }
-    bcopy((char *)pColors_in_out, (char *)pColors_tmp,
-	    nColors * sizeof(XcmsColor));
+    memcpy((char *)pColors_tmp, (char *)pColors_in_out,
+	   nColors * sizeof(XcmsColor));
 
     /*
      * zero out pCompressed
@@ -1000,8 +1001,8 @@ XcmsConvertColors(ccc, pColors_in_out, nColors, targetFormat, pCompressed)
     }
 
     if (retval != XcmsFailure) {
-	bcopy((char *)pColors_tmp, (char *)pColors_in_out,
-		nColors * sizeof(XcmsColor));
+	memcpy((char *)pColors_in_out, (char *)pColors_tmp,
+	       nColors * sizeof(XcmsColor));
     }
     if (nColors > 1) {
 	Xfree((char *)pColors_tmp);

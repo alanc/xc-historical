@@ -1,4 +1,4 @@
-/* $XConsortium: XHost.c,v 11.10 88/09/06 16:07:54 jim Exp $ */
+/* $XConsortium: Host.c,v 11.11 91/01/06 11:46:28 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -29,7 +29,7 @@ XAddHost (dpy, host)
     req->mode = HostInsert;
     req->hostFamily = host->family;
     req->hostLength = host->length;
-    bcopy (host->address, (char *) NEXTPTR(req,xChangeHostsReq), host->length);
+    memcpy((char *) NEXTPTR(req,xChangeHostsReq), host->address, host->length);
     UnlockDisplay(dpy);
     SyncHandle();
     }
@@ -46,7 +46,7 @@ XRemoveHost (dpy, host)
     req->mode = HostDelete;
     req->hostFamily = host->family;
     req->hostLength = host->length;
-    bcopy (host->address, (char *) NEXTPTR(req,xChangeHostsReq), host->length);
+    memcpy((char *) NEXTPTR(req,xChangeHostsReq), host->address, host->length);
     UnlockDisplay(dpy);
     SyncHandle();
     }

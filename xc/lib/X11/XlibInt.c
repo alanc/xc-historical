@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.174 93/08/20 16:12:20 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.175 93/08/22 19:31:02 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -101,7 +101,7 @@ void (*_XUnlockMutex_fn)() = NULL;
 #define STARTITERATE(tpvar,type,start,endcond) \
   { register char *cpvar; \
   for (cpvar = (char *) (start); endcond; ) { \
-    type dummy; bcopy (cpvar, (char *) &dummy, SIZEOF(type)); \
+    type dummy; memcpy ((char *) &dummy, cpvar, SIZEOF(type)); \
     tpvar = &dummy;
 #define ITERPTR(tpvar) cpvar
 #define RESETITERPTR(tpvar,type,start) cpvar = start
@@ -554,13 +554,13 @@ _XEventsQueued (dpy, mode)
 	    {
 		dpy->lock->reply_was_read = True;
 		if (read_buf != (char *)dpy->lock->reply_awaiters->buf)
-		    bcopy(read_buf, (char *)dpy->lock->reply_awaiters->buf,
-			  len);
+		    memcpy((char *)dpy->lock->reply_awaiters->buf, read_buf,
+			   len);
 		ConditionSignal(dpy, dpy->lock->reply_awaiters);
 		UnlockNextEventReader(dpy);
 		return(dpy->qlen); /* we read, so we can return */
 	    } else if (read_buf != buf.buf)
-		bcopy(read_buf, buf.buf, len);
+		memcpy(buf.buf, read_buf, len);
 	}
 #endif /* XTHREADS*/
 
@@ -691,13 +691,13 @@ _XReadEvents(dpy)
 		{
 		    dpy->lock->reply_was_read = True;
 		    if (read_buf != (char *)dpy->lock->reply_awaiters->buf)
-			bcopy(read_buf, (char *)dpy->lock->reply_awaiters->buf,
-			      len);
+			memcpy((char *)dpy->lock->reply_awaiters->buf,
+			       read_buf, len);
 		    ConditionSignal(dpy, dpy->lock->reply_awaiters);
 		    /* useless to us, so keep trying */
 		    continue;
 		} else if (read_buf != buf.buf)
-		    bcopy(read_buf, buf.buf, len);
+		    memcpy(buf.buf, read_buf, len);
 	    }
 #endif /* XTHREADS*/
 
@@ -1369,7 +1369,7 @@ _XAsyncReply(dpy, rep, buf, lenp, discard)
 	buf = nbuf;
 	len = SIZEOF(xReply) - len;
 	nbuf -= len;
-	bcopy(buf, nbuf, *lenp);
+	memmove(nbuf, buf, *lenp);
 	_XRead(dpy, nbuf + *lenp, (long)len);
 	*lenp += len;
     }
@@ -1590,8 +1590,8 @@ register xEvent *event;	/* wire protocol event */
 		{
 			register XKeymapEvent *ev = (XKeymapEvent *) re;
 			ev->window	= None;
-			bcopy ((char *)((xKeymapEvent *) event)->map,
-			       &ev->key_vector[1], 
+			memcpy(&ev->key_vector[1],
+			       (char *)((xKeymapEvent *) event)->map,
 			       sizeof (((xKeymapEvent *) event)->map));
 		}
 		break;
@@ -2169,7 +2169,7 @@ void Data (dpy, data, len)
 	long len;
 {
 	if (dpy->bufptr + (len) <= dpy->bufmax) {
-		bcopy(data, dpy->bufptr, (int)len);
+		memcpy(dpy->bufptr, data, (int)len);
 		dpy->bufptr += ((len) + 3) & ~3;
 	} else {
 		_XSend(dpy, data, len);

@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuvMxL.c,v 1.1 91/07/24 23:26:49 rws Exp $ */
+/* $XConsortium: LuvMxL.c,v 1.2 91/07/25 01:07:42 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -99,7 +99,7 @@ XcmsCIELuvQueryMaxL(ccc, hue_angle, chroma, pColor_return)
     }
 
     /* setup the CCC to use for the conversions. */
-    bcopy ((char *) ccc, (char *) &myCCC, sizeof(XcmsCCCRec));
+    memcpy ((char *) &myCCC, (char *) ccc, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;
     myCCC.gamutCompProc = (XcmsCompressionProc) NULL;
 
@@ -134,7 +134,7 @@ XcmsCIELuvQueryMaxL(ccc, hue_angle, chroma, pColor_return)
 	 *  This is an error but I return the best approximation I can.
          *  Thus the inconsistency.
 	 */
-	bcopy ((char *) &max_lc, (char *) pColor_return, sizeof (XcmsColor));
+	memcpy ((char *) pColor_return, (char *) &max_lc, sizeof (XcmsColor));
 	return(XcmsSuccess);
     }
 
@@ -144,7 +144,7 @@ XcmsCIELuvQueryMaxL(ccc, hue_angle, chroma, pColor_return)
      *	 *  maximum L_star/chroma point then the L_star is the
      *	 *  the L_star for the maximum L* and chroma point.
      *	 */
-    /*  bcopy ((char *) &max_lc, (char *) pColor_return, sizeof (XcmsColor));
+    /*  memcpy ((char *) pColor_return, (char *) &max_lc, sizeof (XcmsColor));
      *	return(XcmsSuccess);
      *    }
      */
@@ -162,7 +162,7 @@ XcmsCIELuvQueryMaxL(ccc, hue_angle, chroma, pColor_return)
 	prevChroma = lastChroma;
 	lastChroma = tmp_chroma;
 	nT = (1.0 - (nChroma / max_chroma)) * rFactor;
-	bcopy ((char *)&tmp, (char *)&prev, sizeof(XcmsColor));
+	memcpy ((char *)&prev, (char *)&tmp, sizeof(XcmsColor));
 	tmp.spec.RGBi.red   = rgb_saved.red * (1.0 - nT) + nT;
 	tmp.spec.RGBi.green = rgb_saved.green * (1.0 - nT) + nT;
 	tmp.spec.RGBi.blue  = rgb_saved.blue * (1.0 - nT) + nT;
@@ -180,7 +180,7 @@ XcmsCIELuvQueryMaxL(ccc, hue_angle, chroma, pColor_return)
 						tmp.spec.CIELuv.v_star);
 	if (tmp_chroma <= chroma + EPS && tmp_chroma >= chroma - EPS) {
 	    /* Found It! */
-	    bcopy ((char *) &tmp, (char *) pColor_return, sizeof (XcmsColor));
+	    memcpy ((char *) pColor_return, (char *) &tmp, sizeof (XcmsColor));
 	    return(XcmsSuccess);
 	} 
 	nChroma += chroma - tmp_chroma;
@@ -190,11 +190,11 @@ XcmsCIELuvQueryMaxL(ccc, hue_angle, chroma, pColor_return)
 	} else if (nChroma < 0.0) {
 	    if (XCMS_FABS(lastChroma - chroma) < 
 		XCMS_FABS(tmp_chroma - chroma)) {
-		bcopy ((char *)&prev, (char *)pColor_return,
-			sizeof(XcmsColor));
+		memcpy ((char *)pColor_return, (char *)&prev,
+ 			sizeof(XcmsColor));
 	    } else {
-		bcopy ((char *)&tmp, (char *)pColor_return,
-			sizeof(XcmsColor));
+		memcpy ((char *)pColor_return, (char *)&tmp,
+ 			sizeof(XcmsColor));
 	    }
 	    return(XcmsSuccess);
 	} else if (tmp_chroma <= prevChroma + EPS &&
@@ -206,13 +206,13 @@ XcmsCIELuvQueryMaxL(ccc, hue_angle, chroma, pColor_return)
     if (nCount >= nMaxCount) {
 	if (XCMS_FABS(lastChroma - chroma) < 
 	    XCMS_FABS(tmp_chroma - chroma)) {
-		bcopy ((char *)&prev, (char *)pColor_return,
-			sizeof(XcmsColor));
+		memcpy ((char *)pColor_return, (char *)&prev,
+ 			sizeof(XcmsColor));
 	    } else {
-		bcopy ((char *)&tmp, (char *)pColor_return,
-			sizeof(XcmsColor));
+		memcpy ((char *)pColor_return, (char *)&tmp,
+ 			sizeof(XcmsColor));
 	}
     }
-    bcopy ((char *) &tmp, (char *) pColor_return, sizeof (XcmsColor));
+    memcpy ((char *) pColor_return, (char *) &tmp, sizeof (XcmsColor));
     return(XcmsSuccess);
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: CIExyY.c,v 1.8 92/06/11 12:09:49 converse Exp $ */
+/* $XConsortium: xyY.c,v 1.9 92/06/11 16:26:29 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -270,7 +270,7 @@ XcmsCIExyYToCIEXYZ(ccc, pxyY_WhitePt, pColors_in_out, nColors)
 	     */
 	    if (pxyY_WhitePt->format != XcmsCIEXYZFormat) {
 		/* Make copy of the white point because we're going to modify it */
-		bcopy((char *)pxyY_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
+		memcpy((char *)&whitePt, (char *)pxyY_WhitePt, sizeof(XcmsColor));
 		if (!_XcmsDIConvertColors(ccc, &whitePt, (XcmsColor *)NULL, 1,
 			XcmsCIEXYZFormat)) {
 		    return(XcmsFailure);
@@ -309,7 +309,7 @@ XcmsCIExyYToCIEXYZ(ccc, pxyY_WhitePt, pColors_in_out, nColors)
 	}
 
 	/* Copy result to pColor */
-	bcopy ((char *)&XYZ_return, (char *)&pColor->spec, sizeof(XcmsCIEXYZ));
+	memcpy ((char *)&pColor->spec, (char *)&XYZ_return, sizeof(XcmsCIEXYZ));
 
 	/* Identify that the format is now CIEXYZ */
 	pColor->format = XcmsCIEXYZFormat;
@@ -372,7 +372,7 @@ XcmsCIEXYZToCIExyY(ccc, pxyY_WhitePt, pColors_in_out, nColors)
 	xyY_return.Y = pColor->spec.CIEXYZ.Y;
 
 	/* Copy result to pColor */
-	bcopy ((char *)&xyY_return, (char *)&pColor->spec, sizeof(XcmsCIExyY));
+	memcpy ((char *)&pColor->spec, (char *)&xyY_return, sizeof(XcmsCIExyY));
 
 	/* Identify that the format is now CIEXYZ */
 	pColor->format = XcmsCIExyYFormat;

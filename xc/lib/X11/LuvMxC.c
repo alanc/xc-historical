@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuvMxC.c,v 1.1 91/07/24 23:26:47 rws Exp $ */
+/* $XConsortium: LuvMxC.c,v 1.2 91/07/25 01:07:40 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -103,7 +103,7 @@ XcmsCIELuvQueryMaxC(ccc, hue_angle, L_star, pColor_return)
     }
 
     /* Use my own CCC  and inherit screen white Pt */
-    bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
+    memcpy ((char *)&myCCC, (char *)ccc, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat; 
     myCCC.gamutCompProc = (XcmsCompressionProc)NULL;/* no gamut comp func */
 
@@ -122,7 +122,7 @@ XcmsCIELuvQueryMaxC(ccc, hue_angle, L_star, pColor_return)
     tmp.format = XcmsCIELuvFormat;
 
     /* Step 1: compute the maximum L_star and chroma for this hue. */
-    bcopy((char *)&tmp, (char *)&max_lc, sizeof(XcmsColor));
+    memcpy((char *)&max_lc, (char *)&tmp, sizeof(XcmsColor));
     if (_XcmsCIELuvQueryMaxLCRGB(&myCCC, hue, &max_lc, &rgb_saved)
 	== XcmsFailure) {
 	    return(XcmsFailure);
@@ -177,7 +177,7 @@ XcmsCIELuvQueryMaxC(ccc, hue_angle, L_star, pColor_return)
 	/* printf("result Lstar = %lf\n", tmp.spec.CIELuv.L_star); */
 	if (tmp.spec.CIELuv.L_star <= L_star + EPS &&
 	    tmp.spec.CIELuv.L_star >= L_star - EPS) {
-		bcopy((char *)&tmp, (char *)pColor_return, sizeof(XcmsColor));
+		memcpy((char *)pColor_return, (char *)&tmp, sizeof(XcmsColor));
 		return(XcmsSuccess);
 	}
 	if (nT > 0) {
@@ -200,6 +200,6 @@ XcmsCIELuvQueryMaxC(ccc, hue_angle, L_star, pColor_return)
 /*	    tmp.spec.CIELuv.v_star = XCMS_CIEVSTAROFHUE(hue, lastChroma); */
     }
     tmp.spec.CIELuv.L_star = L_star;
-    bcopy((char *)&tmp, (char *)pColor_return, sizeof(XcmsColor));
+    memcpy((char *)pColor_return, (char *)&tmp, sizeof(XcmsColor));
     return(XcmsSuccess);
 }

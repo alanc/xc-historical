@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.26 92/06/11 16:26:32 converse Exp $" */
+/* $XConsortium: LRGB.c,v 1.27 93/07/05 11:44:08 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -662,8 +662,8 @@ LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
 		return(XcmsFailure);
 	    }
 	    /* copy matrices */
-	    bcopy((char *)pScreenDefaultData, (char *)pScreenData,
-		    18 * sizeof(XcmsFloat));
+	    memcpy((char *)pScreenData, (char *)pScreenDefaultData,
+		   18 * sizeof(XcmsFloat));
 
 	    /* Create, initialize, and add map */
 	    if (!(pNewMap = (XcmsIntensityMap *) 
@@ -1184,7 +1184,7 @@ _XcmsTableSearch (key, bitsPerRGB, base, nel, nKeyPtrSize, compar, interpol, ans
 
     /* Special case so that zero intensity always maps to zero value */
     if ((*compar) (key,lo) == 0) {
-	bcopy (lo, answer, nKeyPtrSize);
+	memcpy (answer, lo, nKeyPtrSize);
 	((IntensityRec *)answer)->value &= MASK[bitsPerRGB];
 	return XcmsSuccess;
     }
@@ -1194,7 +1194,7 @@ _XcmsTableSearch (key, bitsPerRGB, base, nel, nKeyPtrSize, compar, interpol, ans
 	result = (*compar) (key, mid);
 	if (result == 0) {
 
-	    bcopy(mid, answer, nKeyPtrSize);
+	    memcpy(answer, mid, nKeyPtrSize);
 	    ((IntensityRec *)answer)->value &= MASK[bitsPerRGB];
 	    return (XcmsSuccess);
 	} else if (result < 0) {
@@ -1498,7 +1498,7 @@ XcmsCIEXYZToRGBi(ccc, pXcmsColors_in_out, nColors, pCompressed)
 		 * gamut compression routines to get the out of bound
 		 * RGBi.  
 		 */
-		bcopy((char *)tmp, (char *)&pColor->spec, sizeof(tmp));
+		memcpy((char *)&pColor->spec, (char *)tmp, sizeof(tmp));
 		pColor->format = XcmsRGBiFormat;
 		return(XcmsFailure);
 	    } else if ((*ccc->gamutCompProc)(ccc, pXcmsColors_in_out, nColors,
@@ -1521,7 +1521,7 @@ XcmsCIEXYZToRGBi(ccc, pXcmsColors_in_out, nColors, pCompressed)
 	    }
 	    hasCompressed++;
 	}
-	bcopy((char *)tmp, (char *)&pColor->spec, sizeof(tmp));
+	memcpy((char *)&pColor->spec, (char *)tmp, sizeof(tmp));
 	/* These if statements are done to ensure the fudge factor is */
 	/* is taken into account. */
 	if (pColor->spec.RGBi.red < 0.0) {
@@ -1591,7 +1591,7 @@ XcmsRGBiToCIEXYZ(ccc, pXcmsColors_in_out, nColors, pCompressed)
 	_XcmsMatVec((XcmsFloat *) pScreenData->RGBtoXYZmatrix,
 		(XcmsFloat *) &pXcmsColors_in_out->spec, tmp);
 
-	bcopy((char *)tmp, (char *)&pXcmsColors_in_out->spec, sizeof(tmp));
+	memcpy((char *)&pXcmsColors_in_out->spec, (char *)tmp, sizeof(tmp));
 	(pXcmsColors_in_out++)->format = XcmsCIEXYZFormat;
     }
     return(XcmsSuccess);
@@ -1674,7 +1674,7 @@ XcmsRGBiToRGB(ccc, pXcmsColors_in_out, nColors, pCompressed)
 	}
 	tmpRGB.blue = answerIRec.value;
 
-	bcopy((char *)&tmpRGB, (char *)&pXcmsColors_in_out->spec, sizeof(XcmsRGB));
+	memcpy((char *)&pXcmsColors_in_out->spec, (char *)&tmpRGB, sizeof(XcmsRGB));
 	(pXcmsColors_in_out++)->format = XcmsRGBFormat;
     }
     return(XcmsSuccess);
@@ -1755,7 +1755,7 @@ XcmsRGBToRGBi(ccc, pXcmsColors_in_out, nColors, pCompressed)
 	}
 	tmpRGBi.blue = answerIRec.intensity;
 
-	bcopy((char *)&tmpRGBi, (char *)&pXcmsColors_in_out->spec, sizeof(XcmsRGBi));
+	memcpy((char *)&pXcmsColors_in_out->spec, (char *)&tmpRGBi, sizeof(XcmsRGBi));
 	(pXcmsColors_in_out++)->format = XcmsRGBiFormat;
     }
     return(XcmsSuccess);

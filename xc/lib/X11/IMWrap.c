@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XIMWrap.c,v 11.3 91/04/07 16:10:01 rws Exp $
+ * $XConsortium: IMWrap.c,v 11.4 91/04/07 18:59:21 rws Exp $
  */
 
 /*
@@ -65,18 +65,18 @@ _XCopyToArg(src, dst, size)
 	    XPointer	ptr;
 	} u;
 	if (size <= sizeof(XPointer)) {
-	    bcopy((char *)src, (char *)&u, (int)size);
+	    memcpy((char *)&u, (char *)src, (int)size);
 	    if (size == sizeof(long))	       *dst = (XPointer)u.longval;
 	    else if (size == sizeof(short))    *dst = (XPointer)u.shortval;
 	    else if (size == sizeof(char))     *dst = (XPointer)u.charval;
 	    else if (size == sizeof(char*))    *dst = (XPointer)u.charptr;
 	    else if (size == sizeof(XPointer)) *dst = (XPointer)u.ptr;
-	    else bcopy( (char*)src, (char*)dst, (int)size );
+	    else memmove((char*)dst,  (char*)src, (int)size );
 	} else {
-	    bcopy( (char*)src, (char*)dst, (int)size );
+	    memmove((char*)dst,  (char*)src, (int)size );
 	}
     } else {
-	bcopy( (char*)src, (char*)*dst, (int)size );
+	memmove((char*)*dst,  (char*)src, (int)size );
     }
 }
 

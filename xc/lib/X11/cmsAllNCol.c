@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAlNCol.c,v 1.7 91/06/27 10:52:23 dave Exp $" */
+/* $XConsortium: XcmsAlNCol.c,v 1.8 93/07/05 11:43:59 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -119,7 +119,7 @@ XcmsAllocNamedColor(dpy, cmap, colorname, pColor_scrn_return,
     if (retval1 == _XCMS_NEWNAME) {
 	goto PassToServer;
     }
-    bcopy((char *)&tmpColor, (char *)pColor_exact_return, sizeof(XcmsColor));
+    memcpy((char *)pColor_exact_return, (char *)&tmpColor, sizeof(XcmsColor));
 
     /*
      * 2. Convert tmpColor to RGB

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: FSWrap.c,v 11.6 91/06/05 08:53:49 rws Exp $
+ * $XConsortium: FSWrap.c,v 11.7 93/09/07 20:06:04 rws Exp $
  */
 
 /*
@@ -84,7 +84,7 @@ _XParseBaseFontNameList(str, num)
 	Xfree(ptr);
 	return (char **)NULL;
     }
-    bcopy((char *)plist, (char *)list, sizeof(char *) * (*num));
+    memcpy((char *)list, (char *)plist, sizeof(char *) * (*num));
     *(list + *num) = NULL;
 
     return list;

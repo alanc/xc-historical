@@ -1,4 +1,4 @@
-/* $XConsortium: XPolyTxt.c,v 11.19 91/01/06 11:47:20 rws Exp $ */
+/* $XConsortium: PolyTxt.c,v 11.20 92/04/13 19:45:13 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -152,7 +152,7 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 		/* watch out for signs on chars */
 		*(unsigned char *)tbuf = 254;  /* elt->len */
 	    	*tbuf = 254;     /* elt->len */
-                bcopy (CharacterOffset, tbuf+2 , 254);
+                memcpy (tbuf+2 , CharacterOffset, 254);
 		PartialNChars = PartialNChars - 254;
 		CharacterOffset += 254;
 
@@ -182,7 +182,7 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 		    *(tbuf+1) = 0;   /* elt->delta  */
 		}
 	    	*tbuf = PartialNChars;   /*  elt->len  */
-                bcopy (CharacterOffset, tbuf+2 , PartialNChars);
+                memcpy (tbuf+2 , CharacterOffset, PartialNChars);
 	    }
 	}
     item++;

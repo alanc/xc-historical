@@ -1,4 +1,4 @@
-/* $XConsortium: XPutImage.c,v 11.66 93/03/27 11:46:36 rws Exp $ */
+/* $XConsortium: PutImage.c,v 11.67 93/08/14 16:53:20 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -130,10 +130,10 @@ NoSwap (src, dest, srclen, srcinc, destinc, height, half_order)
     long h = height;
 
     if (srcinc == destinc)
-	bcopy((char *)src, (char *)dest, (int)(srcinc * (h - 1) + srclen));
+	memcpy((char *)dest, (char *)src, (int)(srcinc * (h - 1) + srclen));
     else
 	for (; --h >= 0; src += srcinc, dest += destinc)
-	    bcopy((char *)src, (char *)dest, (int)srclen);
+	    memcpy((char *)dest, (char *)src, (int)srclen);
 }
 
 static int

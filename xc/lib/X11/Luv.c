@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuv.c,v 1.11 92/06/11 12:08:56 converse Exp $ */
+/* $XConsortium: Luv.c,v 1.12 92/06/11 16:26:19 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -249,7 +249,7 @@ XcmsCIELuvToCIEuvY(ccc, pLuv_WhitePt, pColors_in_out, nColors)
      */
     if (pLuv_WhitePt->format != XcmsCIEuvYFormat) {
 	/* Make copy of the white point because we're going to modify it */
-	bcopy((char *)pLuv_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
+	memcpy((char *)&whitePt, (char *)pLuv_WhitePt, sizeof(XcmsColor));
 	if (!_XcmsDIConvertColors(ccc, &whitePt, (XcmsColor *)NULL,
 		1, XcmsCIEuvYFormat)) {
 	    return(XcmsFailure);
@@ -291,7 +291,7 @@ XcmsCIELuvToCIEuvY(ccc, pLuv_WhitePt, pColors_in_out, nColors)
 			    pLuv_WhitePt->spec.CIEuvY.v_prime;
 	}
 	/* Copy result to pColor */
-	bcopy ((char *)&uvY_return, (char *)&pColor->spec, sizeof(XcmsCIEuvY));
+	memcpy((char *)&pColor->spec, (char *)&uvY_return, sizeof(XcmsCIEuvY));
 
 	/* Identify that the format is now CIEuvY */
 	pColor->format = XcmsCIEuvYFormat;
@@ -341,7 +341,7 @@ XcmsCIEuvYToCIELuv(ccc, pLuv_WhitePt, pColors_in_out, nColors)
      */
     if (pLuv_WhitePt->format != XcmsCIEuvYFormat) {
 	/* Make copy of the white point because we're going to modify it */
-	bcopy((char *)pLuv_WhitePt, (char *)&whitePt, sizeof(XcmsColor));
+	memcpy((char *)&whitePt, (char *)pLuv_WhitePt, sizeof(XcmsColor));
 	if (!_XcmsDIConvertColors(ccc, &whitePt,
 		(XcmsColor *)NULL, 1, XcmsCIEuvYFormat)) {
 	    return(XcmsFailure);
@@ -376,7 +376,7 @@ XcmsCIEuvYToCIELuv(ccc, pLuv_WhitePt, pColors_in_out, nColors)
 	   (pColor->spec.CIEuvY.v_prime - pLuv_WhitePt->spec.CIEuvY.v_prime);
 
 	/* Copy result to pColor */
-	bcopy ((char *)&Luv_return, (char *)&pColor->spec, sizeof(XcmsCIELuv));
+	memcpy((char *)&pColor->spec, (char *)&Luv_return, sizeof(XcmsCIELuv));
 
 	/* Identify that the format is now CIEuvY */
 	pColor->format = XcmsCIELuvFormat;

@@ -1,4 +1,4 @@
-/* $XConsortium: CIELabGcL.c,v 1.1 91/07/24 23:26:16 rws Exp $ */
+/* $XConsortium: LabGcL.c,v 1.2 91/07/25 01:07:09 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -83,7 +83,7 @@ XcmsCIELabClipL (ccc, pColors_in_out, nColors, i, pCompressed)
     Status retval;
 
     /* Use my own CCC */
-    bcopy ((char *)ccc, (char *)&myCCC, sizeof(XcmsCCCRec));
+    memcpy ((char *)&myCCC, (char *)ccc, sizeof(XcmsCCCRec));
     myCCC.clientWhitePt.format = XcmsUndefinedFormat;/* Inherit Screen WP */
     myCCC.gamutCompProc = (XcmsCompressionProc)NULL;/* no gamut compression */
 
@@ -117,7 +117,7 @@ XcmsCIELabClipL (ccc, pColors_in_out, nColors, i, pCompressed)
 					    pColor->spec.CIELab.b_star);
 	/* Step 1: compute the maximum L* and chroma for this hue. */
 	/*         This copy may be overkill but it preserves the pixel etc. */
-	bcopy((char *)pColor, (char *)&Lab_max, sizeof(XcmsColor));
+	memcpy((char *)&Lab_max, (char *)pColor, sizeof(XcmsColor));
 	if (_XcmsCIELabQueryMaxLCRGB (&myCCC, hue, &Lab_max,
 		(XcmsRGBi *)NULL) == XcmsFailure) {
 	    return (XcmsFailure);
@@ -129,13 +129,13 @@ XcmsCIELabClipL (ccc, pColors_in_out, nColors, i, pCompressed)
 	if (chroma == maxChroma) {
 	    /* When the chroma input is equal to the maximum chroma */
 	    /* merely return the L* for that chroma. */
-	    bcopy((char *)&Lab_max, (char *)pColor, sizeof(XcmsColor));
+	    memcpy((char *)pColor, (char *)&Lab_max, sizeof(XcmsColor));
 	    retval = _XcmsDIConvertColors(&myCCC, pColor,
 		    ScreenWhitePointOfCCC(&myCCC), 1, XcmsCIEXYZFormat);
 	} else if (chroma > maxChroma) {
 	    /* When the chroma input is greater than the maximum chroma */
 	    /* merely return the L* and chroma for the given hue. */
-	    bcopy((char *)&Lab_max, (char *)pColor, sizeof(XcmsColor));
+	    memcpy((char *)pColor, (char *)&Lab_max, sizeof(XcmsColor));
 	    return (XcmsFailure);
 	} else if (pColor->spec.CIELab.L_star < Lab_max.spec.CIELab.L_star) {
 	    /* Find the minimum lightness for the given chroma. */  

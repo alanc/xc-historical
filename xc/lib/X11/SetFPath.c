@@ -1,4 +1,4 @@
-/* $XConsortium: XSetFPath.c,v 11.13 91/01/06 11:47:58 rws Exp $ */
+/* $XConsortium: SetFPath.c,v 11.14 91/05/30 10:44:20 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -43,7 +43,7 @@ int ndirs;
 	for (i = 0; i < ndirs; i++) {
 		register int length = safestrlen (directories[i]);
 		*p = length;
-		bcopy (directories[i], p + 1, length);
+		memcpy (p + 1, directories[i], length);
 		p += length + 1;
 	}
         UnlockDisplay(dpy);

@@ -1,4 +1,4 @@
-/* $XConsortium: XGetPntMap.c,v 1.13 89/12/10 12:17:53 rws Exp $ */
+/* $XConsortium: GetPntMap.c,v 1.14 91/01/06 11:46:14 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -40,7 +40,7 @@ int XGetPointerMapping (dpy, map, nmaps)
     _XRead (dpy, (char *)mapping, nbytes);
     /* don't return more data than the user asked for. */
     if (rep.nElts) {
-	    bcopy ((char *) mapping, (char *) map, 
+	    memcpy ((char *) map, (char *) mapping, 
 		MIN((int)rep.nElts, nmaps) );
 	}
     UnlockDisplay(dpy);

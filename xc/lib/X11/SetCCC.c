@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsSetCCC.c,v 1.3 91/07/09 14:18:07 rws Exp $ */
+/* $XConsortium: SetCCC.c,v 1.4 91/11/09 15:40:09 keith Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -72,7 +72,7 @@ XcmsSetWhitePoint(ccc, pColor)
 	    pColor->format != XcmsCIExyYFormat) {
 	return(XcmsFailure);
     } else {
-	bcopy((char *)pColor, (char *)&ccc->clientWhitePt, sizeof(XcmsColor));
+	memcpy((char *)&ccc->clientWhitePt, (char *)pColor, sizeof(XcmsColor));
     }
     return(XcmsSuccess);
 }

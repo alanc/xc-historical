@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsQBlue.c,v 1.1 91/05/13 22:37:21 rws Exp $ */
+/* $XConsortium: QBlue.c,v 1.2 91/06/07 09:56:44 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -77,6 +77,6 @@ XcmsQueryBlue(ccc, target_format, pColor_ret)
     if (XcmsConvertColors(ccc, &tmp, 1, target_format, NULL) != XcmsSuccess) {
 	return(XcmsFailure);
     }
-    bcopy((char *)&tmp, (char *)pColor_ret, sizeof(XcmsColor));
+    memcpy((char *)pColor_ret, (char *)&tmp, sizeof(XcmsColor));
     return(XcmsSuccess);
 }

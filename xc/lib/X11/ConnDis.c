@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XConnDis.c,v 11.98 93/08/14 14:04:31 rws Exp $
+ * $XConsortium: ConnDis.c,v 11.99 93/08/15 13:36:31 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -420,7 +420,7 @@ static int MakeDECnetConnection (phostname, idisplay, retries,
 	    return -1;
 	}
 	dnaddr.a_len = np->n_length;
-	bcopy (np->n_addr, dnaddr.a_addr, np->n_length);
+	memcpy (dnaddr.a_addr, np->n_addr, np->n_length);
     }
 
     *saddrlenp = sizeof (struct dn_naddr);
@@ -429,7 +429,7 @@ static int MakeDECnetConnection (phostname, idisplay, retries,
 	(void) close (fd);
 	return -1;
     }
-    bcopy ((char *)&dnaddr, *saddrp, *saddrlenp);
+    memcpy (*saddrp, (char *)&dnaddr, *saddrlenp);
     return fd;
 }
 #endif /* DNETCONN */
@@ -582,11 +582,11 @@ static int MakeTCPConnection (phostname, idisplay, retries,
 	/* Only Cray UNICOS3 and UNICOS4 will define this */
 	{
 	    long t;
-	    bcopy ((char *)hp->h_addr, (char *)&t, sizeof(t));
+	    memcpy ((char *)&t, (char *)hp->h_addr, sizeof(t));
 	    inaddr.sin_addr = t;
 	}
 #else
-	bcopy ((char *)hp->h_addr, (char *)&inaddr.sin_addr, 
+	memcpy ((char *)&inaddr.sin_addr, (char *)hp->h_addr,
 	       sizeof(inaddr.sin_addr));
 #endif /* CRAY and OLDTCP */
     } else {
@@ -676,7 +676,7 @@ static int MakeTCPConnection (phostname, idisplay, retries,
 	*saddrp = Xmalloc (len);
 	if (*saddrp) {
 	    *saddrlenp = len;
-	    bcopy (cp, *saddrp, len);
+	    memcpy (*saddrp, cp, len);
 	    *familyp = FamilyInternet;
 	} else {
 	    *saddrlenp = 0;
@@ -853,7 +853,7 @@ void XSetAuthorization (name, namelen, data, datalen)
     if (namelen > 0)  {			/* try to allocate space */
 	tmpname = Xmalloc ((unsigned) namelen);
 	if (!tmpname) return;
-	bcopy (name, tmpname, namelen);
+	memcpy (tmpname, name, namelen);
     } else {
 	tmpname = NULL;
     }
@@ -864,7 +864,7 @@ void XSetAuthorization (name, namelen, data, datalen)
 	    if (tmpname) (void) Xfree (tmpname);
 	    return;
 	}
-	bcopy (data, tmpdata, datalen);
+	memcpy (tmpdata, data, datalen);
     } else {
 	tmpdata = NULL;
     }
@@ -1072,7 +1072,7 @@ GetAuthorization(fd, family, saddr, saddrlen, idisplay,
 	    auth_datalen = 0;
 	    auth_data = NULL;
 	} else {
-	    bcopy(auth_data, servernetname, auth_datalen);
+	    memcpy(servernetname, auth_data, auth_datalen);
 	    servernetname[auth_datalen] = '\0';
 
 	    auth_datalen = sizeof (rpc_cred);
@@ -1088,7 +1088,7 @@ GetAuthorization(fd, family, saddr, saddrlen, idisplay,
     if (*auth_namelenp = auth_namelen)
     {
 	if (*auth_namep = Xmalloc(auth_namelen))
-	    bcopy(auth_name, *auth_namep, auth_namelen);
+	    memcpy(*auth_namep, auth_name, auth_namelen);
 	else
 	    *auth_namelenp = 0;
     }
@@ -1097,7 +1097,7 @@ GetAuthorization(fd, family, saddr, saddrlen, idisplay,
     if (*auth_datalenp = auth_datalen)
     {
 	if (*auth_datap = Xmalloc(auth_datalen))
-	    bcopy(auth_data, *auth_datap, auth_datalen);
+	    memcpy(*auth_datap, auth_data, auth_datalen);
 	else
 	    *auth_datalenp = 0;
     }

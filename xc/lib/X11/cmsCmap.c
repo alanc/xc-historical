@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.14 92/01/19 15:10:44 rws Exp $ */
+/* $XConsortium: XcmsCmap.c,v 1.15 92/06/04 17:02:02 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -299,8 +299,8 @@ _XcmsCopyCmapRecAndFree(dpy, src_cmap, copy_cmap)
 		pRec_src->visual);
 	if (pRec_copy != NULL && pRec_src->ccc) {
 	    pRec_copy->ccc = (XcmsCCC)Xcalloc(1, (unsigned) sizeof(XcmsCCCRec));
-	    bcopy((char *)pRec_src->ccc, (char *)pRec_copy->ccc,
-		    sizeof(XcmsCCCRec));
+	    memcpy((char *)pRec_copy->ccc, (char *)pRec_src->ccc,
+		   sizeof(XcmsCCCRec));
 	}
 	return(pRec_copy);
     }
