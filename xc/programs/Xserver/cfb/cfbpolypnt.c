@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.7 89/11/19 17:43:21 rws Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.8 89/11/25 14:55:28 rws Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -43,15 +43,19 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     int *addrl;
     register int nlwidth;
     register BoxPtr pbox;
+    unsigned long   xor, and;
     int rop = pGC->alu;
-    unsigned long pixel = pGC->fgPixel;
-    unsigned long planemask = PFILL(pGC->planemask);
     unsigned long mask;
     register int x1, x2, y1, y2;
     register int xoff, yoff;
+    cfbPrivGCPtr    devPriv;
 
-    if (!planemask)
+    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    rop = devPriv->rop;
+    if (rop == GXnoop)
 	return;
+    cclip = devPriv->pCompositeClip;
+    xor = devPriv->xor;
     if ((mode == CoordModePrevious) && (npt > 1))
     {
 	for (ppt = pptInit + 1, i = npt - 1; --i >= 0; ppt++)
@@ -60,7 +64,6 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	    ppt->y += (ppt-1)->y;
 	}
     }
-    cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
 	addrl = (int *)
@@ -76,7 +79,7 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     xoff = pDrawable->x;
     yoff = pDrawable->y;
 #if PPW == 4
-    if ((rop == GXcopy) && ((planemask & PMSK) == PMSK))
+    if (rop == GXcopy)
     {
 	addr = addrl;
 	if (!(nlwidth & (nlwidth - 1)))
@@ -97,7 +100,7 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 		    if ((x >= x1) && (x < x2) &&
 			(y >= y1) && (y < y2))
 		    {
-			*((char *)(addr) + (y << nlwidth) + x) = pixel;
+			*((char *)(addr) + (y << nlwidth) + x) = xor;
 		    }
 		}
 	    }
@@ -119,16 +122,42 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 		    if ((x >= x1) && (x < x2) &&
 			(y >= y1) && (y < y2))
 		    {
-			*((char *)(addr) + (y * nlwidth) + x) = pixel;
+			*((char *)(addr) + (y * nlwidth) + x) = xor;
 		    }
 		}
 	    }
 	}
-	return;
     }
-#endif
+    else
+    {
+	register char	*addrb;
+
+	and = devPriv->and;
+	addr = addrl;
+	for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
+	     --nbox >= 0;
+	     pbox++)
+	{
+	    x1 = pbox->x1;
+	    y1 = pbox->y1;
+	    x2 = pbox->x2;
+	    y2 = pbox->y2;
+	    for (ppt = pptInit, i = npt; --i >= 0; ppt++)
+	    {
+		x = ppt->x + xoff;
+		y = ppt->y + yoff;
+		if ((x >= x1) && (x < x2) &&
+		    (y >= y1) && (y < y2))
+		{
+		    addrb = (char *)(addr) + (y * nlwidth) + x;
+		    *addrb = DoRRop (*addrb, and, xor);
+		}
+	    }
+	}
+    }
+#else
     nlwidth >>= 2;
-    pixel = PFILL(pixel);
+    and = devPriv->and;
     for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
 	 --nbox >= 0;
 	 pbox++)
@@ -145,9 +174,10 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 		(y >= y1) && (y < y2))
 	    {
 		addr = addrl + (y * nlwidth) + (x >> PWSH);
-		mask = cfbmask[x & PIM] & planemask;
-		*addr = (*addr & ~mask) | (DoRop(rop, pixel, *addr) & mask);
+		mask = cfbmask[x & PIM];
+		*addr = DoMaskRRop (*addr, and, xor, mask);
 	    }
 	}
     }
+#endif
 }

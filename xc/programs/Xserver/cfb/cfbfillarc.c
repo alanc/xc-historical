@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.7 89/11/21 18:02:38 keith Exp $ */
+/* $XConsortium: cfbfillarc.c,v 5.8 89/11/24 18:10:58 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -26,6 +26,7 @@ without any express or implied warranty.
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "mifillarc.h"
+#include "cfbrrop.h"
 
 extern void miPolyFillArc();
 
@@ -37,7 +38,7 @@ extern void miPolyFillArc();
 #endif
 
 static void
-cfbFillEllipseSolidCopy(pDraw, pGC, arc)
+RROP_NAME(cfbFillEllipseSolid) (pDraw, pGC, arc)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
@@ -50,7 +51,8 @@ cfbFillEllipseSolidCopy(pDraw, pGC, arc)
     register int *addrl;
     register int n;
     int nlwidth;
-    register int fill, xpos;
+    RROP_DECLARE
+    register int xpos;
     register int slw;
     int startmask, endmask, nlmiddle;
 
@@ -66,7 +68,7 @@ cfbFillEllipseSolidCopy(pDraw, pGC, arc)
 	addrlt = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
-    fill = PFILL(pGC->fgPixel);
+    RROP_FETCH_GC(pGC);
     miFillArcSetup(arc, &info);
     MIFILLARCSETUP();
     xorg += pDraw->x;
@@ -94,36 +96,42 @@ cfbFillEllipseSolidCopy(pDraw, pGC, arc)
 	if (((xpos & PIM) + slw) <= PPW)
 	{
 	    maskpartialbits(xpos, slw, startmask);
-	    *addrl = (*addrl & ~startmask) | (fill & startmask);
+	    RROP_SOLID_MASK(addrl,startmask);
 	    if (miFillArcLower(slw))
 	    {
 		addrl = addrlb + (xpos >> PWSH);
-		*addrl = (*addrl & ~startmask) | (fill & startmask);
+		RROP_SOLID_MASK(addrl, startmask);
 	    }
 	    continue;
 	}
 	maskbits(xpos, slw, startmask, endmask, nlmiddle);
 	if (startmask)
 	{
-	    *addrl = (*addrl & ~startmask) | (fill & startmask);
+	    RROP_SOLID_MASK(addrl, startmask);
 	    addrl++;
 	}
 	for (n = nlmiddle; n--; )
-	    *addrl++ = fill;
+	{
+	    RROP_SOLID(addrl);
+	    ++addrl;
+	}
 	if (endmask)
-	    *addrl = (*addrl & ~endmask) | (fill & endmask);
+	    RROP_SOLID_MASK(addrl, endmask);
 	if (!miFillArcLower(slw))
 	    continue;
 	addrl = addrlb + (xpos >> PWSH);
 	if (startmask)
 	{
-	    *addrl = (*addrl & ~startmask) | (fill & startmask);
+	    RROP_SOLID_MASK(addrl, startmask);
 	    addrl++;
 	}
 	for (n = nlmiddle; n--; )
-	    *addrl++ = fill;
+	{
+	    RROP_SOLID(addrl);
+	    addrl++;
+	}
 	if (endmask)
-	    *addrl = (*addrl & ~endmask) | (fill & endmask);
+	    RROP_SOLID_MASK(addrl, endmask);
     }
 }
 
@@ -135,20 +143,23 @@ cfbFillEllipseSolidCopy(pDraw, pGC, arc)
 	if (((xl & PIM) + n) <= PPW) \
 	{ \
 	    maskpartialbits(xl, n, startmask); \
-	    *addrl = (*addrl & ~startmask) | (fill & startmask); \
+	    RROP_SOLID_MASK(addrl, startmask); \
 	} \
 	else \
 	{ \
 	    maskbits(xl, n, startmask, endmask, n); \
 	    if (startmask) \
 	    { \
-		*addrl = (*addrl & ~startmask) | (fill & startmask); \
+		RROP_SOLID_MASK(addrl, startmask); \
 		addrl++; \
 	    } \
 	    while (n--) \
-		*addrl++ = fill; \
+	    { \
+		RROP_SOLID(addrl); \
+		++addrl; \
+	    } \
 	    if (endmask) \
-		*addrl = (*addrl & ~endmask) | (fill & endmask); \
+		RROP_SOLID_MASK(addrl, endmask); \
 	} \
     }
 
@@ -166,7 +177,7 @@ cfbFillEllipseSolidCopy(pDraw, pGC, arc)
     }
 
 static void
-cfbFillArcSliceSolidCopy(pDraw, pGC, arc)
+RROP_NAME(cfbFillArcSliceSolid)(pDraw, pGC, arc)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
@@ -181,7 +192,7 @@ cfbFillArcSliceSolidCopy(pDraw, pGC, arc)
     register int *addrl;
     register int n;
     int nlwidth;
-    register int fill;
+    RROP_DECLARE
     int startmask, endmask;
 
     if (pDraw->type == DRAWABLE_WINDOW)
@@ -196,7 +207,7 @@ cfbFillArcSliceSolidCopy(pDraw, pGC, arc)
 	addrlt = (int *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind) >> 2;
     }
-    fill = PFILL(pGC->fgPixel);
+    RROP_FETCH_GC(pGC);
     miFillArcSetup(arc, &info);
     miFillArcSliceSetup(arc, &slice, pGC);
     MIFILLARCSETUP();
@@ -236,7 +247,7 @@ cfbFillArcSliceSolidCopy(pDraw, pGC, arc)
 }
 
 void
-cfbPolyFillArcSolidCopy(pDraw, pGC, narcs, parcs)
+RROP_NAME(cfbPolyFillArcSolid) (pDraw, pGC, narcs, parcs)
     DrawablePtr	pDraw;
     GCPtr	pGC;
     int		narcs;
@@ -262,9 +273,9 @@ cfbPolyFillArcSolidCopy(pDraw, pGC, narcs, parcs)
 	    {
 		if ((arc->angle2 >= FULLCIRCLE) ||
 		    (arc->angle2 <= -FULLCIRCLE))
-		    cfbFillEllipseSolidCopy(pDraw, pGC, arc);
+		    RROP_NAME(cfbFillEllipseSolid)(pDraw, pGC, arc);
 		else
-		    cfbFillArcSliceSolidCopy(pDraw, pGC, arc);
+		    RROP_NAME(cfbFillArcSliceSolid)(pDraw, pGC, arc);
 		continue;
 	    }
 	}

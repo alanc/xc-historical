@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.32 89/11/29 19:53:03 rws Exp $ */
+/* $XConsortium: cfbgc.c,v 5.33 90/01/10 11:50:31 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -129,8 +129,9 @@ static GCOps	cfbNonTEOps = {
 };
 
 static GCOps *
-matchCommon (pGC)
-    GCPtr   pGC;
+matchCommon (pGC, devPriv)
+    GCPtr	    pGC;
+    cfbPrivGCPtr    devPriv;
 {
     if (pGC->lineWidth != 0)
 	return 0;
@@ -138,7 +139,7 @@ matchCommon (pGC)
 	return 0;
     if (pGC->fillStyle != FillSolid)
 	return 0;
-    if ((pGC->alu != GXcopy) || ((pGC->planemask & PMSK) != PMSK))
+    if (devPriv->rop != GXcopy)
 	return 0;
     if (pGC->font &&
 	(pGC->font->pFI->maxbounds.metrics.rightSideBearing -
@@ -264,6 +265,7 @@ cfbValidateGC(pGC, changes, pDrawable)
     WindowPtr   pWin;
     int         mask;		/* stateChanges */
     int         index;		/* used for stepping through bitfields */
+    int		new_rrop;
     int         new_line, new_text, new_fillspans, new_fillrct;
     int		new_rotate;
     int		xrot, yrot;
@@ -396,6 +398,7 @@ cfbValidateGC(pGC, changes, pDrawable)
 	}			/* end of composute clip for pixmap */
     }
 
+    new_rrop = FALSE;
     new_line = FALSE;
     new_text = FALSE;
     new_fillspans = FALSE;
@@ -417,16 +420,14 @@ cfbValidateGC(pGC, changes, pDrawable)
 	switch (index) {
 	case GCFunction:
 	    new_fillrct = TRUE;
-	    if (!pGC->lineWidth)
-		new_line = TRUE;
 	case GCForeground:
+	    new_rrop = TRUE;
 	    new_text = TRUE;
 	    break;
 	case GCPlaneMask:
+	    new_rrop = TRUE;
 	    new_text = TRUE;
 	    new_fillrct = TRUE;
-	    if (!pGC->lineWidth)
-		new_line = TRUE;
 	    break;
 	case GCBackground:
 	    new_fillspans = TRUE;
@@ -555,16 +556,36 @@ cfbValidateGC(pGC, changes, pDrawable)
 	}
     }
 
-    if (new_line || new_fillspans || new_text || new_fillrct)
+    if (new_rrop)
+    {
+	int old_rrop;
+
+	old_rrop = devPriv->rop;
+	devPriv->rop = cfbReduceRasterOp (pGC->alu, pGC->fgPixel,
+					   pGC->planemask,
+					   &devPriv->and, &devPriv->xor);
+	if (old_rrop == devPriv->rop)
+	    new_rrop = FALSE;
+	else
+	{
+#if PPW ==  4
+	    new_line = TRUE;
+	    new_text = TRUE;
+#endif
+	    new_fillrct = TRUE;
+	}
+    }
+
+    if (new_line || new_fillspans || new_text || new_fillrct || new_rrop)
     {
 	GCOps	*newops;
 
-	if (newops = matchCommon (pGC))
+	if (newops = matchCommon (pGC, devPriv))
  	{
 	    if (pGC->ops->devPrivate.val)
 		cfbDestroyOps (pGC->ops);
 	    pGC->ops = newops;
-	    new_line = new_fillspans = new_text = new_fillrct = 0;
+	    new_rrop = new_line = new_fillspans = new_text = new_fillrct = 0;
 	}
  	else
  	{
@@ -584,9 +605,21 @@ cfbValidateGC(pGC, changes, pDrawable)
 	if (pGC->lineWidth == 0)
 	{
 #if PPW == 4
-	    if ((pGC->lineStyle == LineSolid) && (pGC->fillStyle == FillSolid)
-		&& (pGC->alu == GXcopy) && ((pGC->planemask & PMSK) == PMSK))
-		pGC->ops->PolyArc = cfbZeroPolyArcSS8Copy;
+	    if ((pGC->lineStyle == LineSolid) && (pGC->fillStyle == FillSolid))
+	    {
+		switch (devPriv->rop)
+		{
+		case GXxor:
+		    pGC->ops->PolyArc = cfbZeroPolyArcSS8Xor;
+		    break;
+		case GXcopy:
+		    pGC->ops->PolyArc = cfbZeroPolyArcSS8Copy;
+		    break;
+		default:
+		    pGC->ops->PolyArc = cfbZeroPolyArcSS8General;
+		    break;
+		}
+	    }
 	    else
 #endif
 		pGC->ops->PolyArc = miZeroPolyArc;
@@ -632,11 +665,12 @@ cfbValidateGC(pGC, changes, pDrawable)
         else
         {
 #if PPW == 4
-	    if (pGC->alu == GXcopy &&
-		(pGC->planemask & PMSK) == PMSK &&
-		pGC->fillStyle == FillSolid)
+	    if (pGC->fillStyle == FillSolid)
 	    {
-		pGC->ops->PolyGlyphBlt = cfbPolyGlyphBlt8;
+		if (devPriv->rop == GXcopy)
+		    pGC->ops->PolyGlyphBlt = cfbPolyGlyphBlt8;
+		else
+		    pGC->ops->PolyGlyphBlt = cfbPolyGlyphRop8;
 	    }
 	    else
 #endif
@@ -699,38 +733,36 @@ cfbValidateGC(pGC, changes, pDrawable)
 	pGC->ops->PolyFillRect = miPolyFillRect;
 	pGC->ops->PolyFillArc = miPolyFillArc;
 	pGC->ops->PushPixels = mfbPushPixels;
-	switch (pGC->fillStyle)
-	{
-	case FillSolid:
-	    if (((pGC->alu == GXcopy || pGC->alu == GXxor) &&
-		((pGC->planemask & PMSK) == PMSK)) ||
-		pGC->alu == GXinvert)
-	    {
-		pGC->ops->PolyFillRect = cfbPolyFillRect;
-	    }
-	    if (pGC->alu == GXcopy &&
-		((pGC->planemask & PMSK) == PMSK))
-	    {
-		pGC->ops->PushPixels = cfbPushPixels8;
-		pGC->ops->PolyFillArc = cfbPolyFillArcSolidCopy;
-	    }
-	    break;
-	case FillTiled:
-	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
-	    {
-		pGC->ops->PolyFillRect = cfbPolyFillRect;
-	    }
-	    break;
-#if (PPW == 4)
-	case FillStippled:
-	case FillOpaqueStippled:
-	    if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK &&
-	        devPriv->pRotatedPixmap)
-	    {
-		pGC->ops->PolyFillRect = cfbPolyFillRect;
-	    }
-	    break;
+	if (pGC->fillStyle == FillSolid ||
+#ifdef PPW == 4
+	    pGC->fillStyle != FillTiled ||
 #endif
+	    (pGC->fillStyle == FillTiled &&
+	     (devPriv->pRotatedPixmap ||
+	      (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK))))
+	{
+	    pGC->ops->PolyFillRect = cfbPolyFillRect;
+	}
+#if PPW == 4
+	if (pGC->fillStyle == FillSolid && devPriv->rop == GXcopy)
+	    pGC->ops->PushPixels = cfbPushPixels8;
+#endif
+	if (pGC->fillStyle == FillSolid)
+	{
+	    switch (devPriv->rop)
+	    {
+	    case GXcopy:
+		pGC->ops->PolyFillArc = cfbPolyFillArcSolidCopy;
+		break;
+#ifdef NOTDEF
+	    case GXxor:
+		pGC->ops->PolyFillArc = cfbPolyFillArcSolidXor;
+		break;
+#endif
+	    default:
+		pGC->ops->PolyFillArc = cfbPolyFillArcSolidGeneral;
+		break;
+	    }
 	}
     }
 }

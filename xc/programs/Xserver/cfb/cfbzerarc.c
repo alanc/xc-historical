@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.15 89/11/24 18:26:19 rws Exp $ */
+/* $XConsortium: cfbzerarc.c,v 5.16 89/11/25 15:22:46 rws Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -32,13 +32,14 @@ without any express or implied warranty.
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "mizerarc.h"
+#include "cfbrrop.h"
 
 #if PPW == 4
 
 extern void miPolyArc(), miZeroPolyArc();
 
 static void
-cfbZeroArcSS8Copy(pDraw, pGC, arc)
+RROP_NAME(cfbZeroArcSS8) (pDraw, pGC, arc)
     DrawablePtr pDraw;
     GCPtr pGC;
     xArc *arc;
@@ -48,7 +49,7 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     register int x;
     char *addrb;
     register char *yorgb, *yorgob;
-    register unsigned long pixel = pGC->fgPixel;
+    RROP_DECLARE
     register int yoffset;
     int nlwidth, dyoffset;
     register int y, a, b, d, mask;
@@ -66,6 +67,7 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 	addrb = (char *)(((PixmapPtr)pDraw)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDraw)->devKind);
     }
+    RROP_FETCH_GC (pGC);
     do360 = miZeroArcSetup(arc, &info, TRUE);
     yorgb = addrb + ((info.yorg + pDraw->y) * nlwidth);
     yorgob = addrb + ((info.yorgo + pDraw->y) * nlwidth);
@@ -78,9 +80,9 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     if (!(arc->width & 1))
     {
 	if (mask & 2)
-	    *(yorgb + info.xorgo) = pixel;
+	    RROP_SOLID((yorgb + info.xorgo));
 	if (mask & 8)
-	    *(yorgob + info.xorgo) = pixel;
+	    RROP_SOLID((yorgob + info.xorgo));
     }
     if (!info.end.x || !info.end.y)
     {
@@ -98,16 +100,16 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 	yorghb += info.h;
 	while (1)
 	{
-	    *(yorgb + yoffset + x) = pixel;
-	    *(yorgb + yoffset - x) = pixel;
-	    *(yorgob - yoffset - x) = pixel;
-	    *(yorgob - yoffset + x) = pixel;
+	    RROP_SOLID(yorgb + yoffset + x);
+	    RROP_SOLID(yorgb + yoffset - x);
+	    RROP_SOLID(yorgob - yoffset - x);
+	    RROP_SOLID(yorgob - yoffset + x);
 	    if (a < 0)
 		break;
-	    *(yorghb - xoffset - y) = pixel;
-	    *(yorgohb - xoffset + y) = pixel;
-	    *(yorgohb + xoffset + y) = pixel;
-	    *(yorghb + xoffset - y) = pixel;
+	    RROP_SOLID(yorghb - xoffset - y);
+	    RROP_SOLID(yorgohb - xoffset + y);
+	    RROP_SOLID(yorgohb + xoffset + y);
+	    RROP_SOLID(yorghb + xoffset - y);
 	    xoffset += nlwidth;
 	    MIARCCIRCLESTEP(yoffset += nlwidth;);
 	}
@@ -121,10 +123,10 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 	while (y < info.h || x < info.w)
 	{
 	    MIARCOCTANTSHIFT(dyoffset = nlwidth;);
-	    *(yorgb + yoffset + info.xorg + x) = pixel;
-	    *(yorgb + yoffset + info.xorgo - x) = pixel;
-	    *(yorgob - yoffset + info.xorgo - x) = pixel;
-	    *(yorgob - yoffset + info.xorg + x) = pixel;
+	    RROP_SOLID(yorgb + yoffset + info.xorg + x);
+	    RROP_SOLID(yorgb + yoffset + info.xorgo - x);
+	    RROP_SOLID(yorgob - yoffset + info.xorgo - x);
+	    RROP_SOLID(yorgob - yoffset + info.xorg + x);
 	    MIARCSTEP(yoffset += dyoffset;, yoffset += nlwidth;);
 	}
     }
@@ -139,13 +141,13 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
 		info.start = info.altstart;
 	    }
 	    if (mask & 1)
-		*(yorgb + yoffset + info.xorg + x) = pixel;
+		RROP_SOLID(yorgb + yoffset + info.xorg + x);
 	    if (mask & 2)
-		*(yorgb + yoffset + info.xorgo - x) = pixel;
+		RROP_SOLID(yorgb + yoffset + info.xorgo - x);
 	    if (mask & 4)
-		*(yorgob - yoffset + info.xorgo - x) = pixel;
+		RROP_SOLID(yorgob - yoffset + info.xorgo - x);
 	    if (mask & 8)
-		*(yorgob - yoffset + info.xorg + x) = pixel;
+		RROP_SOLID(yorgob - yoffset + info.xorg + x);
 	    if ((x == info.end.x) || (y == info.end.y))
 	    {
 		mask = info.end.mask;
@@ -157,20 +159,20 @@ cfbZeroArcSS8Copy(pDraw, pGC, arc)
     if ((x == info.start.x) || (y == info.start.y))
 	mask = info.start.mask;
     if (mask & 1)
-	*(yorgb + yoffset + info.xorg + x) = pixel;
+	RROP_SOLID(yorgb + yoffset + info.xorg + x);
     if (mask & 4)
-	*(yorgob - yoffset + info.xorgo - x) = pixel;
+	RROP_SOLID(yorgob - yoffset + info.xorgo - x);
     if (arc->height & 1)
     {
 	if (mask & 2)
-	    *(yorgb + yoffset + info.xorgo - x) = pixel;
+	    RROP_SOLID(yorgb + yoffset + info.xorgo - x);
 	if (mask & 8)
-	    *(yorgob - yoffset + info.xorg + x) = pixel;
+	    RROP_SOLID(yorgob - yoffset + info.xorg + x);
     }
 }
 
 void
-cfbZeroPolyArcSS8Copy(pDraw, pGC, narcs, parcs)
+RROP_NAME (cfbZeroPolyArcSS8) (pDraw, pGC, narcs, parcs)
     register DrawablePtr	pDraw;
     GCPtr	pGC;
     int		narcs;
@@ -191,7 +193,7 @@ cfbZeroPolyArcSS8Copy(pDraw, pGC, narcs, parcs)
 	    box.x2 = box.x1 + (int)arc->width + 1;
 	    box.y2 = box.y1 + (int)arc->height + 1;
 	    if ((*pDraw->pScreen->RectIn)(cclip, &box) == rgnIN)
-		cfbZeroArcSS8Copy(pDraw, pGC, arc);
+		RROP_NAME (cfbZeroArcSS8) (pDraw, pGC, arc);
 	    else
 		miZeroPolyArc(pDraw, pGC, 1, arc);
 	}

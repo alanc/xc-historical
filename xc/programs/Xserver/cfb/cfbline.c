@@ -137,11 +137,12 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     register int y1, y2;
     register int x1, x2;
     RegionPtr cclip;
-    unsigned long   pixel;
+    cfbPrivGCPtr    devPriv;
+    unsigned long   xor, and;
     int		    alu;
-    unsigned long   planemask;
 
-    cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    cclip = devPriv->pCompositeClip;
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
@@ -158,15 +159,9 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
-    alu = pGC->alu;
-    pixel = pGC->fgPixel;
-    planemask = pGC->planemask;
-    if (alu == GXinvert)
-    {
-	pixel = pGC->planemask;
-	alu = GXxor;
-	planemask = PMSK;
-    }
+    alu = devPriv->rop;
+    xor = devPriv->xor;
+    and = devPriv->and;
     xorg = pDrawable->x;
     yorg = pDrawable->y;
 #ifdef POLYSEGMENT
@@ -241,7 +236,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 			y2t = min(y2, pbox->y2);
 			if (y1t != y2t)
 			{
-			    cfbVertS (alu, pixel, planemask,
+			    cfbVertS (alu, and, xor,
 				      addrl, nlwidth, 
 				      x1, y1t, y2t-y1t);
 			}
@@ -311,7 +306,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		    x2t = min(x2, pbox->x2);
 		    if (x1t != x2t)
 		    {
-			cfbHorzS (alu, pixel, planemask,
+			cfbHorzS (alu, and, xor,
 				  addrl, nlwidth, 
 				  x1t, y1, x2t-x1t);
 		    }
@@ -374,7 +369,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 		    if (pGC->capStyle != CapNotLast)
 			len++;
 #endif
-		    cfbBresS (alu, pixel, planemask,
+		    cfbBresS (alu, and, xor,
 			  addrl, nlwidth,
 			  signdx, signdy, axis, x1, y1,
 			  e, e1, e2, len);
@@ -443,7 +438,7 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 			    else
 			    	err = e;
 			    cfbBresS   
-				     (alu, pixel, planemask,
+				     (alu, and, xor,
 				      addrl, nlwidth,
 				      signdx, signdy, axis, pt1Copy.x, pt1Copy.y,
 				      err, e1, e2, len);
@@ -477,14 +472,13 @@ cfbLineSS (pDrawable, pGC, mode, npt, pptInit)
 	    {
 		unsigned long mask;
 		unsigned long scrbits;
-		unsigned long pix = PFILL (pixel);
 		extern int cfbmask[4];
 
 		mask = cfbmask[x2 & PIM];
 		addrl += (y2 * nlwidth) + (x2 >> PWSH);
 		scrbits = *addrl;
 		*addrl = (scrbits & ~mask) |
-			 (DoRop (alu, pix, scrbits) & mask);
+			 (DoRRop (scrbits, and, xor) & mask);
 		break;
 	    }
 	    else
@@ -538,9 +532,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     int axis;			/* major axis */
     int x1, x2, y1, y2;
     RegionPtr cclip;
-    unsigned long   fg, bg;
-    int		    alu;
-    unsigned long   planemask;
+    cfbRRopRec	    rrops[2];
     unsigned char   *pDash;
     int		    dashOffset;
     int		    numInDashList;
@@ -548,8 +540,25 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     int		    isDoubleDash;
     int		    dashIndexTmp, dashOffsetTmp;
     int		    unclippedlen;
+    cfbPrivGCPtr    devPriv;
 
-    cclip = ((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip;
+    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 
+    cclip = devPriv->pCompositeClip;
+    rrops[0].rop = devPriv->rop;
+    rrops[0].and = devPriv->and;
+    rrops[0].xor = devPriv->xor;
+    if (pGC->alu == GXcopy)
+    {
+	rrops[1].rop = GXcopy;
+	rrops[1].and = 0;
+	rrops[1].xor = PFILL (pGC->bgPixel);
+    }
+    else
+    {
+    	rrops[1].rop = cfbReduceRasterOp (pGC->alu,
+					  pGC->bgPixel, pGC->planemask,
+					  &rrops[1].and, &rrops[1].xor);
+    }
     pboxInit = REGION_RECTS(cclip);
     nboxInit = REGION_NUM_RECTS(cclip);
 
@@ -575,17 +584,6 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     dashOffset = 0;
     miStepDash ((int)pGC->dashOffset, &dashIndex, pDash,
 		numInDashList, &dashOffset);
-
-    fg = pGC->fgPixel;
-    bg = pGC->bgPixel;
-    alu = pGC->alu;
-    planemask = pGC->planemask;
-    if (alu == GXinvert)
-    {
-	fg = bg = pGC->planemask;
-	alu = GXxor;
-	planemask = PMSK;
-    }
 
     xorg = pDrawable->x;
     yorg = pDrawable->y;
@@ -661,7 +659,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		    unclippedlen++;
 		dashIndexTmp = dashIndex;
 		dashOffsetTmp = dashOffset;
-		cfbBresD (alu, fg, bg, planemask,
+		cfbBresD (rrops,
 		      &dashIndexTmp, pDash, numInDashList,
 		      &dashOffsetTmp, isDoubleDash,
 		      addrl, nlwidth,
@@ -669,7 +667,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		      e, e1, e2, unclippedlen);
 		break;
 #else
-		cfbBresD (alu, fg, bg, planemask,
+		cfbBresD (rrops,
 		      &dashIndex, pDash, numInDashList,
 		      &dashOffset, isDoubleDash,
 		      addrl, nlwidth,
@@ -753,7 +751,7 @@ cfbLineSD( pDrawable, pGC, mode, npt, pptInit)
 		    	}
 		    	else
 			    err = e;
-		    	cfbBresD (alu, fg, bg, planemask,
+		    	cfbBresD (rrops,
 			      	  &dashIndexTmp, pDash, numInDashList,
 			      	  &dashOffsetTmp, isDoubleDash,
 			      	  addrl, nlwidth,
@@ -795,20 +793,16 @@ dontStep:	;
 		(x2 <  pbox->x2) &&
 		(y2 <  pbox->y2))
 	    {
-		unsigned long mask;
-		unsigned long scrbits;
-		unsigned long pix;
-		extern int cfbmask[4];
+		unsigned long	mask;
+		int		pix;
+		extern int	cfbmask[4];
 
-		pix = fg;
+		pix = 0;
 		if (dashIndex & 1)
-		    pix = bg;
-		pix = PFILL (pix);
+		    pix = 1;
 		mask = cfbmask[x2 & PIM];
 		addrl += (y2 * nlwidth) + (x2 >> PWSH);
-		scrbits = *addrl;
-		*addrl = (scrbits & ~mask) |
-			 (DoRop (alu, pix, scrbits) & mask);
+		*addrl = DoMaskRRop (*addrl, rrops[pix].and, rrops[pix].xor, mask);
 		break;
 	    }
 	    else

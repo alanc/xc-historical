@@ -17,7 +17,7 @@ representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
 
-/* $XConsortium: cfbtileodd.c,v 1.4 89/11/24 18:10:39 rws Exp $ */
+/* $XConsortium: cfbtileodd.c,v 1.5 89/12/13 14:34:01 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -102,6 +102,7 @@ cfbFillBoxTileOdd (pDrawable, nBox, pBox, tile, xrot, yrot)
     register unsigned long *pDst;
     register unsigned long *pSrc;
     register unsigned long bits, tmp;
+    register int	   nlwPart;
     int xoffStart, xoff;
     int leftShiftStart, rightShiftStart, nlwSrcStart;
     unsigned long tileEndMask;
@@ -155,6 +156,23 @@ cfbFillBoxTileOdd (pDrawable, nBox, pBox, tile, xrot, yrot)
 	h = pBox->y2 - pBox->y1;
 	srcx = (pBox->x1 - xrot) % tileWidth;
 	srcy = (pBox->y1 - yrot) % tileHeight;
+#ifdef NOTDEF
+	if (srcx + w <= tileWidth &&
+	    srcy + h <= tileHeight &&
+	    (w > 20 || h > 20))
+	{
+	    RegionRec	region;
+	    DDXPointRec	ptSrc;
+
+	    region.extents = *pBox;
+	    region.data = 0;
+	    ptSrc.x = srcx;
+	    ptSrc.y = srcy;
+	    cfbDoBitblt (tile, pDrawable, GXcopy, &region, &ptSrc, PMSK);
+	    pBox++;
+	    continue;
+	}
+#endif
 	xoffDst = pBox->x1 & PIM;
 	if (xoffDst + w < PPW)
 	{
@@ -216,46 +234,96 @@ cfbFillBoxTileOdd (pDrawable, nBox, pBox, tile, xrot, yrot)
 	    nlw = nlwMiddle;
 	    if (tileEndPart)
 	    {
-	    	while (nlw--)
+	    	while (nlw)
 	    	{
-		    NextTileBits
-		    if (rightShift != 32)
-		    	*pDst++ = BitLeft(tmp, leftShift) |
-			      	  BitRight(bits, rightShift);
+		    if (nlwSrc > 1)
+		    {
+			nlwPart = nlw;
+			if (nlwPart >= nlwSrc)
+			    nlwPart = nlwSrc - 1;
+			nlw -= nlwPart;
+			nlwSrc -= nlwPart;
+			if (rightShift != 32)
+			{
+			    while (nlwPart--)
+			    {
+				tmp = bits;
+				bits = *pSrc++;
+				*pDst++ = BitLeft(tmp, leftShift) |
+					  BitRight (bits, rightShift);
+			    }
+			}
+			else
+			{
+			    if (nlwPart)
+			    {
+			    	*pDst++ = bits;
+			    	nlwPart--;
+			    	while (nlwPart--)
+				    *pDst++ = *pSrc++;
+			    	bits = *pSrc++;
+			    }
+			}
+		    }
 		    else
-		    	*pDst++ = tmp;
+		    {
+		    	NextTileBits
+		    	if (rightShift != 32)
+		    	    *pDst++ = BitLeft(tmp, leftShift) |
+			      	      BitRight(bits, rightShift);
+		    	else
+		    	    *pDst++ = tmp;
+			nlw--;
+		    }
 	    	}
 	    }
 	    else
 	    {
 		if (leftShift)
 		{
-		    while (nlw--)
+		    while (nlw)
 		    {
 		    	if (nlwSrc == 0)
 		    	{
 			    nlwSrc = widthSrc;
 			    pSrc = pSrcLine;
 		    	}
-		    	tmp = bits;
-		    	bits = *pSrc++;
-			nlwSrc--;
-			*pDst++ = BitLeft(tmp, leftShift) |
-				  BitRight(bits, rightShift);
+			nlwPart = nlw;
+			if (nlwPart > nlwSrc)
+			    nlwPart = nlwSrc;
+			nlw -= nlwPart;
+			nlwSrc -= nlwPart;
+			while (nlwPart--)
+			{
+		    	    tmp = bits;
+		    	    bits = *pSrc++;
+			    *pDst++ = BitLeft(tmp, leftShift) |
+				      BitRight(bits, rightShift);
+			}
 		    }
 		}
 		else
 		{
-		    while (nlw--)
+		    while (nlw)
 		    {
 		    	if (nlwSrc == 0)
 		    	{
 			    nlwSrc = widthSrc;
 			    pSrc = pSrcLine;
 		    	}
-			*pDst++ = bits;
-		    	bits = *pSrc++;
-			nlwSrc--;
+			nlwPart = nlw;
+			if (nlwPart > nlwSrc)
+			    nlwPart = nlwSrc;
+			nlw -= nlwPart;
+			nlwSrc -= nlwPart;
+			if (nlwPart)
+			{
+			    *pDst++ = bits;
+			    nlwPart--;
+			    while (nlwPart--)
+				*pDst++ = *pSrc++;
+			    bits = *pSrc++;
+			}
 		    }
 		}
 	    }

@@ -4,7 +4,7 @@
  * 8 bit color frame buffer utility routines
  */
 
-/* $XConsortium: cfb8bit.c,v 1.2 89/08/18 16:48:32 keith Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.3 89/09/19 15:36:32 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -22,44 +22,72 @@
 
 #if (PPW == 4)
 
-unsigned long cfb8PixelMasks[16] = {
+unsigned long cfb8StippleMasks[16] = {
     0x00000000, 0x000000ff, 0x0000ff00, 0x0000ffff,
     0x00ff0000, 0x00ff00ff, 0x00ffff00, 0x00ffffff,
     0xff000000, 0xff0000ff, 0xff00ff00, 0xff00ffff,
     0xffff0000, 0xffff00ff, 0xffffff00, 0xffffffff,
 };
 
-unsigned long	cfb8Pixels[16];
-unsigned long	cfb8Pixelsfg, cfb8Pixelsbg;
+int	cfb8StippleMode, cfb8StippleAlu, cfb8StippleRRop;
+unsigned long	cfb8StippleFg, cfb8StippleBg, cfb8StipplePm;
+unsigned long	cfb8StippleAnd[16], cfb8StippleXor[16];
 
-void
-cfb8SetPixels (fg, bg)
-unsigned long	fg, bg;
+int
+cfb8SetStipple (alu, fg, planemask)
+int		alu;
+unsigned long	fg, planemask;
 {
-    unsigned long   filledFg, filledBg;
+    unsigned long   and, xor, rrop;
     int	s;
     unsigned long   c;
 
-    cfb8Pixelsfg = fg & 0xff;
-    cfb8Pixelsbg = bg & 0xff;
-    filledFg = PFILL(cfb8Pixelsfg);
-    filledBg = PFILL(cfb8Pixelsbg);
+    cfb8StippleMode = FillStippled;
+    cfb8StippleAlu = alu;
+    cfb8StippleFg = fg & PMSK;
+    rrop = cfbReduceRasterOp (alu, fg, planemask, &and, &xor);
+    cfb8StippleRRop = rrop;
     /*
      * create the appropriate pixel-fill bits for current
      * foreground
      */
     for (s = 0; s < 16; s++)
     {
-	c = 0;
-	if (s & 1)
-	    c |= 0xff;
-	if (s & 2)
-	    c |= 0xff00;
-	 if (s & 4)
-	    c |= 0xff0000;
-	 if (s & 8)
-	    c |= 0xff000000;
-	cfb8Pixels[s] = (c & filledFg) | (~c & filledBg);
+	c = cfb8StippleMasks[s];
+	cfb8StippleAnd[s] = and | ~c;
+	cfb8StippleXor[s] = xor & c;
+    }
+}
+
+int
+cfb8SetOpaqueStipple (alu, fg, bg, planemask)
+int		alu;
+unsigned long	fg, bg, planemask;
+{
+    unsigned long   andfg, xorfg, andbg, xorbg, rropfg, rropbg;
+    int	s;
+    unsigned long   c;
+
+    cfb8StippleMode = FillOpaqueStippled;
+    cfb8StippleAlu = alu;
+    cfb8StippleFg = fg & PMSK;
+    cfb8StippleBg = bg & PMSK;
+    cfb8StipplePm = planemask & PMSK;
+    rropfg = cfbReduceRasterOp (alu, cfb8StippleFg, cfb8StipplePm, &andfg, &xorfg);
+    rropbg = cfbReduceRasterOp (alu, cfb8StippleBg, cfb8StipplePm, &andbg, &xorbg);
+    if (rropfg == rropbg)
+	cfb8StippleRRop = rropfg;
+    else
+	cfb8StippleRRop = GXset;
+    /*
+     * create the appropriate pixel-fill bits for current
+     * foreground
+     */
+    for (s = 0; s < 16; s++)
+    {
+	c = cfb8StippleMasks[s];
+	cfb8StippleAnd[s] = (andfg | ~c) & (andbg | c);
+	cfb8StippleXor[s] = (xorfg & c) | (xorbg & ~c);
     }
 }
 

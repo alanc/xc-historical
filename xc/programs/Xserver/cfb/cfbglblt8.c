@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.5 89/11/19 16:40:49 rws Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.6 89/11/21 15:31:12 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -54,6 +54,15 @@ typedef unsigned long	*glyphPointer;
 #define GlyphBitsS(bits,width,dst,off)	dst = BitRight(*bits++, off);
 #endif
 
+#ifdef GLYPHROP
+#define cfbPolyGlyphBlt8	cfbPolyGlyphRop8
+#define cfbPolyGlyphBlt8Clipped	cfbPolyGlyphRop8Clipped
+
+#undef WriteFourBits
+#define WriteFourBits(dst,pixel,bits)	RRopFourBits(dst,bits)
+
+#endif
+
 void
 cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     DrawablePtr pDrawable;
@@ -64,7 +73,9 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	/* start of array of glyphs */
 {
     register unsigned long  c;
+#ifndef GLYPHROP
     register unsigned long  pixel;
+#endif
     register unsigned long  *dst;
     register glyphPointer   glyphBits;
     register int	    xoff;
@@ -86,7 +97,6 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     unsigned long	widthMask;
 #endif
 
-    pixel = PFILL (pGC->fgPixel);
     
     /* compute an approximate (but covering) bounding box */
     if ((ppci[0]->metrics.leftSideBearing < 0))
@@ -114,6 +124,12 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
       case rgnOUT:
 	return;
     }
+
+#ifdef GLYPHROP
+    cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+#else
+    pixel = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->xor;
+#endif
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -247,7 +263,9 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     unsigned char *pglyphBase;	/* start of array of glyphs */
 {
     register unsigned long  c;
+#ifndef GLYPHROP
     register unsigned long  pixel;
+#endif
     register unsigned long  *dst;
     register glyphPointer   glyphBits;
     register int	    xoff;
@@ -275,7 +293,11 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
     unsigned long	widthMask;
 #endif
 
-    pixel = PFILL (pGC->fgPixel);
+#ifdef GLYPHROP
+    cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+#else
+    pixel = ((cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr)->xor;
+#endif
     
     if (pDrawable->type == DRAWABLE_WINDOW)
     {

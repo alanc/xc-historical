@@ -57,10 +57,12 @@ extern void cfbPaintWindow();
 extern void miPolyFillRect();
 extern void cfbPolyFillRect();
 extern void miPolyFillArc();
-extern void cfbZeroPolyArcSS8Copy();
+extern void cfbZeroPolyArcSS8Copy(), cfbZeroPolyArcSS8Xor();
+extern void cfbZeroPolyArcSS8General();
 extern void cfbLineSS(), cfbLineSD(), cfbSegmentSS(), cfbSegmentSD();
 extern RegionPtr cfbCopyPlane();
-extern void cfbPolyFillArcSolidCopy();
+extern void cfbPolyFillArcSolidCopy(),cfbPolyFillArcSolidXor();
+extern void cfbPolyFillArcSolidGeneral();
 extern RegionPtr cfbCopyArea();
 
 extern void cfbPushPixels8();
@@ -76,6 +78,7 @@ extern void cfbFillBoxSolid();
 extern void cfbTEGlyphBlt();
 extern void cfbTEGlyphBlt8();
 extern void cfbPolyGlyphBlt8();
+extern void cfbPolyGlyphRop8();
 
 extern void cfbSaveAreas();
 extern void cfbRestoreAreas();
@@ -132,16 +135,24 @@ extern int  cfbWindowPrivateIndex;
 
 /* private field of GC */
 typedef struct {
-    unsigned char       rop;            /* reduction of rasterop to 1 of 3 */
+    unsigned char       rop;            /* special case rop values */
+    /* next two values unused in cfb, included for compatibility with mfb */
     unsigned char       ropOpStip;      /* rop for opaque stipple */
     unsigned char       ropFillArea;    /*  == alu, rop, or ropOpStip */
     unsigned		fExpose:1;	/* callexposure handling ? */
     unsigned		freeCompClip:1;
     PixmapPtr		pRotatedPixmap;
     RegionPtr		pCompositeClip; /* FREE_CC or REPLACE_CC */
+    unsigned long	xor, and;	/* reduced rop values */
     } cfbPrivGC;
 
 typedef cfbPrivGC	*cfbPrivGCPtr;
+
+/* way to carry RROP info around */
+typedef struct {
+    unsigned char	rop;
+    unsigned long	xor, and;
+} cfbRRopRec, *cfbRRopPtr;
 
 /* private field of window */
 typedef struct {
@@ -233,3 +244,16 @@ than a switch on the rop per item (span or rectangle.)
        (((alu) >= GXandReverse) ? \
 	 (((alu) == GXandReverse) ? ((src) & ~(dst)) : (src)) : \
 	 (((alu) == GXand) ? ((src) & (dst)) : 0)))  ) )
+
+#define DoRRop(dst, and, xor)	(((dst) & (and)) ^ (xor))
+
+#define DoMaskRRop(dst, and, xor, mask) \
+    (((dst) & ((and) | ~(mask))) ^ (xor & mask))
+
+/*
+ * MIPSCO compiler does horrible things when given register declarations
+ */
+
+#ifdef mips
+#define register
+#endif

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbhrzvert.c,v 1.3 89/10/13 17:05:05 keith Exp $ */
+/* $XConsortium: cfbhrzvert.c,v 1.4 89/11/19 18:41:52 rws Exp $ */
 #include "X.h"
 
 #include "gc.h"
@@ -35,10 +35,10 @@ SOFTWARE.
 /* horizontal solid line
    abs(len) > 1
 */
-cfbHorzS(rop, pixel, planemask, addrl, nlwidth, x1, y1, len)
+cfbHorzS(rop, and, xor, addrl, nlwidth, x1, y1, len)
 register int rop;
-register unsigned long pixel;
-register unsigned long planemask;
+register unsigned long and;
+register unsigned long xor;
 register int *addrl;	/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
 int x1;			/* initial point */ 
@@ -49,152 +49,108 @@ int len;		/* length of line */
     register int startmask;
     register int endmask;
 
-    pixel = PFILL (pixel);
-    planemask = PFILL (planemask);
-    /* force the line to go left to right
-       but don't draw the last point
-    */
-    if (len < 0)
-    {
-	x1 += len;
-	x1 += 1;
-	len = -len;
-    }
-
     addrl = addrl + (y1 * nlwidth) + (x1 >> PWSH);
 
     /* all bits inside same longword */
     if ( ((x1 & PIM) + len) < PPW)
     {
 	maskpartialbits(x1, len, startmask);
-	startmask &= planemask;
-	*addrl = (*addrl & ~startmask) |
-		 (DoRop (rop, pixel, *addrl) & startmask);
+	*addrl = DoMaskRRop (*addrl, and, xor, startmask);
     }
     else
     {
 	maskbits(x1, len, startmask, endmask, nlmiddle);
-	if ((rop == GXcopy) && ((planemask & PMSK) == PMSK))
+	if (rop == GXcopy)
 	{
 	    if (startmask)
 	    {
-		*addrl = (*addrl & ~startmask) | (pixel & startmask);
+		*addrl = (*addrl & ~startmask) | (xor & startmask);
 		addrl++;
 	    }
 	    while (nlmiddle--)
-	    	*addrl++ = pixel;
+	    	*addrl++ = xor;
 	    if (endmask)
-		*addrl = (*addrl & ~endmask) | (pixel & endmask);
+		*addrl = (*addrl & ~endmask) | (xor & endmask);
 	}
 	else
 	{
 	    if (startmask)
 	    {
-		startmask &= planemask;
-		*addrl = (*addrl & ~startmask) |
-			 (DoRop (rop, pixel, *addrl) & startmask);
+		*addrl = DoMaskRRop (*addrl, and, xor, startmask);
 		addrl++;
 	    }
-	    if ((rop == GXxor) && ((planemask & PMSK) == PMSK))
+	    if (rop == GXxor)
 	    {
 		while (nlmiddle--)
-		    *addrl++ ^= pixel;
+		    *addrl++ ^= xor;
 	    }
 	    else
 	    {
 		while (nlmiddle--)
 		{
-		    *addrl = (*addrl & ~planemask) |
-			     DoRop (rop, pixel, *addrl) & planemask;
+		    *addrl = DoRRop (*addrl, and, xor);
 		    addrl++;
 		}
 	    }
 	    if (endmask)
-	    {
-		endmask &= planemask;
-		*addrl = (*addrl & ~endmask) |
-			 (DoRop (rop, pixel, *addrl) & endmask);
-	    }
+		*addrl = DoMaskRRop (*addrl, and, xor, endmask);
 	}
     }
 }
 
-/* vertical solid line
-   this uses do loops because pcc (Ultrix 1.2, bsd 4.2) generates
-   better code.  sigh.  we know that len will never be 0 or 1, so
-   it's OK to use it.
-*/
+/* vertical solid line */
 
-cfbVertS(rop, pixel, planemask, addrl, nlwidth, x1, y1, len)
+cfbVertS(rop, and, xor, addrl, nlwidth, x1, y1, len)
 int rop;
-register unsigned long pixel;
-unsigned long planemask;
+register unsigned long and, xor;
 register int *addrl;	/* pointer to base of bitmap */
 register int nlwidth;	/* width in longwords of bitmap */
 int x1, y1;		/* initial point */
 register int len;	/* length of line */
 {
 #if (PPW == 4)
-    if ((planemask & PMSK) == PMSK)
+    register unsigned char    *bits = (unsigned char *) addrl;
+
+    nlwidth <<= 2;
+    bits = bits + (y1 * nlwidth) + x1;
+
+    /*
+     * special case copy and xor to avoid a test per pixel
+     */
+    if (rop == GXcopy)
     {
-    	register unsigned char    *bits = (unsigned char *) addrl;
-    
-    	nlwidth <<= 2;
-    	bits = bits + (y1 * nlwidth) + x1;
-    	if (len < 0)
-    	{
-	    nlwidth = -nlwidth;
-	    len = -len;
-    	}
-    
-    	/*
-     	 * special case copy and xor to avoid a test per pixel
-     	 */
-    	if (rop == GXcopy)
-    	{
-	    while (len--)
- 	    {
-	    	*bits = pixel;
-	    	bits += nlwidth;
-	    }
-    	}
-	else if (rop == GXxor)
+	while (len--)
 	{
-	    while (len--)
- 	    {
-	    	*bits ^= pixel;
-	    	bits += nlwidth;
-	    }
+	    *bits = xor;
+	    bits += nlwidth;
 	}
-    	else
-    	{
-	    while (len--)
- 	    {
-	    	*bits = DoRop(rop, pixel, *bits);
-	    	bits += nlwidth;
-	    }
-    	}
+    }
+    else if (rop == GXxor)
+    {
+	while (len--)
+	{
+	    *bits ^= xor;
+	    bits += nlwidth;
+	}
     }
     else
-#endif
     {
-    	addrl = addrl + (y1 * nlwidth) + (x1 >> PWSH);
-    
-    	if (len < 0)
-    	{
-	    nlwidth = -nlwidth;
-	    len = -len;
-    	}
-     
-    	planemask = cfbmask[x1 & PIM] & PFILL (planemask);
-    	pixel = PFILL (pixel);
-    
-    	do
-    	{
-	    *addrl = (*addrl & ~planemask) |
-		     (DoRop (rop, pixel, *addrl) & planemask);
-	    addrl += nlwidth;
-    	}
-    	while (--len);
+	while (len--)
+	{
+	    *bits = DoRRop(*bits, and, xor);
+	    bits += nlwidth;
+	}
     }
+#else
+    addrl = addrl + (y1 * nlwidth) + (x1 >> PWSH);
+
+    and |= ~cfbmask[x1 & PIM];
+    xor &= cfbmask[x1 & PIM];
+
+    while (len--)
+    {
+	*addrl = DoRRop (*addrl, and, xor);
+	addrl += nlwidth;
+    }
+#endif
 }

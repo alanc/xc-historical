@@ -64,6 +64,10 @@ SOFTWARE.
 #include "cfb.h"
 #include "cfbmskbits.h"
 
+#if PPW == 4
+#include "cfb8bit.h"
+#endif
+
 extern void mfbInvertSolidFS(), mfbBlackSolidFS(), mfbWhiteSolidFS();
 
 /* scanline filling for color frame buffer
@@ -123,18 +127,18 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     register int *addrl;	/* pointer to current longword in bitmap */
     register int width;		/* current span width */
     register int nlmiddle;
-    register int fill;
+    register int xor;
     register int x;
     register int startmask;
     register int endmask;
-    int rop;			/* rasterop */
-    int planemask;
+    register int and;
     int *pwidthFree;		/* copies of the pointers to free */
     DDXPointPtr pptFree;
+    cfbPrivGCPtr    devPriv;
 
-    if (!(planemask = pGC->planemask))
+    devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr);
+    if (devPriv->rop == GXnoop)
 	return;
-
     n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
@@ -149,7 +153,7 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 #endif
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+    n = miClipSpans(devPriv->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
@@ -169,11 +173,8 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
-    rop = pGC->alu;
-    fill = PFILL(pGC->fgPixel);
-    planemask = PFILL(planemask);
-
-    if (rop == GXcopy && (planemask & PMSK) == PMSK)
+    xor = devPriv->xor;
+    if (devPriv->rop == GXcopy)
     {
 	while (n--)
 	{
@@ -190,14 +191,14 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 		addrb = ((char *) addrl) + x;
 		while (width--)
-		    *addrb++ = fill;
+		    *addrb++ = xor;
 	    }
 #else
 	    if ( ((x & PIM) + width) <= PPW)
 	    {
 		addrl += x >> PWSH;
 		maskpartialbits(x, width, startmask);
-		*addrl = (*addrl & ~startmask) | (fill & startmask);
+		*addrl = *addrl & ~startmask | xor & startmask;
 	    }
 #endif
 	    else
@@ -205,20 +206,18 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		addrl += x >> PWSH;
 		maskbits(x, width, startmask, endmask, nlmiddle);
 		if ( startmask ) {
-		    *addrl = *addrl & ~startmask | fill & startmask;
+		    *addrl = *addrl & ~startmask | xor & startmask;
 		    ++addrl;
 		}
 		while ( nlmiddle-- )
-		    *addrl++ = fill;
+		    *addrl++ = xor;
 		if ( endmask )
-		    *addrl = *addrl & ~endmask | fill & endmask;
+		    *addrl = *addrl & ~endmask | xor & endmask;
 	    }
 	}
     }
-    else if ((rop == GXxor && (planemask & PMSK) == PMSK) || rop == GXinvert)
+    else if (devPriv->rop == GXxor)
     {
-	if (rop == GXinvert)
-	    fill = planemask;
 	while (n--)
 	{
 	    x = ppt->x;
@@ -234,14 +233,14 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 		addrb = ((char *) addrl) + x;
 		while (width--)
-		    *addrb++ ^= fill;
+		    *addrb++ ^= xor;
 	    }
 #else
 	    if ( ((x & PIM) + width) <= PPW)
 	    {
 		addrl += x >> PWSH;
 		maskpartialbits(x, width, startmask);
-		*addrl ^= (fill & startmask);
+		*addrl ^= (xor & startmask);
 	    }
 #endif
 	    else
@@ -249,16 +248,17 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		addrl += x >> PWSH;
 		maskbits(x, width, startmask, endmask, nlmiddle);
 		if ( startmask )
-		    *addrl++ ^= (fill & startmask);
+		    *addrl++ ^= (xor & startmask);
 		while ( nlmiddle-- )
-		    *addrl++ ^= fill;
+		    *addrl++ ^= xor;
 		if ( endmask )
-		    *addrl ^= (fill & endmask);
+		    *addrl ^= (xor & endmask);
 	    }
 	}
     }
     else
     {
+	and = devPriv->and;
     	while (n--)
     	{
 	    x = ppt->x;
@@ -270,25 +270,21 @@ cfbSolidFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	    	if ( ((x & PIM) + width) <= PPW)
 	    	{
 		    maskpartialbits(x, width, startmask);
-		    *addrl = *addrl & ~(planemask & startmask) |
-			     DoRop(rop, fill, *addrl) & (planemask & startmask);
+		    *addrl = DoMaskRRop (*addrl, and, xor, startmask);
 	    	}
 	    	else
 	    	{
 		    maskbits(x, width, startmask, endmask, nlmiddle);
 		    if ( startmask ) {
-			*addrl = *addrl & ~(planemask & startmask) |
-			         DoRop (rop, fill, *addrl) & (planemask & startmask);
+			*addrl = DoMaskRRop (*addrl, and, xor, startmask);
 		    	++addrl;
 		    }
 		    while ( nlmiddle-- ) {
-			*addrl = (*addrl & ~planemask) |
-				 DoRop (rop, fill, *addrl) & planemask;
+			*addrl = DoRRop (*addrl, and, xor);
 		    	++addrl;
 		    }
 		    if ( endmask ) {
-			*addrl = *addrl & ~(planemask & endmask) |
-			         DoRop (rop, fill, *addrl) & (planemask & endmask);
+			*addrl = DoMaskRRop (*addrl, and, xor, endmask);
 		    }
 	    	}
 	    }
@@ -402,6 +398,33 @@ int fSorted;
 		psrc = psrcT + rem / PPW;
 	        w = min(tileWidth, width);
 		w = min(w,tileWidth-rem);
+#ifdef notdef
+		if((rem = x % tileWidth) != 0)
+		{
+		    w = min(min(tileWidth - rem, width), PPW);
+		    /* we want to grab from the end of the tile.  Figure
+		     * out where that is.  In general, the start of the last
+		     * word of data on this scanline is tlwidth -1 words 
+		     * away. But if we want to grab more bits than we'll
+		     * find on that line, we have to back up 1 word further.
+		     * On the other hand, if the whole tile fits in 1 word,
+		     * let's skip the work */ 
+		    endinc = tlwidth - 1 - (tileWidth-rem) / PPW;
+
+		    if(endinc)
+		    {
+			if((rem & PIM) + w > tileWidth % PPW)
+			    endinc--;
+		    }
+
+		    getbits(psrc + endinc, rem & PIM, w, tmpSrc);
+		    putbitsrop(tmpSrc, (x & PIM), w, pdst, 
+			pGC->planemask, rop);
+		    if((x & PIM) + w >= PPW)
+			pdst++;
+		}
+		else
+#endif /* notdef */
 		if(((x & PIM) + w) <= PPW)
 		{
 		    getbits(psrc, (rem & PIM), w, tmpSrc);
@@ -460,6 +483,210 @@ int fSorted;
     DEALLOCATE_LOCAL(pwidthFree);
 }
 
+#if PPW == 4
+
+void
+cfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
+DrawablePtr pDrawable;
+GC		*pGC;
+int		nInit;		/* number of spans to fill */
+DDXPointPtr pptInit;		/* pointer to list of start points */
+int *pwidthInit;		/* pointer to list of n widths */
+int fSorted;
+{
+				/* next three parameters are post-clip */
+    int		    n;		/* number of spans to fill */
+    DDXPointPtr	    ppt;	/* pointer to list of start points */
+    int		    *pwidth;	/* pointer to list of n widths */
+    int		    *pwidthFree;/* copies of the pointers to free */
+    DDXPointPtr	    pptFree;
+    unsigned long   *pdstBase;	/* pointer to start of bitmap */
+    int		    nlwDst;	/* width in longwords of bitmap */
+    register unsigned long    *pdst;	/* pointer to current word in bitmap */
+    PixmapPtr	    pStipple;	/* pointer to stipple we want to fill with */
+    int		    nlw;
+    int		    x, y, w, xrem, xSrc, ySrc;
+    int		    stwidth, stippleWidth;
+    int		    stippleHeight;
+    register unsigned long  bits, inputBits;
+    register int    partBitsLeft;
+    int		    nextPartBits;
+    int		    bitsLeft, bitsWhole;
+    unsigned long   *srcTemp, *srcStart;
+    unsigned long   *psrcBase;
+    unsigned long   startmask, endmask;
+
+    if (pGC->fillStyle == FillStippled)
+	cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+    else
+	cfb8CheckOpaqueStipple (pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
+
+    if (cfb8StippleRRop == GXnoop)
+	return;
+
+    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
+    pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
+    if(!pptFree || !pwidthFree)
+    {
+	if (pptFree) DEALLOCATE_LOCAL(pptFree);
+	if (pwidthFree) DEALLOCATE_LOCAL(pwidthFree);
+	return;
+    }
+
+    pwidth = pwidthFree;
+    ppt = pptFree;
+    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+		     pptInit, pwidthInit, nInit, 
+		     ppt, pwidth, fSorted);
+
+    /*
+     *  OK,  so what's going on here?  We have two Drawables:
+     *
+     *  The Stipple:
+     *		Depth = 1
+     *		Width = stippleWidth
+     *		Words per scanline = stwidth
+     *		Pointer to pixels = pStipple->devPrivate.ptr
+     */
+
+    pStipple = pGC->stipple;
+
+    if (pStipple->drawable.depth != 1) {
+	FatalError( "Stipple depth not equal to 1!\n" );
+    }
+
+    stwidth = pStipple->devKind >> 2;
+    stippleWidth = pStipple->drawable.width;
+    stippleHeight = pStipple->drawable.height;
+    psrcBase = (unsigned long *) pStipple->devPrivate.ptr;
+
+    /*
+     *	The Target:
+     *		Depth = PSZ
+     *		Width = determined from *pwidth
+     *		Words per scanline = nlwDst
+     *		Pointer to pixels = addrlBase
+     */
+
+    xSrc = pDrawable->x;
+    ySrc = pDrawable->y;
+
+    if (pDrawable->type == DRAWABLE_WINDOW)
+    {
+	pdstBase = (unsigned long *)
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
+	nlwDst = (int)
+		(((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
+    }
+    else
+    {
+	pdstBase = (unsigned long *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
+	nlwDst = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
+    }
+
+    /* this replaces rotating the stipple. Instead we just adjust the offset
+     * at which we start grabbing bits from the stipple.
+     * Ensure that ppt->x - xSrc >= 0 and ppt->y - ySrc >= 0,
+     * so that iline and xrem always stay within the stipple bounds.
+     */
+
+    xSrc += (pGC->patOrg.x % stippleWidth) - stippleWidth;
+    ySrc += (pGC->patOrg.y % stippleHeight) - stippleHeight;
+
+    bitsWhole = stippleWidth;
+
+    while (n--)
+    {
+	x = ppt->x;
+	y = ppt->y;
+	ppt++;
+	w = *pwidth++;
+	pdst = pdstBase + y * nlwDst + (x >> PWSH);
+	y = (y - ySrc) % stippleHeight;
+	srcStart = psrcBase + y * stwidth;
+	xrem = ((x & ~3) - xSrc) % stippleWidth;
+	srcTemp = srcStart + (xrem >> 5);
+	bitsLeft = stippleWidth - (xrem & ~0x1f);
+	xrem &= 0x1f;
+	NextUnnaturalStippleWord
+	if (partBitsLeft < xrem)
+	    FatalError ("cfbUnnaturalStippleFS bad partBitsLeft %d xrem %d",
+			partBitsLeft, xrem);
+	NextSomeBits (inputBits, xrem);
+	partBitsLeft -= xrem;
+	if (((x & PIM) + w) <= PPW)
+	{
+	    maskpartialbits (x, w, startmask)
+	    NextUnnaturalStippleBits
+	    *pdst = MaskRRopPixels(*pdst,bits,startmask);
+	}
+	else
+	{
+	    maskbits (x, w, startmask, endmask, nlw);
+	    nextPartBits = (x & 0x3) + w;
+	    if (nextPartBits < partBitsLeft)
+	    {
+		if (startmask)
+		{
+		    MaskRRopFourBits(pdst,GetFourBits(inputBits),startmask)
+		    pdst++;
+		    NextFourBits (inputBits);
+		}
+		while (nlw--)
+		{
+		    RRopFourBits (pdst, GetFourBits (inputBits));
+		    pdst++;
+		    NextFourBits (inputBits);
+		}
+		if (endmask)
+		{
+		    MaskRRopFourBits(pdst,GetFourBits(inputBits),endmask)
+		}
+	    }
+	    else if (nextPartBits < partBitsLeft + bitsLeft)
+	    {
+	    	NextUnnaturalStippleBitsFast
+	    	if (startmask)
+	    	{
+		    *pdst = MaskRRopPixels(*pdst,bits,startmask);
+		    pdst++;
+	    	    NextUnnaturalStippleBitsFast
+	    	}
+	    	while (nlw--)
+	    	{
+		    *pdst = RRopPixels(*pdst,bits);
+		    pdst++;
+	    	    NextUnnaturalStippleBitsFast
+	    	}
+	    	if (endmask)
+		    *pdst = MaskRRopPixels (*pdst,bits,endmask);
+	    }
+	    else
+	    {
+	    	NextUnnaturalStippleBits
+	    	if (startmask)
+	    	{
+		    *pdst = MaskRRopPixels(*pdst,bits,startmask);
+		    pdst++;
+	    	    NextUnnaturalStippleBits
+	    	}
+	    	while (nlw--)
+	    	{
+		    *pdst = RRopPixels(*pdst,bits);
+		    pdst++;
+	    	    NextUnnaturalStippleBits
+	    	}
+	    	if (endmask)
+		    *pdst = MaskRRopPixels(*pdst,bits,endmask);
+	    }
+	}
+    }
+    DEALLOCATE_LOCAL(pptFree);
+    DEALLOCATE_LOCAL(pwidthFree);
+}
+
+#else
 
 /* Fill spans with stipples that aren't 32 bits wide */
 void
@@ -641,6 +868,8 @@ int fSorted;
     DEALLOCATE_LOCAL(pwidthFree);
 }
 
+#endif /* PPW == 4 */
+
 void
 cfbTile32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
@@ -789,8 +1018,6 @@ cfbTile32FS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
 #if PPW == 4
 
-#include "cfb8bit.h"
-
 void
 cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     DrawablePtr pDrawable;
@@ -801,42 +1028,35 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int 	fSorted;
 {
 				/* next three parameters are post-clip */
-    int n;			/* number of spans to fill */
-    DDXPointPtr ppt;		/* pointer to list of start points */
-    int *pwidth;		/* pointer to list of n widths */
-    int *psrc;		/* pointer to bits in stipple, if needed */
-    int stippleHeight;	/* height of the stipple */
-    PixmapPtr stipple;
+    int		    n;			/* number of spans to fill */
+    DDXPointPtr	    ppt;		/* pointer to list of start points */
+    int		    *pwidth;		/* pointer to list of n widths */
+    unsigned long   *src;		/* pointer to bits in stipple, if needed */
+    int		    stippleHeight;	/* height of the stipple */
+    PixmapPtr	    stipple;
 
-    int nlwDst;		/* width in longwords of the dest pixmap */
-    int x,y,w;		/* current span */
-    unsigned long startmask;
-    unsigned long endmask;	/* masks for reggedy bits at either end of line */
-    int nlwMiddle;	/* number of longwords between sides of boxes */
-    register int nlw;			/* loop version of nlwMiddle */
-    unsigned long *dstLine;
+    int		    nlwDst;		/* width in longwords of the dest pixmap */
+    int		    x,y,w;		/* current span */
+    unsigned long   startmask;
+    unsigned long   endmask;
     register unsigned long *dst;	/* pointer to bits we're writing */
+    register int    nlw;
+    unsigned long   *dstTmp;
+    int		    nlwTmp;
 
-    unsigned long *pbits;/* pointer to start of pixmap */
-    register unsigned long pixels;	/* bits to write */
-    register unsigned long bits;	/* bits from stipple */
-    register unsigned long   mask;
-    register unsigned long  fg;
-    int		  firstStart, lastStop;
-    int		    i, maxi;
+    unsigned long   *pbits;		/* pointer to start of pixmap */
+    register unsigned long  xor;
+    register unsigned long  mask;
+    register unsigned long  bits;	/* bits from stipple */
+    int		    wEnd;
 
-    int rop;			/* rasterop */
-    int planemask;
-    int *pwidthFree;		/* copies of the pointers to free */
-    DDXPointPtr pptFree;
+    int		    *pwidthFree;	/* copies of the pointers to free */
+    DDXPointPtr	    pptFree;
+    cfbPrivGCPtr    devPriv;
 
-    if ((pGC->alu != GXcopy || (pGC->planemask & PMSK) != PMSK))
-    {
-	cfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
-	return;
-    }
-
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    devPriv = (cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr;
+    cfb8CheckStipple (pGC->alu, pGC->fgPixel, pGC->planemask);
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -847,15 +1067,13 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+    n = miClipSpans(devPriv->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    fg = PFILL (pGC->fgPixel);
-
-    stipple = pGC->stipple;
+    stipple = devPriv->pRotatedPixmap;
+    src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
-    psrc = (int *)stipple->devPrivate.ptr;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -876,177 +1094,145 @@ cfb8Stipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	x = ppt->x;
     	y = ppt->y;
 	ppt++;
-    	dstLine = pbits + (y * nlwDst) + ((x & ~31) >> PWSH);
+    	dst = pbits + (y * nlwDst) + (x >> PWSH);
 	if (((x & PIM) + w) <= PPW)
 	{
 	    maskpartialbits(x, w, startmask);
 	    endmask = 0;
+	    nlw = 0;
 	}
 	else
 	{
-	    mask32bits (x, w, startmask, endmask);
+	    maskbits (x, w, startmask, endmask, nlw);
 	}
-    	nlwMiddle = (((((x + w) - 1) | 31) + 1) -  (x & ~31)) >> 5;
-    	firstStart = (x & 31) >> PWSH;
-    	lastStop = (((x + w) - 1) & 31) >> PWSH;
-	maxi = 8;
-	if (maxi > nlwDst)
-	    maxi = nlwDst;
-	bits = psrc[y % stippleHeight];
-	for (i = 0; i < maxi; i++)
+	bits = src[y % stippleHeight];
+	RotBitsLeft (bits, (x & (31 & ~3)));
+	if (cfb8StippleRRop == GXcopy)
 	{
-	    mask = cfb8PixelMasks[GetFourBits (bits)];
-	    pixels = fg & mask;
-	    dst = dstLine + i;
-	    nlw = nlwMiddle;
-	    if (i < firstStart)
+	    xor = devPriv->xor;
+	    if (w < 64)
 	    {
-		dst += 8;
-		nlw--;
+		if (startmask)
+		{
+		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    *dst = (*dst & ~(mask & startmask)) |
+			   (xor & (mask & startmask));
+		    dst++;
+		    RotBitsLeft (bits, 4);
+		}
+		while (nlw--)
+		{
+		    WriteFourBits (dst,xor,GetFourBits(bits))
+		    dst++;
+		    RotBitsLeft (bits, 4);
+		}
+		if (endmask)
+		{
+		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    *dst = (*dst & ~(mask & endmask)) |
+			   (xor & (mask & endmask));
+		}
 	    }
-	    else if (i == firstStart && startmask)
+	    else
 	    {
-		*dst = (*dst & ~(mask&startmask)) |
-			(pixels & startmask);
-		dst += 8;
-		nlw--;
-	    }
-	    if (i > lastStop || i == lastStop && endmask)
-		nlw--;
-#ifdef AVOID_MEMORY_READ
-#define BitLoop(body) \
-    while (nlw--) {\
-        body \
-        dst += 8; \
+		wEnd = 7 - (nlw & 7);
+		nlw = (nlw >> 3) + 1;
+		dstTmp = dst;
+		nlwTmp = nlw;
+		if (startmask)
+		{
+		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    *dstTmp = (*dstTmp & ~(mask & startmask)) |
+			   (xor & (mask & startmask));
+		    dstTmp++;
+		    RotBitsLeft (bits, 4);
+		}
+		w = 7 - wEnd;
+		while (w--)
+		{
+		    dst = dstTmp;
+		    dstTmp++;
+		    nlw = nlwTmp;
+#if defined(__GNUC__) && defined(mc68020)
+		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    xor = xor & mask;
+		    mask = ~mask;
+		    while (nlw--)
+		    {
+			*dst = (*dst & mask) | xor;
+			dst += 8;
+		    }
+		    xor = devPriv->xor;
+#else
+#define SwitchBitsLoop(body) \
+    while (nlw--)	\
+    {		\
+	body	\
+	dst += 8;	\
     }
-#if (BITMAP_BIT_ORDER == MSBFirst)
-	    switch (GetFourBits(bits)) {
-	    case 0:
-		break;
-	    case 1:
-		BitLoop (((char *) (dst))[3] = (fg);)
-		break;
-	    case 2:
-		BitLoop (((char *) (dst))[2] = (fg);)
-		break;
-	    case 3:
-		BitLoop (((short *) (dst))[1] = (fg);)
-		break;
-	    case 4:
-		BitLoop (((char *) (dst))[1] = (fg);)
-		break;
-	    case 5:
-		BitLoop (((char *) (dst))[3] = (fg);
-			 ((char *) (dst))[1] = (fg);)
-		break;
-	    case 6:
-		BitLoop (((char *) (dst))[2] = (fg);
-			 ((char *) (dst))[1] = (fg);)
-		break;
-	    case 7:
-		BitLoop (((short *) (dst))[1] = (fg);
-			 ((char *) (dst))[1] = (fg);)
-		break;
-	    case 8:
-		BitLoop (((char *) (dst))[3] = (fg);)
-		break;
-	    case 9:
-		BitLoop (((char *) (dst))[3] = (fg);
-			 ((char *) (dst))[0] = (fg);)
-		break;
-	    case 10:
-		BitLoop (((char *) (dst))[2] = (fg);
-			 ((char *) (dst))[0] = (fg);)
-		break;
-	    case 11:
-		BitLoop (((short *) (dst))[1] = (fg);
-			 ((char *) (dst))[0] = (fg);)
-		break;
-	    case 12:
-		BitLoop (((short *) (dst))[0] = (fg);)
-		break;
-	    case 13:
-		BitLoop (((char *) (dst))[3] = (fg);
-			 ((short *) (dst))[0] = (fg);)
-		break;
-	    case 14:
-		BitLoop (((char *) (dst))[2] = (fg);
-			 ((short *) (dst))[0] = (fg);)
-		break;
-	    case 15:
-		BitLoop (((long *) (dst))[0] = (fg);)
-		break;
-	    }
-#else
-	    switch (GetFourBits(bits)) {
-	    case 0:
-		break;
-	    case 1:
-		BitLoop (((char *) (dst))[0] = (fg);)
-		break;
-	    case 2:
-		BitLoop (((char *) (dst))[1] = (fg);)
-		break;
-	    case 3:
-		BitLoop (((short *) (dst))[0] = (fg);)
-		break;
-	    case 4:
-		BitLoop (((char *) (dst))[2] = (fg);)
-		break;
-	    case 5:
-		BitLoop (((char *) (dst))[0] = (fg);
-			 ((char *) (dst))[2] = (fg);)
-		break;
-	    case 6:
-		BitLoop (((char *) (dst))[1] = (fg);
-			 ((char *) (dst))[2] = (fg);)
-		break;
-	    case 7:
-		BitLoop (((short *) (dst))[0] = (fg);
-			 ((char *) (dst))[2] = (fg);)
-		break;
-	    case 8:
-		BitLoop (((char *) (dst))[3] = (fg);)
-		break;
-	    case 9:
-		BitLoop (((char *) (dst))[0] = (fg);
-			 ((char *) (dst))[3] = (fg);)
-		break;
-	    case 10:
-		BitLoop (((char *) (dst))[1] = (fg);
-			 ((char *) (dst))[3] = (fg);)
-		break;
-	    case 11:
-		BitLoop (((short *) (dst))[0] = (fg);
-			 ((char *) (dst))[3] = (fg);)
-		break;
-	    case 12:
-		BitLoop (((short *) (dst))[1] = (fg);)
-		break;
-	    case 13:
-		BitLoop (((char *) (dst))[0] = (fg);
-			 ((short *) (dst))[1] = (fg);)
-		break;
-	    case 14:
-		BitLoop (((char *) (dst))[1] = (fg);
-			 ((short *) (dst))[1] = (fg);)
-		break;
-	    case 15:
-		BitLoop (((long *) (dst))[0] = (fg);)
-		break;
-	    }
+		    SwitchFourBits(dst, xor, GetFourBits(bits));
+#undef SwitchBitsLoop
 #endif
+		    NextFourBits (bits);
+		}
+		nlwTmp--;
+		w = wEnd + 1;
+		if (endmask)
+		{
+		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    dst = dstTmp + (nlwTmp << 3);
+		    *dst = (*dst & ~(mask & endmask)) |
+			   (xor &  (mask & endmask));
+		}
+		while (w--)
+		{
+		    nlw = nlwTmp;
+		    dst = dstTmp;
+		    dstTmp++;
+#if defined(__GNUC__) && defined(mc68020)
+		    mask = cfb8PixelMasks[GetFourBits(bits)];
+		    xor = xor & mask;
+		    mask = ~mask;
+		    while (nlw--)
+		    {
+			*dst = (*dst & mask) | xor;
+			dst += 8;
+		    }
+		    xor = devPriv->xor;
 #else
+#define SwitchBitsLoop(body) \
+	while (nlw--)	\
+	{		\
+	    body	\
+	    dst += 8;	\
+	}
+		    SwitchFourBits(dst, xor, GetFourBits(bits));
+#undef SwitchBitsLoop
+#endif
+		    NextFourBits (bits);
+		}
+	    }
+	}
+	else
+	{
+	    if (startmask)
+	    {
+		xor = GetFourBits(bits);
+		*dst = MaskRRopPixels(*dst, xor, startmask);
+		dst++;
+		RotBitsLeft (bits, 4);
+	    }
 	    while (nlw--)
 	    {
-		*dst = (*dst & ~mask) | pixels;
-		dst += 8;
+		RRopFourBits(dst, GetFourBits(bits));
+		dst++;
+		RotBitsLeft (bits, 4);
 	    }
-#endif
-	    if (i == lastStop && endmask)
-		*dst = (*dst & ~(mask &endmask)) |
-			(pixels & endmask);
-	    NextFourBits (bits);
+	    if (endmask)
+	    {
+		xor = GetFourBits(bits);
+		*dst = MaskRRopPixels(*dst, xor, endmask);
+	    }
 	}
     }
     DEALLOCATE_LOCAL(pptFree);
@@ -1063,41 +1249,37 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     int 	fSorted;
 {
 				/* next three parameters are post-clip */
-    int n;			/* number of spans to fill */
-    DDXPointPtr ppt;		/* pointer to list of start points */
-    int *pwidth;		/* pointer to list of n widths */
-    int *psrc;		/* pointer to bits in stipple, if needed */
-    int stippleHeight;	/* height of the stipple */
-
-    int nlwDst;		/* width in longwords of the dest pixmap */
-    int x,y,w;		/* current span */
-    unsigned long startmask;
-    unsigned long endmask;	/* masks for reggedy bits at either end of line */
-    int nlwMiddle;	/* number of longwords between sides of boxes */
-    register int nlw;			/* loop version of nlwMiddle */
-    unsigned long *dstLine;
-    register unsigned long *dst;	/* pointer to bits we're writing */
-
-    unsigned long *pbits;/* pointer to start of pixmap */
-    register unsigned long pixels;	/* bits to write */
-    register unsigned long bits;	/* bits from stipple */
-    int		  firstStart, lastStop;
-    int		    i;
+    int		    n;			/* number of spans to fill */
+    DDXPointPtr	    ppt;		/* pointer to list of start points */
+    int		    *pwidth;		/* pointer to list of n widths */
+    unsigned long   *src;		/* pointer to bits in stipple, if needed */
+    int		    stippleHeight;	/* height of the stipple */
     PixmapPtr	    stipple;
 
-    int rop;			/* rasterop */
-    int planemask;
-    int *pwidthFree;		/* copies of the pointers to free */
-    DDXPointPtr pptFree;
+    int		    nlwDst;		/* width in longwords of the dest pixmap */
+    int		    x,y,w;		/* current span */
+    unsigned long   startmask;
+    unsigned long   endmask;
+    register unsigned long *dst;	/* pointer to bits we're writing */
+    register int    nlw;
+    unsigned long   *dstTmp;
+    int		    nlwTmp;
 
-    if ((pGC->alu != GXcopy || (pGC->planemask & PMSK) != PMSK))
-    {
-	cfbUnnaturalStippleFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
-	return;
-    }
+    unsigned long   *pbits;		/* pointer to start of pixmap */
+    register unsigned long  xor;
+    register unsigned long  mask;
+    register unsigned long  bits;	/* bits from stipple */
+    int		    wEnd;
 
-    stipple = pGC->stipple;
-    n = nInit * miFindMaxBand(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip);
+    int		    *pwidthFree;	/* copies of the pointers to free */
+    DDXPointPtr	    pptFree;
+    cfbPrivGCPtr    devPriv;
+
+    devPriv = (cfbPrivGCPtr) pGC->devPrivates[cfbGCPrivateIndex].ptr;
+
+    cfb8CheckOpaqueStipple(pGC->alu, pGC->fgPixel, pGC->bgPixel, pGC->planemask);
+
+    n = nInit * miFindMaxBand(devPriv->pCompositeClip);
     pwidthFree = (int *)ALLOCATE_LOCAL(n * sizeof(int));
     pptFree = (DDXPointRec *)ALLOCATE_LOCAL(n * sizeof(DDXPointRec));
     if(!pptFree || !pwidthFree)
@@ -1108,15 +1290,13 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     }
     pwidth = pwidthFree;
     ppt = pptFree;
-    n = miClipSpans(((cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr))->pCompositeClip,
+    n = miClipSpans(devPriv->pCompositeClip,
 		     pptInit, pwidthInit, nInit,
 		     ppt, pwidth, fSorted);
 
-    if (!cfb8CheckPixels (pGC->fgPixel, pGC->bgPixel))
-	cfb8SetPixels (pGC->fgPixel, pGC->bgPixel);
-
+    stipple = devPriv->pRotatedPixmap;
+    src = (unsigned long *)stipple->devPrivate.ptr;
     stippleHeight = stipple->drawable.height;
-    psrc = (int *)stipple->devPrivate.ptr;
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
@@ -1137,46 +1317,112 @@ cfb8OpaqueStipple32FS (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	x = ppt->x;
     	y = ppt->y;
 	ppt++;
-	dstLine = pbits + (y * nlwDst) + ((x & ~31) >> PWSH);
+    	dst = pbits + (y * nlwDst) + (x >> PWSH);
 	if (((x & PIM) + w) <= PPW)
 	{
 	    maskpartialbits(x, w, startmask);
 	    endmask = 0;
+	    nlw = 0;
 	}
 	else
 	{
-	    mask32bits (x, w, startmask, endmask);
+	    maskbits (x, w, startmask, endmask, nlw);
 	}
-	nlwMiddle = (((((x + w) - 1) | 31) + 1) -  (x & ~31)) >> 5;
-	firstStart = (x & 31) >> PWSH;
-	lastStop = (((x + w) - 1) & 31) >> PWSH;
-	bits = psrc[y % stippleHeight];
-	for (i = 0; i < 8; i++)
+	bits = src[y % stippleHeight];
+	RotBitsLeft (bits, (x & (31 & ~3)));
+	if (cfb8StippleRRop == GXcopy)
 	{
-	    pixels = GetFourPixels (bits);
-	    dst = dstLine + i;
-	    nlw = nlwMiddle;
-	    if (i < firstStart)
+	    xor = devPriv->xor;
+	    if (w < 64)
 	    {
-		dst += 8;
-		nlw--;
+		if (startmask)
+		{
+		    *dst = *dst & ~startmask |
+			    GetFourPixels (bits) & startmask;
+		    dst++;
+		    RotBitsLeft (bits, 4);
+		}
+		while (nlw--)
+		{
+		    *dst++ = GetFourPixels(bits);
+		    RotBitsLeft (bits, 4);
+		}
+		if (endmask)
+		{
+		    *dst = *dst & ~endmask |
+			  GetFourPixels (bits) & endmask;
+		}
 	    }
-	    else if (i == firstStart && startmask)
+	    else
 	    {
-		*dst = (*dst & ~startmask) | (pixels & startmask);
-		dst += 8;
-		nlw--;
+		wEnd = 7 - (nlw & 7);
+		nlw = (nlw >> 3) + 1;
+		dstTmp = dst;
+		nlwTmp = nlw;
+		if (startmask)
+		{
+		    *dstTmp = *dstTmp & ~startmask |
+			   GetFourPixels (bits) & startmask;
+		    dstTmp++;
+		    RotBitsLeft (bits, 4);
+		}
+		w = 7 - wEnd;
+		while (w--)
+		{
+		    nlw = nlwTmp;
+		    dst = dstTmp;
+		    dstTmp++;
+		    xor = GetFourPixels (bits);
+		    while (nlw--)
+		    {
+			*dst = xor;
+			dst += 8;
+		    }
+		    NextFourBits (bits);
+		}
+		nlwTmp--;
+		w = wEnd + 1;
+		if (endmask)
+		{
+		    dst = dstTmp + (nlwTmp << 3);
+		    *dst = (*dst & ~endmask) |
+			   GetFourPixels (bits) & endmask;
+		}
+		while (w--)
+		{
+		    nlw = nlwTmp;
+		    dst = dstTmp;
+		    dstTmp++;
+		    xor = GetFourPixels (bits);
+		    while (nlw--)
+		    {
+			*dst = xor;
+			dst += 8;
+		    }
+		    NextFourBits (bits);
+		}
 	    }
-	    if (i > lastStop || i == lastStop && endmask)
-		nlw--;
+	}
+	else
+	{
+	    if (startmask)
+	    {
+		xor = GetFourBits(bits);
+		*dst = MaskRRopPixels(*dst, xor, startmask);
+		dst++;
+		RotBitsLeft (bits, 4);
+	    }
 	    while (nlw--)
 	    {
-		*dst = pixels;
-		dst += 8;
+		RRopFourBits(dst, GetFourBits(bits));
+		dst++;
+		RotBitsLeft (bits, 4);
 	    }
-	    if (i == lastStop && endmask)
-		*dst = (*dst & ~endmask) | (pixels & endmask);
-	    NextFourBits (bits);
+	    if (endmask)
+	    {
+		xor = GetFourBits(bits);
+		*dst = MaskRRopPixels(*dst, xor, endmask);
+	    }
 	}
     }
     DEALLOCATE_LOCAL(pptFree);

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.5 89/10/04 16:23:47 keith Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.6 89/11/08 17:12:51 keith Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -35,20 +35,17 @@ SOFTWARE.
 	    dashIndex = 0; \
 	dashRemaining = pDash[dashIndex]; \
 	if (isDoubleDash) { \
-	    pixel = fg; \
-	    if (dashIndex & 1) \
-		pixel = bg; \
+	    xor = rrops[dashIndex & 1].xor; \
+	    and = rrops[dashIndex & 1].and; \
 	} \
 	else \
 	    dontdraw = (dashIndex & 1); \
     }
-cfbBresD(rop, fg, bg, planemask,
+cfbBresD(rrops,
 	 pdashIndex, pDash, numInDashList, pdashOffset, isDoubleDash,
 	 addrl, nlwidth,
 	 signdx, signdy, axis, x1, y1, e, e1, e2, len)
-int rop;
-unsigned long fg, bg;
-unsigned long planemask;
+cfbRRopPtr  rrops;
 int *pdashIndex;	/* current dash */
 unsigned char *pDash;	/* dash list */
 int numInDashList;	/* total length of dash list */
@@ -70,103 +67,105 @@ int len;		/* length of line */
     int dashIndex;
     int dashOffset;
     int dashRemaining;
-    unsigned long pixel;
+    unsigned long   xor, and;
     int dontdraw;
+    Bool isCopy;
 
     dashOffset = *pdashOffset;
     dashIndex = *pdashIndex;
     dashRemaining = pDash[dashIndex] - dashOffset;
-    pixel = fg;
+    isCopy = (rrops[0].rop == GXcopy && rrops[1].rop == GXcopy);
+    xor = rrops[0].xor;
+    and = rrops[0].and;
     if (isDoubleDash)
     {
 	if (dashIndex & 1)
-	    pixel = bg;
+	{
+	    xor = rrops[1].xor;
+	    and = rrops[1].and;
+	}
 	dontdraw = 0;
     }
     else
 	dontdraw = (dashIndex & 1);
 #if (PPW == 4)
-    if ((planemask & PMSK) == PMSK)
+    /* point to first point */
+    nlwidth <<= 2;
+    addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
+    yinc = signdy * nlwidth;
+    e = e-e1;			/* to make looping easier */
+
+    if (axis == X_AXIS)
     {
-    	/* point to first point */
-    	nlwidth <<= 2;
-    	addrb = (unsigned char *)(addrl) + (y1 * nlwidth) + x1;
-    	yinc = signdy * nlwidth;
-    	e = e-e1;			/* to make looping easier */
-    
-    	if (axis == X_AXIS)
-    	{
-	    if (rop == GXcopy)
-	    {
-	    	while(len--)
-	    	{ 
-		    if (!dontdraw)
-		    	*addrb = pixel;
-	    	    e += e1;
-	    	    if (e >= 0)
-	    	    {
-		    	addrb += yinc;
-		    	e += e3;
-	    	    }
-	    	    addrb += signdx;
-		    StepDash
-	    	}
+	if (isCopy)
+	{
+	    while(len--)
+	    { 
+		if (!dontdraw)
+		    *addrb = xor;
+		e += e1;
+		if (e >= 0)
+		{
+		    addrb += yinc;
+		    e += e3;
+		}
+		addrb += signdx;
+		StepDash
 	    }
-	    else
-	    {
-	    	while(len--)
-	    	{ 
-		    if (!dontdraw)
-		    	*addrb = DoRop (rop, pixel, *addrb);
-	    	    e += e1;
-	    	    if (e >= 0)
-	    	    {
-		    	addrb += yinc;
-		    	e += e3;
-	    	    }
-	    	    addrb += signdx;
-		    StepDash
-	    	}
+	}
+	else
+	{
+	    while(len--)
+	    { 
+		if (!dontdraw)
+		    *addrb = DoRRop (*addrb, and, xor);
+		e += e1;
+		if (e >= 0)
+		{
+		    addrb += yinc;
+		    e += e3;
+		}
+		addrb += signdx;
+		StepDash
 	    }
-    	} /* if X_AXIS */
-    	else
-    	{
-	    if (rop == GXcopy)
-	    {
-	    	while(len--)
-	    	{
-		    if (!dontdraw)
-		    	*addrb = pixel;
-	    	    e += e1;
-	    	    if (e >= 0)
-	    	    {
-		    	addrb += signdx;
-		    	e += e3;
-	    	    }
-	    	    addrb += yinc;
-		    StepDash
-    	    	}
-	    }
-	    else
-	    {
-	    	while(len--)
-	    	{
-		    if (!dontdraw)
-		    	*addrb = DoRop (rop, pixel, *addrb);
-	    	    e += e1;
-	    	    if (e >= 0)
-	    	    {
-		    	addrb += signdx;
-		    	e += e3;
-	    	    }
-	    	    addrb += yinc;
-		    StepDash
-    	    	}
-	    }
-    	} /* else Y_AXIS */
-    }
+	}
+    } /* if X_AXIS */
     else
-#endif
+    {
+	if (isCopy)
+	{
+	    while(len--)
+	    {
+		if (!dontdraw)
+		    *addrb = xor;
+		e += e1;
+		if (e >= 0)
+		{
+		    addrb += signdx;
+		    e += e3;
+		}
+		addrb += yinc;
+		StepDash
+	    }
+	}
+	else
+	{
+	    while(len--)
+	    {
+		if (!dontdraw)
+		    *addrb = DoRRop (*addrb, and, xor);
+		e += e1;
+		if (e >= 0)
+		{
+		    addrb += signdx;
+		    e += e3;
+		}
+		addrb += yinc;
+		StepDash
+	    }
+	}
+    } /* else Y_AXIS */
+#else
     {
     	register unsigned long   tmp;
 	unsigned long leftbit, rightbit, bit;
@@ -175,9 +174,6 @@ int len;		/* length of line */
     	addrl = (addrl + (y1 * nlwidth) + (x1 >> PWSH));
     	yinc = signdy * nlwidth;
     	e = e-e1;			/* to make looping easier */
-
-    	planemask = PFILL(planemask);
-    	pixel = PFILL(pixel);
 
     	leftbit = cfbmask[0] & planemask;
     	rightbit = cfbmask[PPW-1] & planemask;
@@ -193,10 +189,7 @@ int len;		/* length of line */
 	    	while (len--)
 	    	{ 
 		    if (!dontdraw)
-		    {
-		    	tmp = *addrl;
-	    	    	*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
-		    }
+			DoMaskRRop (*addrl, and, xor, bit);
 	    	    bit = SCRRIGHT(bit,1);
 	    	    e += e1;
 	    	    if (e >= 0)
@@ -217,10 +210,7 @@ int len;		/* length of line */
 	    	while (len--)
 	    	{ 
 		    if (!dontdraw)
-		    {
-		    	tmp = *addrl;
-	    	    	*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
-		    }
+			DoMaskRRop (*addrl, and, xor, bit);
 	    	    e += e1;
 	    	    bit = SCRLEFT(bit,1);
 	    	    if (e >= 0)
@@ -244,10 +234,7 @@ int len;		/* length of line */
 	    	while(len--)
 	    	{
 		    if (!dontdraw)
-		    {
-		    	tmp = *addrl;
-	    	    	*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
-		    }
+			DoMaskRRop (*addrl, and, xor, bit);
 	    	    e += e1;
 	    	    if (e >= 0)
 	    	    {
@@ -268,10 +255,7 @@ int len;		/* length of line */
 	    	while(len--)
 	    	{
 		    if (!dontdraw)
-		    {
-		    	tmp = *addrl;
-	    	    	*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
-		    }
+			DoMaskRRop (*addrl, and, xor, bit);
 	    	    e += e1;
 	    	    if (e >= 0)
 	    	    {
@@ -289,6 +273,7 @@ int len;		/* length of line */
     	    }
     	} /* else Y_AXIS */
     }
+#endif
     *pdashIndex = dashIndex;
     *pdashOffset = pDash[dashIndex] - dashRemaining;
 }

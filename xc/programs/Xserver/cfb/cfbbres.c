@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbres.c,v 1.7 89/10/09 14:52:03 keith Exp $ */
+/* $XConsortium: cfbbres.c,v 1.8 89/11/19 16:18:16 rws Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"
@@ -33,10 +33,9 @@ SOFTWARE.
    e2 is used less often than e1, so it's not in a register
 */
 
-cfbBresS(rop, pixel, planemask, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
+cfbBresS(rop, and, xor, addrl, nlwidth, signdx, signdy, axis, x1, y1, e, e1, e2, len)
 int rop;
-unsigned long pixel;
-unsigned long planemask;
+unsigned long and, xor;
 int *addrl;		/* pointer to base of bitmap */
 int nlwidth;		/* width in longwords of bitmap */
 register int signdx;
@@ -53,7 +52,7 @@ int len;		/* length of line */
 #if (PPW == 4)
     register unsigned char *addrb;		/* bitmask long pointer 
 					     	 * cast to char pointer */
-    register unsigned char pix = pixel;
+    register unsigned char pix = xor;
 
     if (len == 0)
     	return;
@@ -72,72 +71,54 @@ int len;		/* length of line */
 	nlwidth = signdx;
 	signdx = t;
     }
-    if ((planemask & PMSK) == PMSK)
+    if (rop == GXcopy)
     {
-    	if (rop == GXcopy)
-    	{
-	    --len;
+	--len;
 #define body {\
-	    	*addrb = pix; \
-	    	addrb += signdx; \
-	    	e += e1; \
-	    	if (e >= 0) \
-	    	{ \
-		    addrb += nlwidth; \
-		    e += e3; \
-	    	} \
-	    }
+	    *addrb = pix; \
+	    addrb += signdx; \
+	    e += e1; \
+	    if (e >= 0) \
+	    { \
+		addrb += nlwidth; \
+		e += e3; \
+	    } \
+	}
 #ifdef LARGE_INSTRUCTION_CACHE
-	    while (len >= 16)
-	    {
-		body body body body
-		body body body body
-		body body body body
-		body body body body
-		len -= 16;
-	    }
-	    switch (len)
-	    {
-	    case 15: body case 14: body case 13: body case 12: body
-	    case 11: body case 10: body case  9: body case  8: body
-	    case  7: body case  6: body case  5: body case  4: body
-	    case  3: body case  2: body case  1: body
-	    }
+	while (len >= 16)
+	{
+	    body body body body
+	    body body body body
+	    body body body body
+	    body body body body
+	    len -= 16;
+	}
+	switch (len)
+	{
+	case 15: body case 14: body case 13: body case 12: body
+	case 11: body case 10: body case  9: body case  8: body
+	case  7: body case  6: body case  5: body case  4: body
+	case  3: body case  2: body case  1: body
+	}
 #else
-	    while (len >= 4)
-	    {
-		body body body body
-		len -= 4;
-	    }
-	    switch (len)
-	    {
-	    case  3: body case  2: body case  1: body
-	    }
+	while (len >= 4)
+	{
+	    body body body body
+	    len -= 4;
+	}
+	switch (len)
+	{
+	case  3: body case  2: body case  1: body
+	}
 #endif
 #undef body
-	    *addrb = pix;
-    	}
-    	else
-    	{
-	    while(len--)
-	    { 
-	    	*addrb = DoRop (rop, pix, *addrb);
-	    	e += e1;
-	    	if (e >= 0)
-	    	{
-		    addrb += nlwidth;
-		    e += e3;
-	    	}
-	    	addrb += signdx;
-	    }
-    	}
+	*addrb = pix;
     }
     else
     {
 	while(len--)
 	{ 
-	    *addrb = *addrb & ~planemask |
-		     DoRop (rop, pix, *addrb) & planemask;
+	    *addrb = DoRRop (*addrb, and, xor);
 	    e += e1;
 	    if (e >= 0)
 	    {
@@ -157,12 +138,9 @@ int len;		/* length of line */
 	    nlwidth = -nlwidth;
     e = e-e1;			/* to make looping easier */
 
-    planemask = PFILL(planemask);
-    pixel = PFILL(pixel);
-
-    leftbit = cfbmask[0] & planemask;
-    rightbit = cfbmask[PPW-1] & planemask;
-    bit = cfbmask[x1 & PIM] & planemask;
+    leftbit = cfbmask[0];
+    rightbit = cfbmask[PPW-1];
+    bit = cfbmask[x1 & PIM];
 
     if (!bit)
 	return;			/* in case planemask == 0 */
@@ -173,8 +151,7 @@ int len;		/* length of line */
 	{
 	    while (len--)
 	    { 
-		tmp = *addrl;
-		*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+		*addrl = DoMaskRRop (*addrl, and, xor, bit);
 		bit = SCRRIGHT(bit,1);
 		e += e1;
 		if (e >= 0)
@@ -193,8 +170,7 @@ int len;		/* length of line */
 	{
 	    while (len--)
 	    { 
-		tmp = *addrl;
-		*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+		*addrl = DoMaskRRop (*addrl, and, xor, bit);
 		e += e1;
 		bit = SCRLEFT(bit,1);
 		if (e >= 0)
@@ -216,8 +192,7 @@ int len;		/* length of line */
 	{
 	    while(len--)
 	    {
-		tmp = *addrl;
-		*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+		*addrl = DoMaskRRop (*addrl, and, xor, bit);
 		e += e1;
 		if (e >= 0)
 		{
@@ -236,8 +211,7 @@ int len;		/* length of line */
 	{
 	    while(len--)
 	    {
-		tmp = *addrl;
-		*addrl = tmp & ~bit | DoRop (rop, pixel, tmp) & bit;
+		*addrl = DoMaskRRop (*addrl, and, xor, bit);
 		e += e1;
 		if (e >= 0)
 		{
