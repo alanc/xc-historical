@@ -1,4 +1,4 @@
-/* $XConsortium: list.h,v 1.3 94/04/17 21:15:16 mor Exp mor $ */
+/* $XConsortium: list.h,v 1.4 94/08/30 17:34:29 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -31,16 +31,6 @@ typedef struct _List {
     void	*thing;
 } List;
 
-#if	0
-extern List *ListInit();
-extern List *ListFirst(List *);
-extern List *ListNext(List *);
-extern void ListFreeAll(List *);
-extern void ListFreeOne(List *);
-extern List *ListAddFirst(List *, void *);
-extern List *ListAddLast(List *, void *);
-extern int ListCount(List *);
-#else
 extern List *ListInit();
 extern List *ListFirst();
 extern List *ListNext();
@@ -51,4 +41,3 @@ extern Status ListSearchAndFreeOne();
 extern List *ListAddFirst();
 extern List *ListAddLast();
 extern int ListCount();
-#endif
