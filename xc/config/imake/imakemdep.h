@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.4 89/11/03 10:25:17 jim Exp $
+ * $XConsortium: imakemdep.h,v 1.5 89/11/13 11:48:33 jim Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -26,7 +26,7 @@
 #endif
 
 #ifdef aix
-#define imake_ccflags "-Daix"
+#define imake_ccflags "-Daix -DSYSV"
 #endif
 
 #ifdef CRAY
