@@ -45,6 +45,7 @@ SOFTWARE.
  */
 #define COMPILEDDEFAULTFONT	"fixed"
 #define COMPILEDCURSORFONT	"cursor"
+#define COMPILEDDISPLAYCLASS	"MIT-unspecified"
 #define DEFAULT_TIMEOUT		60	/* seconds */
 #define DEFAULT_KEYBOARD_CLICK 	0
 #define DEFAULT_BELL		50
