@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: mfbbitblt.c,v 1.45 88/02/02 18:05:19 rws Exp $ */
+/* $Header: mfbbitblt.c,v 1.47 88/07/21 10:25:55 xguest Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -225,6 +225,99 @@ each band.
 translated.
 */
 
+/*
+ * magic macro for copying longword aligned regions
+ */
+
+#define longcopy(from,to,count)    \
+{ \
+    switch (count & 63) { \
+	do { \
+	  case 0:   *to++ = *from++;	  case 63:  *to++ = *from++; \
+	  case 62:  *to++ = *from++;	  case 61:  *to++ = *from++; \
+	  case 60:  *to++ = *from++;	  case 59:  *to++ = *from++; \
+	  case 58:  *to++ = *from++;	  case 57:  *to++ = *from++; \
+	  case 56:  *to++ = *from++;	  case 55:  *to++ = *from++; \
+	  case 54:  *to++ = *from++;	  case 53:  *to++ = *from++; \
+	  case 52:  *to++ = *from++;	  case 51:  *to++ = *from++; \
+	  case 50:  *to++ = *from++;	  case 49:  *to++ = *from++; \
+	  case 48:  *to++ = *from++;	  case 47:  *to++ = *from++; \
+	  case 46:  *to++ = *from++;	  case 45:  *to++ = *from++; \
+	  case 44:  *to++ = *from++;	  case 43:  *to++ = *from++; \
+	  case 42:  *to++ = *from++;	  case 41:  *to++ = *from++; \
+	  case 40:  *to++ = *from++;	  case 39:  *to++ = *from++; \
+	  case 38:  *to++ = *from++;	  case 37:  *to++ = *from++; \
+	  case 36:  *to++ = *from++;	  case 35:  *to++ = *from++; \
+	  case 34:  *to++ = *from++;	  case 33:  *to++ = *from++; \
+	  case 32:  *to++ = *from++;	  case 31:  *to++ = *from++; \
+	  case 30:  *to++ = *from++;	  case 29:  *to++ = *from++; \
+	  case 28:  *to++ = *from++;	  case 27:  *to++ = *from++; \
+	  case 26:  *to++ = *from++;	  case 25:  *to++ = *from++; \
+	  case 24:  *to++ = *from++;	  case 23:  *to++ = *from++; \
+	  case 22:  *to++ = *from++;	  case 21:  *to++ = *from++; \
+	  case 20:  *to++ = *from++;	  case 19:  *to++ = *from++; \
+	  case 18:  *to++ = *from++;	  case 17:  *to++ = *from++; \
+	  case 16:  *to++ = *from++;	  case 15:  *to++ = *from++; \
+	  case 14:  *to++ = *from++;	  case 13:  *to++ = *from++; \
+	  case 12:  *to++ = *from++;	  case 11:  *to++ = *from++; \
+	  case 10:  *to++ = *from++;	  case 9:   *to++ = *from++; \
+	  case 8:   *to++ = *from++;	  case 7:   *to++ = *from++; \
+	  case 6:   *to++ = *from++;	  case 5:   *to++ = *from++; \
+	  case 4:   *to++ = *from++;	  case 3:   *to++ = *from++; \
+	  case 2:   *to++ = *from++;	  case 1:   *to++ = *from++; \
+	} while ((count -= 64) > 0); \
+    } \
+}
+
+
+#define longRop(alu, from,to,count)    \
+{ \
+    switch (count & 63) { \
+	do { \
+	  case 0:   *to++ = DoRop (alu, *from++, *to);	  case 63:  *to++ = DoRop (alu, *from++, *to); \
+	  case 62:  *to++ = DoRop (alu, *from++, *to);	  case 61:  *to++ = DoRop (alu, *from++, *to); \
+	  case 60:  *to++ = DoRop (alu, *from++, *to);	  case 59:  *to++ = DoRop (alu, *from++, *to); \
+	  case 58:  *to++ = DoRop (alu, *from++, *to);	  case 57:  *to++ = DoRop (alu, *from++, *to); \
+	  case 56:  *to++ = DoRop (alu, *from++, *to);	  case 55:  *to++ = DoRop (alu, *from++, *to); \
+	  case 54:  *to++ = DoRop (alu, *from++, *to);	  case 53:  *to++ = DoRop (alu, *from++, *to); \
+	  case 52:  *to++ = DoRop (alu, *from++, *to);	  case 51:  *to++ = DoRop (alu, *from++, *to); \
+	  case 50:  *to++ = DoRop (alu, *from++, *to);	  case 49:  *to++ = DoRop (alu, *from++, *to); \
+	  case 48:  *to++ = DoRop (alu, *from++, *to);	  case 47:  *to++ = DoRop (alu, *from++, *to); \
+	  case 46:  *to++ = DoRop (alu, *from++, *to);	  case 45:  *to++ = DoRop (alu, *from++, *to); \
+	  case 44:  *to++ = DoRop (alu, *from++, *to);	  case 43:  *to++ = DoRop (alu, *from++, *to); \
+	  case 42:  *to++ = DoRop (alu, *from++, *to);	  case 41:  *to++ = DoRop (alu, *from++, *to); \
+	  case 40:  *to++ = DoRop (alu, *from++, *to);	  case 39:  *to++ = DoRop (alu, *from++, *to); \
+	  case 38:  *to++ = DoRop (alu, *from++, *to);	  case 37:  *to++ = DoRop (alu, *from++, *to); \
+	  case 36:  *to++ = DoRop (alu, *from++, *to);	  case 35:  *to++ = DoRop (alu, *from++, *to); \
+	  case 34:  *to++ = DoRop (alu, *from++, *to);	  case 33:  *to++ = DoRop (alu, *from++, *to); \
+	  case 32:  *to++ = DoRop (alu, *from++, *to);	  case 31:  *to++ = DoRop (alu, *from++, *to); \
+	  case 30:  *to++ = DoRop (alu, *from++, *to);	  case 29:  *to++ = DoRop (alu, *from++, *to); \
+	  case 28:  *to++ = DoRop (alu, *from++, *to);	  case 27:  *to++ = DoRop (alu, *from++, *to); \
+	  case 26:  *to++ = DoRop (alu, *from++, *to);	  case 25:  *to++ = DoRop (alu, *from++, *to); \
+	  case 24:  *to++ = DoRop (alu, *from++, *to);	  case 23:  *to++ = DoRop (alu, *from++, *to); \
+	  case 22:  *to++ = DoRop (alu, *from++, *to);	  case 21:  *to++ = DoRop (alu, *from++, *to); \
+	  case 20:  *to++ = DoRop (alu, *from++, *to);	  case 19:  *to++ = DoRop (alu, *from++, *to); \
+	  case 18:  *to++ = DoRop (alu, *from++, *to);	  case 17:  *to++ = DoRop (alu, *from++, *to); \
+	  case 16:  *to++ = DoRop (alu, *from++, *to);	  case 15:  *to++ = DoRop (alu, *from++, *to); \
+	  case 14:  *to++ = DoRop (alu, *from++, *to);	  case 13:  *to++ = DoRop (alu, *from++, *to); \
+	  case 12:  *to++ = DoRop (alu, *from++, *to);	  case 11:  *to++ = DoRop (alu, *from++, *to); \
+	  case 10:  *to++ = DoRop (alu, *from++, *to);	  case 9:   *to++ = DoRop (alu, *from++, *to); \
+	  case 8:   *to++ = DoRop (alu, *from++, *to);	  case 7:   *to++ = DoRop (alu, *from++, *to); \
+	  case 6:   *to++ = DoRop (alu, *from++, *to);	  case 5:   *to++ = DoRop (alu, *from++, *to); \
+	  case 4:   *to++ = DoRop (alu, *from++, *to);	  case 3:   *to++ = DoRop (alu, *from++, *to); \
+	  case 2:   *to++ = DoRop (alu, *from++, *to);	  case 1:   *to++ = DoRop (alu, *from++, *to); \
+	} while ((count -= 64) > 0); \
+    } \
+}
+
+#define getunalignedword(psrc, x, dst) \
+{ \
+    int m; \
+    m = 32-(x); \
+    (dst) = (SCRLEFT(*(psrc), (x)) & endtab[m]) | \
+        (SCRRIGHT(*((psrc)+1), m) & starttab[m]); \
+}
+
 mfbDoBitblt(pSrcDrawable, pDstDrawable, alu, prgnDst, pptSrc)
 DrawablePtr pSrcDrawable;
 DrawablePtr pDstDrawable;
@@ -254,7 +347,7 @@ DDXPointPtr pptSrc;
     register unsigned int *pdst;/* pointer to current dst longword */
 
 				/* following used for looping through a line */
-    int startmask, endmask;	/* masks for writing ends of dst */
+    unsigned int startmask, endmask;	/* masks for writing ends of dst */
     int nlMiddle;		/* whole longwords in dst */
     register int nl;		/* temp copy of nlMiddle */
     register unsigned int tmpSrc;
@@ -472,13 +565,24 @@ DDXPointPtr pptSrc;
 			        psrc++;
 		        }
 
-		        nl = nlMiddle;
-		        while (nl--)
-		        {
-			    getbits(psrc, xoffSrc, 32, tmpSrc)
-			    *pdst++ = tmpSrc;
-			    psrc++;
-		        }
+			/* special case for aligned copies (scrolling) */
+			if (xoffSrc == 0)
+			{
+			    
+			    if ((nl = nlMiddle) != 0)
+			    {
+				longcopy (psrc, pdst, nl)
+			    }
+			}
+ 			else
+			{
+			    nl = nlMiddle + 1;
+			    while (--nl)
+		            {
+				getunalignedword (psrc, xoffSrc, *pdst++);
+				psrc++;
+			    }
+			}
 
 		        if (endmask)
 		        {
@@ -511,12 +615,11 @@ DDXPointPtr pptSrc;
 			    putbits(tmpSrc, 0, nend, pdst)
 		        }
 
-		        nl = nlMiddle;
-		        while (nl--)
+		        nl = nlMiddle + 1;
+		        while (--nl)
 		        {
 			    --psrc;
-			    getbits(psrc, xoffSrc, 32, tmpSrc)
-			    *--pdst = tmpSrc;
+			    getunalignedword (psrc, xoffSrc, *--pdst)
 		        }
 
 		        if (startmask)
@@ -611,14 +714,24 @@ DDXPointPtr pptSrc;
 			        psrc++;
 		        }
 
-		        nl = nlMiddle;
-		        while (nl--)
-		        {
-			    getbits(psrc, xoffSrc, 32, tmpSrc)
-			    *pdst = DoRop(alu, tmpSrc, *pdst);
-			    pdst++;
-			    psrc++;
-		        }
+			/* special case for aligned operations */
+			if (xoffSrc == 0)
+			{
+			    if ((nl = nlMiddle) != 0)
+			    {
+				longRop (alu, psrc, pdst, nl)
+			    }
+			}
+ 			else
+			{
+			    nl = nlMiddle + 1;
+			    while (--nl)
+		            {
+				getunalignedword (psrc, xoffSrc, tmpSrc)
+				*pdst++ = DoRop (alu, tmpSrc, *pdst);
+				psrc++;
+			    }
+			}
 
 		        if (endmask)
 		        {
@@ -651,12 +764,12 @@ DDXPointPtr pptSrc;
 			    putbitsrop(tmpSrc, 0, nend, pdst, alu)
 		        }
 
-		        nl = nlMiddle;
-		        while (nl--)
+		        nl = nlMiddle + 1;
+		        while (--nl)
 		        {
 			    --psrc;
 			    --pdst;
-			    getbits(psrc, xoffSrc, 32, tmpSrc)
+			    getunalignedword(psrc, xoffSrc, tmpSrc)
 			    *pdst = DoRop(alu, tmpSrc, *pdst);
 		        }
 
