@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.175 93/08/22 19:31:02 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.177 93/09/15 10:02:18 gildea Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -39,6 +39,9 @@ without express or implied warranty.
 /* these pointers get initialized by XInitThreads */
 void (*_XLockMutex_fn)() = NULL;
 void (*_XUnlockMutex_fn)() = NULL;
+xthread_t (*_Xthread_self_fn)() = NULL;
+
+#define XThread_Self()		(_Xthread_self_fn ? (*_Xthread_self_fn)() : NULL)
 
 #define UnlockNextReplyReader(d) if ((d)->lock_fns) \
     (*(d)->lock_fns->pop_reader)((d), &(d)->lock->reply_awaiters,&(d)->lock->reply_awaiters_tail)
@@ -193,7 +196,7 @@ _XWaitForWritable(dpy
 	   we (i.e., our cv) are not at the head of it, then whoever
 	   is at the head is the reader, and we don't read.
 	   Otherwise there is no reply_awaiters or we are at the
-	   head it, having just appended ourselves.
+	   head, having just appended ourselves.
 	   In this case, if there is a event_awaiters, then whoever
 	   is at the head of it got there before we did, and they are the
 	   reader.
@@ -233,10 +236,11 @@ _XWaitForWritable(dpy
 	} while (nfound <= 0);
 
 #ifdef USE_POLL
-	if (filedes.revents & POLLIN) {
+	if (filedes.revents & POLLIN)
 #else
-	if (_XANYSET(r_mask)) {
+	if (GETBIT(r_mask,f dpy->fd))
 #endif
+	{
 	    _XAlignedBuffer buf;
 	    int pend;
 	    register int len;
@@ -279,53 +283,167 @@ _XWaitForWritable(dpy
 #ifdef USE_POLL
 	if (filedes.revents & POLLOUT)
 #else
-	if (_XANYSET(w_mask))
+	if (GETBIT(w_mask, dpy->fd))
 #endif
 	    return;
     }
 }
 
 
+#define POLLFD_CACHE_SIZE 5
+
+/* initialize the struct array passed to poll() below */
+Bool _XPollfdCacheInit(dpy)
+    Display *dpy;
+{
+#ifdef USE_POLL
+    struct pollfd *pfp;
+
+    pfp = (struct pollfd *)Xmalloc(POLLFD_CACHE_SIZE * sizeof(struct pollfd));
+    if (!pfp)
+	return False;
+    pfp[0].fd = dpy->fd;
+    pfp[0].events = POLLIN;
+
+    dpy->filedes = (XPointer)pfp;
+#endif
+    return True;
+}
+
+void _XPollfdCacheAdd(dpy, fd)
+    Display *dpy;
+    int fd;
+{
+#ifdef USE_POLL
+    struct pollfd *pfp = (struct pollfd *)dpy->filedes;
+
+    if (dpy->im_fd_length <= POLLFD_CACHE_SIZE) {
+	pfp[dpy->im_fd_length].fd = fd;
+	pfp[dpy->im_fd_length].events = POLLIN;
+    }
+#endif
+}
+
+/* ARGSUSED */
+void _XPollfdCacheDel(dpy, fd)
+    Display *dpy;
+    int fd;			/* not used */
+{
+#ifdef USE_POLL
+    struct pollfd *pfp = (struct pollfd *)dpy->filedes;
+    struct _XConnectionInfo *conni;
+
+    /* just recalculate whole list */
+    if (dpy->im_fd_length <= POLLFD_CACHE_SIZE) {
+	int loc = 1;
+	for (conni = dpy->im_fd_info; conni; conni=conni->next) {
+	    pfp[loc].fd = conni->fd;
+	    pfp[loc].events = POLLIN;
+	    loc++;
+	}
+    }
+#endif
+}
+
 static void
 _XWaitForReadable(dpy)
   Display *dpy;
 {
 #ifdef USE_POLL
-    struct pollfd filedes;
+    struct pollfd *filedes;
 #else
     FdSet r_mask;
 #endif
     int result;
     int fd = dpy->fd;
-	
+    int highest_fd = fd;
+    struct _XConnectionInfo *ilist;  
+
 #ifdef USE_POLL
-    filedes.fd = fd;
-    filedes.events = 0;
+    if (dpy->im_fd_length + 1 > POLLFD_CACHE_SIZE && !dpy->in_process_conni) {
+	/* XXX - this fallback is gross */
+	int i;
+
+	filedes = (struct pollfd *)Xmalloc(dpy->im_fd_length * sizeof(struct pollfd));
+	filedes[0].fd = fd;
+	filedes[0].events = POLLIN;
+	for (ilist=dpy->im_fd_info, i=1; ilist; ilist=ilist->next, i++) {
+	    filedes[i].fd = ilist->fd;
+	    filedes[i].events = POLLIN;
+	}
+    } else {
+	filedes = (struct pollfd *)dpy->filedes;
+    }
 #else
     CLEARBITS(r_mask);
 #endif
-    do {
-#ifdef USE_POLL
-	filedes.events = POLLIN;
-#else
+    for (;;) {
+#ifndef USE_POLL
 	BITSET(r_mask, fd);
+	if (!dpy->in_process_conni)
+	    for (ilist=dpy->im_fd_info; ilist; ilist=ilist->next) {
+		BITSET(r_mask, ilist->fd);
+		if (ilist->fd > highest_fd)
+		    highest_fd = ilist->fd;
+	    }
 #endif
 	UnlockDisplay(dpy);
 #ifdef USE_POLL
-	result = poll(&filedes, 1, -1);
+	result = poll(filedes,
+		      dpy->in_process_conni ? 1 : 1+dpy->im_fd_length,
+		      -1);
 #else
 #ifdef WIN32
 	result = select (0, &r_mask, NULL, NULL, NULL);
 #else
-	result = select(fd + 1, r_mask, NULL, NULL, NULL);
+	result = select(highest_fd + 1, r_mask, NULL, NULL, NULL);
 #endif
 #endif
 	LockDisplay(dpy);
 	if (result == -1 && !ECHECK(EINTR)) _XIOError(dpy);
-    } while (result <= 0);
+	if (result <= 0)
+	    continue;
+#ifdef USE_POLL
+	if (filedes[0].revents & POLLIN)
+	    break;
+	if (!dpy->in_process_conni) {
+	    int i;
+	    struct _XConnectionInfo *ilist;  
+
+	    for (ilist=dpy->im_fd_info, i=1; ilist; ilist=ilist->next, i++) {
+		if (filedes[i].revents & POLLIN) {
+		    /* equivalent to XProcessInternalConnection,
+		       but more efficient */
+		    dpy->in_process_conni = True;
+		    UnlockDisplay(dpy);
+		    (*ilist->read_callback) (dpy, ilist->fd, ilist->call_data);
+		    LockDisplay(dpy);
+		    dpy->in_process_conni = False;
+		}
+	    }
+	    if (dpy->im_fd_length + 1 > POLLFD_CACHE_SIZE)
+		Xfree(filedes);
+	}
+#else
+	if (GETBIT(r_mask, fd))
+	    break;
+	if (!dpy->in_process_conni)
+	    for (ilist=dpy->im_fd_info; ilist; ilist=ilist->next) {
+		if (FD_ISSET(ilist->fd, (struct fd_set*)(r_mask))) {
+		    /* equivalent to XProcessInternalConnection,
+		       but more efficient */
+		    dpy->in_process_conni = True;
+		    UnlockDisplay(dpy);
+		    (*ilist->read_callback) (dpy, ilist->fd, ilist->call_data);
+		    LockDisplay(dpy);
+		    dpy->in_process_conni = False;
+		}
+	    }
+#endif
+    }
 #ifdef XTHREADS
 #ifdef XTHREADS_DEBUG
-    printf("thread %x _XWaitForReadable returning\n", xthread_self());
+    printf("thread %x _XWaitForReadable returning\n", XThread_Self());
 #endif
 #endif
 }
@@ -428,7 +546,7 @@ _XEventsQueued (dpy, mode)
 	struct _XCVList *cvl;
 
 #ifdef XTHREADS_DEBUG
-	printf("_XEventsQueued called in thread %x\n", xthread_self());
+	printf("_XEventsQueued called in thread %x\n", XThread_Self());
 #endif
 #endif /* XTHREADS*/
 
@@ -598,16 +716,25 @@ _XReadEvents(dpy)
 	Bool not_yet_flushed = True;
 	char *read_buf;
 #ifdef XTHREADS
-	struct _XCVList *cvl;
+	struct _XCVList *cvl = NULL;
 	int entry_event_serial_num;
 	Bool first_time = True;
+	xthread_t self;
 
 #ifdef XTHREADS_DEBUG
 	printf("_XReadEvents called in thread %x\n",
-	       xthread_self());
+	       XThread_Self());
 #endif
-	/* create our condition variable and append to list */
-	cvl = QueueEventReaderLock(dpy);
+	/* create our condition variable and append to list,
+	 * unless we were called from within XProcessInternalConnection
+	 */
+	xthread_clear_id(self);
+	if (dpy->lock && dpy->lock->conni_thread)
+	    /* some thread is in XProcessInternalConnection,
+	       so we have to see if it is us */
+	    self = XThread_Self();
+	if (!xthread_have_id(self)  ||  self != dpy->lock->conni_thread)
+	    cvl = QueueEventReaderLock(dpy);
 
 	/* note which events we have already seen so we'll know
 	   if _XReply (in another thread) reads one */
@@ -619,7 +746,7 @@ _XReadEvents(dpy)
 #ifdef XTHREADS
 	    /* if it is not our turn to read an event off the wire,
 	       wait til we're at head of list */
-	    if (first_time && dpy->lock &&
+	    if (first_time && dpy->lock && cvl &&
 		(dpy->lock->event_awaiters != cvl || dpy->lock->reply_awaiters)) {
 		ConditionWait(dpy, cvl);
 	    }
@@ -682,9 +809,16 @@ _XReadEvents(dpy)
 		len = (len / SIZEOF(xEvent)) * SIZEOF(xEvent);
 	    }
 
-	    _XRead (dpy, read_buf, (long) len);
-
 #ifdef XTHREADS
+	    if (xthread_have_id(self))
+		/* save value we may have to stick in conni_thread */
+		dpy->lock->reading_thread = self;
+#endif /* XTHREADS */
+	    _XRead (dpy, read_buf, (long) len);
+#ifdef XTHREADS
+	    if (xthread_have_id(self))
+		xthread_clear_id(dpy->lock->reading_thread);
+
 	    /* what did we actually read: reply or event? */
 	    if (dpy->lock && dpy->lock->reply_awaiters) {
 		if (((xReply *)read_buf)->generic.type == X_Reply)
@@ -699,7 +833,7 @@ _XReadEvents(dpy)
 		} else if (read_buf != buf.buf)
 		    memcpy(buf.buf, read_buf, len);
 	    }
-#endif /* XTHREADS*/
+#endif /* XTHREADS */
 
 	    STARTITERATE(rep,xReply,buf.buf,len > 0) {
 		if (rep->generic.type == X_Reply) {
@@ -1178,7 +1312,7 @@ Status _XReply (dpy, rep, extra, discard)
 
 #ifdef XTHREADS_DEBUG
     printf("_XReply called in thread %x, adding %x to cvl\n",
-	   xthread_self(), cvl);
+	   XThread_Self(), cvl);
 #endif
 
     _XFlushInt(dpy, cvl ? cvl->cv : NULL);
@@ -1344,7 +1478,7 @@ _XAsyncReply(dpy, rep, buf, lenp, discard)
 		       dpy->last_request_read);
 #ifdef XTHREADS
 #ifdef XTHREADS_DEBUG
-	printf("thread %x, unexpected async reply\n", xthread_self());
+	printf("thread %x, unexpected async reply\n", XThread_Self());
 #endif
 #endif
 	if (len > *lenp)
@@ -1375,6 +1509,309 @@ _XAsyncReply(dpy, rep, buf, lenp, discard)
     }
     return nbuf;
 }
+
+/*
+ * Support for internal connections, such as an IM might use.
+ * By Stephen Gildea, X Consortium, September 1993
+ */
+
+/* _XRegisterInternalConnection
+ * Each IM (or Xlib extension) that opens a file descriptor that Xlib should
+ * include in its select/poll mask must call this function to register the
+ * fd with Xlib.  Any XConnectionWatchProc registered by XAddConnectionWatch
+ * will also be called.
+ *
+ * Whenever Xlib detects input available on fd, it will call callback
+ * with call_data to process it.  If non-Xlib code calls select/poll
+ * and detects input available, it must call XProcessInternalConnection,
+ * which will call the associated callback.
+ *
+ * Non-Xlib code can learn about these additional fds by calling
+ * XInternalConnectionNumbers or, more typically, by registering
+ * a XConnectionWatchProc with XAddConnectionWatch
+ * to be called when fds are registered or unregistered.
+ *
+ * Returns True if registration succeeded, False if not, typically
+ * because could not allocate memory.
+ * Assumes Display locked when called.
+ */
+#if NeedFunctionPrototypes
+Status _XRegisterInternalConnection(
+    Display* dpy,
+    int fd,
+    _XInternalConnectionProc callback,
+    XPointer call_data
+)
+#else
+Status
+_XRegisterInternalConnection(dpy, fd, callback, call_data)
+    Display *dpy;
+    int fd;
+    _XInternalConnectionProc callback;
+    XPointer call_data;
+#endif
+{
+    struct _XConnectionInfo *new_conni;
+    struct _XConnWatchInfo *watchers;
+    XPointer *wd;
+
+    new_conni = (struct _XConnectionInfo*)Xmalloc(sizeof(struct _XConnectionInfo));
+    if (!new_conni)
+	return 0;
+    new_conni->watch_data = (XPointer *)Xmalloc(dpy->watcher_count * sizeof(XPointer));
+    if (!new_conni->watch_data) {
+	Xfree(new_conni);
+	return 0;
+    }
+    new_conni->fd = fd;
+    new_conni->read_callback = callback;
+    new_conni->call_data = call_data;
+
+    /* link new structure into list */
+    new_conni->next = dpy->im_fd_info;
+    dpy->im_fd_info = new_conni;
+    dpy->im_fd_length++;
+    _XPollfdCacheAdd(dpy, fd);
+
+    for (watchers=dpy->conn_watchers, wd=new_conni->watch_data;
+	 watchers;
+	 watchers=watchers->next, wd++) {
+	*wd = NULL;		/* for cleanliness */
+	(*watchers->fn) (dpy, watchers->client_data, fd, True, wd);
+    }
+
+    return 1;
+}
+
+/* _XUnregisterInternalConnection
+ * Each IM (or Xlib extension) that closes a file descriptor previously
+ * registered with _XRegisterInternalConnection must call this function.
+ * Any XConnectionWatchProc registered by XAddConnectionWatch
+ * will also be called.
+ *
+ * Assumes Display locked when called.
+ */
+#if NeedFunctionPrototypes
+void _XUnregisterInternalConnection(
+    Display* dpy,
+    int fd
+)
+#else
+void
+_XUnregisterInternalConnection(dpy, fd)
+    Display *dpy;
+    int fd;
+#endif
+{
+    struct _XConnectionInfo *info_list, *previous=NULL;
+    struct _XConnWatchInfo *watch;
+    XPointer *wd;
+
+    for (info_list=dpy->im_fd_info; info_list; info_list=info_list->next) {
+	if (info_list->fd == fd) {
+	    if (previous)
+		previous->next = info_list->next;
+	    else
+		dpy->im_fd_info = info_list->next;
+	    dpy->im_fd_length--;
+	    for (watch=dpy->conn_watchers, wd=info_list->watch_data;
+		 watch;
+		 watch=watch->next, wd++) {
+		(*watch->fn) (dpy, watch->client_data, fd, False, wd);
+	    }
+	    if (info_list->watch_data)
+		Xfree (info_list->watch_data);
+	    Xfree (info_list);
+	    break;
+	}
+	previous = info_list;
+    }
+    _XPollfdCacheDel(dpy, fd);
+}
+
+/* XInternalConnectionNumbers
+ * Returns an array of fds and an array of corresponding call data.
+ * Typically a XConnectionWatchProc registered with XAddConnectionWatch
+ * will be used instead of this function to discover
+ * additional fds to include in the select/poll mask.
+ *
+ * The list is allocated with Xmalloc and should be freed by the caller
+ * with Xfree;
+ */
+#if NeedFunctionPrototypes
+Status XInternalConnectionNumbers(
+    Display *dpy,
+    int **fd_return,
+    int *count_return
+)
+#else
+Status
+XInternalConnectionNumbers(dpy, fd_return, count_return)
+    Display *dpy;
+    int **fd_return;
+    int *count_return;
+#endif
+{
+    int count;
+    struct _XConnectionInfo *info_list;
+    int *fd_list;
+
+    LockDisplay(dpy);
+    count = 0;
+    for (info_list=dpy->im_fd_info; info_list; info_list=info_list->next)
+	count++;
+    fd_list = (int*) Xmalloc (count * sizeof(int));
+    if (!fd_list) {
+	UnlockDisplay(dpy);
+	return 0;
+    }
+    count = 0;
+    for (info_list=dpy->im_fd_info; info_list; info_list=info_list->next) {
+	fd_list[count] = info_list->fd;
+	count++;
+    }
+    UnlockDisplay(dpy);
+
+    *fd_return = fd_list;
+    *count_return = count;
+    return 1;
+}
+
+/* XProcessInternalConnection
+ * Call the _XInternalConnectionProc registered by _XRegisterInternalConnection
+ * for this fd.
+ * The Display is NOT locked.
+ */
+#if NeedFunctionPrototypes
+void XProcessInternalConnection(
+    Display* dpy,
+    int fd
+)
+#else
+void
+XProcessInternalConnection(dpy, fd)
+    Display *dpy;
+    int fd;
+#endif
+{
+    struct _XConnectionInfo *info_list;
+
+    dpy->in_process_conni = True;
+    for (info_list=dpy->im_fd_info; info_list; info_list=info_list->next) {
+	if (info_list->fd == fd) {
+	    (*info_list->read_callback) (dpy, fd, info_list->call_data);
+	    break;
+	}
+    }
+    dpy->in_process_conni = False;
+}
+
+/* XAddConnectionWatch
+ * Register a callback to be called whenever _XRegisterInternalConnection
+ * or _XUnregisterInternalConnection is called.
+ * Callbacks are called with the Display locked.
+ * If any connections are already registered, the callback is immediately
+ * called for each of them.
+ */
+#if NeedFunctionPrototypes
+Status XAddConnectionWatch(
+    Display* dpy,
+    XConnectionWatchProc callback,
+    XPointer client_data
+)
+#else
+Status
+XAddConnectionWatch(dpy, callback, client_data)
+    Display *dpy;
+    XConnectionWatchProc callback;
+    XPointer client_data;
+#endif
+{
+    struct _XConnWatchInfo *new_watcher;
+    struct _XConnectionInfo *info_list;
+    XPointer *wd_array;
+
+    new_watcher = (struct _XConnWatchInfo*)Xmalloc(sizeof(struct _XConnWatchInfo));
+    if (!new_watcher)
+	return 0;
+    new_watcher->fn = callback;
+    new_watcher->client_data = client_data;
+
+    /* link new structure into list */
+    LockDisplay(dpy);
+    new_watcher->next = dpy->conn_watchers;
+    dpy->conn_watchers = new_watcher;
+    dpy->watcher_count++;
+
+    /* call new watcher on all currently registered fds */
+    for (info_list=dpy->im_fd_info; info_list; info_list=info_list->next) {
+	wd_array = (XPointer *)Xmalloc(dpy->watcher_count * sizeof(XPointer));
+	if (!wd_array)
+	    return 0;
+	if (dpy->watcher_count > 1) {
+	    memcpy(wd_array+1, info_list->watch_data, dpy->watcher_count-1);
+	    Xfree(info_list->watch_data);
+	}
+	/* new element is at front of list now */
+	*wd_array = NULL;	/* for cleanliness */
+	info_list->watch_data = wd_array;
+
+	(*callback) (dpy, client_data, info_list->fd, True, wd_array);
+    }
+
+    UnlockDisplay(dpy);
+    return 1;
+}
+
+/* XRemoveConnectionWatch
+ * Unregister a callback registered by XAddConnectionWatch
+ */ 
+#if NeedFunctionPrototypes
+void XRemoveConnectionWatch(
+    Display* dpy,
+    XConnectionWatchProc callback,
+    XPointer client_data
+)
+#else
+void
+XRemoveConnectionWatch(dpy, callback, client_data)
+    Display *dpy;
+    XConnectionWatchProc callback;
+    XPointer client_data;
+#endif
+{
+    struct _XConnWatchInfo *watch;
+    struct _XConnWatchInfo *previous = NULL;
+    struct _XConnectionInfo *conni;
+    int counter = 0;
+
+    LockDisplay(dpy);
+    for (watch=dpy->conn_watchers; watch; watch=watch->next) {
+	if (watch->fn == callback) {
+	    if (previous)
+		previous->next = watch->next;
+	    else
+		dpy->conn_watchers = watch->next;
+	    Xfree (watch);
+	    dpy->watcher_count--;
+	    /* remove our watch_data for each connection */
+	    for (conni=dpy->im_fd_info; conni; conni=conni->next) {
+		/* don't bother realloc'ing; these arrays are small anyway */
+		/* overlapping */
+		memmove(conni->watch_data+counter,
+			conni->watch_data+counter+1,
+			dpy->watcher_count - counter);
+	    }
+	    break;
+	}
+	previous = watch;
+	counter++;
+    }
+    UnlockDisplay(dpy);
+}
+
+/* end of internal connections support */
+
 
 /* Read and discard "n" 8-bit bytes of data */
 
