@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.214 94/02/24 14:33:38 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.215 94/03/08 23:07:32 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -51,8 +51,6 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define QueueEventReaderLock(d) ((d)->lock ? \
     (*(d)->lock->push_reader)(&(d)->lock->event_awaiters_tail) : NULL)
 
-#define DisplayLockWait(d) if ((d)->lock && (d)->lock->lock_wait) \
-    (*(d)->lock->lock_wait)(d)
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 #define InternalLockDisplay(d,wskip) if ((d)->lock) \
     (*(d)->lock->internal_lock_display)(d,wskip,__FILE__,__LINE__)
@@ -65,7 +63,6 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 
 #define UnlockNextReplyReader(d)   
 #define UnlockNextEventReader(d,c)
-#define DisplayLockWait(d)
 #define InternalLockDisplay(d,wskip)
 
 #endif /* XTHREADS else */ 
@@ -870,7 +867,7 @@ _XReadEvents(dpy)
 	}
 #endif /* XTHREADS*/
 
-	do {
+	for (;;) {
 	    /* find out how much data can be read */
 	    if (_X11TransBytesReadable(dpy->trans_conn, &pend) < 0)
 	    	_XIOError(dpy);
@@ -964,12 +961,25 @@ _XReadEvents(dpy)
 		    INCITERPTR(rep,xReply);
 		    len -= SIZEOF(xReply);
 		}
-	    } ENDITERATE
-	} while (!_XNewerQueuedEvent(dpy, entry_event_serial_num));
+	    } ENDITERATE;
 
-    got_event:
-	UnlockNextEventReader(dpy, cvl);
-	DisplayLockWait(dpy);
+	    if (!_XNewerQueuedEvent(dpy, entry_event_serial_num))
+		continue;
+
+	got_event:
+	    UnlockNextEventReader(dpy, cvl);
+#ifdef XTHREADS
+	    /* If XLockDisplay was called while we were in _XRead,
+	       the thread we just unlocked is that thread,
+	       so we'll have to wait for it. */
+	    if (dpy->lock && dpy->lock->lock_wait) {
+		(*dpy->lock->lock_wait)(dpy);
+		if (!_XNewerQueuedEvent(dpy, entry_event_serial_num))
+		    continue;
+	    }
+#endif
+	    break;
+	}
 }
 
 /* 
