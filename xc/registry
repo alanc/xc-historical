@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.48 91/09/16 17:17:44 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.49 91/09/28 15:35:04 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -716,6 +716,7 @@ Value	Name					Reference
 10	Sony Microsystems			[81]
 11	Digital Equipment Corp.			[82]
 12	Network Computing Devices		[66]
+13	ShoGraphics, Inc.			[85]
 
 
 REFERENCES
@@ -1108,3 +1109,8 @@ REFERENCES
 	Crab Advanced Technologies Ltd.
 	First Base, Beacontree Plaza, Gillette Way
 	Reading, RG2 0BP
+
+[85]	Ken Garnett
+	ShoGraphics, Inc.
+	1890 N. Shoreline Blvd.
+	Mountain View, CA 94043
