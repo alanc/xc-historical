@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.49 91/09/12 19:56:02 keith Exp $
+ * $XConsortium: dm.h,v 1.50 91/09/19 16:25:59 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -323,11 +323,11 @@ char *malloc(), *realloc();
 #endif
 #define Setjmp(e)	setjmp(e)
 #define Longjmp(e,v)	longjmp(e,v)
-#define Jmp_buf		sigjmp_buf
+#define Jmp_buf		jmp_buf
 #else
 #define Setjmp(e)   sigsetjmp(e,1)
 #define Longjmp(e,v)	siglongjmp(e,v)
-#define Jmp_buf		jmp_buf
+#define Jmp_buf		sigjmp_buf
 #endif
 
 SIGVAL (*Signal())();
