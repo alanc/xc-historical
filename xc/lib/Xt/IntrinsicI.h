@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicI.h,v 1.50 93/09/03 09:57:15 kaleb Exp $ */
+/* $XConsortium: IntrinsicI.h,v 1.51 93/09/18 18:19:04 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -104,13 +104,13 @@ SOFTWARE.
     else if (size == sizeof(short))			    \
 	*((short *) (dst)) = *((short *) (src));	    \
     else						    \
-	memmove((char *) (dst), (char *) (src), (int) (size));
+	(void) memcpy((char *) (dst), (char *) (src), (int) (size))
 
 #define XtMemset(dst, val, size)			    \
     if (size == sizeof(int))				    \
 	*((int *) (dst)) = val;				    \
     else						    \
-	memset((char *) (dst), (int) val, (int) (size));
+	(void) memset((char *) (dst), (int) val, (int) (size))
 
 #define XtMemcmp(b1, b2, size)				    \
     (size == sizeof(int) ?				    \
@@ -121,10 +121,10 @@ SOFTWARE.
 #else
 
 #define XtMemmove(src, dst, size)	\
-	memcpy((char *) (src), (char *) (dst), (int) (size));
+	(void) memcpy((char *) (src), (char *) (dst), (int) (size))
 
 #define XtMemset(dst, val, size) 	\
-	memset((char *) (dst), (int) val, (int) (size));
+	(void) memset((char *) (dst), (int) val, (int) (size))
 
 #define XtMemcmp(b1, b2, size) 		\
 	memcmp((char *) (b1), (char *) (b2), (int) (size))
