@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.106 89/07/21 14:00:28 keith Exp $ */
+/* $XConsortium: connection.c,v 1.107 89/07/31 16:57:23 keith Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -126,6 +126,7 @@ extern int AutoResetServer();
 extern int GiveUp();
 extern XID CheckAuthorization();
 static void CloseDownFileDescriptor(), ErrorConnMax();
+extern void FreeOsBuffers();
 
 #ifdef TCPCONN
 static int
@@ -471,8 +472,6 @@ EstablishNewConnections()
     register int i;
     register ClientPtr client;
     register OsCommPtr oc;
-    char *ibuf;
-    unsigned char *obuf;
 
 #ifdef TCP_NODELAY
     union {
@@ -537,14 +536,10 @@ EstablishNewConnections()
 #else
 	fcntl (newconn, F_SETFL, FNDELAY);
 #endif /* hpux */
-	oc =  (OsCommPtr)xalloc(sizeof(OsCommRec));
-	ibuf = (char *)xalloc(BUFSIZE);
-	obuf = (unsigned char *) xalloc(OutputBufferSize);
-	if (!oc || !ibuf || !obuf)
+	oc = (OsCommPtr)xalloc(sizeof(OsCommRec));
+	if (!oc)
 	{
 	    xfree(oc);
-	    xfree(ibuf);
-	    xfree(obuf);
 	    ErrorConnMax(newconn);
 	    close(newconn);
 	    continue;
@@ -560,14 +555,8 @@ EstablishNewConnections()
 	    BITSET(AllSockets, newconn);
 	}
 	oc->fd = newconn;
-	oc->input.size = BUFSIZE;
-	oc->input.buffer = ibuf;
-	oc->input.bufptr = oc->input.buffer;
-	oc->input.bufcnt = 0;
-	oc->input.lenLastReq = 0;
-	oc->output.size = OutputBufferSize;
-	oc->output.buf = obuf;
-	oc->output.count = 0;
+	oc->input = (ConnectionInputPtr)NULL;
+	oc->output = (ConnectionOutputPtr)NULL;
 	oc->conn_time = connect_time;
 	if ((newconn < lastfdesc) &&
 	    (client = NextAvailableClient((pointer)oc)))
@@ -646,11 +635,7 @@ CloseDownFileDescriptor(oc)
     int connection = oc->fd;
 
     close(connection);
-    if (oc->input.buffer)
-	xfree(oc->input.buffer);
-    if (oc->output.buf)
-	xfree(oc->output.buf);
-
+    FreeOsBuffers(oc);
     BITCLEAR(AllSockets, connection);
     BITCLEAR(AllClients, connection);
     BITCLEAR(ClientsWithInput, connection);
@@ -718,7 +703,7 @@ CloseDownConnection(client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
 
-    if (oc->output.count)
+    if (oc->output && oc->output->count)
 	FlushClient(client, oc, (char *)NULL, 0);
     ConnectionTranslation[oc->fd] = 0;
     CloseDownFileDescriptor(oc);
