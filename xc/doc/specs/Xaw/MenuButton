@@ -133,7 +133,7 @@ all 1's in the \fBbitmap\fP.
 .ns
 .IP width 1.5i
 The height and width of this widget in pixels.
-.IP highlightThickness
+.IP highlightThickness 1.5i
 The thickness of the rectangle that is used to highlight a the button
 alerting the user that it is ready to be selected.  The default value is
 2 pixels if the \fBshapeStyle\fP is \fBrectangle\fP, and 0 Pixels (no
