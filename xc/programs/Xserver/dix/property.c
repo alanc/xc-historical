@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: property.c,v 1.53 87/08/20 16:29:17 toddb Locked $ */
+/* $Header: property.c,v 1.54 87/08/21 14:21:10 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -153,9 +153,9 @@ ProcChangeProperty(client)
     REQUEST_AT_LEAST_SIZE(xChangePropertyReq);
     format = stuff->format;
     mode = stuff->mode;
-    if ((mode != PropModeReplace) && (mode != PropModeAppend) &&
-	(mode != PropModePrepend) && (format != 8) &&
-	(format != 16) && (format != 32))
+    if (((mode != PropModeReplace) && (mode != PropModeAppend) &&
+	 (mode != PropModePrepend)) 
+    || ((format != 8) && (format != 16) && (format != 32)))
         return BadValue;
 
     pWin = (WindowPtr)LookupWindow(stuff->window, client);
