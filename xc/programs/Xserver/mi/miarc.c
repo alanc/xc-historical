@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miarc.c,v 5.5 89/07/28 12:09:49 rws Exp $ */
+/* $XConsortium: miarc.c,v 5.6 89/08/16 18:48:36 keith Exp $ */
 /* Author: Keith Packard */
 
 #include <math.h>
@@ -1567,12 +1567,16 @@ lengthToAngle (len, map)
 	 * map should be interpolated in reverse
 	 */
 	if (len >= 0) {
+		if (sidelen == 0)
+			return 2 * FULLCIRCLE;	/* infinity */
 		while (len >= sidelen) {
 			angle += 90 * 64;
 			len -= sidelen;
 			oddSide = !oddSide;
 		}
 	} else {
+		if (sidelen == 0)
+			return -2 * FULLCIRCLE;	/* infinity */
 		while (len < 0) {
 			angle -= 90 * 64;
 			len += sidelen;
@@ -1670,9 +1674,10 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
     xArc          tarc;
     miArcFacePtr	right, left;
 {
-	double	x0, y0, x1, y1, w, h;
+	double	x0, y0, x1, y1, w, h, x, y;
+	double	xmax, ymax, xmin, ymin;
 	int	a0, a1;
-	double	startAngle, endAngle;
+	double	a, startAngle, endAngle, da0, da1;
 	double	l;
 
 	l = pGC->lineWidth;
@@ -1693,46 +1698,69 @@ drawZeroArc (pDraw, pGC, tarc, left, right)
 	startAngle = - ((double) a0 / 64.0);
 	endAngle = - ((double) (a0 + a1) / 64.0);
 	
-	x0 = w * miDcos(startAngle);
-	y0 = h * miDsin(startAngle);
-	x1 = w * miDcos(endAngle);
-	y1 = h * miDsin(endAngle);
-
-	if (y0 != y1) {
-		if (y0 < y1) {
-			x0 = -l;
-			x1 = l;
-		} else {
-			x0 = l;
-			x1 = -l;
+	xmax = -w;
+	xmin = w;
+	ymax = -h;
+	ymin = h;
+	a = startAngle;
+	for (;;)
+	{
+		x = w * miDcos(a);
+		y = h * miDsin(a);
+		if (a == startAngle)
+		{
+			x0 = x;
+			y0 = y;
 		}
-	} else {
-		if (x0 < x1) {
-			y0 = -l;
-			y1 = l;
-		} else {
-			y0 = l;
-			y1 = -l;
+		if (a == endAngle)
+		{
+			x1 = x;
+			y1 = y;
+		}
+		if (x > xmax)
+			xmax = x;
+		if (x < xmin)
+			xmin = x;
+		if (y > ymax)
+			ymax = y;
+		if (y < ymin)
+			ymin = y;
+		if (a == endAngle)
+			break;
+		if (a1 < 0)	/* clockwise */
+		{
+			if (floor (a / 90.0) == floor (endAngle / 90.0))
+				a = endAngle;
+			else
+				a = 90 * (floor (a/90.0) + 1);
+		}
+		else
+		{
+			if (ceil (a / 90.0) == ceil (endAngle / 90.0))
+				a = endAngle;
+			else
+				a = 90 * (ceil (a/90.0) - 1);
 		}
 	}
-	if (x1 != x0 && y1 != y0) {
+	x0 = xmin;
+	x1 = xmax;
+	y0 = ymin;
+	y1 = ymax;
+	if (ymin != y1) {
+		xmin = -l;
+		xmax = l;
+	} else {
+		ymin = -l;
+		ymax = l;
+	}
+	if (xmax != xmin && ymax != ymin) {
 		int	minx, maxx, miny, maxy, t;
 		xRectangle  rect;
 
-		minx = ICEIL (x0 + w) + tarc.x;
-		maxx = ICEIL (x1 + w) + tarc.x;
-		if (minx > maxx) {
-			t = minx;
-			minx = maxx;
-			maxx = t;
-		}
-		miny = ICEIL (y0 + h) + tarc.y;
-		maxy = ICEIL (y1 + h) + tarc.y;
-		if (miny > maxy) {
-			t = miny;
-			miny = maxy;
-			maxy = t;
-		}
+		minx = ICEIL (xmin + w) + tarc.x;
+		maxx = ICEIL (xmax + w) + tarc.x;
+		miny = ICEIL (ymin + h) + tarc.y;
+		maxy = ICEIL (ymax + h) + tarc.y;
 		rect.x = minx;
 		rect.y = miny;
 		rect.width = maxx - minx;
