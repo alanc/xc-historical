@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.60 90/12/29 12:16:22 rws Exp $ */
+/* $XConsortium: Display.c,v 1.61 90/12/30 15:04:50 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -254,8 +254,6 @@ XtDisplayInitialize(app, dpy, name, classname, urlist, num_urs, argc, argv)
 	pd->GClist = NULL;
 	pd->pixmap_tab = NULL;
 	pd->rv = False;
-	pd->xa_wm_colormap_windows = None; /* Initialize this to None unless
-					      we need to use it.*/
 	pd->last_timestamp = 0;
 	_XtAllocTMContext(pd);
 	pd->mapping_callbacks = NULL;
