@@ -236,7 +236,7 @@ _default_mapping _default_mappings[] = {
 	 * Window manager types:
 	 */
 	{ XA_WM_COMMAND, "8s", " = { $0+ }\n" },
-	{ XA_WM_HINTS, "32mbcxxxii", ":\n\
+	{ XA_WM_HINTS, "32mbcxxiixx", ":\n\
 ?m0(\t\tClient accepts input or input focus: $1\n)\
 ?m1(\t\tInitial state is \
 ?$2=0(Don't Care State)\
@@ -245,10 +245,11 @@ _default_mapping _default_mappings[] = {
 ?$2=3(Iconic State)\
 ?$2=4(Inactive State)\
 .\n)\
-?m2(\t\tpixmap id # to use for icon: $3\n)\
-?m5(\t\tbitmap id # of mask for icon: $5\n)\
+?m2(\t\tbitmap id # to use for icon: $3\n)\
+?m5(\t\tbitmap id # of mask for icon: $7\n)\
 ?m3(\t\twindow id # to use for icon: $4\n)\
-?m4(\t\tstarting position for icon: $6, $7\n)" },
+?m4(\t\tstarting position for icon: $5, $6\n)\
+?m6(\t\twindow id # of group leader: $8\n)" },
 	{ XA_WM_SIZE_HINTS, "32mii", ":\n\
 ?m0(\t\tuser specified location: $1, $2\n)\
 ?m2(\t\tprogram specified location: $1, $2\n)\
