@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.2 94/07/07 11:19:25 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.3 94/08/25 20:21:57 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium
@@ -306,7 +306,7 @@ char *filename;
     FILE *proxyFile;
     ProxyFileEntry *entry;
     int done = 0;
-    short version;
+    unsigned short version;
 
     proxyFile = fopen (filename, "rb");
     if (!proxyFile)
@@ -334,6 +334,25 @@ char *filename;
 
 
 
+static char *
+unique_filename (path, prefix)
+
+char *path;
+char *prefix;
+
+{
+#ifndef X_NOT_POSIX
+    return ((char *) XtNewString ((char *) tempnam (path, prefix)));
+#else
+    char tempFile[PATH_MAX];
+
+    sprintf (tempFile, "%s/%sXXXXXX", path, prefix);
+    return ((char *) XtNewString ((char *) mktemp (tempFile)));
+#endif
+}
+
+
+
 char *
 WriteProxyFile ()
 
@@ -351,7 +370,7 @@ WriteProxyFile ()
 	    path = ".";
     }
 
-    filename = tempnam (path, ".PRX");
+    filename = unique_filename (path, ".prx");
     proxyFile = fopen (filename, "wb");
 
     if (!write_short (proxyFile, SAVEFILE_VERSION))
