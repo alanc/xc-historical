@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.12 94/04/09 19:38:25 rws Exp gildea $
+XCOMM $XConsortium: Imakefile,v 1.13 94/08/05 16:08:44 gildea Exp matt $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -6,22 +6,9 @@ XCOMM $XConsortium: Imakefile,v 1.12 94/04/09 19:38:25 rws Exp gildea $
 PHIGSDIRS = auto_box beach_ball gpc
 #endif
 
-/*
- * The ixx translator does not build under Sony NEWS-OS because of  
- * limitations in Sony's yacc.  
- */
-
-#if BuildFresco
-#if defined(SonyArchitecture) 
-FRESCODIRS = dish i2mif fdraw
-#else
-FRESCODIRS = dish i2mif ixx fdraw
-#endif
-#endif
-
 SUBDIRS = hterm ico listres maze puzzle showfont viewres xbiff xcalc \
 	xditview xedit xev xeyes xfontsel xgas xgc xload \
-	xman xmessage xpr $(PHIGSDIRS) $(FRESCODIRS)
+	xman xmessage xpr $(PHIGSDIRS) 
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
