@@ -33,11 +33,13 @@ supported pixmap formats:
     depth 8, bits_per_pixel 8, scanline_pad 32
 keycode range:    minimum 8, maximum 129
 focus:  PointerRoot
-number of extensions:    4
-    SHAPE
+number of extensions:    6
     MIT-SHM
-    Multi-Buffering
     MIT-SUNDRY-NONSTANDARD
+    Multi-Buffering
+    SHAPE
+    X3D-PEX
+    XTEST
 default screen number:    0
 number of screens:    2
 
