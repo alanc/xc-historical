@@ -1,0 +1,10 @@
+XCOMM $XConsortium: Imakefile,v 1.2 91/07/17 16:01:33 gildea Exp $
+SRCS = ../util/macros.t protocol.ms
+
+all: fsproto.PS
+
+fsproto.PS:
+	$(TBL) $(SRCS) | $(TROFF) $(MSMACROS) 2> index.raw > fsproto.PS
+
+clean::
+	$(RM) index.raw fsproto.PS
