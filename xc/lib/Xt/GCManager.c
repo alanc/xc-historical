@@ -1,4 +1,4 @@
-/* $XConsortium: GCManager.c,v 1.41 91/06/28 14:27:03 rws Exp $ */
+/* $XConsortium: GCManager.c,v 1.42 91/06/28 16:06:46 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,
@@ -136,7 +136,7 @@ void _XtGClistFree(dpy, pd)
 
 
 /* 
- * Return a read-only GC with the given values.  
+ * Return a GC with the given values and characteristics.
  */
 
 GC XtAllocateGC(widget, depth, valueMask, values, dynamicMask, unusedMask)
