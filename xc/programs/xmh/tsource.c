@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tsource.c,v 1.9 88/01/19 14:43:33 swick Locked $";
+static char rcs_id[] = "$Header: tsource.c,v 2.10 88/01/25 18:26:37 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -30,7 +30,7 @@ static char rcs_id[] = "$Header: tsource.c,v 1.9 88/01/19 14:43:33 swick Locked 
 
 #include "xmh.h"
 #include "tocintrnl.h"
-#include <X/Xatom.h>
+#include <X11/Xatom.h>
 
 /* Private definitions. */
 

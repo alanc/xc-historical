@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: xmh.h,v 1.9 88/01/22 15:01:04 swick Locked $";
+ *	rcs_id[] = "$Header: xmh.h,v 2.9 88/01/22 15:01:04 swick Locked $";
  */
 
 /*
@@ -30,27 +30,23 @@
 #ifndef _xmh_h
 #define _xmh_h
 #include <stdio.h>
-#include <X/Xlib.h>
-#include <X/Xos.h>
-#include <X/Xutil.h>
-#include <X/cursorfont.h>
+#include <X11/Xlib.h>
+#include <X11/Xos.h>
+#include <X11/Xutil.h>
+#include <X11/cursorfont.h>
 
-#include <X/Intrinsic.h>
-#include <X/Atoms.h>
-#include <X/AsciiText.h>
-#include <X/Box.h>
-#include <X/Command.h>
-#include <X/Dialog.h>
-#include <X/Form.h>
-#include <X/Label.h>
-#include <X/Scroll.h>
-#include <X/Shell.h>
-#include <X/Viewport.h>
-#ifdef notdef
-#include <X/TextSrc.h>
-#include <X/Input.h>
-#endif /* notdef */
-#include <X/VPaned.h>
+#include <X11/Intrinsic.h>
+#include <X11/Atoms.h>
+#include <X11/AsciiText.h>
+#include <X11/Box.h>
+#include <X11/Command.h>
+#include <X11/Dialog.h>
+#include <X11/Form.h>
+#include <X11/Label.h>
+#include <X11/Scroll.h>
+#include <X11/Shell.h>
+#include <X11/Viewport.h>
+#include <X11/VPaned.h>
 
 #define DELETEABORTED	-1
 #define MARKPOS		4

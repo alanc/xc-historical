@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: tocutil.c,v 2.10 88/01/25 14:23:19 swick Locked $";
+static char rcs_id[] = "$Header: tocutil.c,v 2.11 88/01/29 13:41:27 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -28,7 +28,7 @@ static char rcs_id[] = "$Header: tocutil.c,v 2.10 88/01/25 14:23:19 swick Locked
 
 /* tocutil.c -- internal routines for toc stuff. */
 
-#include <X/Xos.h>
+#include <X11/Xos.h>
 #include "xmh.h"
 #include "toc.h"
 #include "tocutil.h"
