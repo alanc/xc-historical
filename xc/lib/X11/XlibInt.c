@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.101 89/05/21 15:20:19 rws Exp $
+ * $XConsortium: XlibInt.c,v 1.2 89/06/14 11:03:48 jim Exp $
  */
 
 #include "copyright.h"
@@ -17,48 +17,13 @@
 
 static void _EatData32();
 
-#ifdef CRAY
+#ifdef att
+#include "XIO.h"			/* get connection to server stuff */
+#endif
 
-/*
- * Cray UniCOS does not have readv and writev so we emulate
- */
-#include <sys/socket.h>
-
-static int readv (fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
-{
-	struct msghdr hdr;
-
-	hdr.msg_iov = iov;
-	hdr.msg_iovlen = iovcnt;
-	hdr.msg_accrights = 0;
-	hdr.msg_accrightslen = 0;
-	hdr.msg_name = 0;
-	hdr.msg_namelen = 0;
-
-	return (recvmsg (fd, &hdr, 0));
-}
-
-static int writev (fd, iov, iovcnt)
-int fd;
-struct iovec *iov;
-int iovcnt;
-{
-	struct msghdr hdr;
-
-	hdr.msg_iov = iov;
-	hdr.msg_iovlen = iovcnt;
-	hdr.msg_accrights = 0;
-	hdr.msg_accrightslen = 0;
-	hdr.msg_name = 0;
-	hdr.msg_namelen = 0;
-
-	return (sendmsg (fd, &hdr, 0));
-}
-
-#endif /* CRAY */
+#if defined(CRAY) || defined(att)
+static int readv(), write();
+#endif 
 
 /*
  * The following routines are internal routines used by Xlib for protocol
@@ -1329,6 +1294,9 @@ int _XDefaultError(dpy, event)
     /*NOTREACHED*/
 }
 
+/*
+ * XXX - These should be moved to another file for shared libraries...
+ */
 int (*_XIOErrorFunction)() = _XIOError;
 int (*_XErrorFunction)() = _XDefaultError;
 
@@ -1547,7 +1515,14 @@ int _XGetHostname (buf, maxlen)
 {
     int len;
 
-#ifdef hpux
+#ifdef hpux				/* stupid makedepend [need if] */
+#define NEED_UTSNAME
+#endif
+#ifdef USG
+#define NEED_UTSNAME
+#endif
+
+#ifdef NEED_UTSNAME
 #include <sys/utsname.h>
     /*
      * same host name crock as in server and xinit.
@@ -1595,3 +1570,292 @@ Screen *_XScreenOfWindow (dpy, w)
 }
 
 
+#if (MSKCNT > 4)
+/*
+ * This is a macro if MSKCNT <= 4
+ */
+ANYSET(src)
+    long	*src;
+{
+    int i;
+
+    for (i=0; i<MSKCNT; i++)
+	if (src[ i ])
+	    return (TRUE);
+    return (FALSE);
+}
+#endif
+
+
+#ifdef CRAY
+/*
+ * Cray UniCOS does not have readv and writev so we emulate
+ */
+#include <sys/socket.h>
+
+static int readv (fd, iov, iovcnt)
+int fd;
+struct iovec *iov;
+int iovcnt;
+{
+	struct msghdr hdr;
+
+	hdr.msg_iov = iov;
+	hdr.msg_iovlen = iovcnt;
+	hdr.msg_accrights = 0;
+	hdr.msg_accrightslen = 0;
+	hdr.msg_name = 0;
+	hdr.msg_namelen = 0;
+
+	return (recvmsg (fd, &hdr, 0));
+}
+
+static int writev (fd, iov, iovcnt)
+int fd;
+struct iovec *iov;
+int iovcnt;
+{
+	struct msghdr hdr;
+
+	hdr.msg_iov = iov;
+	hdr.msg_iovlen = iovcnt;
+	hdr.msg_accrights = 0;
+	hdr.msg_accrightslen = 0;
+	hdr.msg_name = 0;
+	hdr.msg_namelen = 0;
+
+	return (sendmsg (fd, &hdr, 0));
+}
+
+#endif /* CRAY */
+
+
+#ifdef USG
+/*
+ * Copyright 1988, 1989 AT&T, Inc.
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose and without fee is hereby granted, provided
+ * that the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the name of AT&T not be used in advertising
+ * or publicity pertaining to distribution of the software without specific,
+ * written prior permission.  AT&T makes no representations about the
+ * suitability of this software for any purpose.  It is provided "as is"
+ * without express or implied warranty.
+ *
+ * AT&T DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL AT&T
+ * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+/*
+ iovec.c (C source file)
+	Acc: 575557389 Mon Mar 28 08:03:09 1988
+	Mod: 575557397 Mon Mar 28 08:03:17 1988
+	Sta: 575557397 Mon Mar 28 08:03:17 1988
+	Owner: 2011
+	Group: 1985
+	Permissions: 664
+*/
+/*
+	START USER STAMP AREA
+*/
+/*
+	END USER STAMP AREA
+*/
+#include "Xstreams.h"
+
+extern char * malloc();
+extern char TypeOfStream[];
+extern Xstream xstream[];
+
+#define MAX_WORKAREA 4096
+static char workarea[MAX_WORKAREA];
+
+/*
+ * XXX - talk about stupid, this should just be a loop instead of mallocing
+ * or copying
+ */
+int
+readv (fd, v, n)
+int		fd;
+struct iovec	v[];
+int		n;
+{
+	int i, rc, len, size = 0;
+	char * buf = workarea;
+	char * p;
+
+	if (n <= 0 || n > 16)
+	{
+		errno = EINVAL;
+		return (-1);
+	}
+	for (i = 0; i < n; ++i)
+	{
+		if ((len = v[i].iov_len) < 0 || v[i].iov_base == NULL)
+		{
+			errno = EINVAL;
+			return (-1);
+		}
+		size += len;
+	}
+	if ((size > MAX_WORKAREA) && ((buf = malloc (size)) == NULL))
+	{
+		errno = EINVAL;
+		return (-1);
+	}
+	if((rc = (*xstream[TypeOfStream[fd]].ReadFromStream)(fd, buf, size,
+							     BUFFERING))> 0)
+	{
+		for (i = 0, p = buf; i < n; ++i)
+		{
+			memcpy (v[i].iov_base, p, len = v[i].iov_len);
+			p += len;
+		}
+	}
+	if (size > MAX_WORKAREA)
+		free (buf);
+
+	return (rc);
+}
+
+/*
+ * XXX - talk about stupid, this should just be a loop instead of mallocing
+ * or copying
+ */
+int
+writev (fd, v, n)
+int fd;
+struct iovec	v[];
+int n;
+{
+	int i, rc, len, size = 0;
+	char * buf = workarea;
+	char * p;
+
+	if (n <= 0 || n > 16)
+	{
+		errno = EINVAL;
+		return (-1);
+	}
+	for (i = 0; i < n; ++i)
+	{
+		if ((len = v[i].iov_len) < 0 || v[i].iov_base == NULL)
+		{
+			errno = EINVAL;
+			return (-1);
+		}
+		size += len;
+	}
+
+	if ((size > MAX_WORKAREA) && ((buf = malloc (size)) == NULL))
+	{
+		errno = EINVAL;
+		return (-1);
+	}
+	for (i = 0, p = buf; i < n; ++i)
+	{
+		memcpy (p, v[i].iov_base, len = v[i].iov_len);
+		p += len;
+	}
+	rc = (*xstream[TypeOfStream[fd]].WriteToStream)(fd, buf, size);
+
+	if (size > MAX_WORKAREA)
+		free (buf);
+
+	return (rc);
+}
+
+
+/*
+#include <sys/time.h>  can't use the regular .h since timezone is an extern
+                       which needs to be defined for shared library
+		       [there is no <sys/time.h> in 3.2]
+*/
+#include "time.h"
+#include <sys/poll.h>
+
+#define POLLERROR		(POLLHUP | POLLNVAL | POLLERR)
+#define PFD(fds, i, x) \
+{ \
+	if (fds) \
+		if (ev & (x)) \
+			BITSET (fds, i); \
+		else \
+			BITCLEAR (fds, i); \
+}
+#define ERROR(x) \
+{ \
+	errno = x; \
+	return -1; \
+}
+/*
+	simulate BSD select system call with SYSV poll system call
+	note that efds parameter is not fully supported (or understood)
+*/
+
+extern long ulimit();
+
+int
+select (nfds, rfds, wfds, efds, timeout)
+int nfds;
+unsigned long *rfds;
+unsigned long *wfds;
+unsigned long *efds;
+struct timeval *timeout;
+{
+	int i, rc, ev, timevalue;
+	struct pollfd pfds[NOFILES_MAX];
+	static long _NOFILE = 0;
+
+	if (_NOFILE == 0)
+		_NOFILE = ulimit(4, (long)0);
+
+ 	if (nfds > _NOFILE)
+		nfds = _NOFILE;   /* make poll happy */
+
+	for (i = 0; i < nfds; i++)
+	{
+		ev = 0;
+
+		if (rfds && GETBIT (rfds, i)) ev |= POLLIN;
+		if (wfds && GETBIT (wfds, i)) ev |= POLLOUT;
+		if (ev || (efds && GETBIT (efds, i)))
+			pfds[i].fd = i;
+		else
+			pfds[i].fd = -1;
+		pfds[i].events = ev;
+	}
+	if (timeout)
+		timevalue = timeout->tv_sec * 1000 + timeout->tv_usec / 1000;
+	else
+		timevalue = -1;
+
+	if ((rc = poll (pfds, (unsigned long)nfds, timevalue)) > 0)
+	{
+		if (!efds)
+			for (i = 0; i < nfds; ++i)
+			{
+				ev = pfds[i].revents;
+				if (ev & POLLERROR)
+					ERROR (EBADF);
+			}
+
+		for (i = 0; i < nfds; ++i)
+		{
+			ev = pfds[i].revents;
+			PFD (rfds, i, POLLIN);
+			PFD (wfds, i, POLLOUT);
+			PFD (efds, i, POLLERROR);
+		}
+	}
+	return rc;
+}
+
+#endif /* USG */

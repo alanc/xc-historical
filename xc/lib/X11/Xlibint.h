@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Xlibint.h,v 11.67 89/06/07 13:44:00 jim Exp $ */
+/* $XConsortium: Xlibint.h,v 1.1 89/06/14 10:54:24 jim Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -14,14 +14,14 @@
 #define _XEVENT_
 #endif
 
-#ifdef CRAY
+#if defined(CRAY) || defined(USG)
 #ifndef __TYPES__
 #define __TYPES__
 #include <sys/types.h>			/* forgot to protect it... */
 #endif /* __TYPES__ */
 #else
 #include <sys/types.h>
-#endif /* CRAY */
+#endif /* CRAY or USG */
 
 /*
  * define the following if you want the Data macro to be a procedure instead
