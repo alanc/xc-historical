@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.12 91/07/05 13:06:38 rws Exp $ */
+/* $XConsortium: Context.c,v 1.13 91/07/30 16:30:39 rws Exp $ */
 /* static char *sccsid = "@(#)Context.c	1.5	2/24/87"; */
 
 
@@ -87,7 +87,6 @@ static void ResizeTable(db)
 	db->table = otable;
 	return;
     }
-    i = db->mask + 1;
     db->mask = i - 1;
     for (pold = otable ; --i >= 0; pold++) {
 	for (entry = *pold; entry; entry = next) {
