@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.75 92/05/29 18:04:45 rws Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.76 92/05/29 18:08:19 rws Exp $
 
 #define OSName            SunOS 4.1.2
 XCOMM operating system:  OSName
@@ -46,7 +46,7 @@ XCOMM operating system:  OSName
 
 #define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 
-#ifdef mc68000
+#ifdef Sun3Architecture
 #define DefaultCCOptions -f68881 -pipe
 #else
 #define DefaultCCOptions -pipe
