@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.2 93/09/08 20:28:53 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.3 93/09/22 11:27:33 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -92,9 +92,9 @@ purpose.  It is provided "as is" without express or implied warranty.
  * EXTRACT FOO
  */
 
-#define EXTRACT_ARRAY8(_pBuf, _len, _array8) \
+#define EXTRACT_ARRAY8(_pBuf, _swap, _len, _array8) \
 { \
-    EXTRACT_CARD32 (_pBuf, _len); \
+    EXTRACT_CARD32 (_pBuf, _swap, _len); \
     _array8 = (char *) malloc (_len + 1); \
     bcopy (_pBuf, _array8, _len); \
     _array8[_len] = '\0'; \
@@ -103,10 +103,10 @@ purpose.  It is provided "as is" without express or implied warranty.
         _pBuf += PAD64 (4 + _len); \
 }
 
-#define EXTRACT_ARRAY8_AS_STRING(_pBuf, _string) \
+#define EXTRACT_ARRAY8_AS_STRING(_pBuf, _swap, _string) \
 { \
     CARD32 _len; \
-    EXTRACT_CARD32 (_pBuf, _len); \
+    EXTRACT_CARD32 (_pBuf, _swap, _len); \
     _string = (char *) malloc (_len + 1); \
     bcopy (_pBuf, _string, _len); \
     _string[_len] = '\0'; \
@@ -115,24 +115,24 @@ purpose.  It is provided "as is" without express or implied warranty.
         _pBuf += PAD64 (4 + _len); \
 }
 
-#define EXTRACT_LISTOF_PROPERTY(_pBuf, _count, _props) \
+#define EXTRACT_LISTOF_PROPERTY(_pBuf, _swap, _count, _props) \
 { \
     int _i, _j; \
-    EXTRACT_CARD32 (_pBuf, _count); \
+    EXTRACT_CARD32 (_pBuf, _swap, _count); \
     _pBuf += 4; \
     _props = (SmProp *) malloc (_count * sizeof (SmProp)); \
     for (_i = 0; _i < _count; _i++) \
     { \
-        EXTRACT_ARRAY8_AS_STRING (_pBuf, _props[_i].name); \
-        EXTRACT_ARRAY8_AS_STRING (_pBuf, _props[_i].type); \
-        EXTRACT_CARD32 (_pBuf, _props[_i].num_vals); \
+        EXTRACT_ARRAY8_AS_STRING (_pBuf, _swap, _props[_i].name); \
+        EXTRACT_ARRAY8_AS_STRING (_pBuf, _swap, _props[_i].type); \
+        EXTRACT_CARD32 (_pBuf, _swap, _props[_i].num_vals); \
         _pBuf += 4; \
         _props[_i].vals = (SmPropValue *) malloc ( \
 	    _props[_i].num_vals * sizeof (SmPropValue)); \
         for (_j = 0; _j < _props[_i].num_vals; _j++) \
 	{ \
 	    char *_temp; \
-            EXTRACT_ARRAY8 (_pBuf, _props[_i].vals[_j].length, _temp); \
+            EXTRACT_ARRAY8 (_pBuf, _swap, _props[_i].vals[_j].length, _temp); \
 	    _props[_i].vals[_j].value = (SmPointer) _temp; \
 	} \
     } \

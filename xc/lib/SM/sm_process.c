@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.5 93/09/13 16:53:22 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.6 93/09/22 11:29:50 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -80,7 +80,7 @@ IceReplyWaitInfo *replyWait;
 	}
 	else
 	{
-	    (*_SmcErrorHandler) (smcConn,
+	    (*_SmcErrorHandler) (smcConn, swap,
 		pMsg->offendingMinorOpcode,
 	        pMsg->offendingSequenceNum,
 		pMsg->errorClass, pMsg->severity,
@@ -110,7 +110,7 @@ IceReplyWaitInfo *replyWait;
 		SIZEOF (smRegisterClientReplyMsg),
 		smRegisterClientReplyMsg, pMsg, pData);
 
-	    EXTRACT_ARRAY8_AS_STRING (pData, reply->client_id);
+	    EXTRACT_ARRAY8_AS_STRING (pData, swap, reply->client_id);
 
 	    reply->status = 1;
 	    replyReady = True;
@@ -183,7 +183,7 @@ IceReplyWaitInfo *replyWait;
 		SIZEOF (smPropertiesReplyMsg),
 		smPropertiesReplyMsg, pMsg, pData);
 
-	    EXTRACT_LISTOF_PROPERTY (pData, numProps, props);
+	    EXTRACT_LISTOF_PROPERTY (pData, swap, numProps, props);
 
 	    next = smcConn->prop_reply_waits->next;
 
@@ -261,7 +261,7 @@ Bool		 swap;
 	IceReadCompleteMessage (iceConn,
 	    SIZEOF (iceErrorMsg), iceErrorMsg, pMsg, pData);
 
-	(*_SmsErrorHandler) (smsConn,
+	(*_SmsErrorHandler) (smsConn, swap,
 	    pMsg->offendingMinorOpcode,
 	    pMsg->offendingSequenceNum,
 	    pMsg->errorClass, pMsg->severity,
@@ -279,7 +279,7 @@ Bool		 swap;
 	    SIZEOF (smRegisterClientMsg),
 	    smRegisterClientMsg, pMsg, pData);
 
-	EXTRACT_ARRAY8_AS_STRING (pData, previousId);
+	EXTRACT_ARRAY8_AS_STRING (pData, swap, previousId);
 
 	(*smsConn->callbacks.register_client.callback) (smsConn,
             smsConn->callbacks.register_client.manager_data, previousId);
@@ -363,14 +363,14 @@ Bool		 swap;
 	    SIZEOF (smCloseConnectionMsg),
 	    smCloseConnectionMsg, pMsg, pData);
 
-	EXTRACT_ARRAY8_AS_STRING (pData, locale);
+	EXTRACT_ARRAY8_AS_STRING (pData, swap, locale);
 
-	EXTRACT_CARD32 (pData, count);
+	EXTRACT_CARD32 (pData, swap, count);
 	pData += 4;
 
 	reasonMsgs = (char **) malloc (count * sizeof (char *));
 	for (i = 0; i < count; i++)
-	    EXTRACT_ARRAY8_AS_STRING (pData, reasonMsgs[i]);
+	    EXTRACT_ARRAY8_AS_STRING (pData, swap, reasonMsgs[i]);
 
 	(*smsConn->callbacks.close_connection.callback) (smsConn,
 	    smsConn->callbacks.close_connection.manager_data,
@@ -390,7 +390,10 @@ Bool		 swap;
 	    SIZEOF (smSetPropertiesMsg),
 	    smSetPropertiesMsg, pMsg, pData);
 
-	EXTRACT_LISTOF_PROPERTY (pData, numProps, props);
+	if (swap)
+	    pMsg->sequenceRef = lswapl (pMsg->sequenceRef);
+
+	EXTRACT_LISTOF_PROPERTY (pData, swap, numProps, props);
 
 	(*smsConn->callbacks.set_properties.callback) (smsConn,
 	    smsConn->callbacks.set_properties.manager_data,
