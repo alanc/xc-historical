@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: daemon.c,v 1.4 89/01/16 17:13:00 keith Exp $
+ * $XConsortium: daemon.c,v 1.5 89/01/20 10:43:49 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -26,18 +26,21 @@
 
 extern void exit ();
 
-BecomeDaemon ()
+BecomeOrphan ()
 {
-    register int i;
-
     /*
      * fork so that the process goes into the background automatically. Also
      * has a nice side effect of having the child process get inherited by
      * init (pid 1).
      */
 
-    if (fork ())			/* if parent */
-      exit (0);				/* then no more work to do */
+    if (fork ())
+	exit (0);
+}
+
+BecomeDaemon ()
+{
+    register int i;
 
     /*
      * Close standard file descriptors and get rid of controlling tty
