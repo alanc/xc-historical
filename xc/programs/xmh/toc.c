@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.51 91/07/13 17:13:52 converse Exp $
+ * $XConsortium: toc.c,v 2.52 91/07/14 18:52:33 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -183,7 +183,7 @@ void TocInit()
     if (! (DraftsFolder = TocGetNamed(app_resources.drafts_folder_name)))
 	DraftsFolder = TocCreate(app_resources.drafts_folder_name);
     free((char *)namelist);
-    if (app_resources.new_mail_check) LoadCheckFiles();
+    LoadCheckFiles();
 }
 
 
