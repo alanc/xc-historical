@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.29 87/12/14 09:16:49 swick Locked $";
+static char rcsid[] = "$Header: Label.c,v 1.30 87/12/29 09:47:52 swick Locked $";
 #endif lint
 
 /*
@@ -370,8 +370,9 @@ static Boolean SetValues(current, request, new, last)
 	newlw->core.depth = curlw->core.depth;
     }
 
-    if ((curlw->core.background_pixel != newlw->core.background_pixel)
-	|| (curlw->core.border_pixel != newlw->core.border_pixel)) {
+    if (((curlw->core.background_pixel != newlw->core.background_pixel)
+	 || (curlw->core.border_pixel != newlw->core.border_pixel))
+	&& XtIsRealized(newlw)) {
 
 	Mask valueMask = 0;
 	XSetWindowAttributes attributes;
