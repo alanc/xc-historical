@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.6 93/09/22 11:26:29 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.7 93/09/24 12:11:51 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -88,7 +88,7 @@ char 	*release;
     smsConn->client_id = NULL;
 
     smsConn->save_yourself_in_progress = False;
-    smsConn->can_interact = False;
+    smsConn->interaction_allowed = SmInteractStyleNone;
     smsConn->can_cancel_shutdown = False;
     smsConn->interact_in_progress = False;
 
@@ -158,9 +158,16 @@ Bool	fast;
 
     smsConn->save_yourself_in_progress = True;
 
-    smsConn->can_interact =
-	interactStyle == SmInteractStyleAny ||
-	interactStyle == SmInteractStyleErrors;
+    if (interactStyle == SmInteractStyleNone ||
+	interactStyle == SmInteractStyleErrors ||
+	interactStyle == SmInteractStyleAny)
+    {
+	smsConn->interaction_allowed = interactStyle;
+    }
+    else
+    {
+	smsConn->interaction_allowed = SmInteractStyleNone;
+    }
 
     smsConn->can_cancel_shutdown = 
 	shutdown && interactStyle == SmInteractStyleAny;

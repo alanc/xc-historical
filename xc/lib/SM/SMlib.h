@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.6 93/09/24 12:08:42 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.7 93/09/24 15:56:56 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -383,7 +383,7 @@ struct _SmsConn {
      */
 
     char		save_yourself_in_progress;
-    char		can_interact;
+    char		interaction_allowed;
     char		can_cancel_shutdown;
     char		interact_in_progress;
 };
