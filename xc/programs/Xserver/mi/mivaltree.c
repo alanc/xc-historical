@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 1.38 88/02/04 17:58:34 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 1.39 88/02/08 17:34:59 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -140,15 +140,16 @@ miComputeClips (pParent, pScreen, universe)
 	 * right and bottom edges of the new border not to appear in the
 	 * borderExposed region and it's a royal pain to figure out what to
 	 * remove from the old borderClip.
+	 * Note that borderSize is clipped to the window's parent, thus its
+	 * extents are not necessarily those of the window's border, thus we
+	 * must use clientWinSize to find the actual extents of the window.
 	 * XXX: Isn't there a nicer way to do this?
 	 */
 	BoxPtr	oldExtents;
 	BoxPtr	newExtents;
-	BoxPtr	windowExtents;
 	
 	oldExtents = (* pScreen->RegionExtents) (pParent->borderClip);
 	newExtents = (* pScreen->RegionExtents) (universe);
-	windowExtents = (* pScreen->RegionExtents) (pParent->borderSize);
 
 	if ((* pScreen->RegionNotEmpty) (universe) &&
 	    (* pScreen->RegionNotEmpty) (pParent->borderClip) &&
@@ -157,18 +158,45 @@ miComputeClips (pParent, pScreen, universe)
         {
 	    BoxRec 	borderBox;
 	    RegionPtr 	borderRegion;
+	    int		x1, y1, x2, y2, v;
 
 	    borderRegion = (* pScreen->RegionCreate) (NULL, 1);
+	    /* Worry about overflow: don't use a Box.  Sigh.
+	     * We know we'll clip to universe later, so do it now as well.
+	     */
+	    x1 = pParent->absCorner.x - pParent->borderWidth;
+	    if (x1 < newExtents->x1)
+		x1 = newExtents->x1;
+	    y1 = pParent->absCorner.y - pParent->borderWidth;
+	    if (y1 < newExtents->y1)
+		y1 = newExtents->y1;
+	    x2 = pParent->absCorner.x +
+		 (int)pParent->clientWinSize.width +
+		 pParent->borderWidth;
+	    if (x2 > newExtents->x2)
+		x2 = newExtents->x2;
+	    y2 = pParent->absCorner.y +
+		 (int)pParent->clientWinSize.height +
+		 pParent->borderWidth;
+	    if (y2 > newExtents->y2)
+		y2 = newExtents->y2;
+	    if (x1 > x2)
+		x2 = x1;
+	    if (y1 > y2)
+		y2 = y1;
 
 	    if (newExtents->x2 < oldExtents->x2) 
             {
 		/*
 		 * Add the right edge.
 		 */
-		borderBox.x1 = windowExtents->x2 - pParent->borderWidth;
-		borderBox.y1 = windowExtents->y1;
-		borderBox.x2 = windowExtents->x2;
-		borderBox.y2 = windowExtents->y2;
+		v = pParent->absCorner.x + (int)pParent->clientWinSize.width;
+		if (v < x1)
+		    v = x1;
+		borderBox.x1 = v;
+		borderBox.y1 = y1;
+		borderBox.x2 = x2;
+		borderBox.y2 = y2;
 		(* pScreen->RegionReset) (borderRegion, &borderBox);
 		(* pScreen->Union) (pParent->borderExposed,
 				    pParent->borderExposed,
@@ -179,10 +207,13 @@ miComputeClips (pParent, pScreen, universe)
 		/*
 		 * Add the bottom edge.
 		 */
-		borderBox.x1 = windowExtents->x1;
-		borderBox.y1 = windowExtents->y2 - pParent->borderWidth;
-		borderBox.x2 = windowExtents->x2;
-		borderBox.y2 = windowExtents->y2;
+		v = pParent->absCorner.y + (int)pParent->clientWinSize.height;
+		if (v < y1)
+		    v = y1;
+		borderBox.x1 = x1;
+		borderBox.y1 = v;
+		borderBox.x2 = x2;
+		borderBox.y2 = y2;
 		(* pScreen->RegionReset) (borderRegion, &borderBox);
 		(* pScreen->Union) (pParent->borderExposed,
 				    pParent->borderExposed,
