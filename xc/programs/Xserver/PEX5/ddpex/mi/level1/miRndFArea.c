@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: miRndFArea.c,v 5.1 91/02/16 09:55:07 rws Exp $ */
 
 
 /***********************************************************
@@ -164,6 +164,13 @@ miRenderFillArea(pRend, pddc, input_list, input_facet, shape, noedges)
 	      out_fct.pFacetRgbFloat->green /= num_points;
 	      out_fct.pFacetRgbFloat->blue /= num_points;
 	    }
+	    /* clamp on saturation */
+	    if (out_fct.pFacetRgbFloat->red > 1.0)
+		    out_fct.pFacetRgbFloat->red = 1.0;
+	    if (out_fct.pFacetRgbFloat->green > 1.0)
+		    out_fct.pFacetRgbFloat->green = 1.0;
+	    if (out_fct.pFacetRgbFloat->blue > 1.0)
+		    out_fct.pFacetRgbFloat->blue = 1.0;
 
 	    /* new facet colors override input ones */
 	    fct_list->numFacets = 1;
@@ -324,6 +331,13 @@ miRenderFillArea(pRend, pddc, input_list, input_facet, shape, noedges)
 	      out_fct.pFacetRgbFloat->green /= num_points;
 	      out_fct.pFacetRgbFloat->blue /= num_points;
 	    }
+	    /* clamp on saturation */
+	    if (out_fct.pFacetRgbFloat->red > 1.0)
+		    out_fct.pFacetRgbFloat->red = 1.0;
+	    if (out_fct.pFacetRgbFloat->green > 1.0)
+		    out_fct.pFacetRgbFloat->green = 1.0;
+	    if (out_fct.pFacetRgbFloat->blue > 1.0)
+		    out_fct.pFacetRgbFloat->blue = 1.0;
 
 	    /* new facet colors override input ones */
 	    fct_list->numFacets = 1;
