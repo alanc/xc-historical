@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.44 89/11/26 15:25:37 rws Exp $ */
+/* $XConsortium: window.c,v 5.45 89/11/26 17:13:26 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2102,6 +2102,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     RegionPtr	gravitate[StaticGravity + 1];
     register unsigned g;
     int		nx, ny;		/* destination x,y */
+    int		newx, newy;	/* new inner window position */
     RegionPtr	pRegion;
     RegionPtr	destClip;	/* portions of destination already written */
     RegionPtr	oldWinClip;	/* old clip list for window */
@@ -2117,6 +2118,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
         return ;
 
     pScreen = pWin->drawable.pScreen;
+    newx = pParent->drawable.x + x + bw;
+    newy = pParent->drawable.y + y + bw;
     if (WasViewable)
     {
 	anyMarked = FALSE;
@@ -2156,24 +2159,21 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 	    (*pScreen->RegionCopy) (oldWinClip, &pWin->clipList);
 	}
     	/*
-     	 * if the window is shrinking in either dimension, borderExposed
+     	 * if the window is changing size, borderExposed
      	 * can't be computed correctly without some help.
      	 */
     	if (pWin->drawable.height > h || pWin->drawable.width > w)
-    	{
 	    shrunk = TRUE;
-	    if (HasBorder(pWin))
-	    {
-		borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
-		(*pScreen->Subtract) (borderVisible,
-				      &pWin->borderClip, &pWin->winSize);
-	    }
-    	}
-	else if ((pWin->drawable.height != h || pWin->drawable.width != w) &&
-		 HasBorder (pWin))
+
+	if ((pWin->drawable.height != h || pWin->drawable.width != w) &&
+	    HasBorder (pWin))
 	{
 	    borderVisible = (*pScreen->RegionCreate) (NullBox, 1);
-	    (*pScreen->RegionCopy) (borderVisible, &pWin->borderClip);
+	    if (shrunk || newx != oldx || newy != oldy)
+		(*pScreen->Subtract) (borderVisible, &pWin->borderClip,
+				      &pWin->winSize);
+	    else
+		(*pScreen->RegionCopy) (borderVisible, &pWin->borderClip);
 	}
     }
     pWin->origin.x = x + bw;
@@ -2181,8 +2181,8 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     pWin->drawable.height = h;
     pWin->drawable.width = w;
 
-    x = pWin->drawable.x = pParent->drawable.x + x + bw;
-    y = pWin->drawable.y = pParent->drawable.y + y + bw;
+    x = pWin->drawable.x = newx;
+    y = pWin->drawable.y = newy;
 
     SetWinSize (pWin);
     SetBorderSize (pWin);
