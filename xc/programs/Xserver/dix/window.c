@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.172 87/10/28 10:54:50 rws Locked $ */
+/* $Header: window.c,v 1.173 87/11/03 18:10:25 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2459,7 +2459,6 @@ RealizeChildren(pWin, client)
 	    pSib->realized = TRUE;
             pSib->viewable = pSib->class == InputOutput;
             (* Realize)(pSib);
-	    FlushClientCaches(pSib->wid);
             if (pSib->firstChild) 
                 RealizeChildren(pSib->firstChild, client);
 	}
