@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.h,v 1.27 94/08/24 21:25:28 mor Exp mor $ */
+/* $XConsortium: xsm.h,v 1.28 94/08/25 17:24:15 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -95,8 +95,6 @@ typedef struct _ClientRec {
 
     unsigned int	restarted : 1;
     unsigned int	userIssuedCheckpoint : 1;
-    unsigned int	interactPending : 1;
-    unsigned int	wantsPhase2 : 1;
     unsigned int	restartHint : 2;
 
 } ClientRec;
@@ -144,17 +142,19 @@ extern List		*PendingList;
 extern List		*RestartAnywayList;
 extern List		*RestartImmedList;
 
-extern int		numClients;
+extern List		*WaitForSaveDoneList;
+extern List		*WaitForInteractList;
+extern List		*WaitForPhase2List;
+
+extern int		saveWaitCount;
+
 extern Bool		client_info_visible;
 extern Bool		client_prop_visible;
 extern String 		*clientListNames;
 extern ClientRec	**clientListRecs;
 extern int		numClientListNames;
 extern int		current_client_selected;
-extern int		saveDoneCount;
-extern int		phase2RequestCount;
 
-extern int		interactCount;
 extern Bool		shutdownInProgress;
 extern Bool	        saveInProgress;
 extern Bool		shutdownCancelled;

@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.13 94/08/24 21:24:34 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.14 94/08/25 17:23:47 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -30,10 +30,12 @@ List		*PendingList;
 List		*RestartAnywayList;
 List		*RestartImmedList;
 
-int		numClients = 0;
-int		saveDoneCount = 0;
-int		interactCount = 0;
-int		phase2RequestCount = 0;
+List		*WaitForSaveDoneList;
+List		*WaitForInteractList;
+List		*WaitForPhase2List;
+
+int		saveWaitCount = 0;
+
 Bool		wantShutdown = False;
 Bool		shutdownInProgress = False;
 Bool		saveInProgress = False;
