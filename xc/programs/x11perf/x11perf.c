@@ -436,7 +436,8 @@ Bool CalibrateTest(xp, test, seconds, usecperobj)
 
 	if (reps > test->parms.reps) {
 	    /* The test can't do as many reps as we asked for.  Give up */
-	    *usecperobj =  usecs / (double)test->parms.reps;
+	    *usecperobj = 
+		usecs / (double)(test->parms.reps * test->parms.objects);
 	    return True;
 	}
 	/* Did we go long enough? */
@@ -449,7 +450,7 @@ Bool CalibrateTest(xp, test, seconds, usecperobj)
 	reps = (int) (goal * (double)reps / usecs) + 1;
     }
 
-    *usecperobj = usecs / (double)reps;
+    *usecperobj = usecs / (double) (reps * test->parms.objects);
     reps = (int) ((double)seconds * 1000000.0 * (double)reps / usecs) + 1;
 
     /* Now round reps up to 1 digit accuracy, so we don't get stupid-looking
