@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: miglblt.c,v 1.14 87/08/06 13:47:59 todd Exp $ */
+/* $Header: miglblt.c,v 1.14 87/09/07 18:59:53 rws Locked $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -33,6 +33,7 @@ SOFTWARE.
 #include	"windowstr.h"
 #include	"scrnintstr.h"
 #include	"pixmap.h"
+#include	"servermd.h"
 
 
 /*
