@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Distinct.c,v 1.1 90/09/27 19:18:57 rws Exp $
+ * $XConsortium: Distinct.c,v 1.2 90/12/02 18:14:53 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -44,9 +44,9 @@ int	count;
     for (i = 0; i < count - 1; i++)
 	for (j = i + 1; j < count; j++)
 	{
-     	    deltaRed = colors[i].red - colors[j].red;
-    	    deltaGreen = colors[i].green - colors[j].green;
-    	    deltaBlue = colors[i].blue - colors[j].blue;
+     	    deltaRed = (double)colors[i].red - (double)colors[j].red;
+    	    deltaGreen = (double)colors[i].green - (double)colors[j].green;
+    	    deltaBlue = (double)colors[i].blue - (double)colors[j].blue;
     	    dist = deltaRed * deltaRed +
 	       	   deltaGreen * deltaGreen +
  	       	   deltaBlue * deltaBlue;
