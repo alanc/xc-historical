@@ -7,40 +7,40 @@ XTerm*SimpleMenu*translations:	#override \
 
 XTerm*mainMenu.Label:  X11 xterm
 XTerm*mainMenu*securekbd*Label:  Secure Keyboard
-XTerm*mainMenu*visualbell*Label:  Visual Bell
-XTerm*mainMenu*logging*Label:  Logging
-XTerm*mainMenu*redraw*Label:  Redraw
+XTerm*mainMenu*visualbell*Label:  Enable Visual Bell
+XTerm*mainMenu*logging*Label:  Log to File
+XTerm*mainMenu*redraw*Label:  Redraw Window
 XTerm*mainMenu*line1*Type:  separator
-XTerm*mainMenu*suspend*Label:  Suspend Program
-XTerm*mainMenu*continue*Label:  Continue Program
-XTerm*mainMenu*interrupt*Label:  Interrupt Program
-XTerm*mainMenu*hangup*Label:  Hangup Program
-XTerm*mainMenu*terminate*Label:  Terminate Program
-XTerm*mainMenu*kill*Label:  Kill Program
+XTerm*mainMenu*suspend*Label:  Send STOP Signal
+XTerm*mainMenu*continue*Label:  Send CONT Signal
+XTerm*mainMenu*interrupt*Label:  Send INT Signal
+XTerm*mainMenu*hangup*Label:  Send HUP Signal
+XTerm*mainMenu*terminate*Label:  Send TERM Signal
+XTerm*mainMenu*kill*Label:  Send KILL Signal
 XTerm*mainMenu*line2*Type:  separator
 XTerm*mainMenu*quit*Label:  Quit
 
 XTerm*vtMenu.Label:  VT Modes
-XTerm*vtMenu*scrollbar*Label:  Scrollbar
-XTerm*vtMenu*jumpscroll*Label:  Jump Scroll
-XTerm*vtMenu*reversevideo*Label:  Reverse Video
-XTerm*vtMenu*autowrap*Label:  Auto Wraparound
-XTerm*vtMenu*reversewrap*Label:  Reverse Wraparound
-XTerm*vtMenu*autolinefeed*Label:  Auto Linefeed
-XTerm*vtMenu*appcursor*Label:  Application Cursor Mode
-XTerm*vtMenu*appkeypad*Label:  Application Keypad Mode
-XTerm*vtMenu*scrollkey*Label:  Scroll to bottom on key press
-XTerm*vtMenu*scrollinput*Label:  Scroll to bottom on tty output
+XTerm*vtMenu*scrollbar*Label:  Show Scrollbar
+XTerm*vtMenu*jumpscroll*Label:  Enable Jump Scroll
+XTerm*vtMenu*reversevideo*Label:  Enable Reverse Video
+XTerm*vtMenu*autowrap*Label:  Enable Auto Wraparound
+XTerm*vtMenu*reversewrap*Label:  Enable Reverse Wraparound
+XTerm*vtMenu*autolinefeed*Label:  Enable Auto Linefeed
+XTerm*vtMenu*appcursor*Label:  Use Application Cursors
+XTerm*vtMenu*appkeypad*Label:  Use Application Keypad
+XTerm*vtMenu*scrollkey*Label:  Scroll to Bottom on Key Press
+XTerm*vtMenu*scrollinput*Label:  Scroll to Bottom on Tty Output
 XTerm*vtMenu*allow132*Label:  Allow 80/132 switching
-XTerm*vtMenu*cursesemul*Label:  Curses Emulation
-XTerm*vtMenu*marginbell*Label:  Margin Bell
-XTerm*vtMenu*altscreen*Label:  Alternate Screen
+XTerm*vtMenu*cursesemul*Label:  Enable Curses Emulation
+XTerm*vtMenu*marginbell*Label:  Enable Margin Bell
+XTerm*vtMenu*altscreen*Label:  Show Alternate Screen
 XTerm*vtMenu*line1*Type:  separator
-XTerm*vtMenu*softreset*Label:  Soft Reset
-XTerm*vtMenu*hardreset*Label:  Full Reset
+XTerm*vtMenu*softreset*Label:  Do Soft Reset
+XTerm*vtMenu*hardreset*Label:  Do Full Reset
 XTerm*vtMenu*line2*Type:  separator
-XTerm*vtMenu*tekshow*Label:  Tek Window Showing
-XTerm*vtMenu*tekmode*Label:  Tek Mode
+XTerm*vtMenu*tekshow*Label:  Show Tek Window
+XTerm*vtMenu*tekmode*Label:  Switch to Tek Mode
 XTerm*vtMenu*vthide*Label:  Hide VT Window
 
 XTerm*tekMenu.Label:  Tek Modes
@@ -53,7 +53,7 @@ XTerm*tekMenu*tekpage*Label:  PAGE
 XTerm*tekMenu*tekreset*Label:  RESET
 XTerm*tekMenu*tekcopy*Label:  COPY
 XTerm*tekMenu*line2*Type:  separator
-XTerm*tekMenu*vtshow*Label:  VT Window Showing
-XTerm*tekMenu*vtmode*Label:  VT Mode
+XTerm*tekMenu*vtshow*Label:  Show VT Window
+XTerm*tekMenu*vtmode*Label:  Switch to VT Mode
 XTerm*tekMenu*tekhide*Label:  Hide Tek Window
 
