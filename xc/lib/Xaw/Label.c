@@ -1,4 +1,4 @@
-/* $XConsortium: Label.c,v 1.84 91/01/11 18:37:24 converse Exp $ */
+/* $XConsortium: Label.c,v 1.85 91/02/17 15:13:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -31,12 +31,13 @@ SOFTWARE.
 
 #define XtStrlen(s)		((s) ? strlen(s) : 0)
 
-#include <stdio.h>
-#include <ctype.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xos.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/LabelP.h>
+#include <stdio.h>
+#include <ctype.h>
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 

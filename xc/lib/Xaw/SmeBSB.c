@@ -1,4 +1,4 @@
-/* $XConsortium: SmeBSB.c,v 1.14 91/02/17 16:11:02 converse Exp $ */
+/* $XConsortium: SmeBSB.c,v 1.15 91/02/19 16:08:40 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -31,9 +31,9 @@
  *          kit@expo.lcs.mit.edu
  */
 
-#include <stdio.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xos.h>
 
 #include <X11/Xmu/Drawing.h>
 
@@ -41,6 +41,8 @@
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/SmeBSBP.h>
 #include <X11/Xaw/Cardinals.h>
+
+#include <stdio.h>
 
 #define ONE_HUNDRED 100
 
