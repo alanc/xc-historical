@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.h,v 1.10 92/05/12 18:07:38 gildea Exp $ */
+/* $XConsortium: fsio.h,v 1.11 93/08/24 18:49:17 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -73,6 +73,7 @@ typedef struct _fs_fpe_data {
     long        time_to_try;
     long        reconnect_delay;
     struct _fs_fpe_data *next_reconnect;
+    struct _XtransConnInfo *trans_conn; /* transport connection object */
 }           FSFpeRec, *FSFpePtr;
 
 FSFpePtr    _fs_open_server();
