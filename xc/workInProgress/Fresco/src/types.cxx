@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1992-93 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.
  *
@@ -39,6 +43,19 @@
 #include <string.h>
 
 #include <stdio.h>
+
+/*
+ * AIX lacks prototypes for strcasecmp and strncasecmp, even though they
+ * are in the standard C library.
+ */
+
+#if defined(AIXV3)
+extern "C" {
+    int strcasecmp(const char *, const char *);
+    int strncasecmp(const char *, const char *, int);
+}
+#endif /* AIXV3 */
+
 
 CharStringImpl::CharStringImpl() {
     data_ = nil;

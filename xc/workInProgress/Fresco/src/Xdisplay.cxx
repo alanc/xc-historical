@@ -1,4 +1,8 @@
 /*
+ * $XConsortium$
+ */
+
+/*
  * Copyright (c) 1987-91 Stanford University
  * Copyright (c) 1991-93 Silicon Graphics, Inc.
  *
@@ -51,6 +55,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+
+/*
+ * AIX lacks prototypes for strcasecmp and strncasecmp, even though they
+ * are in the standard C library.
+ */
+
+#if defined(AIXV3)
+extern "C" {
+    int strcasecmp(const char *, const char *);
+    int strncasecmp(const char *, const char *, int);
+}
+#endif /* AIXV3 */
+
 
 /*
  * Fresco operations to open an X display.

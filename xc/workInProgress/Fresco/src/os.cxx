@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: os.cxx,v 1.3 94/03/07 14:58:32 matt Exp $
  */
 
 /*
@@ -500,9 +500,6 @@ extern "C" {
 #endif
 #if defined(sun) && !defined(__SYSENT_H)
     extern int read(int, void*, unsigned int);
-#endif
-#if defined(AIXV3)
-    extern int read(int, char*, unsigned int);
 #endif
 #if defined(apollo)
     extern long read(int, void*, unsigned int);
