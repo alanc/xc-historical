@@ -1,4 +1,4 @@
-/* $XConsortium: mifpoly.h,v 1.2 88/08/08 12:49:10 matt Exp $ */
+/* $XConsortium: mifpoly.h,v 1.3 88/09/06 14:50:37 jim Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -47,5 +47,10 @@ SOFTWARE.
 typedef struct _SppPoint {
 	double	x, y;
 } SppPointRec, *SppPointPtr;
+
+typedef struct _SppArc {
+	double	x, y, width, height;
+	double	angle1, angle2;
+} SppArcRec, *SppArcPtr;
 
 extern SppPointRec miExtendSegment();

@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifpolycon.c,v 1.11 88/07/06 11:22:55 rws Exp $ */
+/* $XConsortium: mifpolycon.c,v 1.12 88/09/06 14:50:32 jim Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "windowstr.h"
@@ -67,12 +67,18 @@ static int GetFPolyYBounds();
  *	time pressure.
  */
 void
-miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans)
+miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans, xFtrans, yFtrans)
     DrawablePtr 	dst;
     GCPtr		pgc;
     int			count;          /* number of points */
     SppPointPtr 	ptsIn;          /* the points */
     int			xTrans, yTrans;	/* Translate each point by this */
+    double		xFtrans, yFtrans;	/* translate before conversion
+    						   by this amount.  This provides
+						   a mechanism to match rounding
+						   errors with any shape that must
+						   meet the polygon exactly.
+						 */
 {
     double		xl, xr,		/* x vals of left and right edges */
           		ml,       	/* left edge slope */
@@ -100,7 +106,7 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans)
 	yTrans += ((WindowPtr)dst)->absCorner.y;
     }
 
-    imin = GetFPolyYBounds(ptsIn, count, &ymin, &ymax);
+    imin = GetFPolyYBounds(ptsIn, count, yFtrans, &ymin, &ymax);
 
     y = ymax - ymin + 1;
     ptsOut = FirstPoint = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * y);
@@ -119,7 +125,7 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans)
 	Marked[j] = 0;
     nextleft = nextright = imin;
     Marked[imin] = -1;
-    y = (int) ceil(ptsIn[nextleft].y);
+    y = (int) ceil(ptsIn[nextleft].y + yFtrans);
 
     /*
      *  loop through all edges of the polygon
@@ -127,7 +133,8 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans)
     do
     {
         /* add a left edge if we need to */
-        if ((y > ptsIn[nextleft].y || ISEQUAL(y, ptsIn[nextleft].y)) &&
+        if ((y > (ptsIn[nextleft].y + yFtrans) ||
+ 	     ISEQUAL(y, ptsIn[nextleft].y + yFtrans)) &&
 	     Marked[nextleft] != 1)
 	{
 	    Marked[nextleft]++;
@@ -142,13 +149,14 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans)
 	    if (dy != 0.0)
 	    { 
 		ml = (ptsIn[nextleft].x - ptsIn[left].x) / dy;
-		dy = y - ptsIn[left].y;
-		xl = ptsIn[left].x  + ml * max(dy, 0); 
+		dy = y - (ptsIn[left].y + yFtrans);
+		xl = (ptsIn[left].x + xFtrans) + ml * max(dy, 0); 
 	    }
         }
 
         /* add a right edge if we need to */
-        if (((y > ptsIn[nextright].y) || ISEQUAL(y, ptsIn[nextright].y))
+        if ((y > ptsIn[nextright].y + yFtrans) ||
+ 	     ISEQUAL(y, ptsIn[nextright].y + yFtrans)
 	     && Marked[nextright] != 1)
 	{
 	    Marked[nextright]++;
@@ -163,8 +171,8 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans)
 	    if (dy != 0.0) 
 	    { 
 		mr = (ptsIn[nextright].x - ptsIn[right].x) / dy;
-		dy = y - ptsIn[right].y; 
-		xr = ptsIn[right].x + mr * max(dy, 0);
+		dy = y - (ptsIn[right].y + yFtrans); 
+		xr = (ptsIn[right].x + xFtrans) + mr * max(dy, 0);
 	    }
         }
 
@@ -173,7 +181,7 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans)
          *  generate scans to fill while we still have
          *  a right edge as well as a left edge.
          */
-        i = min(ptsIn[nextleft].y, ptsIn[nextright].y) - y;
+        i = (min(ptsIn[nextleft].y, ptsIn[nextright].y) + yFtrans) - y;
 
 	if (i < EPSILON)
 	{
@@ -199,13 +207,13 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans)
             /* reverse the edges if necessary */
             if (xl < xr) 
             {
-                *(width++) = ROUNDTOINT(xr) - ROUNDTOINT(xl);
-                (ptsOut++)->x = ROUNDTOINT(xl) + xTrans;
+                *(width++) = ceil(xr) - ceil(xl);
+                (ptsOut++)->x = ceil(xl) + xTrans;
             }
             else 
             {
-                *(width++) = ROUNDTOINT(xl) - ROUNDTOINT(xr);
-                (ptsOut++)->x = ROUNDTOINT(xr) + xTrans;
+                *(width++) = ceil(xl) - ceil(xr);
+                (ptsOut++)->x = ceil(xr) + xTrans;
             }
             y++;
 
@@ -214,7 +222,7 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans)
 	    xr += mr;
 	    j--;
         }
-    }  while (y < ymax);
+    }  while (y <= ymax);
 
     /* Finally, fill the spans we've collected */
     (*pgc->FillSpans)(dst, pgc, 
@@ -229,9 +237,10 @@ miFillSppPoly(dst, pgc, count, ptsIn, xTrans, yTrans)
  * smallest and largest y */
 static
 int
-GetFPolyYBounds(pts, n, by, ty)
+GetFPolyYBounds(pts, n, yFtrans, by, ty)
     register SppPointPtr	pts;
     int 			n;
+    double			yFtrans;
     int 			*by, *ty;
 {
     register SppPointPtr	ptMin;
@@ -253,7 +262,7 @@ GetFPolyYBounds(pts, n, by, ty)
         pts++;
     }
 
-    *by = ROUNDTOINT(ymin);
-    *ty = (int) ceil(ymax);
+    *by = (int) ceil(ymin + yFtrans);
+    *ty = (int) ceil(ymax + yFtrans - 1);
     return(ptMin-ptsStart);
 }
