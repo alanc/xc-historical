@@ -508,7 +508,7 @@ Display_WM_Info(window)
 	printf("\n         ==> Window manager hints:\n\n");
 
 	if (flags & InputHint)
-	  printf("             ==> Application accepts input?  %s\n",
+	  printf("             ==> Client accepts input or input focus: %s\n",
 		 Lookup(wmhints->input, _bool));
 
 	if (flags & IconWindowHint) {

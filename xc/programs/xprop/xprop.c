@@ -236,7 +236,7 @@ _default_mapping _default_mappings[] = {
 	 */
 	{ XA_WM_COMMAND, "8s", " = { $0+ }\n" },
 	{ XA_WM_HINTS, "32mbcxxxii", ":\n\
-?m0(\t\tApplication accepts input\\?: $1\n)\
+?m0(\t\tClient accepts input or input focus: $1\n)\
 ?m1(\t\tInitial state is \
 ?$2=0(Don't Care State)\
 ?$2=1(Normal State)\
