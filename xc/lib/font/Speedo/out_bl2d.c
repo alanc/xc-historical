@@ -17,9 +17,12 @@
  *                                                                           */
 /********************* Revision Control Information **********************************
 *                                                                                    *
-*     $Header: //toklas/archive/rcs/speedo/out_bl2d.c,v 22.1 91/01/23 17:18:45 leeann Release $                                                                       *
+*     $Header: out_bl2d.c,v 1.1 91/05/10 16:29:40 keith Exp $                                                                       *
 *                                                                                    *
 *     $Log:	out_bl2d.c,v $
+ * Revision 1.1  91/05/10  16:29:40  keith
+ * Initial revision
+ * 
 *       Revision 22.1  91/01/23  17:18:45  leeann
 *       Release
 *       
@@ -92,7 +95,7 @@
 *************************************************************************************/
 
 #ifdef RCSSTATUS
-static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/out_bl2d.c,v 22.1 91/01/23 17:18:45 leeann Release $";
+static char rcsid[] = "$Header: out_bl2d.c,v 1.1 91/05/10 16:29:40 keith Exp $";
 #endif
 
 /********************** R E V I S I O N   H I S T O R Y **********************
@@ -127,7 +130,7 @@ static char rcsid[] = "$Header: //toklas/archive/rcs/speedo/out_bl2d.c,v 22.1 91
 
 /***** STATIC FUNCTIONS *****/
 
-#if INCL_2D
+#if INCL_2D
 FUNCTION boolean init_2d(specsarg)
 GDECL
 specs_t GLOBALFAR *specsarg;
