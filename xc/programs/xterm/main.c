@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.4 88/02/12 09:52:18 jim Exp $
+ *	$Header: main.c,v 1.5 88/02/12 10:56:35 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.4 88/02/12 09:52:18 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.5 88/02/12 10:56:35 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -1397,11 +1397,11 @@ spawn ()
 			}
 
 			ioctl (0, TIOCTTY, &zero);
-			execl ("/etc/getty", "getty", get_ty, "Xwindow", 0);
+			execlp ("/etc/getty", "getty", get_ty, "Xwindow", 0);
 
 #else	/* !SYSV */
 			ioctl (0, TIOCNOTTY, (char *) NULL);
-			execl ("/etc/getty", "+", "Xwindow", get_ty, 0);
+			execlp ("/etc/getty", "+", "Xwindow", get_ty, 0);
 #endif	/* !SYSV */
 		}
 		signal(SIGHUP, SIG_DFL);
@@ -1428,7 +1428,7 @@ spawn ()
 		 NTTYDISC : 0;
 		ioctl(0, TIOCSETD, (char *)&ldisc);
 #endif	/* !SYSV */
-		execl (ptr, login_shell ? shname_minus : shname, 0);
+		execlp (ptr, login_shell ? shname_minus : shname, 0);
 		fprintf (stderr, "%s: Could not exec %s!\n", xterm_name, ptr);
 		sleep(5);
 		exit(ERROR_EXEC);
