@@ -36,9 +36,11 @@ HEADERS = \
 	VendorP.h
 
 SRCS = \
+	ActionHook.c \
 	Alloc.c \
 	ArgList.c \
 	Callback.c \
+	ClickTime.c \
 	Composite.c \
 	Constraint.c \
 	Convert.c \
