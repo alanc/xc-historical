@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.5 89/07/04 16:11:54 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.6 89/07/05 20:20:30 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -594,7 +594,6 @@ miSpriteFindColors (pScreen)
     CursorPtr		pCursor;
     xColorItem		*sourceColor, *maskColor;
     unsigned short	red, green, blue;
-    Pixel		pixel;
     Bool		read_only;
 
     pCursor = pScreenPriv->pCursor;
@@ -907,9 +906,9 @@ miSpriteValidateGC (pGC, changes, pDrawable)
 	RegionPtr   pRegion;
 
 	pWin = (WindowPtr) pDrawable;
-	pRegion = pWin->clipList;
+	pRegion = &pWin->clipList;
 	if (pGC->subWindowMode == IncludeInferiors)
-	    pRegion = pWin->borderClip;
+	    pRegion = &pWin->borderClip;
 	if ((*pDrawable->pScreen->RegionNotEmpty) (pRegion))
 	    pGCPriv->wrapOps = pGC->ops;
     }
@@ -1514,7 +1513,6 @@ miSpriteDisplayCursor (pScreen, pCursor, x, y)
     CursorPtr	pCursor;
 {
     miSpriteScreenPtr	pScreenPriv;
-    xColorItem		*sourceColor, *maskColor;
 
     pScreenPriv = (miSpriteScreenPtr) pScreen->devPrivates[miSpriteScreenIndex].ptr;
     pScreenPriv->shouldBeUp = TRUE;
