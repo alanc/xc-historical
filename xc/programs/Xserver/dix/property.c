@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.2 89/09/11 18:25:40 rws Exp $ */
+/* $XConsortium: property.c,v 5.3 91/04/27 17:55:12 keith Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -441,6 +441,19 @@ ProcGetProperty(client)
 		reply.length = (len + 3) >> 2;
 		reply.nItems = len / (pProp->format / 8 );
 		reply.propertyType = pProp->type;
+
+                if (stuff->delete && (reply.bytesAfter == 0))
+                { /* send the event */
+		    xEvent event;
+		
+		    event.u.u.type = PropertyNotify;
+		    event.u.property.window = pWin->drawable.id;
+		    event.u.property.state = PropertyDelete;
+		    event.u.property.atom = pProp->propertyName;
+		    event.u.property.time = currentTime.milliseconds;
+		    DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
+		}
+
 		WriteReplyToClient(client, sizeof(xGenericReply), &reply);
 		if (len)
 		{
@@ -454,8 +467,6 @@ ProcGetProperty(client)
 
                 if (stuff->delete && (reply.bytesAfter == 0))
                 { /* delete the Property */
-		    xEvent event;
-		
                     if (prevProp == (PropertyPtr)NULL) /* takes care of head */
 		    {
                         if (!(pWin->optional->userProps = pProp->next))
@@ -463,12 +474,6 @@ ProcGetProperty(client)
 		    }
 	            else
                         prevProp->next = pProp->next;
-		    event.u.u.type = PropertyNotify;
-		    event.u.property.window = pWin->drawable.id;
-		    event.u.property.state = PropertyDelete;
-		    event.u.property.atom = pProp->propertyName;
-		    event.u.property.time = currentTime.milliseconds;
-		    DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
 		    xfree(pProp->data);
                     xfree(pProp);
 		}
