@@ -1,4 +1,4 @@
-/* $XConsortium: listen.c,v 1.5 93/12/07 11:04:10 mor Exp $ */
+/* $XConsortium: listen.c,v 1.6 93/12/30 11:03:41 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -19,65 +19,8 @@ Author: Ralph Mor, X Consortium
 
 #include <X11/ICE/ICElib.h>
 #include <X11/ICE/ICElibint.h>
-
+#include <X11/Xtrans.h>
 #include <stdio.h>
-#include <sys/types.h>
-#ifndef WIN32
-
-#include <sys/socket.h>
-
-#ifdef UNIXCONN
-#include <sys/un.h>
-# ifndef ICE_UNIX_DIR
-#   define ICE_UNIX_DIR "/tmp/.ICE-unix"
-# endif
-#endif
-
-#ifdef TCPCONN
-# include <sys/param.h>
-# include <netinet/in.h>
-# ifndef hpux
-#  ifdef apollo
-#   ifndef NO_TCP_H
-#    include <netinet/tcp.h>
-#   endif
-#  else
-#   include <netinet/tcp.h>
-#  endif
-# endif
-#endif
-
-#ifdef DNETCONN
-#include <netdnet/dn.h>
-#endif
-
-#else
-
-#define BOOL wBOOL
-#undef Status
-#define Status wStatus
-#include <winsock.h>
-#undef Status
-#define Status int
-#undef BOOL
-#include <X11/Xw32defs.h>
-#undef close
-#define close closesocket
-
-#endif
-
-#define NUM_NETWORK_INTERFACES 3  	/* Unix Domain, TCP, and DECnet */
-
-#ifdef UNIXCONN
-static int open_unix_socket ();
-#endif
-#ifdef TCPCONN
-static int open_tcp_socket ();
-#endif
-#ifdef DNETCONN
-static int open_dnet_socket ();
-#endif
-
 
 
 Status
@@ -89,47 +32,54 @@ int		errorLength;
 char		*errorStringRet;
 
 {
-    struct _IceListenObj	listenObjs[NUM_NETWORK_INTERFACES];
+    struct _IceListenObj	*listenObjs;
     char			*networkId;
-    int				fd, i, j;
+    int				fd, count, i, j;
+    int				family, addrlen;
+    Xtransaddr			*addr;
+    Status			status = 1;
+    XtransConnInfo		*trans_conns = NULL;
 
-    /*
-     * For each network interface available, open a socket for
-     * listening to new connections.
-     */
+
+    if ((_ICETransMakeAllCOTSServerListeners (NULL, &count, &trans_conns) < 0)
+	|| (count < 1))
+    {
+	*listenObjsRet = NULL;
+	*countRet = 0;
+
+        strncpy (errorStringRet,
+	    "Cannot establish any listening sockets", errorLength);
+
+	return (0);
+    }
+
+    if ((listenObjs = (struct _IceListenObj *) malloc (
+	count * sizeof (struct _IceListenObj))) == NULL)
+    {
+	for (i = 0; i < count; i++)
+	    _ICETransClose (trans_conns[i]);
+	free ((char *) trans_conns);
+	return (0);
+    }
 
     *countRet = 0;
 
-#ifdef UNIXCONN
-    if ((fd = open_unix_socket (&networkId)) != -1)
+    for (i = 0; i < count; i++)
     {
-	listenObjs[*countRet].fd = fd;
-	listenObjs[*countRet].network_id = networkId;
-	listenObjs[*countRet].local_conn = True;
+	_ICETransGetMyAddr (trans_conns[i], &family, &addrlen, &addr);
 
-	(*countRet)++;
-    }
-#endif
-#ifdef TCPCONN
-    if ((fd = open_tcp_socket (&networkId)) != -1)
-    {
-	listenObjs[*countRet].fd = fd;
-	listenObjs[*countRet].network_id = networkId;
-	listenObjs[*countRet].local_conn = False;
+	networkId = _ICETransGetMyNetworkId (family, addrlen, addr);
 
-	(*countRet)++;
-    }
-#endif
-#ifdef DNETCONN
-    if ((fd = open_dnet_socket (&networkId)) != -1)
-    {
-	listenObjs[*countRet].fd = fd;
-	listenObjs[*countRet].network_id = networkId;
-	listenObjs[*countRet].local_conn = False;
+	free (addr);
 
-	(*countRet)++;
+	if (networkId)
+	{
+	    listenObjs[*countRet].trans_conn = trans_conns[i];
+	    listenObjs[*countRet].network_id = networkId;
+		
+	    (*countRet)++;
+	}
     }
-#endif
 
     if (*countRet == 0)
     {
@@ -138,7 +88,7 @@ char		*errorStringRet;
         strncpy (errorStringRet,
 	    "Cannot establish any listening sockets", errorLength);
 
-	return (0);
+	status = 0;
     }
     else
     {
@@ -149,7 +99,7 @@ char		*errorStringRet;
 	{
 	    strncpy (errorStringRet, "Malloc failed", errorLength);
 
-	    return (0);
+	    status = 0;
 	}
 	else
 	{
@@ -167,25 +117,36 @@ char		*errorStringRet;
 
 		    free ((char *) *listenObjsRet);
 
-		    return (0);
+		    status = 0;
 		}
 		else
 		{
 		    *((*listenObjsRet)[i]) = listenObjs[i];
 		}
 	    }
-
-	    if (errorStringRet && errorLength > 0)
-		*errorStringRet = '\0';
-
-	    for (i = 0; i < *countRet; i++)
-	    {
-		(*listenObjsRet)[i]->host_based_auth_proc = NULL;
-	    }
-
-	    return (1);
 	}
     }
+
+    if (status == 1)
+    {
+	if (errorStringRet && errorLength > 0)
+	    *errorStringRet = '\0';
+	
+	for (i = 0; i < *countRet; i++)
+	{
+	    (*listenObjsRet)[i]->host_based_auth_proc = NULL;
+	}
+    }
+    else
+    {
+	for (i = 0; i < count; i++)
+	    _ICETransClose (trans_conns[i]);
+    }
+
+    free ((char *) listenObjs);
+    free ((char *) trans_conns);
+
+    return (status);
 }
 
 
@@ -196,7 +157,7 @@ IceGetListenDescrip (listenObj)
 IceListenObj listenObj;
 
 {
-    return (listenObj->fd);
+    return (_ICETransGetConnectionNumber (listenObj->trans_conn));
 }
 
 
@@ -288,244 +249,3 @@ IceHostBasedAuthProc	hostBasedAuthProc;
 {
     listenObj->host_based_auth_proc = hostBasedAuthProc;
 }
-
-
-
-/* ------------------------------------------------------------------------- *
- *                            local routines                                 *
- * ------------------------------------------------------------------------- */
-
-/*
- * Open a unix domain socket for listening
- */
-
-#ifdef UNIXCONN
-
-static int
-open_unix_socket (networkIdRet)
-
-char **networkIdRet;
-
-{
-    struct sockaddr_un	unsock;
-    int 		fd;
-    char		hostnamebuf[256];
-    char		pidbuf[10];
-    int 		oldUmask;
-
-    bzero ((char *) &unsock, sizeof (unsock));
-
-    unsock.sun_family = AF_UNIX;
-    oldUmask = umask (0);
-
-#ifdef ICE_UNIX_DIR
-    if (!mkdir (ICE_UNIX_DIR, 0777))
-	chmod (ICE_UNIX_DIR, 0777);
-#endif
-
-    strcpy (unsock.sun_path, ICE_UNIX_DIR);
-    sprintf (pidbuf, "/%d", getpid ());
-    strcat (unsock.sun_path, pidbuf);
-
-#ifdef BSD44SOCKETS
-    unsock.sun_len = strlen (unsock.sun_path);
-#endif
-
-    unlink (unsock.sun_path);
-
-    if ((fd = socket (AF_UNIX, SOCK_STREAM, 0)) < 0) 
-	return (-1);
-
-#ifdef BSD44SOCKETS
-    if (bind(fd, (struct sockaddr *) &unsock, SUN_LEN (&unsock)))
-#else
-    if (bind(fd, (struct sockaddr *) &unsock, strlen (unsock.sun_path) + 2))
-#endif
-    {
-	close (fd);
-	return (-1);
-    }
-
-    if (listen (fd, 5))
-    {
-	close (fd);
-	return (-1);
-    }
-
-    if (gethostname (hostnamebuf, sizeof (hostnamebuf)))
-    {
-	close (fd);
-	return (-1);
-    }
-
-    (void) umask (oldUmask);
-
-    *networkIdRet = (char *) malloc (8 + strlen (hostnamebuf) +
-	strlen (unsock.sun_path));
-    sprintf (*networkIdRet, "local/%s:%s", hostnamebuf, unsock.sun_path);
-
-    return (fd);
-}
-
-#endif /* UNIXCONN */
-
-
-
-/*
- * Open a tcp socket for listening
- */
-
-#ifdef TCPCONN
-
-static int
-open_tcp_socket (networkIdRet)
-
-char **networkIdRet;
-
-{
-    struct sockaddr_in 	insock;
-    int			fd;
-    int			addrlen;
-    int 		retry = 20;
-    char		hostnamebuf[256];
-    char		portnumbuf[10];
-#ifdef WIN32
-    static WSADATA wsadata;
-#endif
-
-#ifdef WIN32
-    if (!wsadata.wVersion && WSAStartup(MAKEWORD(1,1), &wsadata))
-	return -1;
-#endif
-
-    *networkIdRet = NULL;
-
-    if ((fd = socket (AF_INET, SOCK_STREAM, 0)) < 0) 
-	return (-1);
-
-#ifdef SO_REUSEADDR
-    {
-	int one = 1;
-	setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, (char *) &one, sizeof (int));
-    }
-#endif
-
-    (void) bzero ((char *) &insock, sizeof (insock));
-
-#ifdef BSD44SOCKETS
-    insock.sin_len = sizeof (insock);
-#endif
-
-    insock.sin_family = AF_INET;
-    insock.sin_port = htons (0);
-    insock.sin_addr.s_addr = htonl (INADDR_ANY);
-
-    while (bind (fd, (struct sockaddr *) &insock, sizeof (insock)))
-    {
-	if (--retry == 0)
-	{
-	    close (fd);
-	    return (-1);
-	}
-
-#ifdef SO_REUSEADDR
-	sleep (1);
-#else
-	sleep (10);
-#endif
-    }
-
-#ifdef SO_DONTLINGER
-    setsockopt (fd, SOL_SOCKET, SO_DONTLINGER, (char *) NULL, 0);
-#else
-#ifdef SO_LINGER
-    {
-    static int linger[2] = { 0, 0 };
-    setsockopt (fd, SOL_SOCKET, SO_LINGER, (char *) linger, sizeof (linger));
-    }
-#endif
-#endif
-
-    if (listen (fd, 5))
-    {
-	close (fd);
-	return (-1);
-    }
-
-    if (gethostname (hostnamebuf, sizeof (hostnamebuf)))
-    {
-	close (fd);
-	return (-1);
-    }
-
-    addrlen = sizeof (insock);
-    if (getsockname (fd, (struct sockaddr *) &insock, &addrlen))
-    {
-	close (fd);
-	return (-1);
-    }
-
-    sprintf (portnumbuf, "%d", ntohs (insock.sin_port));
-    *networkIdRet = (char *) malloc (
-	6 + strlen (hostnamebuf) + strlen (portnumbuf));
-    sprintf (*networkIdRet, "tcp/%s:%s", hostnamebuf, portnumbuf);
-
-    return (fd);
-}
-
-#endif /* TCPCONN */
-
-
-
-/*
- * Open a DECnet socket for listening
- */
-
-#ifdef DNETCONN
-
-static int
-open_dnet_socket (networkIdRet)
-
-char **networkIdRet;
-
-{
-    struct sockaddr_dn 	dnsock;
-    int			fd;
-    char		hostnamebuf[256];
-
-    *networkIdRet = NULL;
-
-    if ((fd = socket (AF_DECnet, SOCK_STREAM, 0)) < 0) 
-	return (-1);
-
-    bzero ((char *) &dnsock, sizeof (dnsock));
-    dnsock.sdn_family = AF_DECnet;
-    sprintf (dnsock.sdn_objname, "sm$%d", getpid ());
-    dnsock.sdn_objnamel = strlen (dnsock.sdn_objname);
-
-    if (bind (fd, (struct sockaddr *) &dnsock, sizeof (dnsock)))
-    {
-	close (fd);
-	return (-1);
-    }
-
-    if (listen (fd, 5))
-    {
-	close (fd);
-	return (-1);
-    }
-
-    if (gethostname (hostnamebuf, sizeof (hostnamebuf)))
-    {
-	close (fd);
-	return (-1);
-    }
-
-    *networkIdRet = (char *) malloc (
-	13 + strlen (hostnamebuf) +	dnsock.sdn_objnamel);
-    sprintf (*networkIdRet, "decnet/%s::%s", hostnamebuf, dnsock.sdn_objname);
-
-    return (fd);
-}
-
-#endif /* DNETCONN */
