@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.37 88/05/18 10:28:04 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.38 88/05/18 10:45:45 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -153,6 +153,7 @@ static jmp_buf env;
 
 static char *icon_geometry;
 static char *title;
+static Boolean closefds = TRUE;
 
 /* used by VT (charproc.c) */
 
@@ -163,6 +164,8 @@ static XtResource application_resources[] = {
 	(Cardinal)&icon_geometry, XtRString, (caddr_t) NULL},
     {XtNtitle, XtCTitle, XtRString, sizeof(char *),
 	(Cardinal)&title, XtRString, (caddr_t) NULL},
+    {"closeFileDescriptors", "CloseFileDescriptors", XtRBoolean, 
+     sizeof (Boolean), (Cardinal) &closefds, XtRString, "true"},
 };
 
 /* Command line options table.  Only resources are entered here...there is a
@@ -176,6 +179,8 @@ static XrmOptionDescRec optionDescList[] = {
 {"-cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "off"},
 {"+cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "on"},
 {"-cc",		"*charClass",	XrmoptionSepArg,	(caddr_t) NULL},
+{"-cf",		"*closeFileDescriptors", XrmoptionNoArg,(caddr_t) "off"},
+{"+cf",		"*closeFileDescriptors", XrmoptionNoArg,(caddr_t) "on"},
 {"-cn",		"*cutNewline",	XrmoptionNoArg,		(caddr_t) "off"},
 {"+cn",		"*cutNewline",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-cr",		"*cursorColor",	XrmoptionSepArg,	(caddr_t) NULL},
@@ -451,21 +456,6 @@ char **argv;
 	    }
 	    break;
 	}
-
-#ifdef CLOSESTRAYFILEDESCRIPTORS
-	/*
-	 * close off any stray file descriptors, although it means that we
-	 * can't use xterm from any program that wants to pass open file
-	 * descriptors.
-	 */
-	{
-	    int xserverfd = ConnectionNumber (XtDisplay (toplevel));
-
-	    for (i = 3; i < NOFILE; i++) {	/* start above stderr */
-		if (i != xserverfd && i != am_slave) (void) close (i);
-	    }
-	}
-#endif /* CLOSESTRAYFILEDESCRIPTORS */
 
         term = (XtermWidget) XtCreateManagedWidget(
 	    "vt100", xtermWidgetClass, toplevel, NULL, 0);
@@ -1263,6 +1253,15 @@ spawn ()
 
 		setgid (screen->gid);
 		setuid (screen->uid);
+
+		if (closefds) {
+		    /*
+		     * close off any stray file descriptors, including X
+		     */
+		    for (i = 3; i < NOFILE; i++) {    /* start above stderr */
+			(void) close (i);
+		    }
+		}
 
 		if (command_to_exec) {
 			execvp(*command_to_exec, command_to_exec);
