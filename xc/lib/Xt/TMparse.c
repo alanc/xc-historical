@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: TMparse.c,v 1.52 88/02/02 09:14:39 swick Locked $";
+static char rcsid[] = "$Header: TMparse.c,v 1.55 88/02/02 09:36:48 swick Locked $";
 #endif lint
 
 /*
@@ -1238,8 +1238,17 @@ static String ParseAction(str, actionP)
     if (*str == '(') {
 	str++;
 	str = ParseParamSeq(str, &actionP->params, &actionP->num_params);
-    } else { Syntax("Missing '('"); }
-    if (*str == ')') str++; else Syntax("Missing ')'");
+    } else {
+        Syntax("Missing '('");
+        str = ")";		/* ignore rest of sequence */
+    }
+
+    if (*str == ')')
+        str++;
+    else {
+        Syntax("Missing ')'");
+	str = "";		/* ignore rest of sequence */
+    }
 
     return str;
 }
