@@ -1,4 +1,4 @@
-/* $XConsortium: pl_nameset.c,v 1.5 93/02/23 14:40:47 mor Exp $ */
+/* $XConsortium: pl_nameset.c,v 1.6 93/09/23 14:39:50 mor Exp $ */
 
 /******************************************************************************
 Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -197,7 +197,7 @@ OUTPUT PEXName		**namesReturn;
 
     END_REQUEST_HEADER (GetNameSet, pBuf, req);
 
-    if (_XReply (display,  &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);

@@ -1,4 +1,4 @@
-/* $XConsortium: pl_escape.c,v 1.7 93/09/23 12:41:58 mor Exp $ */
+/* $XConsortium: pl_escape.c,v 1.8 93/09/23 14:39:43 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -105,7 +105,7 @@ OUTPUT unsigned long	*escapeOutDataSize;
 
     Data (display, escapeData, escapeDataSize);
 
-    if (_XReply (display, &rep, 0, xFalse) == 0)
+    if (_XReply (display, (xReply *)&rep, 0, xFalse) == 0)
     {
         UnlockDisplay (display);
         PEXSyncHandle (display);
