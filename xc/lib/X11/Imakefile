@@ -4,7 +4,7 @@
         DEFINES = ConnectionFlags
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XErrorDB\"
    INSTALLFLAGS = $(INSTINCFLAGS)
-#if BandAidLibrary
+#if BandAidLibraryNeeded
         AIDSRCS = BandAidLibrarySources
         AIDOBJS = BandAidLibraryObjects
 #endif
@@ -293,7 +293,7 @@ DebuggedLibraryTarget(X11,$(OBJS))
 AliasedLibraryTarget(X11_d,X_d)
 #endif
 
-#if BandAidLibrary
+#if BandAidLibraryNeeded
 BandAidLibraryMake()
 depend::  BandAidLibrarySources
 #endif
