@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.26 91/05/04 19:32:35 rws Exp $
+ * $XConsortium: XMultibuf.c,v 1.27 92/03/17 16:54:56 eswu Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -108,6 +108,7 @@ static Bool wire_to_event (dpy, libevent, netevent)
     	    ev->send_event = ((event->type & 0x80) != 0);
     	    ev->display = dpy;
     	    ev->buffer = event->buffer;
+	    ev->state = event->state;
     	    return True;
 	}
       case MultibufferUpdateNotify:
@@ -153,6 +154,7 @@ static Status event_to_wire (dpy, libevent, netevent)
     	    event->type = ev->type;
     	    event->sequenceNumber = (ev->serial & 0xffff);
     	    event->buffer = ev->buffer;
+	    event->state = ev->state;
     	    return 1;
 	}
       case MultibufferUpdateNotify:
