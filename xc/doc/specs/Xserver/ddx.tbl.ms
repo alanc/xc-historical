@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.24 89/12/18 19:21:23 keith Exp $
+.\" $XConsortium: ddx.tbl.ms,v 1.25 89/12/20 15:23:15 rws Exp $
 .EF 'Porting Layer Definition'- % -'March 1, 1988'
 .OF 'Porting Layer Definition'- % -'March 1, 1988'
 .EH '''
@@ -1520,7 +1520,9 @@ When you send a keyboard event, you send a report that a given key has either
 been pressed or has been released.
 There must be a keycode for each key that identifies the key;
 the keycode-to-key mapping can be any mapping you desire, because you
-specify the mapping in a table you set up for DIX.
+specify the mapping in a table you set up for DIX.  However, you are
+restricted by the protocol specification to keycode values in the range
+8 to 255 inclusive.
 
 The keycode mapping information that you set up consists of the following:
 .IP \(bu 5
