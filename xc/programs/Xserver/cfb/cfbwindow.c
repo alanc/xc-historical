@@ -44,9 +44,9 @@ cfbCreateWindow(pWin)
     pWin->PaintWindowBorder = cfbPaintAreaPR;
     pWin->CopyWindow = cfbCopyWindow;
     pPrivWin = (cfbPrivWin *)xalloc(sizeof(cfbPrivWin));
+    pWin->devPrivate = (pointer)pPrivWin;
     if (!pPrivWin)
 	return FALSE;
-    pWin->devPrivate = (pointer)pPrivWin;
     pPrivWin->pRotatedBorder = NullPixmap;
     pPrivWin->pRotatedBackground = NullPixmap;
     pPrivWin->fastBackground = 0;

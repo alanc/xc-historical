@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 1.13 89/03/18 16:25:56 rws Exp $ */
+/* $XConsortium: mfbwindow.c,v 1.14 89/03/24 15:35:17 rws Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -44,9 +44,10 @@ mfbCreateWindow(pWin)
     pWin->PaintWindowBorder = mfbPaintWindowPR;
 
     pWin->CopyWindow = mfbCopyWindow;
-    if(!(pPrivWin = (mfbPrivWin *)xalloc(sizeof(mfbPrivWin))))
-	 return (FALSE);
+    pPrivWin = (mfbPrivWin *)xalloc(sizeof(mfbPrivWin));
     pWin->devPrivate = (pointer)pPrivWin;
+    if (!pPrivWin)
+	 return (FALSE);
     pPrivWin->pRotatedBorder = NullPixmap;
     pPrivWin->pRotatedBackground = NullPixmap;
     pPrivWin->fastBackground = 0;
