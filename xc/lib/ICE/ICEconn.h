@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ICEconn.h,v 1.1 94/03/18 16:02:00 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -52,7 +52,8 @@ typedef struct {
     char			*release;
     int				version_count;
     IcePaVersionRec		*version_recs;
-    IceProtocolSetupNotifyProc	protocol_setup_notify_proc;
+    IceProtocolSetupProc	protocol_setup_proc;
+    IceProtocolActivateProc	protocol_activate_proc;
     int				auth_count;
     char			**auth_names;
     IcePaAuthProc		*auth_procs;

@@ -1,4 +1,4 @@
-/* $XConsortium: register.c,v 1.10 94/01/31 10:16:49 mor Exp $ */
+/* $XConsortium: register.c,v 1.11 94/03/18 15:59:24 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -129,7 +129,8 @@ IceIOErrorProc		IOErrorProc;
 int
 IceRegisterForProtocolReply (protocolName, vendor, release,
     versionCount, versionRecs, authCount, authNames, authProcs,
-    hostBasedAuthProc, protocolSetupNotifyProc, IOErrorProc)
+    hostBasedAuthProc, protocolSetupProc, protocolActivateProc,
+    IOErrorProc)
 
 char				*protocolName;
 char				*vendor;
@@ -140,7 +141,8 @@ int				authCount;
 char				**authNames;
 IcePaAuthProc			*authProcs;
 IceHostBasedAuthProc		hostBasedAuthProc;
-IceProtocolSetupNotifyProc	protocolSetupNotifyProc;
+IceProtocolSetupProc		protocolSetupProc;
+IceProtocolActivateProc		protocolActivateProc;
 IceIOErrorProc			IOErrorProc;
 
 {
@@ -206,7 +208,8 @@ IceIOErrorProc			IOErrorProc;
     memcpy (p->version_recs, versionRecs,
 	versionCount * sizeof (IcePaVersionRec));
 
-    p->protocol_setup_notify_proc = protocolSetupNotifyProc;
+    p->protocol_setup_proc = protocolSetupProc;
+    p->protocol_activate_proc = protocolActivateProc;
 
     if ((p->auth_count = authCount) > 0)
     {
