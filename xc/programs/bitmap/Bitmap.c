@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Bitmap.c,v 1.22 91/01/11 14:34:27 dmatic Exp $
+ * $XConsortium: Bitmap.c,v 1.23 91/01/13 18:01:59 dmatic Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -480,36 +480,41 @@ Boolean BWQueryStippled(w)
     return BW->bitmap.stippled;
 }
 
+void RedrawStippled(BW)
+     BitmapWidget(BW);
+{
+  XExposeEvent event;
+  
+  event.type = Expose;
+  event.display = XtDisplay((Widget)BW);
+  event.window = XtWindow((Widget)BW);
+  event.x = 0;
+  event.y = 0;
+  event.width = BW->core.width;
+  event.height = BW->core.height;
+  event.count = 0;
+  
+  BWRedrawMark((Widget)BW);
+  
+  BW->bitmap.stipple_change_expose_event = True; 
+  
+  XtDispatchEvent((XEvent *)&event);
+  
+  BW->bitmap.stipple_change_expose_event = False;
+}
+
 void BWSwitchStippled(w)
     Widget w;
 {
     BitmapWidget BW = (BitmapWidget) w;
-    XExposeEvent event;
 
-    event.type = Expose;
-    event.display = XtDisplay(w);
-    event.window = XtWindow(w);
-    event.x = 0;
-    event.y = 0;
-    event.width = BW->core.width;
-    event.height = BW->core.height;
-    event.count = 0;
-
-    BWRedrawMark(w);
-    
-    BW->bitmap.stipple_change_expose_event = True; 
-
-    XtDispatchEvent((XEvent *)&event);
+    RedrawStippled(BW);
 
     BW->bitmap.stippled ^= True;
     XSetFillStyle(XtDisplay(BW), BW->bitmap.highlighting_gc,
 		  (BW->bitmap.stippled ? FillStippled : FillSolid));
 
-    XtDispatchEvent((XEvent *)&event);
-
-    BW->bitmap.stipple_change_expose_event = False;
-
-    BWRedrawMark(w);
+    RedrawStippled(BW);    
 }
 
 void BWSelect(w, from_x, from_y, to_x, to_y, btime)
@@ -1728,12 +1733,8 @@ static Boolean SetValues(old, request, new, args, num_args)
   if (NE(bitmap.axes))
     BWSwitchAxes(old);
 
-  if (NE(bitmap.stippled)) {
-    XSetFillStyle(XtDisplay(new), newbw->bitmap.highlighting_gc,
-		  (newbw->bitmap.stippled ? FillStippled : FillSolid));
-    if (BWQueryMarked(new))
-      redisplay = True;
-  }
+  if (NE(bitmap.stippled))
+    BWSwitchStippled(old);
 
   if (NE(bitmap.proportional))
     resize = True;
@@ -1803,20 +1804,21 @@ static Boolean SetValues(old, request, new, args, num_args)
   }
 
   if (NE(bitmap.highlight_pixel) || NE(core.background_pixel)) {
+    RedrawStippled(newbw);
     XSetForeground(XtDisplay(new), 
 		   newbw->bitmap.highlighting_gc,
 		   newbw->bitmap.highlight_pixel
 		   ^ 
 		   newbw->core.background_pixel);
-    if (BWQueryMarked(new))
-      redisplay = True;
+    RedrawStippled(newbw);
   }
  
   if (NE(bitmap.stipple)) {
+    RedrawStippled(newbw);
     XSetStipple(XtDisplay(new),
 		newbw->bitmap.highlighting_gc,
 		newbw->bitmap.stipple);
-    redisplay = True;
+    RedrawStippled(newbw);
   }
   
   if (resize) Resize(newbw);
