@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.120 91/05/13 11:55:56 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.121 91/05/31 11:57:20 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -266,11 +266,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.120 91/05/13 11:55:56 rws Exp $
 #define FontDir $(LIBDIR)/fonts
 #endif
 #ifndef AdmDir
-#ifdef ProjectRoot
-#define AdmDir Concat(ProjectRoot,/adm)
-#else
 #define AdmDir /usr/adm
-#endif
 #endif
 #ifndef XinitDir
 #define XinitDir $(LIBDIR)/xinit
@@ -434,7 +430,7 @@ XCOMM $XConsortium: Project.tmpl,v 1.120 91/05/13 11:55:56 rws Exp $
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.120 91/05/13 11:55:56 rws Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.121 91/05/31 11:57:20 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
