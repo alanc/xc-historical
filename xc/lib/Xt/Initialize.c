@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.140 89/09/21 13:24:30 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.141 89/09/26 17:58:54 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -227,14 +227,14 @@ static XrmDatabase GetAppUserDefaults(dpy)
 	if ((old_path = getenv("XAPPLRESDIR")) == NULL) {
 	    char *path_default = "%s/%%L/%%N:%s/%%l/%%N:%s/%%N";
 	    if ((
-	      path = ALLOCATE_LOCAL(3*strlen(homedir) + sizeof(path_default)))
+	      path = ALLOCATE_LOCAL(3*strlen(homedir) + strlen(path_default)))
 		== NULL) _XtAllocError(NULL);
 	    sprintf( path, path_default, homedir, homedir, homedir );
 	} else {
 	    char *path_default = "%s/%%L/%%N:%s/%%l/%%N:%s/%%N:%s/%%N";
 	    if ((
 	      path = ALLOCATE_LOCAL( 3*strlen(old_path)
-				     + strlen(homedir) + sizeof(path_default)))
+				     + strlen(homedir) + strlen(path_default)))
 		== NULL) _XtAllocError(NULL);
 	    sprintf(path, path_default, old_path, old_path, old_path, homedir);
 	}
