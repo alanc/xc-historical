@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.20 92/12/24 09:27:08 rws Exp $ */
+/* $XConsortium: mfb.h,v 5.21 93/09/13 09:31:26 dpw Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */
@@ -64,7 +64,7 @@ extern RegionPtr mfbCopyArea(
 extern Bool mfbRegisterCopyPlaneProc(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/,
-    RegionPtr (*/*proc*/)()
+    RegionPtr (* /*proc*/)()
 #endif
 );
 
@@ -142,7 +142,7 @@ extern void mfbDoBitbltXor(
 extern int mfbBresS(
 #if NeedFunctionPrototypes
     int /*rop*/,
-    unsigned int */*addrl*/,
+    unsigned int * /*addrl*/,
     int /*nlwidth*/,
     int /*signdx*/,
     int /*signdy*/,
@@ -161,12 +161,12 @@ extern int mfbBresD(
 #if NeedFunctionPrototypes
     int /*fgrop*/,
     int /*bgrop*/,
-    int */*pdashIndex*/,
-    unsigned char */*pDash*/,
+    int * /*pdashIndex*/,
+    unsigned char * /*pDash*/,
     int /*numInDashList*/,
-    int */*pdashOffset*/,
+    int * /*pdashOffset*/,
     int /*isDoubleDash*/,
-    unsigned int */*addrl*/,
+    unsigned int * /*addrl*/,
     int /*nlwidth*/,
     int /*signdx*/,
     int /*signdy*/,
@@ -210,7 +210,7 @@ extern RegionPtr mfbPixmapToRegion(
 extern int mfbListInstalledColormaps(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/,
-    Colormap */*pmaps*/
+    Colormap * /*pmaps*/
 #endif
 );
 
@@ -228,9 +228,9 @@ extern void mfbUninstallColormap(
 
 extern void mfbResolveColor(
 #if NeedFunctionPrototypes
-    unsigned short */*pred*/,
-    unsigned short */*pgreen*/,
-    unsigned short */*pblue*/,
+    unsigned short * /*pred*/,
+    unsigned short * /*pgreen*/,
+    unsigned short * /*pblue*/,
     VisualPtr /*pVisual*/
 #endif
 );
@@ -259,7 +259,7 @@ extern void mfbPolyFillArcSolid(
     DrawablePtr /*pDraw*/,
     GCPtr /*pGC*/,
     int /*narcs*/,
-    xArc */*parcs*/
+    xArc * /*parcs*/
 #endif
 );
 /* mfbfillrct.c */
@@ -269,7 +269,7 @@ extern void mfbPolyFillRect(
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     int /*nrectFill*/,
-    xRectangle */*prectInit*/
+    xRectangle * /*prectInit*/
 #endif
 );
 /* mfbfillsp.c */
@@ -280,7 +280,7 @@ extern void mfbBlackSolidFS(
     GCPtr /*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -291,7 +291,7 @@ extern void mfbWhiteSolidFS(
     GCPtr /*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -302,7 +302,7 @@ extern void mfbInvertSolidFS(
     GCPtr /*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -313,7 +313,7 @@ extern void mfbWhiteStippleFS(
     GCPtr/*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -324,7 +324,7 @@ extern void mfbBlackStippleFS(
     GCPtr/*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -335,7 +335,7 @@ extern void mfbInvertStippleFS(
     GCPtr/*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -346,7 +346,7 @@ extern void mfbTileFS(
     GCPtr/*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -357,7 +357,7 @@ extern void mfbUnnaturalTileFS(
     GCPtr/*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -368,7 +368,7 @@ extern void mfbUnnaturalStippleFS(
     GCPtr/*pGC*/,
     int /*nInit*/,
     DDXPointPtr /*pptInit*/,
-    int */*pwidthInit*/,
+    int * /*pwidthInit*/,
     int /*fSorted*/
 #endif
 );
@@ -459,9 +459,9 @@ extern void mfbGetSpans(
     DrawablePtr /*pDrawable*/,
     int /*wMax*/,
     DDXPointPtr /*ppt*/,
-    int */*pwidth*/,
+    int * /*pwidth*/,
     int /*nspans*/,
-    unsigned int */*pdstStart*/
+    char * /*pdstStart*/
 #endif
 );
 /* mfbhrzvert.c */
@@ -469,7 +469,7 @@ extern void mfbGetSpans(
 extern int mfbHorzS(
 #if NeedFunctionPrototypes
     int /*rop*/,
-    unsigned int */*addrl*/,
+    unsigned int * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,
@@ -480,7 +480,7 @@ extern int mfbHorzS(
 extern int mfbVertS(
 #if NeedFunctionPrototypes
     int /*rop*/,
-    unsigned int */*addrl*/,
+    unsigned int * /*addrl*/,
     int /*nlwidth*/,
     int /*x1*/,
     int /*y1*/,
@@ -496,8 +496,8 @@ extern void mfbImageGlyphBltBlack(
     int /*x*/,
     int /*y*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* mfbigbwht.c */
@@ -509,8 +509,8 @@ extern void mfbImageGlyphBltWhite(
     int /*x*/,
     int /*y*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* mfbimage.c */
@@ -526,7 +526,7 @@ extern void mfbPutImage(
     int /*h*/,
     int /*leftPad*/,
     int /*format*/,
-    char */*pImage*/
+    char * /*pImage*/
 #endif
 );
 
@@ -539,7 +539,7 @@ extern void mfbGetImage(
     int /*h*/,
     unsigned int /*format*/,
     unsigned long /*planeMask*/,
-    pointer /*pdstLine*/
+    char * /*pdstLine*/
 #endif
 );
 /* mfbline.c */
@@ -576,8 +576,8 @@ extern int mfbClipLine(
     int /*signdx*/,
     int /*signdy*/,
     int /*axis*/,
-    int */*pclip1*/,
-    int */*pclip2*/
+    int * /*pclip1*/,
+    int * /*pclip2*/
 #endif
 );
 /* mfbmisc.c */
@@ -585,8 +585,8 @@ extern int mfbClipLine(
 extern void mfbQueryBestSize(
 #if NeedFunctionPrototypes
     int /*class*/,
-    unsigned short */*pwidth*/,
-    unsigned short */*pheight*/,
+    unsigned short * /*pwidth*/,
+    unsigned short * /*pheight*/,
     ScreenPtr /*pScreen*/
 #endif
 );
@@ -662,8 +662,8 @@ extern void mfbPolyGlyphBltBlack(
     int /*x*/,
     int /*y*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* mfbpgbinv.c */
@@ -675,8 +675,8 @@ extern void mfbPolyGlyphBltInvert(
     int /*x*/,
     int /*y*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* mfbpgbwht.c */
@@ -688,8 +688,8 @@ extern void mfbPolyGlyphBltWhite(
     int /*x*/,
     int /*y*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* mfbpixmap.c */
@@ -738,7 +738,7 @@ extern void mfbYRotatePixmap(
 extern void mfbCopyRotatePixmap(
 #if NeedFunctionPrototypes
     PixmapPtr /*psrcPix*/,
-    PixmapPtr */*ppdstPix*/,
+    PixmapPtr * /*ppdstPix*/,
     int /*xrot*/,
     int /*yrot*/
 #endif
@@ -796,7 +796,7 @@ extern void mfbPolyPoint(
     GCPtr /*pGC*/,
     int /*mode*/,
     int /*npt*/,
-    xPoint */*pptInit*/
+    xPoint * /*pptInit*/
 #endif
 );
 /* mfbpushpxl.c */
@@ -837,8 +837,8 @@ extern Bool mfbCloseScreen(
 extern Bool mfbAllocatePrivates(
 #if NeedFunctionPrototypes
     ScreenPtr /*pScreen*/,
-    int */*pWinIndex*/,
-    int */*pGCIndex*/
+    int * /*pWinIndex*/,
+    int * /*pGCIndex*/
 #endif
 );
 
@@ -860,7 +860,7 @@ extern void mfbSegmentSS(
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     int /*nseg*/,
-    xSegment */*pSeg*/
+    xSegment * /*pSeg*/
 #endif
 );
 
@@ -869,7 +869,7 @@ extern void mfbSegmentSD(
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
     int /*nseg*/,
-    xSegment */*pSeg*/
+    xSegment * /*pSeg*/
 #endif
 );
 /* mfbsetsp.c */
@@ -880,9 +880,9 @@ extern int mfbSetScanline(
     int /*xOrigin*/,
     int /*xStart*/,
     int /*xEnd*/,
-    unsigned int */*psrc*/,
+    unsigned int * /*psrc*/,
     int /*alu*/,
-    unsigned int */*pdstBase*/,
+    unsigned int * /*pdstBase*/,
     int /*widthDst*/
 #endif
 );
@@ -891,9 +891,9 @@ extern void mfbSetSpans(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDrawable*/,
     GCPtr /*pGC*/,
-    unsigned int */*psrc*/,
+    char * /*psrc*/,
     DDXPointPtr /*ppt*/,
-    int */*pwidth*/,
+    int * /*pwidth*/,
     int /*nspans*/,
     int /*fSorted*/
 #endif
@@ -907,8 +907,8 @@ extern void mfbTEGlyphBltBlack(
     int /*x*/,
     int /*y*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* mfbtewhite.c */
@@ -920,8 +920,8 @@ extern void mfbTEGlyphBltWhite(
     int /*x*/,
     int /*y*/,
     unsigned int /*nglyph*/,
-    CharInfoPtr */*ppci*/,
-    char */*pglyphBase*/
+    CharInfoPtr * /*ppci*/,
+    pointer /*pglyphBase*/
 #endif
 );
 /* mfbtileC.c */
@@ -1011,7 +1011,7 @@ extern void mfbZeroPolyArcSS(
     DrawablePtr /*pDraw*/,
     GCPtr /*pGC*/,
     int /*narcs*/,
-    xArc */*parcs*/
+    xArc * /*parcs*/
 #endif
 );
 
