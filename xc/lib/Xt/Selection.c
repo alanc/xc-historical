@@ -552,7 +552,10 @@ Boolean *incremental;
 			targetType, format, PropModeReplace,
 			(unsigned char *)value, (int)length);
 	/* free storage for client if no notify proc */
-	if (ctx->notify == NULL) XtFree((XtPointer)value);
+	if (ctx->notify == NULL) {
+	    XtFree((XtPointer)value);
+	    XtFree((XtPointer)req);
+	}
 	*incremental = FALSE;
     } else {
 	 PrepareIncremental(req, widget, event->requestor, property,
@@ -1060,7 +1063,6 @@ XEvent *ev;
     Atom type;
     XtPointer *c;
     Atom *t;
-    CallBackInfo newinfo;
 
     if (event->type != SelectionNotify) return;
     if (!MATCH_SELECT(event, info)) return; /* not really for us */
@@ -1083,7 +1085,7 @@ XEvent *ev;
                     FreeSelectionProperty(XtDisplay(widget), p->property);
 #ifndef NO_DRAFT_ICCCM_COMPATIBILITY
 	    } else if (p->target == ctx->incremental_atom) {
-		newinfo = (CallBackInfo) XtNew(CallBackInfoRec);
+		CallBackInfo newinfo = (CallBackInfo) XtNew(CallBackInfoRec);
 		newinfo->callback = info->callback;
 		newinfo->req_closure = (XtPointer *)XtNew(XtPointer);
 		*newinfo->req_closure = *c;
@@ -1093,6 +1095,8 @@ XEvent *ev;
 		newinfo->target = (Atom *)XtNew(Atom);
 		*newinfo->target = *t;
 		newinfo->ctx = info->ctx;
+		newinfo->incremental = info->incremental;
+		newinfo->req_cancel = info->req_cancel;
 		HandleIncremental(dpy, widget, p->property, newinfo,
 				  GetSizeOfIncr(widget, ctx, p->property)
 				  );
