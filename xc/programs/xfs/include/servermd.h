@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: servermd.h,v 1.2 91/05/13 16:49:26 gildea Exp $ */
 /* 
  * Copyright 1990, 1991 Network Computing Devices; 
  * Portions Copyright 1987 by Digital Equipment Corporation and the 
@@ -27,6 +27,12 @@
 #ifndef _SERVERMD_H_
 #define _SERVERMD_H_
 
-#define	VENDOR_RELEASE	17
-#define	VENDOR_STRING	"Font Server Prototype"
-#endif				/* _SERVERMD_H_ */
+#ifndef VENDOR_RELEASE
+#define VENDOR_RELEASE 5000
+#endif
+
+#ifndef VENDOR_STRING
+#define VENDOR_STRING "MIT X Consortium"
+#endif
+
+#endif /* _SERVERMD_H_ */
