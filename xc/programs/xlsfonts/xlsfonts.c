@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsfonts.c,v 1.30 90/01/09 16:44:31 jim Exp $
+ * $XConsortium: xlsfonts.c,v 1.31 90/03/28 11:34:09 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -187,7 +187,7 @@ get_list(pattern)
 		return;
 	}
 
-	font_list = (FontList *)Realloc(font_list,
+	font_list = (FontList *)Realloc((char *)font_list,
 		(font_cnt + available) * sizeof(FontList));
 	for (i=0; i<available; i++) {
 		font_list[font_cnt].name = fonts[i];
@@ -395,8 +395,9 @@ copy_number(pp1, pp2, n1, n2)
 
 
 
-static int IgnoreError(dpy, event)
-    Display *dpy;
+/* ARGSUSED */
+static int IgnoreError(disp, event)
+    Display *disp;
     XErrorEvent *event;
 {
     return 0;
@@ -416,7 +417,7 @@ static char *bounds_metrics_fmt =
 	  p->rbearing, p->ascent, p->descent, p->attributes); }
 
 
-static char* stringValued [] = {
+static char* stringValued [] = { /* values are atoms */
     "FAMILY_NAME",
     "FOUNDRY",
     "STYLE",
@@ -433,6 +434,7 @@ static char* stringValued [] = {
     "WEIGHT_NAME",
     "SETWIDTH_NAME",
     "SLANT",
+    "SPACING",
     "ADD_STYLE_NAME",
     "FONTNAME_REGISTRY",
     "FONT",
