@@ -1,4 +1,4 @@
-/* $Header: XIproto.h,v 1.16 91/05/05 18:25:06 rws Exp $ */
+/* $Header: XIproto.h,v 1.17 91/05/05 18:26:09 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -33,8 +33,8 @@ SOFTWARE.
 #ifndef NEED_REPLIES
 #define  NEED_REPLIES
 #endif
-#include "Xproto.h"
-#include "X.h"
+#include <X11/Xproto.h>
+#include <X11/X.h>
 
 /*********************************************************
  *
