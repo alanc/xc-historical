@@ -1,4 +1,4 @@
-/* $XConsortium: pl_sc.c,v 1.2 92/05/12 18:59:34 mor Exp $ */
+/* $XConsortium: pl_sc.c,v 1.3 92/05/20 20:24:24 mor Exp $ */
 
 /************************************************************************
 Copyright 1987,1991,1992 by Digital Equipment Corporation, Maynard,
@@ -411,7 +411,7 @@ INPUT PEXSCAttributes	*values;
 
     f = sizeof (PEXCoord) +
 	sizeof (float) +
-	(3 * sizeof (CARD32)) +
+	(5 * sizeof (CARD32)) +
 	(sizeof (PEXElementRef) * ((valueMask & PEXSCStartPath) ?
 	    values->start_path.count : 0)) +
 	(sizeof (PEXNameSetPair) * ((valueMask & PEXSCNormalList) ?
