@@ -70,13 +70,13 @@ Shift<Key>v: SetLabelType(variable) \n\
 *buttonbox.view.viewMenu.viewNoResources.Label: Hide Resource Boxes
 
 *buttonbox.select.Label: Select
-*buttonbox.select.selectMenu.unselect.Label: Unselect
-*buttonbox.select.selectMenu.selectInvert.Label: Invert Selection
+*buttonbox.select.selectMenu.unselect.Label: Unselect All
+*buttonbox.select.selectMenu.selectAll.Label: Select All
+*buttonbox.select.selectMenu.selectInvert.Label: Invert All
 *buttonbox.select.selectMenu.selectParent.Label: Select Parent
 *buttonbox.select.selectMenu.selectAncestors.Label: Select Ancestors
 *buttonbox.select.selectMenu.selectChildren.Label: Select Children
 *buttonbox.select.selectMenu.selectDescendants.Label: Select Descendants
-*buttonbox.select.selectMenu.selectAll.Label: Select All
 *buttonbox.select.selectMenu.selectHasResources.Label: Select Has Resources
 *buttonbox.select.selectMenu.selectShownResources.Label: Select Shown Resource Boxes
 

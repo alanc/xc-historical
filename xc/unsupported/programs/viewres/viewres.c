@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.40 90/02/13 14:18:51 jim Exp $
+ * $XConsortium: viewres.c,v 1.41 90/02/23 16:48:41 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -127,12 +127,12 @@ static XtActionsRec viewres_actions[] = {
 #define VIEW_number 6
 
 #define SELECT_NOTHING 0
-#define SELECT_PARENT 1
-#define SELECT_ANCESTORS 2
-#define SELECT_CHILDREN 3
-#define SELECT_DESCENDANTS 4
-#define SELECT_INVERT 5
-#define SELECT_ALL 6
+#define SELECT_ALL 1
+#define SELECT_INVERT 2
+#define SELECT_PARENT 3
+#define SELECT_ANCESTORS 4
+#define SELECT_CHILDREN 5
+#define SELECT_DESCENDANTS 6
 #define SELECT_HAS_RESOURCES 7
 #define SELECT_SHOWN_RESOURCES 8
 #define SELECT_number 9
@@ -142,12 +142,12 @@ static struct _nametable {
     int value;
 } select_nametable[] = {
     { "nothing", SELECT_NOTHING },
+    { "all", SELECT_ALL },
+    { "invert", SELECT_INVERT },
     { "parent", SELECT_PARENT },
     { "ancestors", SELECT_ANCESTORS },
     { "children", SELECT_CHILDREN },
     { "descendants", SELECT_DESCENDANTS },
-    { "invert", SELECT_INVERT },
-    { "all", SELECT_ALL },
     { "resources", SELECT_HAS_RESOURCES },
     { "shown", SELECT_SHOWN_RESOURCES },
 }, boolean_nametable[] = {
@@ -470,6 +470,18 @@ static void select_callback (gw, closure, data)
 	remove_nodes_from_selected_list (0, nselected, True);
 	break;
 
+      case SELECT_ALL:			/* put everything on selection_list */
+	add_subtree_to_selected_list (topnode, TRUE);
+	break;
+
+      case SELECT_INVERT:		/* toggle selection state */
+	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
+	    if (node->selection_index < 0) add_to_selected_list (node, TRUE);
+	}
+	remove_nodes_from_selected_list (0, nselected, True);
+	break;
+
+
       case SELECT_PARENT:		/* choose immediate parent */
 	node = (XtIsSubclass (gw, toggleWidgetClass) ? widget_to_node (gw)
 		: NULL);
@@ -540,17 +552,6 @@ static void select_callback (gw, closure, data)
 		add_subtree_to_selected_list (parent, TRUE);
 	    }
 	}
-	break;
-
-      case SELECT_INVERT:		/* toggle selection state */
-	for (i = 0, node = widget_list; i < nwidgets; i++, node++) {
-	    if (node->selection_index < 0) add_to_selected_list (node, TRUE);
-	}
-	remove_nodes_from_selected_list (0, nselected, True);
-	break;
-
-      case SELECT_ALL:			/* put everything on selection_list */
-	add_subtree_to_selected_list (topnode, TRUE);
 	break;
 
       case SELECT_HAS_RESOURCES:	/* put all w/ rescnt > 0 on sel_list */
@@ -732,6 +733,8 @@ main (argc, argv)
     select_widgets[n] = XtCreateManagedWidget (name, smeBSBObjectClass, \
 					       selectMenu, args, ONE)
     MAKE_SELECT (SELECT_NOTHING, "unselect");
+    MAKE_SELECT (SELECT_ALL, "selectAll");
+    MAKE_SELECT (SELECT_INVERT, "selectInvert");
     (void) XtCreateManagedWidget ("line1", smeLineObjectClass, selectMenu,
 				  NULL, ZERO);
     MAKE_SELECT (SELECT_PARENT, "selectParent");
@@ -740,8 +743,6 @@ main (argc, argv)
     MAKE_SELECT (SELECT_DESCENDANTS, "selectDescendants");
     (void) XtCreateManagedWidget ("line2", smeLineObjectClass, selectMenu,
 				  NULL, ZERO);
-    MAKE_SELECT (SELECT_INVERT, "selectInvert");
-    MAKE_SELECT (SELECT_ALL, "selectAll");
     MAKE_SELECT (SELECT_HAS_RESOURCES, "selectHasResources");
     MAKE_SELECT (SELECT_SHOWN_RESOURCES, "selectShownResources");
 #undef MAKE_SELECT
