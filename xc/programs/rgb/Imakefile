@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.28 94/02/10 19:52:51 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.29 94/03/31 14:07:54 gildea Exp $
 
 #if UseRgbTxt
    RGB_DEFINES = -DUSE_RGB_TXT
@@ -49,7 +49,7 @@ SpecialCObjectRule(rgb,$(ICONFIGFILES),$(_NOOP_))
 SingleProgramTarget(showrgb,$(OBJS2),NullParameter,$(DBMLIB))
 SpecialCObjectRule(showrgb,$(ICONFIGFILES),$(_NOOP_))
 InstallMultiple($(DATAFILES) rgb.txt,$(LIBDIR))
-InstallProgramWithFlags(showrgb,$(BINDIR),)
+InstallProgramWithFlags(showrgb,$(BINDIR),NullParameter)
 InstallManPage(showrgb,$(MANDIR))
 
 #if !UseRgbTxt
