@@ -36,20 +36,19 @@ SOFTWARE.
 #include "cfb.h"
 #include "cfbmskbits.h"
 
-extern void miBSGetSpans();
-
 /* GetSpans -- for each span, gets bits from drawable starting at ppt[i]
  * and continuing for pwidth[i] bits
  * Each scanline returned will be server scanline padded, i.e., it will come
  * out to an integral number of words.
  */
-unsigned int	*
-cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
+void
+cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     DrawablePtr		pDrawable;	/* drawable from which to get bits */
     int			wMax;		/* largest value of all *pwidths */
     register DDXPointPtr ppt;		/* points to start copying from */
     int			*pwidth;	/* list of number of bits to copy */
     int			nspans;		/* number of scanlines to copy */
+    unsigned int	*pdstStart;	/* where to put the bits */
 {
     register unsigned int	*pdst;		/* where to put the bits */
     register unsigned int	*psrc;		/* where to get the bits */
@@ -63,12 +62,12 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     int	 		srcStartOver; 
     int	 		startmask, endmask, nlMiddle, nl, srcBit;
     int			w;
-    unsigned int	*pdstStart;
     unsigned int	*pdstNext;
 
     switch (pDrawable->depth) {
 	case 1:
-	    return (mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans));
+	    mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+	    return;
 	case 8:
 	    break;
 	default:
@@ -87,11 +86,6 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     {
 	psrcBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthSrc = (int)(((PixmapPtr)pDrawable)->devKind);
-    }
-    pdstStart = (unsigned int *)xalloc(nspans * PixmapBytePad(wMax, PSZ));
-    if (!pdstStart)
-    {
-	return (unsigned int*)NULL;
     }
     pdst = pdstStart;
 
@@ -156,5 +150,4 @@ cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
         ppt++;
 	pwidth++;
     }
-    return(pdstStart);
 }

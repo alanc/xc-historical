@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgetsp.c,v 5.1 89/07/09 16:00:10 rws Exp $ */
+/* $XConsortium: mfbgetsp.c,v 5.2 89/07/20 13:47:52 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 
@@ -43,13 +43,14 @@ SOFTWARE.
  * Each scanline returned will be server scanline padded, i.e., it will come
  * out to an integral number of words.
  */
-unsigned int *
-mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
+void
+mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     DrawablePtr		pDrawable;	/* drawable from which to get bits */
     int			wMax;		/* largest value of all *pwidths */
     register DDXPointPtr ppt;		/* points to start copying from */
     int			*pwidth;	/* list of number of bits to copy */
     int			nspans;		/* number of scanlines to copy */
+    unsigned int	*pdstStart;	/* where to put the bits */
 {
     register unsigned int	*pdst;	/* where to put the bits */
     register unsigned int	*psrc;	/* where to get the bits */
@@ -63,7 +64,6 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     int	 		srcStartOver; 
     int	 		startmask, endmask, nlMiddle, nl, srcBit;
     int			w;
-    unsigned int	*pdstStart;
   
     pptLast = ppt + nspans;
 
@@ -78,11 +78,6 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
     {
 	psrcBase = (unsigned int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	widthSrc = (int)(((PixmapPtr)pDrawable)->devKind);
-    }
-    pdstStart = (unsigned int *)xalloc(nspans * PixmapBytePad(wMax, 1));
-    if (!pdstStart)
-    {
-	return (unsigned int*)NULL;
     }
     pdst = pdstStart;
 
@@ -154,7 +149,5 @@ mfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans)
 	} 
         ppt++;
     }
-
-    return(pdstStart);
 }
 
