@@ -71,11 +71,19 @@ SOFTWARE.
 #define DEFAULT_BELL_PITCH	400
 #define DEFAULT_BELL_DURATION	100
 #define DEFAULT_AUTOREPEAT	FALSE
+#ifdef hpux
+#define DEFAULT_AUTOREPEATS	{\
+        0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,\
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,\
+        0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,\
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+#else
 #define DEFAULT_AUTOREPEATS	{\
 	0, 0, 0, 0, 0, 0, 0, 0,\
 	0, 0, 0, 0, 0, 0, 0, 0,\
 	0, 0, 0, 0, 0, 0, 0, 0,\
 	0, 0, 0, 0, 0, 0, 0, 0 }
+#endif
 #define DEFAULT_LEDS		0x0        /* all off */
 #define DEFAULT_LEDS_MASK	0xffffffff /* 32 */
 #define DEFAULT_INT_RESOLUTION		1000
