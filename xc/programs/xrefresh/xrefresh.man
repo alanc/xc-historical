@@ -1,9 +1,9 @@
-.TH XREFRESH 1 "January 22" "X Version 11"
+.TH XREFRESH 1 "1 March 1988" "X Version 11"
 .SH NAME
 xrefresh - refresh all or part of the screen.
 .SH SYNOPSIS
 .B "xrefresh"
-[ option ] 
+[-option ...] 
 .SH DESCRIPTION
 .PP
 .I Xrefresh
@@ -48,14 +48,20 @@ old style \fB=WxH+X+Y\fP.
 .PP
 .TP 10
 .B \-display \fIhost\fP:\fIdisplay\fP
-This  argument  allow  you  to  specify the host and display number on
-which to display the refresh window.  For example ``xrefresh orpheus:1''
+This  argument  allows  you  to  specify the host and display number on
+which to display the refresh window.  For example ``xrefresh -display 
+orpheus:1''
 would specify that the display `1' on the machine
 `orpheus' will be refreshed.  By default,
 .I xrefresh
 uses the host and display number stored in the environment variable
 DISPLAY, and therefore this argument is not normally specified.
 .SH X DEFAULTS
+.PP
+This program uses the 
+.I XGetDefaults
+routine and therefore uses capitalized named instead of ones starting
+with lower case letters.
 .PP
 .TP 8
 .B Black\fP, \fBWhite\fP, \fBSolid\fP, \fBNone\fP, \fBRoot\fP
@@ -70,11 +76,14 @@ Determines the area to refresh.  Not very useful.
 DISPLAY - To get default host and display number.
 .SH SEE ALSO
 X(1), uwm(1), X(8)
+.SH BUGS
+.PP
+It should have just one default type for the background.
 .SH AUTHORS
 .PP
-Copyright 1985, 1986, 1987, 1988 Massachusetts Institute of Technology.
-.PP
+Copyright 1988 Massachusetts Institute of Technology.
+.br
 Jim Gettys, Digital Equipment Corp., MIT Project Athena
-.PP
+.br
 Jim Fulton, MIT X Consortium
 
