@@ -1,4 +1,4 @@
-/* $XConsortium: Xresource.h,v 1.16 89/07/20 09:59:59 jim Exp $ */
+/* $XConsortium: Xresource.h,v 1.17 89/12/03 21:39:19 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -53,6 +53,14 @@ SOFTWARE.
 #else
 #include <sys/types.h>
 #endif /* CRAY or USG */
+
+#ifndef NeedFunctionPrototypes
+#if defined(__STDC__) || defined(__cplusplus)
+#define NeedFunctionPrototypes 1
+#else
+#define NeedFunctionPrototypes 0
+#endif /* __STDC__ */
+#endif /* NeedFunctionPrototypes */
 
 #ifndef NULL
 #define NULL 0
@@ -111,6 +119,8 @@ extern XrmQuark XrmUniqueQuark(
  *
  ****************************************************************/
 
+typedef enum {XrmBindTightly, XrmBindLoosely} XrmBinding, *XrmBindingList;
+
 extern void XrmStringToQuarkList(
 #if NeedFunctionPrototypes
     char*		/* string */,
@@ -168,8 +178,6 @@ typedef struct {
  *
  ****************************************************************/
 
-typedef enum {XrmBindTightly, XrmBindLoosely} XrmBinding, *XrmBindingList;
-
 typedef struct _XrmHashBucketRec *XrmHashBucket;
 typedef XrmHashBucket *XrmHashTable;
 typedef XrmHashTable XrmSearchList[];
@@ -179,6 +187,12 @@ typedef struct _XrmHashBucketRec *XrmDatabase;
 extern void XrmInitialize(
 #if NeedFunctionPrototypes
     void
+#endif
+);
+
+extern void XrmDestroyDatabase(
+#if NeedFunctionPrototypes
+    XrmDatabase		/* database */    
 #endif
 );
 

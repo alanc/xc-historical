@@ -1,7 +1,7 @@
 #include <X11/copyright.h>
 
-/* $XConsortium: Xlibint.h,v 11.71 89/07/18 11:06:02 jim Exp $ */
-/* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
+/* $XConsortium: Xlibint.h,v 11.72 89/11/19 14:16:13 rws Exp $ */
+/* Copyright 1984, 1985, 1987, 1989  Massachusetts Institute of Technology */
 
 /*
  *	XlibInternal.h - Header definition and support file for the internal
@@ -30,7 +30,18 @@
 #define DataRoutineIsProcedure
 #endif /* CRAY */
 
+#ifndef NeedFunctionPrototypes
+#if defined(__STDC__) || defined(__cplusplus)
+#define NeedFunctionPrototypes 1
+#else
+#define NeedFunctionPrototypes 0
+#endif /* __STDC__ */
+#endif /* NeedFunctionPrototypes */
+
 #include "Xlib.h"
+#if NeedFunctionPrototypes	/* prototypes require event type definitions */
+#define NEED_EVENTS
+#endif
 #include <X11/Xproto.h>
 #include <errno.h>
 #include "Xlibos.h"
@@ -362,4 +373,130 @@ extern void Data();
 #define ENDITERATE }
 
 #endif /* MUSTCOPY - used machines whose C structs don't line up with proto */
+
+
+/* extension hooks */
+
+
+extern int (*XESetCreateGC(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* extension */,
+    int (*) ( Display*			/* display */,
+	      GC			/* gc */,
+	      XExtCodes*		/* codes */
+	    )		/* proc */
+#endif
+))();
+
+extern int (*XESetCopyGC(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* extension */,
+    int (*) ( Display*			/* display */,
+              GC			/* gc */,
+              XExtCodes*		/* codes */
+            )		/* proc */	      
+#endif
+))();
+
+extern int (*XESetFlushGC(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* extenstion */,
+    int (*) ( Display*			/* display */,
+              GC			/* gc */,
+              XExtCodes*		/* codes */
+            )		/* proc */	     
+#endif
+))();
+
+extern int (*XESetFreeGC(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* extension */,
+    int (*) ( Display*			/* display */,
+              GC			/* gc */,
+              XExtCodes*		/* codes */
+            )		/* proc */	     
+#endif
+))();
+extern int (*XESetCreateFont(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* extension */,
+    int (*) ( Display*			/* display */,
+              XFontStruct*		/* fs */,
+              XExtCodes*		/* codes */
+            )		/* proc */    
+#endif
+))();
+
+extern int (*XESetFreeFont(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* extension */,
+    int (*) ( Display*			/* display */,
+              XFontStruct*		/* fs */,
+              XExtCodes*		/* codes */
+            )		/* proc */    
+#endif
+))(); 
+
+extern int (*XESetCloseDisplay(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* extension */,
+    int (*) ( Display*			/* display */,
+              XExtCodes*		/* codes */
+            )		/* proc */    
+#endif
+))();
+
+extern int (*XESetError(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* extension */,
+    int (*) ( Display*			/* display */,
+              xError*			/* err */,
+              XExtCodes*		/* codes */,
+              int*			/* ret_code */
+            )		/* proc */    
+#endif
+))();
+
+extern char* (*XESetErrorString(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* extension */,
+    char* (*) ( Display*		/* display */,
+                int			/* code */,
+                XExtCodes*		/* codes */,
+                char*			/* buffer */,
+                int			/* nbytes */
+              )		/* proc */	       
+#endif
+))();
+
+extern int (*XESetWireToEvent(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* event_number */,
+    Bool (*) ( Display*			/* display */,
+               XEvent*			/* re */,
+               xEvent*			/* event */
+             )		/* proc */    
+#endif
+))();
+
+extern Status (*XESetEventToWire(
+#if NeedFunctionPrototypes
+    Display*		/* display */,
+    int			/* event_number */,
+    int (*) ( Display*			/* display */,
+              XEvent*			/* re */,
+              xEvent*			/* event */
+            )		/* proc */   
+#endif
+))();
 
