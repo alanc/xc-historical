@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.4 93/12/15 17:30:21 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.5 93/12/15 20:18:32 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -160,16 +160,14 @@ nomem()
     exit(255);
 }
 
-make_sm_id(id)
-char *id;
-{
-    static int 		nextId = 0;
-    extern time_t time();
+exit_sm ()
 
-    gethostname(id, MAXHOSTNAMELEN);
-    sprintf(id+strlen(id), " %d %ld %d",
-	getpid(), time((time_t *)NULL), nextId++);
+{
+    printf ("\nSESSION MANAGER GOING AWAY!\n");
+    system ("iceauth source .xsm-rem-auth");
+    exit (0);
 }
+
 
 SetInitialProperties(client, pendclient)
 ClientRec	*client;
@@ -226,7 +224,7 @@ char 		*previousId;
 
 {
     ClientRec	*client = (ClientRec *) managerData;
-    char 	id[50];
+    char 	*id;
     List	*cl;
 
     printf (
@@ -235,10 +233,16 @@ char 		*previousId;
 	previousId ? previousId : "NULL");
     printf ("\n");
 
-    if(previousId) strcpy(id, previousId);
-    else make_sm_id(id);
+    if (previousId)
+    {
+	id = malloc (strlen (previousId) + 1);
+	strcpy (id, previousId);
+    }
+    else
+	id = SmsGenerateClientID (smsConn);
+
     SmsRegisterClientReply (smsConn, id);
-    client->clientId = SmsClientID (smsConn);
+    client->clientId = id;
     client->clientHostname = SmsClientHostName (smsConn);
 
     printf (
@@ -397,8 +401,7 @@ char 		**reasonMsgs;
 
     if (shutdownInProgress && numClients == 0)
     {
-	printf ("\nSHUTTING DOWN!\n");
-	exit (0);
+	exit_sm ();
     }
 }
 
@@ -430,11 +433,10 @@ SmProp		*prop;
 }
 
 void
-SetPropertiesProc (smsConn, managerData, sequenceRef, numProps, props)
+SetPropertiesProc (smsConn, managerData, numProps, props)
 
 SmsConn 	smsConn;
 SmPointer 	managerData;
-unsigned long 	sequenceRef;
 int		numProps;
 SmProp 		**props;
 
@@ -443,8 +445,7 @@ SmProp 		**props;
     int		i, j;
 
     printf ("Client Id = %s, received SET PROPERTIES ", client->clientId);
-    printf ("[Sequence Reference = %d, Num props = %d]\n",
-	sequenceRef, numProps);
+    printf ("[Num props = %d]\n", numProps);
 
     for (i = 0; i < numProps; i++)
     {
@@ -822,7 +823,7 @@ XtPointer 	callData;
 
 {
     write_save();
-    exit (0);
+    exit_sm ();
 }
 
 
@@ -1057,8 +1058,7 @@ IceConn 	ice_conn;
 
 	    if (shutdownInProgress && numClients == 0)
 	    {
-		printf ("\nSHUTTING DOWN!\n");
-		exit (0);
+		exit_sm ();
 	    }
 	}
     }
@@ -1434,7 +1434,7 @@ restart_everything()
 	    for(pp = args; *pp; pp++) printf("%s ", *pp);
 	    printf("\n");
 
-	    if (!strcmp(c->clientHostname, "local"))
+	    if (!strncmp(c->clientHostname, "local/", 6))
 	    {
 		/*
 		 * The client is being restarted on the local machine.
@@ -1481,7 +1481,7 @@ restart_everything()
 			close (pipefd[0]);
 
 			execlp ("remsh", c->clientHostname,
-			    "/users/mor/bin/xrshsrv", (char *) 0);
+			    "xrshsrv", (char *) 0);
 			perror("execlp");
 			_exit(255);
 		    default:		/* parent */
@@ -1489,11 +1489,24 @@ restart_everything()
 			fp = fdopen (pipefd[1], "w");
 			fprintf (fp, "CONTEXT X\n");
 			fprintf (fp, "DIR %s\n", cwd);
+
+/*
+ * There are spaces inside some of the damn env values, and xrshsrv
+ * will barf on spaces.  Need to fix this, but for now, just set the
+ * important env variables.
+ */
+
 			for (i = 0; env[i]; i++)
 			    if (strstr (env[i], "PATH"))
 				fprintf (fp, "MISC X %s\n", env[i]);
 			fprintf (fp, "MISC X %s\n", display_env);
 			fprintf (fp, "MISC X %s\n", session_env);
+/*
+ * To do: set the auth data.
+ *   use AUTH authscheme authdata
+ *   The remote machine should have it config'd to invoke iceauth add
+ */
+
 			fprintf (fp, "EXEC %s %s", program, program);
 			for (i = 1; args[i]; i++)
 			    fprintf (fp, " %s", args[i]);
@@ -1517,6 +1530,30 @@ restart_everything()
 
 
 
+void
+write_iceauth (addfp, removefp, entry)
+
+FILE *addfp;
+FILE *removefp;
+IceAuthDataEntry *entry;
+
+{
+    fprintf (addfp,
+	"add %s \"\" %s %s \"%s\"\n",
+	entry->protocol_name,
+        entry->address,
+        entry->auth_name,
+        entry->auth_data);
+
+    fprintf (removefp,
+	"remove protoname=%s protodata=\"\" address=%s authname=%s\n",
+	entry->protocol_name,
+        entry->address,
+        entry->auth_name);
+}
+
+
+
 Status
 set_auth (count, listenObjs)
 
@@ -1524,57 +1561,36 @@ int		count;
 IceListenObj	*listenObjs;
 
 {
-    FILE		*fp;
-    char		*filename;
-    IceAuthFileEntry	authFileEntry[2];
+    FILE		*addfp;
+    FILE		*removefp;
     IceAuthDataEntry	authDataEntry[2];
-    int			i, j;
+    int			i;
 
-    filename = IceAuthFileName ();
-
-    if (!(fp = fopen (filename, "wb")))
+    if (!(addfp = fopen (".xsm-add-auth", "w")))
 	return (0);
 
-    authFileEntry[0].protocol_name = "ICE";
-    authFileEntry[0].protocol_data_length = 0;
-    authFileEntry[0].protocol_data = NULL;
-    authFileEntry[0].auth_name = "ICE-MAGIC-COOKIE-1";
-    authFileEntry[0].auth_data_length = 20;
-    authFileEntry[0].auth_data = "Ralph's Magic Cookie";
+    if (!(removefp = fopen (".xsm-rem-auth", "w")))
+	return (0);
 
-    authFileEntry[1].protocol_name = "XSMP";
-    authFileEntry[1].protocol_data_length = 0;
-    authFileEntry[1].protocol_data = NULL;
-    authFileEntry[1].auth_name = "SM-AUTH-TEST-2";
-    authFileEntry[1].auth_data_length = 0;
-    authFileEntry[1].auth_data = NULL;
+    authDataEntry[0].protocol_name = "ICE";
+    authDataEntry[0].auth_name = "ICE-MAGIC-COOKIE-1";
+    authDataEntry[0].auth_data_length = 14;
+    authDataEntry[0].auth_data = "1stMagicCookie";
 
-    authDataEntry[0].protocol_name = authFileEntry[0].protocol_name;
-    authDataEntry[0].auth_name = authFileEntry[0].auth_name;
-    authDataEntry[0].auth_data_length = authFileEntry[0].auth_data_length;
-    authDataEntry[0].auth_data = authFileEntry[0].auth_data;
-
-    authDataEntry[1].protocol_name = authFileEntry[1].protocol_name;
-    authDataEntry[1].auth_name = authFileEntry[1].auth_name;
-    authDataEntry[1].auth_data_length = authFileEntry[1].auth_data_length;
-    authDataEntry[1].auth_data = authFileEntry[1].auth_data;
+    authDataEntry[1].protocol_name = "XSMP";
+    authDataEntry[1].auth_name = "ICE-MAGIC-COOKIE-1";
+    authDataEntry[1].auth_data_length = 14;
+    authDataEntry[1].auth_data = "2ndMagicCookie";
 
     for (i = 0; i < count; i++)
     {
 	char *networkId = IceGetListenNetworkId (listenObjs[i]);
 
-	authFileEntry[0].address = networkId;
-	authFileEntry[1].address = networkId;
-
 	authDataEntry[0].address = networkId;
 	authDataEntry[1].address = networkId;
 
-	for (j = 0; j < 2; j++)
-	    if (!IceWriteAuthFileEntry (fp, &authFileEntry[j]))
-	    {
-		fclose (fp);
-		return (0);
-	    }
+	write_iceauth (addfp, removefp, &authDataEntry[0]);
+	write_iceauth (addfp, removefp, &authDataEntry[1]);
 
 	IceSetPaAuthData (2, authDataEntry);
 
@@ -1583,7 +1599,11 @@ IceListenObj	*listenObjs;
 	free (networkId);
     }
 
-    fclose (fp);
+    fclose (addfp);
+    fclose (removefp);
+
+    system ("iceauth source .xsm-add-auth");
+
     return (1);
 }
 
