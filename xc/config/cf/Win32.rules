@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.12 93/08/17 16:13:53 rws Exp $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.13 93/08/17 21:42:12 rws Exp $
 
 #define ProgramTargetName(target) target.exe
 
@@ -214,6 +214,22 @@ ProgramTargetName($(DEPEND)):						@@\
 	$(MAKE)								@@\
 <<
 #endif
+
+#define	DependTarget()							@@\
+DependDependency()							@@\
+									@@\
+depend::								@@\
+	$(DEPEND:/=\) @<<						@@\
+$(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- $(SRCS)		@@\
+<<
+
+#define	DependTarget3(srcs1,srcs2,srcs3)				@@\
+DependDependency()							@@\
+									@@\
+depend::								@@\
+	$(DEPEND:/=\) @<<						@@\
+$(DEPENDFLAGS) -- $(ALLDEFINES) $(DEPEND_DEFINES) -- srcs1 srcs2 srcs3	@@\
+<<
 
 #define ForceSubdirs(dirs)						@@\
 Avoid.Error dirs: FRC							@@\
