@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.5 88/12/13 11:38:03 jim Exp $
+ * $XConsortium: gethost.c,v 1.6 89/01/03 11:39:51 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -136,7 +136,7 @@ static Bool get_inet_address (name, resultp)
 #ifdef DNETCONN
 static Bool get_dnet_address (name, resultp)
     char *name;
-    struct dn_anaddr *resultp;
+    struct dn_naddr *resultp;
 {
     struct dn_naddr *dnaddrp, dnaddr;
     struct nodeent *np;
