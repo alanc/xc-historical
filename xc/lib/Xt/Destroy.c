@@ -117,7 +117,7 @@ static void XtPhase2Destroy (widget)
     Window	    window;
     Widget          parent;
     XtAppContext    app = XtWidgetToApplicationContext(widget);
-    Boolean	    outerInPhase2Destroy = app->in_phase2_destroy;
+    Widget	    outerInPhase2Destroy = app->in_phase2_destroy;
     int		    starting_count = app->destroy_count;
     Boolean	    isPopup = False;
 
@@ -183,7 +183,7 @@ static void XtPhase2Destroy (widget)
 	}
     }
 
-    app->in_phase2_destroy = TRUE;
+    app->in_phase2_destroy = widget;
     Recursive(widget, Phase2Destroy);
     app->in_phase2_destroy = outerInPhase2Destroy;
 
@@ -246,7 +246,9 @@ void XtDestroyWidget (widget)
 
     Recursive(widget, Phase1Destroy);
 
-    if (app->in_phase2_destroy) {
+    if (app->in_phase2_destroy &&
+	IsDescendant(widget, app->in_phase2_destroy))
+    {
 	XtPhase2Destroy(widget);
 	return;
     }

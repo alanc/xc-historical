@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.33 90/07/26 09:55:09 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.34 90/08/23 14:39:25 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -114,17 +114,18 @@ typedef struct _XtAppStruct {
     short count;			/* num of assigned entries in list */
     short max;				/* allocate size of list */
     short last;
-    Boolean sync, being_destroyed, error_inited, in_phase2_destroy;
-    Heap heap;
-    String * fallback_resources;	/* Set by XtAppSetFallbackResources. */
-    struct _ActionHookRec* action_hook_list;
-    int destroy_list_size;
-    int destroy_count;
-    int dispatch_level;
-    DestroyRec* destroy_list;
+    Boolean sync, being_destroyed, error_inited;
 #ifndef NO_IDENTIFY_WINDOWS
     Boolean identify_windows;		/* debugging hack */
 #endif
+    Heap heap;
+    String * fallback_resources;	/* Set by XtAppSetFallbackResources. */
+    struct _ActionHookRec* action_hook_list;
+    int destroy_list_size;		/* state data for 2-phase destroy */
+    int destroy_count;
+    int dispatch_level;
+    DestroyRec* destroy_list;
+    Widget in_phase2_destroy;
 } XtAppStruct;
 
 extern char* _XtHeapAlloc(

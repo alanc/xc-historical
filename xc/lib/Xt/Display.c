@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.48 90/08/20 15:24:55 swick Exp $ */
+/* $XConsortium: Display.c,v 1.49 90/08/23 14:44:25 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -287,7 +287,7 @@ XtAppContext XtCreateApplicationContext()
 	_XtSetDefaultSelectionTimeout(&app->selectionTimeout);
 	_XtSetDefaultConverterTable(&app->converterTable);
 	app->sync = app->being_destroyed = app->error_inited = FALSE;
-	app->in_phase2_destroy = FALSE;
+	app->in_phase2_destroy = NULL;
 	app->fds.nfds = app->fds.count = 0;
 	FD_ZERO(&app->fds.rmask);
 	FD_ZERO(&app->fds.wmask);
