@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swapreq.c,v 1.28 88/09/06 15:41:29 jim Exp $ */
+/* $XConsortium: swapreq.c,v 1.29 89/07/03 19:50:28 rws Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -291,7 +291,7 @@ SProcSendEvent(client)
 {
     register char n;
     xEvent eventT;
-    void (*proc)();
+    void (*proc)(), NotImplemented();
     REQUEST(xSendEventReq);
     swaps(&stuff->length, n);
     swapl(&stuff->destination, n);
@@ -299,7 +299,7 @@ SProcSendEvent(client)
 
     /* Swap event */
     proc = EventSwapVector[stuff->event.u.u.type & 0177];
-    if (!proc)   /* no swapping proc; invalid event type? */
+    if (!proc || (int (*)()) proc == (int (*)()) NotImplemented)    /* no swapping proc; invalid event type? */
        return (BadValue);
     (*proc)(&stuff->event, &eventT);
     stuff->event = eventT;
