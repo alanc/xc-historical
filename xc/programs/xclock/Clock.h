@@ -1,5 +1,5 @@
 /*
-* $Header: Clock.h,v 1.8 87/12/11 11:16:44 swick Locked $
+* $Header: Clock.h,v 1.9 88/01/22 11:11:00 swick Exp $
 */
 
 /*
@@ -50,6 +50,7 @@
  high		     Foreground		Pixel		Black
  mappedWhenManaged   MappedWhenManaged	Boolean		True
  padding	     Margin		int		8
+ reverseVideo	     ReverseVideo	Boolean		False
  update		     Interval		int		60 (seconds)
  width		     Width		int		164
  x		     Position		int		0
