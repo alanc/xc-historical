@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.127 87/09/01 15:09:19 toddb Locked $ */
+/* $Header: Xlib.h,v 11.128 87/09/03 20:08:23 swick Locked $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -80,6 +80,12 @@
 #define HeightMMOfScreen(s)	((s)->mheight)
 #define PlanesOfScreen(s)	((s)->root_depth)
 #define CellsOfScreen(s)	(DefaultVisualOfScreen((s))->map_entries)
+#define MinCmapsOfScreen(s)	((s)->min_maps)
+#define MaxCmapsOfScreen(s)	((s)->min_maps)
+#define DoesSaveUnders(s)	((s)->save_unders)
+#define DoesBackingStore(s)	((s)->backing_store)
+#define EventMaskOfScreen(s)	((s)->root_input_mask)
+
 /*
  * Extensions need a way to hang private data on some structures.
  */
