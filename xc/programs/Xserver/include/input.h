@@ -68,6 +68,7 @@ typedef struct {
     Bool		autoRepeat;
     unsigned char	autoRepeats[32];
     Leds		leds;
+    unsigned char	id;
 } KeybdCtrl;
 
 typedef struct {
@@ -79,11 +80,13 @@ typedef struct {
 
 typedef struct {
     int		num, den, threshold;
+    unsigned char id;
 } PtrCtrl;
 
 typedef struct {
     int         resolution, min_value, max_value;
     int         integer_displayed;
+    unsigned char id;
 } IntegerCtrl;
 
 typedef struct {
@@ -91,15 +94,18 @@ typedef struct {
     int         num_symbols_displayed;
     KeySym      *symbols_supported;
     KeySym      *symbols_displayed;
+    unsigned char id;
 } StringCtrl;
 
 typedef struct {
     int         percent, pitch, duration;
+    unsigned char id;
 } BellCtrl;
 
 typedef struct {
     Leds        led_values;
     Mask        led_mask;
+    unsigned char id;
 } LedCtrl;
 
 extern KeybdCtrl	defaultKeyboardControl;
