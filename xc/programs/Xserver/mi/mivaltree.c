@@ -39,7 +39,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 5.4 89/07/09 15:51:29 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 5.5 89/07/09 18:16:45 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    <stdio.h>
@@ -319,12 +319,27 @@ miComputeClips (pParent, pScreen, universe, kind, exposed)
 
     (* pScreen->Intersect) (universe, universe, &pParent->winSize);
     
-    if (pParent->firstChild) {
+    if (pChild = pParent->firstChild)
+    {
 	childUniverse = (* pScreen->RegionCreate) (NULL, 1);
 	childUnion = (* pScreen->RegionCreate) (NULL, 1);
-	for (pChild = pParent->firstChild; pChild; pChild = pChild->nextSib) {
-	    if (pChild->viewable)
-		(* pScreen->RegionAppend)(childUnion, &pChild->borderSize);
+	if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
+	    ((pChild->drawable.y == pParent->lastChild->drawable.y) &&
+	     (pChild->drawable.x < pParent->lastChild->drawable.x)))
+	{
+	    for (; pChild; pChild = pChild->nextSib)
+	    {
+		if (pChild->viewable)
+		    (* pScreen->RegionAppend)(childUnion, &pChild->borderSize);
+	    }
+	}
+	else
+	{
+	    for (pChild = pParent->lastChild; pChild; pChild = pChild->prevSib)
+	    {
+		if (pChild->viewable)
+		    (* pScreen->RegionAppend)(childUnion, &pChild->borderSize);
+	    }
 	}
 	overlap = (* pScreen->RegionValidate)(childUnion);
 
@@ -485,10 +500,27 @@ miValidateTree (pParent, pChild, kind)
      * children in their new configuration.
      */
     totalClip = (* pScreen->RegionCreate) (NULL, 1);
-    for (pWin = pChild; pWin != NullWindow; pWin = pWin->nextSib)
+    if ((pChild->drawable.y < pParent->lastChild->drawable.y) ||
+	((pChild->drawable.y == pParent->lastChild->drawable.y) &&
+	 (pChild->drawable.x < pParent->lastChild->drawable.x)))
     {
-	if (pWin->valdata)
-	    (* pScreen->RegionAppend) (totalClip, &pWin->borderClip);
+	for (pWin = pChild; pWin; pWin = pWin->nextSib)
+	{
+	    if (pWin->valdata)
+		(* pScreen->RegionAppend) (totalClip, &pWin->borderClip);
+	}
+    }
+    else
+    {
+	pWin = pParent->lastChild;
+	while (1)
+	{
+	    if (pWin->valdata)
+		(* pScreen->RegionAppend) (totalClip, &pWin->borderClip);
+	    if (pWin == pChild)
+		break;
+	    pWin = pWin->prevSib;
+	}
     }
     (void)(* pScreen->RegionValidate)(totalClip);
 
