@@ -1,19 +1,20 @@
 .TH XPROP 1 "1 March 1988" "X Version 11"
 .SH NAME
-xprop - X Window System property displayer.
+xprop - property displayer for X
 .SH SYNOPSIS
 .B "xprop"
 [-help] [-grammar] [-id \fIid\fP] [-root] [-name \fIname\fP] 
 [-font \fIfont\fP]
-[-display \fIhost\fP:\fIdisplay\fP]
+[-display \fIdisplay\fP]
 [-len \fIn\fP] [-notype] [-fs \fIfile\fP] 
 [-f \fIatom\fP \fIformat\fP [\fIdformat\fP]]*
 [\fIformat\fP [\fIdformat\fP] \fIatom\fP]*
 .SH SUMMARY
 .PP
-.I Xprop
-is a utility for displaying X properties.  Both the properties of windows
-and fonts can be displayed.  One window or font is selected using the command
+The
+.I prop
+utility is for displaying window and font properties in an X server.
+One window or font is selected using the command
 line arguemnts or possibly in the case of a window, by clicking on the desired
 window.  A list of properties is then given, possibly with formatting
 information.
@@ -30,15 +31,15 @@ Print out a detailed grammar for all command line options.
 .TP 8
 .B "-id \fIid\fP"
 This argument allows the user to select window \fIid\fP  on  the
-command  line rather than using the mouse to select the target window.
+command  line rather than using the pointer to select the target window.
 This is very useful in  debugging  X  applications  where  the  target
-window is not mapped to the screen or where the use of the mouse might
+window is not mapped to the screen or where the use of the pointer might
 be impossible or interfere with the application.
 .PP
 .TP 8
 .B "-name \fIname\fP"
 This argument allows the user to specify that the window named \fIname\fP
-is the target window on the command line rather than using the mouse to
+is the target window on the command line rather than using the pointer to
 select the target window.
 .PP
 .TP 8
@@ -53,14 +54,9 @@ This is useful in situations  where  the  root  window  is  completely
 obscured.
 .PP
 .TP 8
-.B "-display \fIhost\fP:\fIdisplay\fP"
-This  argument  allow  you  to  specify the host and display number on
-which to find the target window.  For example `xprop -display orpheus:1'
-would specify that the target window is on display `1' on the machine
-`orpheus'.  By default,
-.I xprop
-uses  the  host  and display number stored in the environment variable
-DISPLAY, and therefore this argument is not normally specified.
+.B "-display \fIdisplay\fP"
+This argument allows you to specify the server to connect to;
+see \fIX(1)\fP.
 .PP
 .TP 8
 .B "-len \fIn\fP"
@@ -101,7 +97,7 @@ with 0x) while the -name argument selects a window by name.
 The last way to select a window does not involve the command line at all.
 If none of -font, -id, -name, and -root are specified, a crosshairs cursor
 is displayed and the user allowed to choose any visible window by pressing
-any mouse button in the desired window.  If it is desired to display properties
+any pointer button in the desired window.  If it is desired to display properties
 of a font as opposed to a window, the -font argument may be used.
 .PP
 Other than the above four arguments and the -help argument for obtaining help,
@@ -113,8 +109,8 @@ read and displayed.  This is useful for example when displaying the cut buffer
 on the root window which could run to several pages if displayed in full.
 .PP
 Normally each property name is displayed by printing first the property
-name then its type if it has one in ()'s followed by its value.
-The -notype argument specifies that types of the properties should not be
+name then its type (if it has one) in parentheses followed by its value.
+The -notype argument specifies that property types should not be
 displayed.  The -fs argument is used to specify a file containing a list of
 formats for properties while the -f argument is used to specify the format
 for one property.
@@ -128,7 +124,7 @@ The following paragraphs describe how to construct \fIformat\fPs and
 \fIdformat\fPs.  However, for the vast majority of users and uses, this should
 not be necessary as the built in defaults contain the \fIformat\fPs and
 \fIdformat\fPs necessary to display all the standard properties.  It should
-only be necessary to muck about with \fIformat\fPs and \fIdformat\fPs
+only be necessary to specify \fIformat\fPs and \fIdformat\fPs
 if a new property is being dealt with or the user dislikes the standard display
 format.  New users especially are encouraged to skip this part.
 .PP
@@ -145,7 +141,7 @@ the property is a sequence of words.  The difference between these two lies in
 the fact that the sequence of words will be byte swapped while the sequence of
 bytes will not be when read by a machine of the opposite byte order of the
 machine that orginally wrote the property.  For more information on how
-properties are formatted and stored, consult the X 11 XLib manual.
+properties are formatted and stored, consult the Xlib manual.
 .PP
 Once the size of the fields has been specified, it is necessary to specify
 the type of each field (i.e., is it an integer, a string, an atom, or what?)
@@ -155,7 +151,7 @@ repeated as many times as necessary for the extra fields.  The format
 characters and their meaning are as follows:
 .TP
 a
-The field holds a atom number.  A field of this type should be of size 32.
+The field holds an atom number.  A field of this type should be of size 32.
 .TP
 b
 The field is an boolean.  A 0 means false while anything else means true.
@@ -212,9 +208,9 @@ field defined.  If field \fIn\fP is not defined, nothing is displayed.
 This is useful for a property that is a list of values.
 .PP
 A ? is used to start a conditional expression, a kind of if-then statement.
-?\fIexp\fP(\fItext\fP) will display \fItext\fP iff \fIexp\fP evaluates to
+?\fIexp\fP(\fItext\fP) will display \fItext\fP if and only if \fIexp\fP evaluates to
 non-zero.  This is useful for two things.  First, it allows fields to be
-displayed iff a flag is set.  And second, it allows a value to such as a state
+displayed if and only if a flag is set.  And second, it allows a value to such as a state
 number to be displayed as a name rather than as just a number.  The syntax of
 \fIexp\fP is as follows:
 .TP
@@ -224,7 +220,7 @@ number to be displayed as a name rather than as just a number.  The syntax of
 \fIterm\fP
 ::= \fIn\fP | $\fIn\fP | m\fIn\fP
 .PP
-! is a not operator changing 0 to 1 and any non-zero value to 0.
+The ! operator is a logical ``not'', changing 0 to 1 and any non-zero value to 0.
 = is an equality operator.  Note that internally all expressions are evaluated
 as 32 bit numbers so -1 is not equal to 65535.  = returns 1 if the two values
 are equal and 0 if not.
@@ -233,7 +229,7 @@ value of field number \fIn\fP.
 m\fIn\fP is 1 if flag number \fIn\fP in the first field having format
 character 'm' in the corrsponding \fIformat\fP is 1, 0 otherwise.
 .PP
-Examples: ?m3(count: $3\\n) displays field 3 with a label of count iff flag
+Examples: ?m3(count: $3\\n) displays field 3 with a label of count if and only if flag
 number 3 (count starts at 0!) is on.  ?$2=0(True)?!$2=0(False) displays the
 inverted value of field 2 as a boolean.
 .PP
@@ -276,13 +272,14 @@ To display the point size of the fixed font: \fIxprop\fP -font fixed POINT_SIZE
 To display all the properties of window # 0x200007: \fIxprop\fP -id 0x200007
 .SH ENVIRONMENT
 .PP
-.TP 8
+.B DISPLAY
+.br
+To get default display.
+.PP
 .B XPROPFORMATS
+.br
 Specifies the name of a file from which additional formats are to be obtained.
 .PP
-.TP 8
-.B DISPLAY
-To get default host and display number.
 .SH SEE ALSO
 X(1), xwininfo(1)
 .SH COPYRIGHT
@@ -291,5 +288,3 @@ Copyright 1988, Massachusetts Institute of Technology.
 See \fIX(1)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Mark Lillibridge, MIT Project Athena
-
-
