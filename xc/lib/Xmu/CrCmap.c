@@ -1,4 +1,4 @@
-/* $XConsortium: CrCmap.c,v 1.3 91/04/10 16:45:46 converse Exp $
+/* $XConsortium: CrCmap.c,v 1.4 92/11/23 15:39:27 rws Exp $
  *
  * CreateCmap.c - given a standard colormap description, make the map.
  * 
@@ -143,7 +143,7 @@ static Status readwrite_map(dpy, vinfo, colormap)
     XVisualInfo		*vinfo;
     XStandardColormap	*colormap;
 {
-    register int	i, n;		/* index counters */
+    register unsigned long i, n;	/* index counters */
     int			ncolors;	/* number of colors to be defined */
     int			npixels;	/* number of pixels allocated R/W */
     int			first_index;	/* first index of pixels to use */
@@ -217,77 +217,75 @@ static Status readwrite_map(dpy, vinfo, colormap)
     /* construct a gray map */
     if (colormap->red_mult == 1 && colormap->green_mult == 1 &&
 	colormap->blue_mult == 1)
-	for (n=colormap->base_pixel, i=0; i < ncolors; i++, n++)
+	for (n=colormap->base_pixel, i=0; i < ncolors; i++, n += delta)
 	{
-	    color.pixel = (unsigned long) n;
+	    color.pixel = n;
 	    color.blue = color.green = color.red =
 		(unsigned short) ((i * 65535) / (colormap->red_max +
 						 colormap->green_max +
 						 colormap->blue_max));
 
 	    if (! ROorRWcell(dpy, colormap->colormap, pixels, npixels, &color,
-			     first_index + i, n))
+			     first_index + i))
 		return 0;
 	}
 
     /* construct a red ramp map */
     else if (colormap->green_max == 0 && colormap->blue_max == 0)
-    	for (n=colormap->base_pixel, i=0; i < ncolors; i++, n++)
+    	for (n=colormap->base_pixel, i=0; i < ncolors; i++, n += delta)
 	{
-	    color.pixel = (unsigned long) n;
+	    color.pixel = n;
 	    color.red = (unsigned short) ((i * 65535) / colormap->red_max);
 	    color.green = color.blue = 0;
 
 	    if (! ROorRWcell(dpy, colormap->colormap, pixels, npixels, &color,
-			     first_index + i, n))
+			     first_index + i))
 		return 0;
 	}
 
     /* construct a green ramp map */
     else if (colormap->red_max == 0 && colormap->blue_max == 0)
-    	for (n=colormap->base_pixel, i=0; i < ncolors; i++, n++)
+    	for (n=colormap->base_pixel, i=0; i < ncolors; i++, n += delta)
 	{
-	    color.pixel = (unsigned long) n;
+	    color.pixel = n;
 	    color.green = (unsigned short) ((i * 65535) / colormap->green_max);
 	    color.red = color.blue = 0;
 
 	    if (! ROorRWcell(dpy, colormap->colormap, pixels, npixels, &color,
-			     first_index + i, n))
+			     first_index + i))
 		return 0;
 	}
 
     /* construct a blue ramp map */
     else if (colormap->red_max == 0 && colormap->green_max == 0)
-    	for (n=colormap->base_pixel, i=0; i < ncolors; i++, n++)
+    	for (n=colormap->base_pixel, i=0; i < ncolors; i++, n += delta)
 	{
-	    color.pixel = (unsigned long) n;
+	    color.pixel = n;
 	    color.blue = (unsigned short) ((i * 65535) / colormap->blue_max);
 	    color.red = color.green = 0;
 
 	    if (! ROorRWcell(dpy, colormap->colormap, pixels, npixels, &color,
-			     first_index + i, n))
+			     first_index + i))
 		return 0;
 	}
 
     /* construct a standard red green blue cube map */
     else
     {
-	int r = colormap->red_mult;
-	int g = colormap->green_mult;
-	int gg = colormap->green_max + 1;
+#define calc(max,mult) (((n / colormap->mult) % \
+			 (colormap->max + 1)) * 65535) / colormap->max
 
-    	for (n=colormap->base_pixel, i=0; i < ncolors; i++, n++)
+    	for (n=0, i=0; i < ncolors; i++, n += delta)
 	{
-	    color.pixel = (unsigned long) n;
-	    color.red = (unsigned short) (((i/r) * 65535) / colormap->red_max);
-	    color.green = (unsigned short) ((((i/g)%gg) * 65535) /
-					    colormap->green_max);
-	    color.blue = (unsigned short) (((i%g) * 65535) /
-					   colormap->blue_max);
+	    color.pixel = n + colormap->base_pixel;
+	    color.red = calc(red_max, red_mult);
+	    color.green = calc(green_max, green_mult);
+	    color.blue = calc(blue_max, blue_mult);
 	    if (! ROorRWcell(dpy, colormap->colormap, pixels, npixels, &color,
-			     first_index + i, n))
+			     first_index + i))
 		return 0;
 	}
+#undef calc
     }
     /* We have a read-only map defined.  Now free unused cells,
      * first those occuring before the contiguous sequence begins,
@@ -381,14 +379,13 @@ static Status contiguous(pixels, npixels, ncolors, delta, first, rem)
 
 
 /****************************************************************************/
-static Status ROorRWcell(dpy, cmap, pixels, npixels, color, p, n)
+static Status ROorRWcell(dpy, cmap, pixels, npixels, color, p)
     Display		*dpy;
     Colormap		cmap;
     unsigned long	pixels[];
     int			npixels;
     XColor		*color;
-    int			p;
-    int			n;
+    unsigned long	p;
 {
     unsigned long	pixel;
     XColor		request;
@@ -405,7 +402,7 @@ static Status ROorRWcell(dpy, cmap, pixels, npixels, color, p, n)
      * because we want contiguous cells for image processing algorithms.
      */
      
-    pixel = (unsigned long) n;
+    pixel = color->pixel;
     request.red = color->red;
     request.green = color->green;
     request.blue = color->blue;
@@ -413,9 +410,9 @@ static Status ROorRWcell(dpy, cmap, pixels, npixels, color, p, n)
     XFreeColors(dpy, cmap, &pixel, 1, (unsigned long) 0);
     if (! XAllocColor(dpy, cmap, color) 
 	|| (color->pixel != pixel &&
-	    (!RWcell(dpy, cmap, color, &request, &pixel, n)))) 
+	    (!RWcell(dpy, cmap, color, &request, &pixel)))) 
     {
-	free_cells(dpy, cmap, pixels, npixels, p);
+	free_cells(dpy, cmap, pixels, npixels, (int)p);
 	return 0;
     }
     return 1;
@@ -442,14 +439,15 @@ static void free_cells(dpy, cmap, pixels, npixels,  p)
 
 
 /****************************************************************************/
-static Status RWcell(dpy, cmap, color, request, pixel, n)
+static Status RWcell(dpy, cmap, color, request, pixel)
     Display		*dpy;
     Colormap		cmap;
     XColor		*color;
     XColor		*request;
     unsigned long	*pixel;
-    int			n;
 {
+    unsigned long	n = *pixel;
+
     XFreeColors(dpy, cmap, &(color->pixel), 1, (unsigned long)0);
     if (! XAllocColorCells(dpy, cmap, (Bool) 0, (unsigned long *) NULL,
 			   (unsigned) 0, pixel, (unsigned) 1))
