@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.47 91/03/18 11:21:57 converse Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.48 91/03/18 14:52:35 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -30,11 +30,12 @@
  *
  */
 
+#include <X11/IntrinsicP.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
-
+#include <X11/Xos.h>
+#include <X11/Xfuncs.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/AsciiSrcP.h>
 #include <X11/Xmu/Misc.h>
@@ -44,7 +45,6 @@
 #  include <X11/Xaw/AsciiText.h> /* for Widget Classes. */
 #endif
 
-#include <X11/Xfuncs.h>
 
 /****************************************************************
  *
