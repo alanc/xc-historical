@@ -1,4 +1,4 @@
-/* $XConsortium: maskbits.c,v 1.7 90/02/22 18:46:24 keith Exp $ */
+/* $XConsortium: maskbits.c,v 1.8 91/04/07 18:28:29 keith Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -45,7 +45,7 @@ lets us deal with a full first word in the middle loop, rather
 than having to do the multiple reads and masks that we'd
 have to do if we thought it was partial.
 */
-int starttab[33] =
+unsigned int starttab[33] =
     {
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0x7FFFFFFF ),
@@ -82,7 +82,7 @@ int starttab[33] =
 	LONG2CHARS( 0x00000000 )
     };
 
-int endtab[33] =
+unsigned int endtab[33] =
     {
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0x80000000 ),
@@ -125,7 +125,7 @@ int endtab[33] =
    this means the code DOES NOT WORK for segments of length
    0 (which is only a problem in the horizontal line code.)
 */
-int startpartial[33] =
+unsigned int startpartial[33] =
     {
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0x7FFFFFFF ),
@@ -162,7 +162,7 @@ int startpartial[33] =
 	LONG2CHARS( 0x00000000 )
     };
 
-int endpartial[33] =
+unsigned int endpartial[33] =
     {
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0x80000000 ),
@@ -466,7 +466,7 @@ lets us deal with a full first word in the middle loop ), rather
 than having to do the multiple reads and masks that we'd
 have to do if we thought it was partial.
 */
-int starttab[33] = 
+unsigned int starttab[33] = 
 	{
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0xFFFFFFFE ),
@@ -503,7 +503,7 @@ int starttab[33] =
 	LONG2CHARS( 0x00000000 )
 	};
 
-int endtab[33] = 
+unsigned int endtab[33] = 
 	{
 	LONG2CHARS( 0x00000000 ),
 	LONG2CHARS( 0x00000001 ),
@@ -546,7 +546,7 @@ int endtab[33] =
    this means the code DOES NOT WORK for segments of length
    0 (which is only a problem in the horizontal line code.)
 */
-int startpartial[33] = 
+unsigned int startpartial[33] = 
 	{
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0xFFFFFFFE ),
@@ -583,7 +583,7 @@ int startpartial[33] =
 	LONG2CHARS( 0x00000000 )
 	};
 
-int endpartial[33] = 
+unsigned int endpartial[33] = 
 	{
 	LONG2CHARS( 0xFFFFFFFF ),
 	LONG2CHARS( 0x00000001 ),
@@ -890,7 +890,7 @@ is a screen posiotion.)
 */
 
 #if (BITMAP_BIT_ORDER == MSBFirst)
-int mask[] =
+unsigned int mask[] =
     {
     LONG2CHARS( 1<<31 ), LONG2CHARS( 1<<30 ), LONG2CHARS( 1<<29 ), 
     LONG2CHARS( 1<<28 ), LONG2CHARS( 1<<27 ), LONG2CHARS( 1<<26 ), 
@@ -904,7 +904,7 @@ int mask[] =
     LONG2CHARS( 1<<4 ), LONG2CHARS( 1<<3 ), LONG2CHARS( 1<<2 ), 
     LONG2CHARS( 1<<1 ), LONG2CHARS( 1<<0 )
     }; 
-int rmask[] = 
+unsigned int rmask[] = 
     {
     0xffffffff ^ LONG2CHARS( 1<<31 ), 0xffffffff ^ LONG2CHARS( 1<<30 ), 
     0xffffffff ^ LONG2CHARS( 1<<29 ), 0xffffffff ^ LONG2CHARS( 1<<28), 
@@ -924,7 +924,7 @@ int rmask[] =
     0xffffffff ^ LONG2CHARS( 1<<1 ),  0xffffffff ^ LONG2CHARS( 1<<0)
     };
 #else	/* LSBFirst */
-int mask[] =
+unsigned int mask[] =
     {
     LONG2CHARS( 1<<0 ), LONG2CHARS( 1<<1 ), LONG2CHARS( 1<<2), 
     LONG2CHARS( 1<<3 ), LONG2CHARS( 1<<4 ), LONG2CHARS( 1<<5), 
@@ -938,7 +938,7 @@ int mask[] =
     LONG2CHARS( 1<<27 ), LONG2CHARS( 1<<28 ), LONG2CHARS( 1<<29), 
     LONG2CHARS( 1<<30 ), LONG2CHARS( 1<<31 )
     }; 
-int rmask[] = 
+unsigned int rmask[] = 
     {
     0xffffffff ^ LONG2CHARS( 1<<0), 0xffffffff ^ LONG2CHARS( 1<<1), 
     0xffffffff ^ LONG2CHARS( 1<<2), 0xffffffff ^ LONG2CHARS( 1<<3), 

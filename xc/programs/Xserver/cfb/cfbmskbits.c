@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.c,v 4.4 88/09/06 15:02:50 jim Exp $ */
+/* $XConsortium: cfbmskbits.c,v 4.5 89/03/21 11:37:42 rws Exp $ */
 
 /*
  * ==========================================================================
@@ -57,7 +57,7 @@ lets us deal with a full first word in the middle loop, rather
 than having to do the multiple reads and masks that we'd
 have to do if we thought it was partial.
 */
-int cfbstarttab[] =
+unsigned int cfbstarttab[] =
     {
 	0x00000000,
 	0x00FFFFFF,
@@ -65,7 +65,7 @@ int cfbstarttab[] =
 	0x000000FF
     };
 
-int cfbendtab[] =
+unsigned int cfbendtab[] =
     {
 	0x00000000,
 	0xFF000000,
@@ -78,7 +78,7 @@ int cfbendtab[] =
    this means the code DOES NOT WORK for segments of length
    0 (which is only a problem in the horizontal line code.)
 */
-int cfbstartpartial[] =
+unsigned int cfbstartpartial[] =
     {
 	0xFFFFFFFF,
 	0x00FFFFFF,
@@ -86,7 +86,7 @@ int cfbstartpartial[] =
 	0x000000FF
     };
 
-int cfbendpartial[] =
+unsigned int cfbendpartial[] =
     {
 	0xFFFFFFFF,
 	0xFF000000,
@@ -100,7 +100,7 @@ lets us deal with a full first word in the middle loop, rather
 than having to do the multiple reads and masks that we'd
 have to do if we thought it was partial.
 */
-int cfbstarttab[] = 
+unsigned int cfbstarttab[] = 
 	{
 	0x00000000,
 	0xFFFFFF00,
@@ -108,7 +108,7 @@ int cfbstarttab[] =
 	0xFF000000
 	};
 
-int cfbendtab[] = 
+unsigned int cfbendtab[] = 
 	{
 	0x00000000,
 	0x000000FF,
@@ -121,7 +121,7 @@ int cfbendtab[] =
    this means the code DOES NOT WORK for segments of length
    0 (which is only a problem in the horizontal line code.)
 */
-int cfbstartpartial[] = 
+unsigned int cfbstartpartial[] = 
 	{
 	0xFFFFFFFF,
 	0xFFFFFF00,
@@ -129,7 +129,7 @@ int cfbstartpartial[] =
 	0xFF000000
 	};
 
-int cfbendpartial[] = 
+unsigned int cfbendpartial[] = 
 	{
 	0xFFFFFFFF,
 	0x000000FF,
@@ -147,20 +147,20 @@ is a screen posiotion.)
 */
 
 #if	(BITMAP_BIT_ORDER == MSBFirst)
-int cfbmask[] =
+unsigned int cfbmask[] =
     {
 	0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF
     }; 
-int cfbrmask[] = 
+unsigned int cfbrmask[] = 
     {
 	0x00FFFFFF, 0xFF00FFFF, 0xFFFF00FF, 0xFFFFFF00
     };
 #else	/* (BITMAP_BIT_ORDER == LSBFirst) */
-int cfbmask[] =
+unsigned int cfbmask[] =
     {
 	0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
     }; 
-int cfbrmask[] = 
+unsigned int cfbrmask[] = 
     {
 	0xFFFFFF00, 0xFFFF00FF, 0xFF00FFFF, 0x00FFFFFF
     };

@@ -22,16 +22,16 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.23 90/05/15 18:24:46 keith Exp $ */
+/* $XConsortium: maskbits.h,v 1.24 91/04/10 11:43:43 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
 
-extern int starttab[];
-extern int endtab[];
+extern unsigned int starttab[];
+extern unsigned int endtab[];
 extern unsigned partmasks[32][32];
-extern int rmask[];
-extern int mask[];
+extern unsigned int rmask[];
+extern unsigned int mask[];
 
 
 /* the following notes use the following conventions:

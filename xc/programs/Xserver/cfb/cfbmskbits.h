@@ -26,14 +26,14 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.h,v 4.17 91/03/11 17:25:49 keith Exp $ */
+/* $XConsortium: cfbmskbits.h,v 4.18 91/04/10 11:42:03 keith Exp $ */
 
-extern int cfbstarttab[];
-extern int cfbendtab[];
-extern int cfbstartpartial[];
-extern int cfbendpartial[];
-extern int cfbrmask[];
-extern int cfbmask[];
+extern unsigned int cfbstarttab[];
+extern unsigned int cfbendtab[];
+extern unsigned int cfbstartpartial[];
+extern unsigned int cfbendpartial[];
+extern unsigned int cfbrmask[];
+extern unsigned int cfbmask[];
 extern unsigned int QuartetBitsTable[];
 extern unsigned int QuartetPixelMaskTable[];
 
