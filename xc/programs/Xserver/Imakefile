@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.182 94/04/08 17:50:40 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.183 94/05/04 10:11:09 dpw Exp $
 /*
  * Server Master Makefile
  */
@@ -54,7 +54,7 @@ XCOMM $XConsortium: Imakefile,v 1.182 94/04/08 17:50:40 rws Exp $
 #endif
 
       OTHEREXTS = Xext/libext.a $(XKBEXT) $(XINPUTEXT) $(XIEEXT) $(SITEEXTS)
-        EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) $(SITEDIRS)
+        EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) $(SITEEXTDIRS)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
        XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
