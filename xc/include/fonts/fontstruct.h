@@ -1,4 +1,4 @@
-/* $Header: fontstruct.h,v 1.8 91/07/17 15:58:15 keith Exp $ */
+/* $Header: fontstruct.h,v 1.9 91/07/18 22:43:06 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -91,6 +91,7 @@ typedef struct _FontInfo {
     unsigned int allExist:1;
     unsigned int drawDirection:2;
     unsigned int cachable:1;
+    unsigned int anamorphic:1;
     short       maxOverlap;
     short       pad;
     xCharInfo   maxbounds;
