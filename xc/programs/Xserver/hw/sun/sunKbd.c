@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.30 93/10/07 10:27:55 kaleb Exp $ */
+/* $XConsortium: sunKbd.c,v 5.31 93/10/11 11:51:18 rws Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -184,6 +184,16 @@ static void SwapKeys(keysyms)
 	}
 }
 
+static void SetLights (fd)
+    int fd;
+{
+    char request = pKbdCtrl->leds;
+#ifdef KIOCSLED /* { */
+    if (ioctl (fd, KIOCSLED, &request) == -1)
+	Error("Failed to set keyboard lights");
+#endif /* } */
+}
+
 /*-
  *-----------------------------------------------------------------------
  * sunKbdProc --
@@ -348,6 +358,12 @@ sunKbdProc (pKeyboard, what)
     case DEVICE_OFF:
 	pPriv = (KbPrivPtr)pKeyboard->devicePrivate;
 	kbdFd = pPriv->fd;
+
+	/* turn off LEDS before resettting/quiting */
+	pKbdCtrl->leds = 0;
+	SetLights(kbdFd);
+
+	/* invalidate pKbdCtrl */
 	pKbdCtrl = NULL;
 	/*
 	 * Restore original keyboard directness and translation.
@@ -419,16 +435,6 @@ bad:
 	(void) close(pPriv->fd);
 	pPriv->fd = -1;
     }
-}
-
-static void SetLights (fd)
-    int fd;
-{
-    char request = pKbdCtrl->leds;
-#ifdef KIOCSLED /* { */
-    if (ioctl (fd, KIOCSLED, &request) == -1)
-	Error("Failed to set keyboard lights");
-#endif /* } */
 }
 
 /*-
