@@ -148,15 +148,15 @@ void XtUnmanageChild(\fIchild\fP)
 .br
       Widget \fIchild\fP;
 .LP
-void XtChangeManagedSet(\fImanage_children\fP, \fInum_manage_children\fP, \fIunmanage_children\fP, \fInum_unmanage_children\fP, \fIpost_unmanage_pre_manage_hook\fP, \fIclient_data\fP)
-.br
-      WidgetList \fImanage_children\fP;
-.br
-      Cardinal \fInum_manage_children\fP;
+void XtChangeManagedSet(\fIunmanage_children\fP, \fInum_unmanage_children\fP, \fImanage_children\fP, \fInum_manage_children\fP, \fIpost_unmanage_pre_manage_hook\fP, \fIclient_data\fP)
 .br
       WidgetList \fIunmanage_children\fP;
 .br
       Cardinal \fInum_unmanage_children\fP;
+.br
+      WidgetList \fImanage_children\fP;
+.br
+      Cardinal \fInum_manage_children\fP;
 .br
       XtCSMProc \fIpost_unmanage_pre_manage_hook\fP;
 .br
