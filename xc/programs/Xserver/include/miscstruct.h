@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: miscstruct.h,v 1.1 87/09/10 00:18:28 toddb Locked $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -35,8 +35,4 @@ typedef struct _DDXPoint {
 typedef struct _Box {
     short x1, y1, x2, y2;
 } BoxRec;
-
-typedef struct _Rectangle{
-    short x, y, width, height;
-} RectangleRec;
 #endif /* MISCSTRUCT_H */
