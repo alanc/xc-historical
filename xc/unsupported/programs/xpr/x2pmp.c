@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: x2pmp.c,v 1.4 88/07/21 14:35:48 jim Exp $
+ *	$XConsortium: x2pmp.c,v 1.5 88/09/06 17:20:28 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_x2pmp_c = "$XConsortium: x2pmp.c,v 1.4 88/07/21 14:35:48 jim Exp $";
+static char *rcsid_x2pmp_c = "$XConsortium: x2pmp.c,v 1.5 88/09/06 17:20:28 jim Exp $";
 #endif	lint
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the
@@ -169,7 +169,7 @@ int invert;
 		_swapshort((char *) &colors[i].red, (long) (3 * sizeof(short)));
 	    }
 	}
-	if (ncolors == 2 && INTENSITY(colors[0]) > INTENSITY(colors[1]))
+	if (ncolors == 2 && INTENSITY(&colors[0]) > INTENSITY(&colors[1]))
 	    invert = !invert;
 	free( colors );
     }
