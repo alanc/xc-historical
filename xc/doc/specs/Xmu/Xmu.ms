@@ -2,7 +2,7 @@
 .ce 2
 \s+2\fBXmu Library\fP\s-2
 .sp 6p
-X Version 11, Release 4
+X Version 11, Release 5
 .sp 1
 .ce 1
 ``\fIDon't ask.\fP''
@@ -762,6 +762,69 @@ XtAddConverter(XtRString, XtRBitmap, XmuCvtStringToBitmap,
 		 screenConvertArg, XtNumber(screenConvertArg));
 .sp
 .FD 0
+Boolean XmuCvtStringToColorCursor(\fIdpy\fP, \fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP, \fIdata\fP)
+.br
+      Display * \fIdpy\fP;
+.br
+      XrmValuePtr \fIargs\fP;
+.br
+      Cardinal *\fInum_args\fP;
+.br
+      XrmValuePtr \fIfromVal\fP;
+.br
+      XrmValuePtr \fItoVal\fP;
+.br
+      XtPointer * \fIdata\fP;
+.FN
+.Ip \fIdpy\fP 1i
+specifies the display to use for conversion warnings
+.IP \fIargs\fP 1i
+specifies the required conversion arguments
+.IP \fInum_args\fP 1i
+specifies the number of required conversion arguments, which is 4
+.IP \fIfromVal\fP 1i
+specifies the string to convert
+.IP \fItoVal\fP
+returns the converted value
+.IP \fIdata\fP
+this argument is ignored
+.LP
+This function converts a string to a
+.PN Cursor 
+with the foreground and background pixels specified by the conversion
+arguments.  The string can either be a
+standard cursor name formed by removing the ``XC_'' prefix from any of the
+cursor defines listed in Appendix B of the Xlib Manual, a font name and
+glyph index in decimal of the form "FONT fontname index [[font] index]",
+or a bitmap filename acceptable to
+.PN XmuLocateBitmapFile .
+To use this converter, include
+the following in the widget ClassInitialize procedure:
+.LP
+static XtConvertArgRec colorCursorConvertArgs[] = {
+.br
+  {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.screen),
+   sizeof(Screen *)},
+  {XtResourceString, (XtPointer) XtNpointerColor, sizeof(Pixel)},
+  {XtResourceString, (XtPointer) XtNpointerColorBackground, sizeof(Pixel)},
+  {XtWidgetBaseOffset, (XtPointer) XtOffsetOf(WidgetRec, core.colormap),
+   sizeof(Colormap)}
+.br
+};
+.LP
+XtSetTypeConverter(XtRString, XtRColorCursor, XmuCvtStringToColorCursor,
+.br
+		 colorCursorConvertArgs, XtNumber(colorCursorConvertArgs),
+.br
+                 XtCacheByDisplay, NULL);
+The widget must recognize XtNpointerColor and XtNpointerColorBackground as
+resources, or specify other appropriate foreground and background resources.
+The widget's Realize and SetValues methods must cause the converter to be
+invoked with the appropriate arguments when one of the foreground,
+background, or cursor resources has changed, or when the window is created,
+and must assign the cursor to the window of the widget.
+.sp
+.FD 0
 void XmuCvtStringToCursor(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP)
 .br
       XrmValuePtr \fIargs\fP;
@@ -773,9 +836,9 @@ void XmuCvtStringToCursor(\fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP
       XrmValuePtr \fItoVal\fP;
 .FN
 .IP \fIargs\fP 1i
-this argument is ignored
+specifies the required conversion argument, the screen
 .IP \fInum_args\fP 1i
-this argument is ignored
+specifies the number of required conversion arguments, which is 1
 .IP \fIfromVal\fP 1i
 specifies the string to convert
 .IP \fItoVal\fP
@@ -786,15 +849,15 @@ This function converts a string to a
 The string can either be a
 standard cursor name formed by removing the ``XC_'' prefix from any of the
 cursor defines listed in Appendix B of the Xlib Manual, a font name and
-glyph index of the form "FONT fontname index [[font] index]", or a bitmap
-filename acceptable to
+glyph index in decimal of the form "FONT fontname index [[font] index]", or
+a bitmap filename acceptable to
 .PN XmuLocateBitmapFile .
 To use this converter, include
 the following in your widget's ClassInitialize procedure:
 .LP
 static XtConvertArgRec screenConvertArg[] = {
 .br
-  {XtBaseOffset, (XtPointer)XtOffset(Widget, core.screen), sizeof(Screen *)}
+  {XtBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.screen), sizeof(Screen *)}
 .br
 };
 .LP
@@ -1013,6 +1076,54 @@ static XtConvertArgRec parentCvtArg[] = {
 XtAddConverter(XtRString, XtRWidget, XmuCvtStringToWidget,
 .br
 		 parentCvtArg, XtNumber(parentCvtArg));
+.sp
+.FD 0
+Boolean XmuNewCvtStringToWidget(\fIdpy\fP, \fIargs\fP, \fInum_args\fP, \fIfromVal\fP, \fItoVal\fP, \fIdata\fP)
+.br
+      Display *\fIdpy\fP;
+.br
+      XrmValue * \fIargs\fP;
+.br
+      Cardinal *\fInum_args\fP;
+.br
+      XrmValue * \fIfromVal\fP;
+.br
+      XrmValue * \fItoVal\fP;
+.br
+      XtPointer *\fIdata\fP;
+.FN
+.IP \fIdpy\fP 1i
+the display to use for conversion warnings
+.IP \fIargs\fP 1i
+this sole argument is the parent Widget
+.IP \fInum_args\fP 1i
+this argument must be 1
+.IP \fIfromVal\fP 1i
+specifies the string to convert
+.IP \fItoVal\fP
+returns the converted value
+.IP \fIdata\fP 1i
+this argument is ignored
+.LP
+This converter is identical in functionality to XmuCvtStringToWidget, except
+that it is a new-style converter, allowing the specification of a cache type
+at the time of registration.
+Most widgets will not cache the conversion results, as the application may
+dynamically create and destroy widgets, which would cause cached values to
+become illegal.  To use this converter, include the following in the widget's
+class initialize procedure:
+.LP
+static XtConvertArgRec parentCvtArg[] = {
+.br
+  {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.parent),
+.br
+   sizeof(Widget)}
+.br
+};
+.LP
+XtSetTypeConverter(XtRString, XtRWidget, XmuNewCvtStringToWidget,
+.br
+		   parentCvtArg, XtNumber(parentCvtArg), XtCacheNone, NULL);
 .LP
 .NH 1
 Character Set Functions
