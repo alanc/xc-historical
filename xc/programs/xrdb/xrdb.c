@@ -230,10 +230,12 @@ void GetEntries(entries, buff, dosort)
 	temp = (char *)malloc((length = colon - str) + 1);
 	strncpy(temp, str, length);
 	temp[length] = '\0';
+
+	/* strip leading and trailing blanks from name and store result */
 	while (temp[0] == ' ' || temp[0] == '\t') {
 	    temp++; length--;
 	}
-	while (temp[length-1] == ' ' || temp[length-1] == '\t')
+	while (length > 0  &&  temp[length-1] == ' ' || temp[length-1] == '\t')
 	    temp[--length] = '\0';
 	entry.tag = temp;
 
