@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.65 91/05/31 15:13:29 keith Exp $ */
+/* $XConsortium: window.c,v 5.66 91/06/01 11:16:05 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2948,7 +2948,8 @@ ConfigureWindow(pWin, mask, vlist, client)
            make the changes to the window if event sent */
 
     if (mask & CWStackMode)
-        pSib = WhereDoIGoInTheStack(pWin, pSib, x, y,
+        pSib = WhereDoIGoInTheStack(pWin, pSib, pParent->drawable.x + x,
+				    pParent->drawable.y + y,
 				    w + (bw << 1), h + (bw << 1), smode);
     else
         pSib = pWin->nextSib;
