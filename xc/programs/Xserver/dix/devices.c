@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.8 90/03/29 11:07:44 rws Exp $ */
+/* $XConsortium: devices.c,v 5.9 90/05/18 13:48:10 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -160,6 +160,13 @@ static void
 CloseDevice(dev)
     register DeviceIntPtr dev;
 {
+    KbdFeedbackPtr k, knext;
+    PtrFeedbackPtr p, pnext;
+    IntegerFeedbackPtr i, inext;
+    StringFeedbackPtr s, snext;
+    BellFeedbackPtr b, bnext;
+    LedFeedbackPtr l, lnext;
+
     if (dev->inited)
 	(void)(*dev->deviceProc)(dev, DEVICE_CLOSE);
     if (dev->key)
@@ -176,17 +183,38 @@ CloseDevice(dev)
 	xfree(dev->focus);
     }
     xfree(dev->proximity);
-    xfree(dev->kbdfeed);
-    xfree(dev->ptrfeed);
-    xfree(dev->intfeed);
-    if (dev->stringfeed)
+    for (k=dev->kbdfeed; k; k=knext)
     {
-	xfree(dev->stringfeed->ctrl.symbols_supported);
-	xfree(dev->stringfeed->ctrl.symbols_displayed);
-	xfree(dev->stringfeed);
+	knext = k->next;
+	xfree(k);
     }
-    xfree(dev->bell);
-    xfree(dev->leds);
+    for (p=dev->ptrfeed; p; p=pnext)
+    {
+	pnext = p->next;
+	xfree(p);
+    }
+    for (i=dev->intfeed; i; i=inext)
+    {
+	inext = i->next;
+	xfree(i);
+    }
+    for (s=dev->stringfeed; s; s=snext)
+    {
+	snext = s->next;
+	xfree(s->ctrl.symbols_supported);
+	xfree(s->ctrl.symbols_displayed);
+	xfree(s);
+    }
+    for (b=dev->bell; b; b=bnext)
+    {
+	bnext = b->next;
+	xfree(b);
+    }
+    for (l=dev->leds; l; l=lnext)
+    {
+	lnext = l->next;
+	xfree(l);
+    }
     xfree(dev);
 }
 
@@ -467,6 +495,9 @@ InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc)
     feedc->BellProc = bellProc;
     feedc->CtrlProc = controlProc;
     feedc->ctrl = defaultKeyboardControl;
+    feedc->id = 0;
+    if (feedc->next = dev->kbdfeed)
+        feedc->id = dev->kbdfeed->id + 1;
     dev->kbdfeed = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
@@ -484,6 +515,9 @@ InitPtrFeedbackClassDeviceStruct(dev, controlProc)
 	return FALSE;
     feedc->CtrlProc = controlProc;
     feedc->ctrl = defaultPointerControl;
+    feedc->id = 0;
+    if (feedc->next = dev->ptrfeed)
+        feedc->id = dev->ptrfeed->id + 1;
     dev->ptrfeed = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
@@ -503,10 +537,17 @@ BellCtrl defaultBellControl = {
 #define DEFAULT_INTEGER_DISPLAYED	0
 
 IntegerCtrl defaultIntegerControl = {
+	1000,
+	DEFAULT_MIN_VALUE,
+	100,
+	DEFAULT_INTEGER_DISPLAYED};
+/*
+IntegerCtrl defaultIntegerControl = {
 	DEFAULT_RESOLUTION,
 	DEFAULT_MIN_VALUE,
 	DEFAULT_MAX_VALUE,
 	DEFAULT_INTEGER_DISPLAYED};
+	*/
 
 Bool
 InitStringFeedbackClassDeviceStruct (dev, controlProc, max_symbols,
@@ -542,6 +583,9 @@ InitStringFeedbackClassDeviceStruct (dev, controlProc, max_symbols,
 	*(feedc->ctrl.symbols_supported+i) = *symbols++;
     for (i=0; i<max_symbols; i++)
 	*(feedc->ctrl.symbols_displayed+i) = (KeySym) NULL;
+    feedc->id = 0;
+    if (feedc->next = dev->stringfeed)
+        feedc->id = dev->stringfeed->id + 1;
     dev->stringfeed = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
@@ -560,6 +604,9 @@ InitBellFeedbackClassDeviceStruct (dev, bellProc, controlProc)
 	return FALSE;
     feedc->CtrlProc = controlProc;
     feedc->ctrl = defaultBellControl;
+    feedc->id = 0;
+    if (feedc->next = dev->bell)
+        feedc->id = dev->bell->id + 1;
     dev->bell = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
@@ -577,6 +624,9 @@ InitLedFeedbackClassDeviceStruct (dev, controlProc)
 	return FALSE;
     feedc->CtrlProc = controlProc;
     feedc->ctrl = defaultLedControl;
+    feedc->id = 0;
+    if (feedc->next = dev->leds)
+        feedc->id = dev->leds->id + 1;
     dev->leds = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
@@ -594,6 +644,9 @@ InitIntegerFeedbackClassDeviceStruct (dev, controlProc)
 	return FALSE;
     feedc->CtrlProc = controlProc;
     feedc->ctrl = defaultIntegerControl;
+    feedc->id = 0;
+    if (feedc->next = dev->intfeed)
+        feedc->id = dev->intfeed->id + 1;
     dev->intfeed = feedc;
     (*controlProc)(dev, &feedc->ctrl);
     return TRUE;
