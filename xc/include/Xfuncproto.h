@@ -1,4 +1,4 @@
-/* $XConsortium: Xfuncproto.h,v 1.3 91/03/23 14:43:26 rws Exp $ */
+/* $XConsortium: Xfuncproto.h,v 1.4 91/03/23 21:56:51 rws Exp $ */
 /* 
  * Copyright 1989, 1991 by the Massachusetts Institute of Technology
  *
@@ -28,7 +28,7 @@
 #endif /* NeedFunctionPrototypes */
 
 #ifndef NeedVarargsPrototypes
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus) || FUNCPROTO>1
+#if __STDC__ || defined(__cplusplus) || defined(c_plusplus) || (FUNCPROTO&2)
 #define NeedVarargsPrototypes 1
 #else
 #define NeedVarargsPrototypes 0
@@ -46,7 +46,7 @@
 #endif /* NeedNestedPrototypes */
 
 #ifndef _Xconst
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
+#if __STDC__ || defined(__cplusplus) || defined(c_plusplus) || (FUNCPROTO&4)
 #define _Xconst const
 #else
 #define _Xconst
