@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: ws_color.c,v 1.8 90/12/12 12:33:44 edg Exp $ */
+/* $Header: ws_color.c,v 1.1 91/05/11 10:51:14 rws Exp $ */
 
 /* 
  * ws_color.c - device specific color routines, stored in screen
@@ -33,6 +33,9 @@ SOFTWARE.
  */
 
 /* $Log:	ws_color.c,v $
+ * Revision 1.1  91/05/11  10:51:14  rws
+ * Initial revision
+ * 
  * Revision 1.8  90/12/12  12:33:44  edg
  * Added trick to wsInstallColormap() so that 8-bit TrueColor visual
  * works on color frame buffer machines.  Merged in this change with
@@ -80,7 +83,7 @@ SOFTWARE.
 
 
 
-static char rcs_ident[] = "$Header: ws_color.c,v 1.8 90/12/12 12:33:44 edg Exp $";
+static char rcs_ident[] = "$Header: ws_color.c,v 1.1 91/05/11 10:51:14 rws Exp $";
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -116,12 +119,18 @@ wsStoreColors(pmap, ndef, pdefs)
     int         ndef;
     xColorItem  *pdefs;
 {
+    xColorItem	directDefs[256];
     ws_color_cell cell;
     ws_color_map_data cd;
     wsScreenPrivate *pPrivScreen = (wsScreenPrivate *) 
     pmap->pScreen->devPrivates[wsScreenPrivateIndex].ptr;
     if (pmap != pPrivScreen->pInstalledMap) return;
 
+    if ((pmap->pVisual->class | DynamicClass) == DirectColor)
+    {
+	ndef = cfbExpandDirectColors (pmap, ndef, pdefs, directDefs);
+	pdefs = directDefs;
+    }
     cd.screen = screenDesc[pmap->pScreen->myNum].screen;
     cd.map = 0;		/* only one... */
     cd.start = 0;
