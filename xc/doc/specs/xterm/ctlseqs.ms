@@ -1,12 +1,34 @@
 .\"#! troff -Q -ms $1
-.\" This is the "Xterm Control Sequences" document, written by
-.\"	Edward Moy
-.\"	Academic Computing Services
-.\"	University of California
-.\"	Berkeley, CA  94720
+.\" This is the "Xterm Control Sequences" document, originally written by
+.\" Edward Moy, University of California, Berkeley, for the X.V10R4 xterm.
+.\" Some minor edits have been made to begin to reconcile this document with
+.\" the current sources, but it still has a long way to go:
 .\"
-.\"	edmoy@opal.Berkeley.EDU
-.\"	ucbvax!opal!edmoy
+.\"	1) I don't guarantee that this is 100% correct.  I tried most of
+.\"	   the things that seemed to be different, and this document
+.\"	   reflects what I saw.  Stuff that appears to be in the X10R4
+.\"	   document and missing from this document is so because it
+.\"	   appears not to be present in the X11 version of "xterm" (e.g.,
+.\"	   the "Alternate Character ROM" character sets and the Sun TTY
+.\"	   emulation).
+.\"
+.\"	2) It is definitely not 100% complete; some escape sequences
+.\"	   that do something that's either unobservable - at least in
+.\"	   the current state of the code - or not useful aren't
+.\"	   documented.  An example of the former are the Locking Shift
+.\"	   sequences that modify the interpretation of the GR
+.\"	   characters; at present, it sets a state variable that's
+.\"	   unused, but perhaps some future version will use it (perhaps
+.\"	   for displaying characters in the range 0200-0377?).  An
+.\"	   example of the latter is the sequence to set DECANM mode
+.\"	   (ANSI/VT52 mode): it doesn't do what it does on a VT100,
+.\"	   namely get the terminal to emulate a VT100, it only seems to
+.\"	   fiddle the current character set a bit.
+.\"
+.\"	3) It doesn't document any of the mouse-related stuff, such as
+.\"	   what the "Track Mouse" escape sequence does, or what the
+.\"	   different mouse modes (MIT, VT220, "VT220 Hilite") do; I
+.\"	   leave that to somebody familiar with that part of the code....
 .\"
 .\" Run this file through troff and use the -ms macro package.
 .ND
