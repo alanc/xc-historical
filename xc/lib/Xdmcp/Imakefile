@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.18 91/07/23 22:28:05 keith Exp $
+XCOMM $XConsortium: Imakefile,v 1.19 91/09/18 14:28:52 rws Exp $
 #define DoNormalLib NormalLibXdmcp
 #define DoSharedLib SharedLibXdmcp
 #define DoDebugLib DebugLibXdmcp
@@ -106,8 +106,8 @@ OBJS = \
 
 LibraryObjectRule()
 
-SpecialLibObjectRule(Fill.o,$(ICONFIGFILES),ConnectionFlags)
-SpecialLibObjectRule(Flush.o,$(ICONFIGFILES),ConnectionFlags)
+SpecialCLibObjectRule(Fill,$(ICONFIGFILES),ConnectionFlags)
+SpecialCLibObjectRule(Flush,$(ICONFIGFILES),ConnectionFlags)
 
 #if DoNormalLib
 NormalLibraryTarget(Xdmcp,$(OBJS))

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.73 91/09/18 14:29:12 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.74 91/12/20 11:20:22 rws Exp $
 XCOMM
 XCOMM This library contains miscellaneous utility routines and is not part
 XCOMM of the Xlib standard.
@@ -149,10 +149,10 @@ OBJS = \
 
 LibraryObjectRule()
 
-SpecialLibObjectRule(CvtStdSel.o,$(ICONFIGFILES),$(CSSDEFS))
-SpecialLibObjectRule(LocBitmap.o,$(ICONFIGFILES),$(BITDEFS))
+SpecialCLibObjectRule(CvtStdSel,$(ICONFIGFILES),$(CSSDEFS))
+SpecialCLibObjectRule(LocBitmap,$(ICONFIGFILES),$(BITDEFS))
 #if DoSharedLib && SharedDataSeparation
-SpecialObjectRule(sharedlib.o,,$(SHLIBDEF))
+SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 #endif
 
 #if DoSharedLib
