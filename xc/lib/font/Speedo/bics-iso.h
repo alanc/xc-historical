@@ -1,3 +1,5 @@
+/* $XConsortium$ */
+
 int  bics_map[] = {
     32, 0,
     33, 1,

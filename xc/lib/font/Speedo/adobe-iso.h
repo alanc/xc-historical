@@ -1,3 +1,5 @@
+/* $XConsortium$ */
+
 /*
  * Latin 1 format from masterset format 11 (ps)
  * 0 implies no valid mapping
