@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.119 93/04/13 19:54:43 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.120 93/04/13 20:01:10 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -122,7 +122,12 @@ released automatically at next button or non-modifier key.
 */
 
 #include <stdio.h>
+#include <X11/Xos.h>
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
+#else
+extern char *malloc(), *getenv();
+#endif
 #include <math.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -140,7 +145,6 @@ released automatically at next button or non-modifier key.
 #include <X11/Xmd.h>
 #include <X11/extensions/xtestext1.h>
 #endif
-#include <X11/Xos.h>
 #include <X11/keysym.h>
 #include <X11/Xmu/WinUtil.h>
 #if XlibSpecificationRelease >= 5
@@ -148,7 +152,11 @@ released automatically at next button or non-modifier key.
 #endif
 #include <ctype.h>
 #ifndef MSDOS
+#ifndef X_NOT_POSIX
 #include <termios.h>
+#else
+#include <sgtty.h>
+#endif
 #else
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -254,7 +262,11 @@ char pc_bs = '\b';
 KeySym last_sym = 0;
 KeyCode last_keycode_for_sym = 0;
 #ifndef MSDOS
+#ifndef X_NOT_POSIX
 struct termios oldterm;
+#else
+struct sgttyb oldterm;
+#endif
 #endif
 Bool istty = False;
 struct timeval timeout;
@@ -479,6 +491,46 @@ xtrap_clean_up()
 }
 #endif
 
+#ifndef MSDOS
+#ifndef X_NOT_POSIX
+#define Strtod strtod
+#define Strtol strtol
+#else
+double
+Strtod(nptr, endptr)
+    char *nptr;
+    char **endptr;
+{
+    double val = 0.0;
+
+    while (isspace(*nptr))
+	nptr++;
+    sscanf("%lf", &val);
+    while (*nptr && !isspace(*nptr))
+	nptr++;
+    *endptr = nptr;
+    return val;
+}
+
+long
+Strtol(nptr, endptr, base)
+    char *nptr;
+    char **endptr;
+    int base;
+{
+    long val = 0;
+
+    while (isspace(*nptr))
+	nptr++;
+    sscanf(nptr, base == 10 ? "%ld" : "%lx", &val);
+    while (*nptr && !isspace(*nptr))
+	nptr++;
+    *endptr = nptr;
+    return val;
+}
+#endif
+#endif
+
 void
 usage()
 {
@@ -491,8 +543,13 @@ void
 reset()
 {
 #ifndef MSDOS
-    if (istty)
+    if (istty) {
+#ifndef X_NOT_POSIX
 	tcsetattr(0, TCSANOW, &oldterm);
+#else
+	ioctl(0, TIOCSETP, &oldterm);
+#endif
+    }
 #endif
 }
 
@@ -861,7 +918,7 @@ parse_keysym(buf, len, modsmask)
     char *endptr;
 
     if ((*buf == 'F' && len <= 3) ||
-	!(sym = strtol(buf, &endptr, 16)) || *endptr)
+	!(sym = Strtol(buf, &endptr, 16)) || *endptr)
 	sym = XStringToKeysym(buf);
     if (!sym)
 	return 0;
@@ -922,9 +979,9 @@ do_autorepeat(buf)
     int delta;
     char *endptr;
 
-    delay = strtod(buf, &endptr);
+    delay = Strtod(buf, &endptr);
     if (*endptr) {
-	delta = strtol(endptr + 1, &endptr, 10);
+	delta = Strtol(endptr + 1, &endptr, 10);
 	if (*endptr) {
 	    mdelay = atof(endptr + 1);
 	    if (!last_keycode) {
@@ -956,7 +1013,7 @@ do_motion(buf)
     int dx, dy;
     char *endptr;
 
-    dx = strtol(buf, &endptr, 10);
+    dx = Strtol(buf, &endptr, 10);
     if (*endptr) {
 	dy = atoi(endptr + 1);
 	if (!moving_timeout)
@@ -992,7 +1049,7 @@ do_warp(buf)
 	screen = -3;
 	break;
     default:
-	screen = strtol(buf, &endptr, 10);
+	screen = Strtol(buf, &endptr, 10);
     }
     if (!endptr) {
 	if (buf[1] != ' ')
@@ -1000,7 +1057,7 @@ do_warp(buf)
 	endptr = buf + 1;
     }
     if (*endptr) {
-	x = strtol(endptr + 1, &endptr2, 10);
+	x = Strtol(endptr + 1, &endptr2, 10);
 	if (*endptr2) {
 	    y = atoi(endptr2 + 1);
 	    negx = x < 0 || (x == 0 && endptr[1] == '-');
@@ -1746,7 +1803,7 @@ do_jump(buf)
 	    overlap = True;
 	    break;
 	case ' ':
-	    jump.mult = strtod(buf+1, &endptr);
+	    jump.mult = Strtod(buf+1, &endptr);
 	    if (*endptr)
 		return;
 	    buf = endptr - 1;
@@ -1988,7 +2045,7 @@ do_trigger(buf)
 	    buf = parse_name(buf + 1, &trigger.match);
 	    break;
 	case ' ':
-	    delay = strtod(buf+1, &endptr);
+	    delay = Strtod(buf+1, &endptr);
 	    if (*endptr)
 		return;
 	    trigger.time.tv_sec = delay;
@@ -2746,7 +2803,11 @@ main(argc, argv)
 {
     int n, i;
 #ifndef MSDOS
+#ifndef X_NOT_POSIX
     struct termios term;
+#else
+    struct sgttyb term;
+#endif
 #endif
     char *dname = NULL;
     char *s;
@@ -2823,6 +2884,7 @@ main(argc, argv)
     signal(SIGPIPE, SIG_IGN);
 #endif
 #ifndef MSDOS
+#ifndef X_NOT_POSIX
     if (tcgetattr(0, &term) >= 0) {
 	istty = True;
 	oldterm = term;
@@ -2839,18 +2901,30 @@ main(argc, argv)
 	term.c_cc[VMIN] = 1;
 	term.c_cc[VTIME] = 0;
 	tcsetattr(0, TCSANOW, &term);
-	signal(SIGINT, catch);
-	signal(SIGTERM, catch);
-	oldioerror = XSetIOErrorHandler(ioerror);
-	olderror = XSetErrorHandler(error);
     }
 #else
-    if(isatty(0)) {
+    if (ioctl(0, TIOCGETP, &term) >= 0) {
 	istty = True;
+	oldterm = term;
+	term.sg_flags |= RAW;
+	term.sg_flags &= ~(CBREAK|TANDEM|CRMOD|LCASE);
+	if (noecho)
+	    term.sg_flags &= ~ECHO;
+	ioctl(0, TIOCSETP, &term);
+    }
+#endif
+    if (istty) {
+	signal(SIGINT, catch);
+	signal(SIGTERM, catch);
+    }
+#else
+    if(isatty(0))
+	istty = True;
+#endif
+    if (istty) {
 	oldioerror = XSetIOErrorHandler(ioerror);
 	olderror = XSetErrorHandler(error);
     }
-#endif
     if (istty && doclear)
 	write(1, "\033[H\033[2J", 7);
     if (!dname && !*(XDisplayName(dname)))
