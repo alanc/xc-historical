@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.h,v 1.20 89/11/12 14:02:57 kit Exp $ */
+/* $XConsortium: Dialog.h,v 1.21 90/04/30 17:05:45 converse Exp $ */
 
 
 /***********************************************************
@@ -65,10 +65,14 @@ typedef struct _DialogRec	*DialogWidget;
 
 extern WidgetClass dialogWidgetClass;
 
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 extern void XawDialogAddButton(
 #if NeedFunctionPrototypes
     Widget		/* dialog */,
-    String		/* name */,
+    const String	/* name */,
     XtCallbackProc	/* function */,
     XtPointer		/* client_data */
 #endif
@@ -79,6 +83,10 @@ extern char *XawDialogGetValueString(
     Widget		/* w */
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #ifdef XAW_BC
 /*************************************************************

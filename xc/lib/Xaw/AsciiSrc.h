@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSrc.h,v 1.5 89/10/05 13:17:30 kit Exp $
+ * $XConsortium: AsciiSrc.h,v 1.6 90/04/30 17:46:03 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -86,6 +86,10 @@ typedef enum {XawAsciiFile, XawAsciiString} XawAsciiType;
  *
  ************************************************************/
 
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 /*	Function Name: XawAsciiSourceFreeString
  *	Description: Frees the string returned by a get values call
  *                   on the string when the source is of type string.
@@ -115,13 +119,13 @@ extern Boolean XawAsciiSave(
  *	Description: Save the current buffer as a file.
  *	Arguments: w - the asciiSrc object.
  *                 name - name of the file to save this file into.
- *	Returns: True if the save was sucessful.
+ *	Returns: True if the save was successful.
  */
 
 extern Boolean XawAsciiSaveAsFile(
 #if NeedFunctionPrototypes
     Widget		/* w */,
-    String		/* name */
+    const String	/* name */
 #endif 
 );
 
@@ -136,6 +140,10 @@ extern Boolean XawAsciiSourceChanged(
     Widget		/* w */
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #ifdef XAW_BC
 /*************************************************************
@@ -155,6 +163,11 @@ extern Boolean XawAsciiSourceChanged(
 #endif
 
 #ifdef ASCII_STRING
+
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 /*	Function Name: AsciiStringSourceCreate
  *	Description: Creates a string source.
  *	Arguments: parent - the widget that will own this source.
@@ -170,9 +183,18 @@ extern Widget XawStringSourceCreate(
 #endif
 );
 
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
+
 #endif /* ASCII_STRING */
 
 #ifdef ASCII_DISK
+
+#ifdef __cplusplus
+extern "C" {					/* for C++ V2.0 */
+#endif
+
 /*	Function Name: AsciiDiskSourceCreate
  *	Description: Creates a disk source.
  *	Arguments: parent - the widget that will own this source.
@@ -187,6 +209,10 @@ extern Widget XawDiskSourceCreate(
     Cardinal 		/* num_args */
 #endif
 );
+
+#ifdef __cplusplus
+}						/* for C++ V2.0 */
+#endif
 
 #endif /* ASCII_DISK */
 #endif /* XAW_BC */
