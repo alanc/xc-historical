@@ -29,9 +29,9 @@ SOFTWARE.
  * on the server command line or in the environment, and only those variables
  */
 
-#define COMPILEDDEFAULTFONTPATH	"/usr/tmp/X11.fonts/"   /* trailing '/' !! */
+#define COMPILEDDEFAULTFONTPATH	"/usr/lib/X11/fonts/"   /* trailing '/' !! */
 #define COMPILEDDEFAULTFONT	"fixed"
 #define COMPILEDCURSORFONT	"cursorfont"
-#define RGB_DB			"/usr/lib/rgb"
+#define RGB_DB			"/usr/lib/X11/rgb"
 
 #endif SITE_H
