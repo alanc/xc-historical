@@ -27,22 +27,15 @@ static char rcsid[] = "$Header: Label.c,v 1.32 88/01/22 13:45:12 swick Locked $"
 /*
  * Label.c - Label widget
  *
- * Author:      Charles Haynes
- *              Digital Equipment Corporation
- *              Western Research Laboratory
- * Date:        Sat Jan 24 1987
- *
- * Converted to classing toolkit on Wed Aug 26 by Charles Haynes
  */
 
-#define XtStrlen(s)	((s) ? strlen(s) : 0)
+#define XtStrlen(s)		((s) ? strlen(s) : 0)
 
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <X/Intrinsic.h>
 #include <X/Atoms.h>
-#include <X/Label.h>
 #include "LabelP.h"
 
 #define IsSensitive(w)	((w)->core.sensitive && (w)->core.ancestor_sensitive)
@@ -82,7 +75,8 @@ static void ClassInitialize();
 LabelClassRec labelClassRec = {
   {
 /* core_class fields */	
-    /* superclass	  */	(WidgetClass) &widgetClassRec,
+#define superclass		(&simpleClassRec)
+    /* superclass	  */	(WidgetClass) superclass,
     /* class_name	  */	"Label",
     /* widget_size	  */	sizeof(LabelRec),
     /* class_initialize   */    ClassInitialize,
@@ -194,12 +188,10 @@ static void GetgrayGC(lw)
     LabelWidget lw;
 {
     XGCValues	values;
-    
-    lw->label.gray_pixmap = XtGrayPixmap(XtScreen((Widget)lw));
 
-    values.foreground	= lw->label.foreground;
-    values.font		= lw->label.font->fid;
-    values.tile       = lw->label.gray_pixmap;
+    values.foreground = lw->label.foreground;
+    values.font	      = lw->label.font->fid;
+    values.tile       = XtGrayPixmap(XtScreen((Widget)lw));
     values.fill_style = FillTiled;
 
     lw->label.gray_GC = XtGetGC(
@@ -208,6 +200,7 @@ static void GetgrayGC(lw)
 	&values);
 }
 
+/* ARGSUSED */
 static void Initialize(request, new, args, num_args)
  Widget request, new;
  ArgList args;
@@ -242,34 +235,15 @@ static void Realize(w, valueMask, attributes)
     Mask *valueMask;
     XSetWindowAttributes *attributes;
 {
-    LabelWidget lw = (LabelWidget)w;
-    Pixmap border_pixmap;
-
     *valueMask |= CWBitGravity;
-    switch (lw->label.justify) {
+    switch (((LabelWidget)w)->label.justify) {
 	case XtJustifyLeft:	attributes->bit_gravity = WestGravity;   break;
 	case XtJustifyCenter:	attributes->bit_gravity = CenterGravity; break;
 	case XtJustifyRight:	attributes->bit_gravity = EastGravity;   break;
     }
+
+    (*superclass->core_class.realize) (w, valueMask, attributes);
     
-    if (!IsSensitive(w))
-      {
-	/* change border to gray; have to remember the old one, so
-	 * XtDestroyWidget deletes the proper one */
-        border_pixmap = w->core.border_pixmap;
-	w->core.border_pixmap = lw->label.gray_pixmap;
-	attributes->border_pixmap = lw->label.gray_pixmap;
-	*valueMask |= CWBorderPixmap;
-	*valueMask &= ~CWBorderPixel;
-      }
-    
-
-    XtCreateWindow( w, (unsigned int)InputOutput, (Visual *)CopyFromParent,
-		    *valueMask, attributes );
-
-    if (!IsSensitive(w))
-	w->core.border_pixmap = border_pixmap;
-
 } /* Realize */
 
 
@@ -322,12 +296,12 @@ static void Resize(w)
  * Set specified arguments into widget
  */
 
+/* ARGSUSED */
 static Boolean SetValues(current, request, new, last)
     Widget current, request, new;
     Boolean last;
 {
     LabelWidget curlw = (LabelWidget) current;
-    LabelWidget reqlw = (LabelWidget) request;
     LabelWidget newlw = (LabelWidget) new;
     Boolean was_resized;
 
@@ -395,16 +369,6 @@ static Boolean SetValues(current, request, new, last)
 	XChangeWindowAttributes(
 	    XtDisplay(newlw), newlw->core.window, valueMask, &attributes);
     }
-
-    if ((curlw->core.sensitive != newlw->core.sensitive ||
-	 curlw->core.ancestor_sensitive != newlw->core.ancestor_sensitive)
-	&& XtIsRealized(newlw))
-        if (IsSensitive(newlw))
-	    XSetWindowBorder( XtDisplay(newlw), XtWindow(newlw), 
-			      newlw->core.border_pixel );
-	else
-	    XSetWindowBorderPixmap(XtDisplay(newlw), XtWindow(newlw),
-				   newlw->label.gray_pixmap);
 
     if (curlw->label.foreground != newlw->label.foreground
 	|| curlw->label.font->fid != newlw->label.font->fid) {
