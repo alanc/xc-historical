@@ -24,10 +24,10 @@
 #include <stdio.h>
 
 #ifdef apollo
-#include "../../server/ddx/apollo/include/sys/ins/base.ins.c"
-#include "../../server/ddx/apollo/include/sys/ins/time.ins.c"
+#include <apollo/base.h>
+#include <apollo/time.h>
 typedef struct {
-	short		proc2_$state_t; /* ready, waiting, etc. */
+	short		state;		/* ready, waiting, etc. */
 	pinteger	usr;		/* user sr */
 	linteger	upc;		/* user pc */
 	linteger	usp;		/* user stack pointer */
@@ -36,8 +36,15 @@ typedef struct {
 	unsigned short	priority;	/* process priority */
     } proc1_$info_t;
 
-std_$call void proc1_$get_cput();
-std_$call void proc1_$get_info();
+void proc1_$get_cput(
+	time_$clock_t	*cput
+);
+
+void proc1_$get_info(
+	short		&pid,
+	proc1_$info_t	*info,
+	status_$t	*sts
+);
 #endif /* apollo */
 
 #ifndef macII
@@ -111,8 +118,8 @@ void GetLoadPoint( w, closure, call_data )
      proc1_$info_t  info;
      status_$t      st;
 
-     proc1_$get_info( (short) 2, info, st );
-     time_$clock( timeNow );
+     proc1_$get_info( (short) 2, &info, &st );
+     time_$clock( &timeNow );
 
      if (firstTime)
      {
