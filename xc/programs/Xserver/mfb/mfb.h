@@ -1,4 +1,3 @@
-/* $Header$ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -109,9 +108,6 @@ extern void mfbImageText8();
 extern void mfbImageText16();
 extern int mfbPolyText16();
 extern int mfbPolyText8();
-extern void mfbTileBox();
-extern void mfbPaintBox();
-extern void mfbStippleBox();
 extern PixmapPtr mfbCopyPixmap();
 extern RegionPtr mfbPixmapToRegion();
 extern RegionPtr miRectsToRegion();
@@ -159,8 +155,9 @@ up losing storage or freeing something that isn't ours.
 */
 
 typedef struct {
-    short	rop;			/* reduction of rasterop to 1 of 3 */
-    short	ropOpStip;		/* rop for opaque stipple */
+    unsigned char	rop;		/* reduction of rasterop to 1 of 3 */
+    unsigned char	ropOpStip;	/* rop for opaque stipple */
+    unsigned char	ropFillArea;	/*  == alu, rop, or ropOpStip */
     short	fExpose;		/* callexposure handling ? */
     short	freeCompClip;
     PixmapPtr	pRotatedTile;		/* tile/stipple  rotated to align */
