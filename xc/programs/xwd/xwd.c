@@ -37,7 +37,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.42 89/03/31 08:31:18 jim Exp $";
+static char *rcsid_xwd_c = "$XConsortium: xwd.c,v 1.43 89/04/10 14:36:23 jim Exp $";
 #endif
 
 /*%
@@ -213,7 +213,7 @@ Window_Dump(window, out)
     if (absx < 0) width += absx, absx = 0;
     if (absy < 0) height += absy, absy = 0;
     if (absx + width > dwidth) width = dwidth - absx;
-    if (absy + height > dheight) width = dheight - absy;
+    if (absy + height > dheight) height = dheight - absy;
 
     XFetchName(dpy, window, &win_name);
     if (!win_name || !win_name[0]) {
