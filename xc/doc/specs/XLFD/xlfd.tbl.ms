@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.27 94/03/25 14:26:43 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.28 94/03/25 14:50:55 gildea Exp $
 .de sC			\" start change
 .mc \s+5\(br\s0\"	\" make tall enough to span paragraph skip
 ..
@@ -1241,7 +1241,9 @@ according to the following algorithm:
 .DS
 if (AVERAGE_WIDTH undefined) then
    AVERAGE_WIDTH = ROUND (MEAN (ABS (width of each glyph in font)) * 10)
-	* if (dominant writing direction L-to-R) then 1 else \-1
+.sC
+	* (if (dominant writing direction L-to-R) then 1 else \-1)
+.eC
 .DE
 .LP
 where MEAN is a function that returns the arithmetic mean of its arguments.
@@ -1364,9 +1366,15 @@ according to the following algorithm:
 .LP
 .DS I
 if (AVG_CAPITAL_WIDTH undefined) then
-   AVG_CAPITAL_WIDTH = ROUND (MEAN
-                  (ABS (width of each capital glyph)) * 10)
-	* if (dominant writing direction L-to-R) then 1 else \-1
+.sC
+   if (capitals exist) then
+.eC
+      AVG_CAPITAL_WIDTH = ROUND (MEAN
+		     (ABS (width of each capital glyph)) * 10)
+.sC
+	   * (if (dominant writing direction L-to-R) then 1 else \-1)
+   else AVG_CAPITAL_WIDTH undefined
+.eC
 .DE
 .NH 3
 AVG_LOWERCASE_WIDTH
@@ -1392,7 +1400,9 @@ if (AVG_LOWERCASE_WIDTH undefined) then
    if (lowercase exists) then
       AVG_LOWERCASE_WIDTH = ROUND (MEAN
                        (ABS (width of each lowercase glyph)) * 10)
-	* if (dominant writing direction L-to-R) then 1 else \-1
+.sC
+	* (if (dominant writing direction L-to-R) then 1 else \-1)
+.eC
    else AVG_LOWERCASE_WIDTH undefined
 .DE
 .NH 3
@@ -1915,8 +1925,10 @@ FULL_NAME
 \*(SN FULL_NAME
 .XE
 .LP
-FULL_NAME is the same as FACE_NAME.  Its use is depreciated, but
-it is found on some old fonts.
+FULL_NAME is the same as FACE_NAME.
+.sC
+Its use is deprecated, but it is found on some old fonts.
+.eC
 .NH 3
 COPYRIGHT 
 .XS
@@ -2040,6 +2052,9 @@ T}
 \*QType 1\*U	Any Type 1 font.
 \*QTrueType\*U	Any TrueType font.
 \*QSpeedo\*U	Any Speedo font.
+.sC
+\*QF3\*U	Any F3 font.
+.eC
 .sp 6p
 _
 .TE
@@ -2090,6 +2105,9 @@ Examples:
 		X Consortium Type 1 Rasterizer
 		X Consortium Speedo Rasterizer
 		Adobe Type Manager
+.sC
+		Sun TypeScaler
+.eC
 .fi
 .LP
 If RASTERIZER_NAME is not defined, or is \fBNone\fP, no
@@ -2105,6 +2123,48 @@ ATOM) which represents the formal or informal version of a
 font rasterizer.
 The RASTERIZER_VERSION should match the corresponding
 product version number known to users, when applicable.
+.br
+.sC
+.NH 3
+RAW_ASCENT
+.br
+.eC
+.XS
+\*(SN RAW_ASCENT
+.XE
+.sC
+.LP
+For a font with a transformation matrix, RAW_ASCENT is the font ascent
+in 1000 pixel metrics.
+See section \n(sM.1.
+.NH 3
+RAW_DESCENT
+.br
+.eC
+.XS
+\*(SN RAW_DESCENT
+.XE
+.sC
+.LP
+For a font with a transformation matrix, RAW_DESCENT is the font
+descent in 1000 pixel metrics.
+See section \n(sM.1.
+.NH 3
+RAW_*
+.br
+.eC
+.XS
+\*(SN RAW_*
+.XE
+.sC
+.LP
+For a font with a transformation matrix, 
+all font properties that represent horizontal or vertical sizes or
+displacements will be accompanied by a new property, named as the
+original except prefixed with \*QRAW_\*U, that is computed as
+described in section \n(sM.1, Metrics and Font Properties.
+.br
+.eC
 .NH 2
 Built-in Font Property Atoms
 .XS
@@ -2206,8 +2266,10 @@ Metrics and Font Properties
 \*(SN Metrics and Font Properties
 .XE
 .LP
-In this section, the phrase \*Qcorresponding 1000 pixel metrics\*U means the
+.sC
+In this section, the phrase \*Q1000 pixel metrics\*U means the
 metrics that would be obtained if the rasterizer took the base untransformed
+.eC
 design used to generate the transformed font and scaled it linearly to a
 height of 1000 pixels, with no rotation component.  Note that there may be no
 way for the application to actually request this font since the rasterizer
