@@ -1,14 +1,6 @@
 LIBRARY XTST
 VERSION LIBRARY_VERSION
 EXPORTS
- XRecordChangeCG
- XRecordCreateCG
- XRecordDisableCG
- XRecordEnableCG
- XRecordEnableCGAsync
- XRecordFreeCG
- XRecordGetCG
- XRecordQueryVersion
  XTestCompareCurrentCursorWithWindow
  XTestCompareCursorWithWindow
  XTestDiscard
