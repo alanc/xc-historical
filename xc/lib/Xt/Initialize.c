@@ -640,7 +640,8 @@ Widget root;
 	/*
 	     Create the top level widget.
 	 */
-	root = XtWidgetCreate(name, topLevelWidgetClass, NULL,
+	root = TopLevelCreate(name, topLevelWidgetClass,
+			      dpy->screens[dpy->default_screen],
 			       args, argCount);
 
 	w = (TopLevelWidget) root;
