@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsProp.c,v 1.9 91/07/22 16:27:06 rws Exp $" */
+/* $XConsortium: cmsProp.c,v 1.10 91/07/22 17:22:46 rws Exp $" */
 
 /*
  *
@@ -68,25 +68,13 @@ _XcmsGetElement (format, pValue, pCount)
 
     switch (format) {
       case 32:
-#ifdef WORD64
-	value = ((unsigned long)(((unsigned char *)(*pValue))[0])) << 24 ||
-		((unsigned long)(((unsigned char *)(*pValue))[1])) << 16 ||
-		((unsigned long)(((unsigned char *)(*pValue))[2])) << 8 ||
-		((unsigned long)(((unsigned char *)(*pValue))[0]));
-#else
-	value = *((unsigned long *)(*pValue));
-#endif
-	*pValue += 4;
+	value = *((unsigned long *)(*pValue)) & 0xFFFFFFFF;
+	*pValue += sizeof(unsigned long);
 	*pCount -= 1;
 	break;
       case 16:
-#ifdef WORD64
-	value = ((unsigned long)(((unsigned char *)(*pValue))[0])) << 8 ||
-		((unsigned long)(((unsigned char *)(*pValue))[1]));
-#else
 	value = *((unsigned short *)(*pValue));
-#endif
-	*pValue += 2;
+	*pValue += sizeof(unsigned short);
 	*pCount -= 1;
 	break;
       case 8:
