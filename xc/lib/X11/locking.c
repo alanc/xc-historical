@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.c,v 1.7 93/07/12 09:25:29 rws Exp $
+ * $XConsortium: locking.c,v 1.8 93/07/22 13:29:19 gildea Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -42,16 +42,16 @@ extern void (*_XFreeDisplayLock_fn)();
 xthread_t _X_no_thread_id;
 #endif
 
-static mutex_t _Xglobal_lock;
+static xmutex_t _Xglobal_lock;
 
 static void _XLockMutex()
 {
-    mutex_lock(_Xglobal_lock);
+    xmutex_lock(_Xglobal_lock);
 }
 
 static void _XUnlockMutex()
 {
-    mutex_unlock(_Xglobal_lock);
+    xmutex_unlock(_Xglobal_lock);
 }
 
 #ifdef XTHREADS_WARN
@@ -102,7 +102,7 @@ void _XLockDisplay(dpy)
     }
 #endif /* XTHREADS_WARN */
 
-    mutex_lock(dpy->lock->mutex);
+    xmutex_lock(dpy->lock->mutex);
 
 #ifdef XTHREADS_WARN
     if (strcmp(file, "XlibInt.c") == 0) {
@@ -172,7 +172,7 @@ static void _XUnlockDisplay(dpy)
     if (lock_hist_loc >= LOCK_HIST_SIZE)
 	lock_hist_loc = 0;
 #endif /* XTHREADS_WARN */
-    mutex_unlock(dpy->lock->mutex);
+    xmutex_unlock(dpy->lock->mutex);
 }
 
 
@@ -186,8 +186,8 @@ _XPushReader(tail)
     struct _XCVList *cvl;
 
     cvl = (struct _XCVList *)Xmalloc(sizeof(struct _XCVList));
-    cvl->cv = condition_malloc();
-    condition_init(cvl->cv);
+    cvl->cv = xcondition_malloc();
+    xcondition_init(cvl->cv);
     cvl->next = NULL;
 #ifdef XTHREADS_DEBUG
     printf("_XPushReader called in thread %x, pushing %x\n",
@@ -215,7 +215,7 @@ static void _XPopReader(dpy, list, tail)
     *list = front->next;
     if (*tail == &front->next)	/* did we free the last elt? */
 	*tail = list;
-    condition_clear(front->cv);
+    xcondition_clear(front->cv);
     Xfree((char *)front->cv);
     Xfree((char *)front);
 
@@ -229,14 +229,14 @@ static void _XPopReader(dpy, list, tail)
 
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 static void _XConditionWait(cv, mutex,file,line)
-    condition_t cv;
-    mutex_t mutex;
+    xcondition_t cv;
+    xmutex_t mutex;
     char *file;
     int line;
 #else
 static void _XConditionWait(cv, mutex)
-    condition_t cv;
-    mutex_t mutex;
+    xcondition_t cv;
+    xmutex_t mutex;
 #endif
 {
 #ifdef XTHREADS_WARN
@@ -258,7 +258,7 @@ static void _XConditionWait(cv, mutex)
 	lock_hist_loc = 0;
 #endif /* XTHREADS_WARN */
 
-    condition_wait(cv, mutex);
+    xcondition_wait(cv, mutex);
 
 #ifdef XTHREADS_WARN
     locking_thread = self;
@@ -280,12 +280,12 @@ static void _XConditionWait(cv, mutex)
 
 #if defined(XTHREADS_WARN) || defined(XTHREADS_FILE_LINE)
 static void _XConditionSignal(cv,file,line)
-    condition_t cv;
+    xcondition_t cv;
     char *file;
     int line;
 #else
 static void _XConditionSignal(cv)
-    condition_t cv;
+    xcondition_t cv;
 #endif
 {
 #ifdef XTHREADS_WARN
@@ -293,7 +293,7 @@ static void _XConditionSignal(cv)
     printf("line %d thread %x is signalling\n", line, xthread_self());
 #endif
 #endif
-    condition_signal(cv);
+    xcondition_signal(cv);
 }
     
 
@@ -319,10 +319,10 @@ static int _XInitDisplayLock(dpy)
     xthread_clear_id(dpy->lock->locking_thread);
     dpy->lock->cv = NULL;
 
-    dpy->lock->mutex = mutex_malloc();
+    dpy->lock->mutex = xmutex_malloc();
     if (dpy->lock->mutex==NULL)
 	return -1;
-    mutex_init(dpy->lock->mutex);
+    xmutex_init(dpy->lock->mutex);
 
     dpy->lock_fns->lock_display = _XLockDisplay;
     dpy->lock_fns->unlock_display = _XUnlockDisplay;
@@ -340,12 +340,12 @@ static void _XFreeDisplayLock(dpy)
 {
     if (dpy->lock != NULL) {
 	if (dpy->lock->mutex != NULL) {
-	    mutex_clear(dpy->lock->mutex);
-	    mutex_free(dpy->lock->mutex);
+	    xmutex_clear(dpy->lock->mutex);
+	    xmutex_free(dpy->lock->mutex);
 	}
 	if (dpy->lock->cv != NULL) {
-	    condition_clear(dpy->lock->cv);
-	    condition_free(dpy->lock->cv);
+	    xcondition_clear(dpy->lock->cv);
+	    xcondition_free(dpy->lock->cv);
 	}
 	Xfree((char *)dpy->lock);
 	dpy->lock = NULL;
@@ -367,8 +367,8 @@ static void _XDisplayLockWait(dpy)
 	!xthread_equal(dpy->lock->locking_thread, xthread_self()))
     {
 	if (!dpy->lock->cv) {
-	    dpy->lock->cv = condition_malloc();
-	    condition_init(dpy->lock->cv);
+	    dpy->lock->cv = xcondition_malloc();
+	    xcondition_init(dpy->lock->cv);
 	}
 
 	ConditionWait(dpy, dpy->lock);
@@ -427,7 +427,7 @@ void _XUserUnlockDisplay(dpy)
 	/* XXX - we are not in XLockDisplay, error.  Print message? */
     }
     /* signal other threads that might be waiting in XLockDisplay */
-    condition_broadcast(dpy->lock->cv);
+    xcondition_broadcast(dpy->lock->cv);
     /* substitute function back */
     dpy->lock_fns->lock_display = _XLockDisplay;
     xthread_clear_id(dpy->lock->locking_thread);
@@ -438,10 +438,10 @@ Status XInitThreads()
 #ifdef xthread_init
     xthread_init();		/* return value? */
 #endif
-    _Xglobal_lock = mutex_malloc();
+    _Xglobal_lock = xmutex_malloc();
     if (_Xglobal_lock == NULL)
 	return 0;
-    mutex_init(_Xglobal_lock);
+    xmutex_init(_Xglobal_lock);
     _XLockMutex_fn = _XLockMutex;
     _XUnlockMutex_fn = _XUnlockMutex;
     _XInitDisplayLock_fn = _XInitDisplayLock;
