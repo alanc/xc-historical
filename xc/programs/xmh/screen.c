@@ -1,5 +1,6 @@
 #ifndef lint
-static char rcs_id[] = "$Header: screen.c,v 2.25 88/08/22 13:09:19 swick Exp $";
+static char rcs_id[] =
+    "$XConsortium: screen.c,v 2.26 88/08/26 13:26:36 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -296,7 +297,6 @@ ScrnKind kind;
 {
     int i;
     Position x, y;
-    Dimension width, height;
     Scrn scrn;
     static Arg arglist[] = {
 	{XtNgeometry, NULL},
