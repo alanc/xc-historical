@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.22 93/08/23 20:00:13 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.23 93/09/04 15:55:39 rws Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles
@@ -29,6 +29,7 @@ sunLib.tmpl \
 sv4Lib.tmpl
 
 CFFILES = \
+Imake.cf \
 DGUX.cf \
 Mips.cf \
 Oki.cf \
