@@ -2802,13 +2802,10 @@
 		      bits-per-pixel)))
 	  (x-bits (index* x bits-per-pixel)))
       (declare (type array-index pixarray-padded-bits-per-line x-bits))
-      (when (if (or (index>= bits-per-pixel 8)
-		    (eq *computed-image-byte-lsb-first-p*
-			*computed-image-bit-lsb-first-p*))
+      (when (if (eq *computed-image-byte-lsb-first-p* *computed-image-bit-lsb-first-p*)
 		(and (index-zerop (index-mod pixarray-padded-bits-per-line 8))
 		     (index-zerop (index-mod x-bits 8)))
-	      (and (index-zerop
-		     (index-mod pixarray-padded-bits-per-line *image-unit*))
+	      (and (index-zerop (index-mod pixarray-padded-bits-per-line *image-unit*))
 		   (index-zerop (index-mod x-bits *image-unit*))))
 	(multiple-value-bind (image-swap-function image-swap-lsb-first-p)
 	    (image-swap-function
@@ -3052,15 +3049,11 @@
 		    bits-per-pixel)))
       (declare (type array-index pixarray-padded-bits-per-line
 		     pixarray-start-bit-offset))
-      (when (if (or (index>= bits-per-pixel 8)
-		    (eq *computed-image-byte-lsb-first-p*
-			*computed-image-bit-lsb-first-p*))
+      (when (if (eq *computed-image-byte-lsb-first-p* *computed-image-bit-lsb-first-p*)
 		(and (index-zerop (index-mod pixarray-padded-bits-per-line 8))
 		     (index-zerop (index-mod pixarray-start-bit-offset 8)))
-	      (and (index-zerop
-		     (index-mod pixarray-padded-bits-per-line *image-unit*))
-		   (index-zerop
-		     (index-mod pixarray-start-bit-offset *image-unit*))))
+	      (and (index-zerop (index-mod pixarray-padded-bits-per-line *image-unit*))
+		   (index-zerop (index-mod pixarray-start-bit-offset *image-unit*))))
 	(multiple-value-bind (image-swap-function image-swap-lsb-first-p)
 	    (image-swap-function
 	      bits-per-pixel
@@ -3162,18 +3155,13 @@
 		      bits-per-pixel)))
 	(declare (type array-index pixarray-padded-bits-per-line
 		       copy-padded-bits-per-line pixarray-start-bit-offset))
-	(when (if (or (index>= bits-per-pixel 8)
-		      (eq *computed-image-byte-lsb-first-p*
-			  *computed-image-bit-lsb-first-p*))
+	(when (if (eq *computed-image-byte-lsb-first-p* *computed-image-bit-lsb-first-p*)
 		  (and (index-zerop (index-mod pixarray-padded-bits-per-line 8))
 		       (index-zerop (index-mod copy-padded-bits-per-line 8))
 		       (index-zerop (index-mod pixarray-start-bit-offset 8)))
-		(and (index-zerop
-		       (index-mod pixarray-padded-bits-per-line *image-unit*))
-		     (index-zerop
-		       (index-mod copy-padded-bits-per-line *image-unit*))
-		     (index-zerop
-		       (index-mod pixarray-start-bit-offset *image-unit*))))
+		(and (index-zerop (index-mod pixarray-padded-bits-per-line *image-unit*))
+		     (index-zerop (index-mod copy-padded-bits-per-line *image-unit*))
+		     (index-zerop (index-mod pixarray-start-bit-offset *image-unit*))))
 	  (with-underlying-simple-vector (src card8 pixarray)
 	    (with-underlying-simple-vector (dst card8 copy)
 	      (image-noswap
