@@ -1,5 +1,5 @@
 /*
-* $Header: KnobP.h,v 1.2 87/09/11 21:21:44 swick Locked $
+* $Header: GripP.h,v 1.3 87/12/17 16:43:12 swick Exp $
 */
 
 /*
@@ -25,7 +25,7 @@
  * SOFTWARE.
  */
 /*
- *  KnobPrivate.h - Private definitions for Knob widget (Used by VPane Widget)
+ *  GripP.h - Private definitions for Grip widget (Used by VPane Widget)
  *
  *  Author:       Jeanne M. Rich
  *                Digital Equipment Corporation
@@ -33,33 +33,30 @@
  *  Date:         Wednesday September 9, 1987
  */
 
-#ifndef _XtKnobPrivate_h
-#define _XtKnobPrivate_h
+#ifndef _XtGripP_h
+#define _XtGripP_h
 
 /*******************************************************************************
  *
- * Knob Widget Private Date (Used by VPane Widget)
+ * Grip Widget Private Date (Used by VPane Widget)
  *
  ******************************************************************************/
 
-/* New fields for the Knob widget class record */
-typedef struct {
-   int mumble;
-   /* no new procedures */
-} KnobClassPart;
+/* New fields for the Grip widget class record */
+typedef struct {int empty;} GripClassPart;
 
 /* Full Class record declaration */
-typedef struct _KnobClassRec {
+typedef struct _GripClassRec {
     CoreClassPart    core_class;
-    KnobClassPart    knob_class;
-} KnobClassRec;
+    GripClassPart    grip_class;
+} GripClassRec;
 
-extern KnobClassRec knobClassRec;
+extern GripClassRec gripClassRec;
 
-/* New fields for the Knob widget record */
+/* New fields for the Grip widget record */
 typedef struct {
-  XtCallbackList knob_action;
-} KnobPart;
+  XtCallbackList grip_action;
+} GripPart;
 
 /*****************************************************************************
  *
@@ -67,11 +64,10 @@ typedef struct {
  *
  ****************************************************************************/
 
-typedef struct _KnobRec {
+typedef struct _GripRec {
    CorePart    core;
-   KnobPart    knob;
-} KnobRec;
+   GripPart    grip;
+} GripRec;
 
-#endif _XtKnobPrivate_h
-/* DON'T ADD STUFF AFTER THIS #endif */
+#endif _XtGripP_h
 

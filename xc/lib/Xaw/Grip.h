@@ -1,5 +1,5 @@
 /*
-* $Header: Knob.h,v 1.3 87/12/17 16:42:28 swick Locked $
+* $Header: Grip.h,v 1.4 88/01/22 11:13:00 swick Exp $
 */
 
 /*
@@ -25,16 +25,16 @@
  * SOFTWARE.
  */
 /*
- *  Knob.h - Public Definitions for Knob widget (used by VPane Widget)
+ *  Grip.h - Public Definitions for Grip widget (used by VPane Widget)
  *
  */
 
-#ifndef _XtKnob_h
-#define _XtKnob_h
+#ifndef _XtGrip_h
+#define _XtGrip_h
 
 /***************************************************************************
  *
- * Knob Widget 
+ * Grip Widget 
  *
  **************************************************************************/
 
@@ -45,7 +45,7 @@
  background	     Background		pixel		Black
  border		     BorderColor	pixel		Black
  borderWidth	     BorderWidth	int		0
- callback	     Callback		Pointer		KnobAction
+ callback	     Callback		Pointer		GripAction
  destroyCallback     Callback		Pointer		NULL
  height		     Height		int		6
  mappedWhenManaged   MappedWhenManaged	Boolean		True
@@ -57,20 +57,19 @@
 */
 
 
-#define XtNknobTranslations	"knobTranslations"
+#define XtNgripTranslations	"gripTranslations"
 
 typedef struct {
-  XEvent *event;		/* the event causing the KnobAction */
+  XEvent *event;		/* the event causing the GripAction */
   String *params;		/* the TranslationTable params */
   Cardinal num_params;		/* count of params */
-} KnobCallDataRec, *KnobCallData;
+} GripCallDataRec, *GripCallData;
 
 /* Class Record Constant */
 
-extern WidgetClass knobWidgetClass;
+extern WidgetClass gripWidgetClass;
 
-typedef struct _KnobClassRec *KnobWidgetClass;
-typedef struct _KnobRec      *KnobWidget;
+typedef struct _GripClassRec *GripWidgetClass;
+typedef struct _GripRec      *GripWidget;
 
-#endif _XtKnob_h
-/* DON'T ADD STUFF AFTER THIS #endif */
+#endif _XtGrip_h

@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Knob.c,v 1.7 88/01/05 08:35:30 swick Locked $";
+static char rcsid[] = "$Header: Grip.c,v 1.8 88/01/07 08:04:53 swick Exp $";
 #endif lint
 
 /*
@@ -25,20 +25,15 @@ static char rcsid[] = "$Header: Knob.c,v 1.7 88/01/05 08:35:30 swick Locked $";
  * SOFTWARE.
  */
 /*
- * Knob.c - Knob composite Widget (Used by VPane Widget)
- *
- * Author:   Jeanne M. Rich
- *           Digital Equipment Corporation
- *           Western Software Laboratory
- * Date:     Wednesday, September 9 1987
+ * Grip.c - Grip composite Widget (Used by VPane Widget)
  *
  */
 
 
 #include <X/Intrinsic.h>
 #include <X/Atoms.h>
-#include <X/Knob.h>
-#include "KnobP.h"
+#include <X/Grip.h>
+#include "GripP.h"
 
 static char *defaultTranslation[] = {
     NULL
@@ -47,35 +42,35 @@ static caddr_t defaultTranslations = (caddr_t)defaultTranslation;
 
 static XtResource resources[] = {
    {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-      XtOffset(KnobWidget, core.width), XtRString, "6" },
+      XtOffset(GripWidget, core.width), XtRString, "6" },
    {XtNheight, XtCHeight, XrmRInt, sizeof(int),
-      XtOffset(KnobWidget, core.height), XtRString, "6" },
+      XtOffset(GripWidget, core.height), XtRString, "6" },
    {XtNbackground, XtCBackground, XrmRPixel, sizeof(Pixel),
-      XtOffset(KnobWidget, core.background_pixel), XtRString, "Black"},
+      XtOffset(GripWidget, core.background_pixel), XtRString, "Black"},
    {XtNborderWidth, XtCBorderWidth, XrmRInt, sizeof(int),
-      XtOffset(KnobWidget, core.border_width), XtRString, "0"},
+      XtOffset(GripWidget, core.border_width), XtRString, "0"},
    {XtNcallback, XtCCallback, XtRPointer, sizeof(caddr_t), 
-      XtOffset(KnobWidget, knob.knob_action), XtRPointer, (caddr_t)NULL},
+      XtOffset(GripWidget, grip.grip_action), XtRPointer, (caddr_t)NULL},
    {XtNtranslations, XtCTranslations, XtRTranslationTable,
       sizeof(XtTranslations),
-      XtOffset(KnobWidget, core.translations),XtRTranslationTable,
+      XtOffset(GripWidget, core.translations),XtRTranslationTable,
       (caddr_t)&defaultTranslations}
 };
 
-void KnobAction( /* Widget, XEvent*, String*, Cardinal */ );
+void GripAction( /* Widget, XEvent*, String*, Cardinal */ );
 
 static XtActionsRec actionsList[] =
 {
-  {"KnobAction",	KnobAction},
+  {"GripAction",	GripAction},
 };
 
 
-KnobClassRec knobClassRec = {
+GripClassRec gripClassRec = {
    {
 /* core class fields */
     /* superclass         */   (WidgetClass) &widgetClassRec,
-    /* class name         */   "Knob",
-    /* size               */   sizeof(KnobRec),
+    /* class name         */   "Grip",
+    /* size               */   sizeof(GripRec),
     /* class initialize   */   NULL,
     /* class_inited       */   FALSE,
     /* initialize         */   NULL,
@@ -100,15 +95,15 @@ KnobClassRec knobClassRec = {
    }
 };
 
-WidgetClass knobWidgetClass = (WidgetClass) &knobClassRec;
+WidgetClass gripWidgetClass = (WidgetClass) &gripClassRec;
 
-static void KnobAction( widget, event, params, num_params )
+static void GripAction( widget, event, params, num_params )
     Widget widget;
     XEvent *event;
     String *params;
     Cardinal num_params;
 {
-    KnobCallDataRec call_data;
+    GripCallDataRec call_data;
 
     call_data.event = event;
     call_data.params = params;
