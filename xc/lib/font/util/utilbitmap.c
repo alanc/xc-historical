@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmaputil.c,v 1.2 91/02/22 17:58:11 keith Exp $
+ * $XConsortium: bitmaputil.c,v 1.1 91/05/10 16:51:48 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
