@@ -1,10 +1,10 @@
 /*
- *	$Source: /site/mit/poto/pp3812/src/RCS/x2pmp.c,v $
- *	$Header: x2pmp.c,v 1.2 87/10/02 16:07:42 poto Locked $
+ *	$Source: /local/X/clients/xpr/RCS/x2pmp.c,v $
+ *	$Header: x2pmp.c,v 1.1 87/10/05 16:50:35 swick Locked $
  */
 
 #ifndef lint
-static char *rcsid_x2pmp_c = "$Header: x2pmp.c,v 1.2 87/10/02 16:07:42 poto Locked $";
+static char *rcsid_x2pmp_c = "$Header: x2pmp.c,v 1.1 87/10/05 16:50:35 swick Locked $";
 #endif	lint
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the
@@ -22,12 +22,14 @@ static char *rcsid_x2pmp_c = "$Header: x2pmp.c,v 1.2 87/10/02 16:07:42 poto Lock
 #ifdef X10
 #include <X10/Xlib.h>
 #include "XWDFile.10.h"
+typedef XColor Color
 #else /* X11 */
 #include <X11/Xlib.h>
 #include <X11/XWDFile.h>
 #endif
 
 #include "pmp.h"
+#include "xpr.h"
 
 #define max_(a, b) (a) > (b) ? (a) : (b)
 #define min_(a, b) (a) < (b) ? (a) : (b)
@@ -42,19 +44,24 @@ static unsigned char *magnification_table();
 extern char *whoami;
 extern int debug;
 
-static bool reverse = FALSE;
-static font_size = 40, plane = 0;
+static plane = 0;
+#define FONT_HEIGHT 40
+#define FONT_HEIGHT_PIXELS (FONT_HEIGHT*75/PPI)
+#define FONT_WIDTH 24
 
 void x2pmp(in, out, scale, p_width, p_length, x_pos, y_pos,
-		  head, foot, orient)
+		  head, foot, orient, invert)
 FILE *in, *out;
-int scale, p_width, p_length, x_pos, y_pos;
+int scale;
+int p_width, p_length, x_pos, y_pos; /* in pels (units of PPI) */
 char *head, *foot;
 enum orientation orient;
+int invert;
 {
     unsigned char *buffer, *win_name;
     unsigned int win_name_size, width, height, ncolors;
     unsigned int buffer_size, one_plane_size, byte_width, fixed_width;
+    int no_of_bits;
     unsigned long swaptest = 1;
     XWDFileHeader header;
 
@@ -110,7 +117,12 @@ enum orientation orient;
 #else /* X11 */
     width = header.pixmap_width;
     height = header.pixmap_height;
-    fixed_width = 8 * (byte_width = header.bytes_per_line);
+    fixed_width = byte_width = header.bytes_per_line;
+#ifdef notdef
+    fixed_width = (width + 7) & ~0x3; /* round up to nearest byte boundary */
+#else
+    fixed_width = 8*byte_width;
+#endif
     one_plane_size = byte_width * height;
     buffer_size = one_plane_size *
       ((header.pixmap_format == ZPixmap)? header.pixmap_depth: 1);
@@ -120,16 +132,19 @@ enum orientation orient;
     if (orient == UNSPECIFIED)
       orient = (fixed_width <= height)? PORTRAIT: LANDSCAPE;
     if (scale <= 0) {
+        int real_height = height;
+	if (head) real_height += FONT_HEIGHT_PIXELS << 1;
+	if (foot) real_height += FONT_HEIGHT_PIXELS << 1;
 	switch(orient) {
 	case PORTRAIT:
 	case UPSIDE_DOWN:
 	    scale = min_((p_width - 2*x_pos) / fixed_width,
-			 (p_length - 2*y_pos) / height);
+			 (p_length - 2*y_pos) / real_height);
 	    break;
 	case LANDSCAPE:
 	case LANDSCAPE_LEFT:
 	    scale = min_((p_length - 2*y_pos) / fixed_width,
-			 (p_width - 2*x_pos) / height);
+			 (p_width - 2*x_pos) / real_height);
 	    break;
 	}
 	if (scale <= 0)
@@ -139,21 +154,30 @@ enum orientation orient;
 		  scale, fixed_width*scale, height*scale);
     }
 
-    /* skip Colors from current position, if any */
 #ifdef X10
     ncolors = header.window_ncolors;
 #else /* X11 */
     ncolors = header.ncolors;
 #endif
     if (ncolors) {
-	DEBUG(>= 1)
-	  fprintf(stderr, "skipping %d color maps\n", ncolors);
-#ifdef X10
-	(void) fseek(stdin, (long) (sizeof(Color) * ncolors), 1);
-#else /* X11 */
-	(void) fseek(stdin, (long) (sizeof(XColor) * ncolors), 1);
-#endif
+	int i;
+	XColor *colors = (XColor *)malloc((unsigned) (header.ncolors * sizeof(XColor)));
+
+	if (fread((char *)colors, sizeof(XColor), ncolors, in) != ncolors)
+	  leave("Unable to read colormap from dump file.");
+
+	if (*(char *) &swaptest) {
+	    for (i = 0; i < ncolors; i++) {
+		_swaplong((char *) &colors[i].pixel, (long)sizeof(long));
+		_swapshort((char *) &colors[i].red, (long) (3 * sizeof(short)));
+	    }
+	}
+	if (ncolors == 2 && INTENSITY(colors[0]) > INTENSITY(colors[1]))
+	    invert = !invert;
+	free( colors );
     }
+
+    invert = !invert;		/* 3812 puts ink (i.e. black) on 1-bits */
 
     if ((buffer = (unsigned char *) calloc(buffer_size, 1)) == NULL)
       leave("Can't calloc data buffer.");
@@ -178,34 +202,31 @@ enum orientation orient;
 	    bitswap[c] = ((c & 01) << 7) + ((c & 02) << 5) + ((c & 04) << 3) +
 	      ((c & 010) << 1) + ((c & 020) >> 1) + ((c & 040) >> 3) +
 		((c & 0100) >> 5) + ((c & 0200) >> 7);
-	    /* Someone (not me) should decide when the bitmap ought to */
-	    /* be reversed. */
-	    if (reverse == FALSE)
-	      bitswap[c] = 0xFF - bitswap[c];
+	    if (invert)
+	      bitswap[c] = ~bitswap[c];
 	}
 	/* Here's where we do the bitswapping. */
 	for(bp = buffer+buffer_size; bp-- > buffer;)
 	  *bp = bitswap[*bp];
+    }
+    else if (invert) {
+        unsigned char *bp;
+	for(bp = buffer+buffer_size; bp-- > buffer;)
+	  *bp = ~*bp;
+    }
 
-	/* Note that we don't want the last bits up to the byte/word
-	 * alignment set (which will happen when we *don't* reverse
-	 * (invert) the bitmap). */
-	if (reverse == FALSE) { 
-	    int i, j, no_of_bits;
-	    int mask;
+    /* we don't want the last bits up to the byte/word alignment set */
+    if (no_of_bits = fixed_width - width) {
+	int i, j, mask = ~bits_set(no_of_bits % 8);
+	for(i = 0; i < height; i++) {
+	    unsigned char *s = buffer + (i+1) * byte_width ;
 
-	    if (no_of_bits = fixed_width - width) {
-		mask = ~bits_set(no_of_bits % 8);
-		for(i = 0; i < height; i++) {
-		    unsigned char *s = buffer + (i+1) * byte_width ;
-
-		    for(j = no_of_bits / 8; j--;)
-		      *--s = 0;
-		    *--s &= mask;
-		}
-	    }
+	    for(j = no_of_bits / 8; j--;)
+	      *--s = 0;
+	    *--s &= mask;
 	}
     }
+
     DEBUG(>= 1)
       fprintf(stderr,"read %d bytes for a %d (%d bytes) x %d image\n",
 	      buffer_size, (int) width, byte_width, (int) height);
@@ -235,6 +256,7 @@ enum orientation orient;
 	free((char *) tbl);
 	buffer = scale_buf;
 	byte_width *= scale;
+	width *= scale;
 	fixed_width *= scale;
 	height *= scale;
 	one_plane_size *= scale*scale;
@@ -256,11 +278,13 @@ enum orientation orient;
     p_restore_cursor(out, 0);
     p_save_cursor(out, 3);
     if (head != NULL) {
-	p_move_abs(out, x_pos, y_pos - font_size);
+	p_move_abs( out, x_pos + (width - strlen(foot)*FONT_WIDTH) >> 1,
+		         y_pos - FONT_HEIGHT );
 	fprintf(out, "%s\n", head);
     }
     if (foot != NULL) {
-	p_move_abs(out, x_pos, (int) (y_pos+height));
+	p_move_abs( out, x_pos + (width - strlen(foot)*FONT_WIDTH) >> 1,
+			 y_pos + height + (FONT_HEIGHT << 1) );
 	fprintf(out, "%s\n", foot);
     }
     p_move_abs(out, x_pos, y_pos);
