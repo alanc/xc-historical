@@ -1,4 +1,4 @@
-/* $XConsortium: makeform.c,v 1.4 94/06/03 15:58:33 gildea Exp $ */
+/* $XConsortium: makeform.c,v 1.5 94/07/26 20:39:38 gildea Exp gildea $ */
 /*
 
 Copyright (c) 1988, 1991  X Consortium
@@ -255,7 +255,7 @@ Widget make_queryform(parent, msgstr, msglen,
 	Dimension width, height, height_addons = 0;
 	Dimension scroll_size, border_width;
 	Widget label, scroll;
-	Dimension left, right, top, bottom;
+	Position left, right, top, bottom;
 	/*
 	 * A Text widget is used for the automatic scroll bars.
 	 * But Text widget doesn't automatically compute its size.
