@@ -84,8 +84,14 @@ bug mentioned above.
 .TP 8
 .BI \-e " program \[arguments \.\.\.\]"
 This option specifies the program (and its command line arguments) to be
-run in the \fIxterm\fP window.  The default is to start the user's shell.
-\fBThis must be the last option on the command line.\fP
+run in the \fIxterm\fP window.  It also sets the window title and icon
+name to be the basename of the program being executed.  If this option
+is not given, the user's shell will be started.  \fBThis must be the last 
+option on the command line.\fP
+.TP 8
+.BI \-E " program \[arguments \.\.\.\]"
+This option is the same as \fI-e\fP except that it does not set the window 
+title or icon name.
 .TP 8
 .BI \-fb " font"
 This option specifies a font to be used when displaying bold text.  

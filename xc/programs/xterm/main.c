@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.57 88/07/21 12:06:46 xguest Locked $";
+static char rcs_id[] = "$Header: main.c,v 1.58 88/07/22 14:39:55 xguest Exp $";
 #endif	/* lint */
 
 /*
@@ -304,7 +304,8 @@ static char *options[] = {
 "-/+t                        turn on/off Tek emulation window",
 "-/+ut                       turn on/off utmp inhibit",
 "-/+vb                       turn on/off visual bell",
-"-e command args             command to execute",
+"-e command args             command to execute, sets title and icon",
+"-E command args             commadn to execute, doesn't set title or icon",
 "%geom                       Tek window geometry",
 "#geom                       icon window geometry",
 "-C                          console mode",
@@ -356,6 +357,7 @@ Arg ourTopLevelShellArgs[] = {
 int number_ourTopLevelShellArgs = 2;
 	
 Widget toplevel;
+Boolean bash_title_icon_strings = TRUE;	 /* default for -e */
 
 main (argc, argv)
 int argc;
@@ -618,6 +620,8 @@ char **argv;
 		debug = TRUE;
 		continue;
 #endif	/* DEBUG */
+	     case 'E':
+		bash_title_icon_strings = FALSE;
 	     case 'e':
 		if (argc <= 1) Syntax (*argv);
 		command_to_exec = ++argv;
@@ -645,7 +649,7 @@ char **argv;
 
 	term->initflags = term->flags;
 
-	if ((get_ty || command_to_exec) && !title) {
+	if ((get_ty || command_to_exec) && !title && bash_title_icon_strings) {
 	    char window_title[1024];
 	    static Arg args[] = {
 		{XtNtitle, NULL},
