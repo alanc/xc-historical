@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.3 93/11/16 16:28:30 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.4 93/12/15 17:30:21 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -77,6 +77,7 @@ int		numClients = 0;
 int		pingCount = 0;
 int		saveDoneCount = 0;
 int		interactCount = 0;
+Bool		shutdownInProgress = False;
 Bool		shutdownCancelled = False;
 Bool		verbose = False;
 jmp_buf		JumpHere;
@@ -363,6 +364,8 @@ char 		**reasonMsgs;
 	printf ("   Reason string %d: %s\n", i + 1, reasonMsgs[i]);
     printf ("\n");
 
+    SmFreeReasons (count, reasonMsgs);
+
     SmsCleanUp (smsConn);
 
     printf ("ICE Connection closed, IceConn fd = %d\n",
@@ -392,7 +395,11 @@ char 		**reasonMsgs;
 
     numClients--;
 
-    SmFreeReasons (count, reasonMsgs);
+    if (shutdownInProgress && numClients == 0)
+    {
+	printf ("\nSHUTTING DOWN!\n");
+	exit (0);
+    }
 }
 
 SetProperty(client, prop)
@@ -769,36 +776,25 @@ XtPointer 	callData;
     }
     else if (shutdown)
     {
-	client = ClientList;
-	while(client)
-	{
-	    ClientRec *next = client->next;
+	shutdownInProgress = True;
 
+	client = ClientList;
+	while (client)
+	{
 	    SmsDie (client->smsConn);
 
 	    printf ("Client Id = %s, sent DIE\n", client->clientId);
 
-	    SmsCleanUp (client->smsConn);
-
-	    printf ("ICE Connection terminated, IceConn fd = %d\n",
-		IceConnectionNumber (client->ice_conn));
-
-	    IceSetShutdownNegotiation (client->ice_conn, False);
-	    IceCloseConnection (client->ice_conn);
-
-	    FreeClientInfo (client);
-	    client = next;
+	    client = client->next;
 	}
-
-	printf ("\n");
-	printf ("SHUTTING DOWN!\n");
-
-	exit (0);
     }
 
-    XtPopdown (savePopup);
-    XtSetSensitive (savePopup, 1);
-    XtSetSensitive (mainWindow, 1);
+    if (!shutdownInProgress)
+    {
+	XtPopdown (savePopup);
+	XtSetSensitive (savePopup, 1);
+	XtSetSensitive (mainWindow, 1);
+    }
 }
 
 
@@ -1058,6 +1054,12 @@ IceConn 	ice_conn;
 	    IceCloseConnection (ice_conn);
 
 	    numClients--;
+
+	    if (shutdownInProgress && numClients == 0)
+	    {
+		printf ("\nSHUTTING DOWN!\n");
+		exit (0);
+	    }
 	}
     }
 
