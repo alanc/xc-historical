@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.28 90/12/28 11:08:55 rws Exp $
+ * $XConsortium: Xos.h,v 1.29 91/01/04 15:36:55 rws Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -62,14 +62,22 @@
  */
 
 #ifdef SYSV
+#define _X_POSIX_STYLE_STRING_H
+#endif
+#ifdef SVR4
+#define _X_POSIX_STYLE_STRING_H
+#endif
+
+#ifdef _X_POSIX_STYLE_STRING_H
 #include <string.h>
 #define index strchr
 #define rindex strrchr
+#undef _X_POSIX_STYLE_STRING_H
 #else
 #include <strings.h>
 #define strchr index
 #define strrchr rindex
-#endif /* SYSV */
+#endif
 
 
 /*
@@ -80,6 +88,10 @@
 #include <fcntl.h>
 #endif
 #endif /* SYSV */
+#ifdef SVR4
+#include <fcntl.h>
+#include <unistd.h>
+#endif
 #include <sys/file.h>
 #ifdef USG
 #include <unistd.h>
