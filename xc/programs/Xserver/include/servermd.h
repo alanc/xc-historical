@@ -23,7 +23,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.43 89/07/27 17:02:07 keith Exp $ */
+/* $XConsortium: servermd.h,v 1.44 89/09/19 14:19:57 keith Exp $ */
 
 /*
  * The vendor string identifies the vendor responsible for the
@@ -154,8 +154,8 @@ SOFTWARE.
 
 #define IMAGE_BYTE_ORDER	MSBFirst        /* Values for Pegasus only */
 #define BITMAP_BIT_ORDER	MSBFirst
-#define GLYPHPADBYTES		1
-#define GETLEFTBITS_ALIGNMENT	4
+#define GLYPHPADBYTES		4
+#define GETLEFTBITS_ALIGNMENT	1
 
 #      else
 #      ifdef macII
