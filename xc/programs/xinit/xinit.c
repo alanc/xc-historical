@@ -1,4 +1,4 @@
-/* $XConsortium: xinit.c,v 11.58 94/04/17 20:24:30 rws Exp kaleb $ */
+/* $XConsortium: xinit.c,v 11.59 94/11/21 18:25:22 kaleb Exp kaleb $ */
 
 /*
 
@@ -85,13 +85,17 @@ char *server_names[] = {
     "XmacII      Apple monochrome display on Macintosh II",
 #endif
 #ifdef XFREE86
-    "XF86_SVGA   SVGA colour display on i386 PC",
+    "XF86_SVGA   SVGA color display on i386 PC",
     "XF86_Mono   monochrome display on i386 PC",
-    "XF86_VGA16  16 colour VGA display on i386 PC",
-    "XF86_S3     S3 colour display on i386 PC",
-    "XF86_8514   IBM 8514/A colour display on i386 PC",
-    "XF86_Mach8  ATI Mach8 colour display on i386 PC",
-    "XF86_Mach32 ATI Mach32 colour display on i386 PC",
+    "XF86_VGA16  16 color VGA display on i386 PC",
+    "XF86_S3     S3 color display on i386 PC",
+    "XF86_8514   IBM 8514/A color display on i386 PC",
+    "XF86_Mach8  ATI Mach8 color display on i386 PC",
+    "XF86_Mach32 ATI Mach32 color display on i386 PC",
+    "XF86_Mach64 ATI Mach64 color display on i386 PC",
+    "XF86_P9000  Weitek P9000 color display on i386 PC",
+    "XF86_AGX    IIT AGX color display on i386 PC",
+    "XF86_W32    Tseng ET4000/W32 color display on i386 PC",
 #endif
     NULL};
 
