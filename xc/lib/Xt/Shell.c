@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.149 94/02/09 20:30:27 converse Exp $ */
+/* $XConsortium: Shell.c,v 1.150 94/02/10 10:14:15 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -967,7 +967,7 @@ static void ApplicationInitialize(req, new, args, num_args)
 	XtNewString(w->application.current_dir);
 
     w->application.checkpointing = False;
-    w->application.input_id = (XtInputId) NULL;
+    w->application.input_id = 0;
     w->application.extension = NULL;
 
     if ((w->application.join_session) &&
@@ -1337,8 +1337,8 @@ static void _popup_set_prop(w)
 	UNLOCK_PROCESS;
 
 	p = (Widget) w;
-	while (p->core.parent && 
-	       (XtIsWMShell(p) && ! ((WMShellWidget)p)->wm.client_leader))
+	while ((! XtIsWMShell(p) || ! ((WMShellWidget)p)->wm.client_leader)
+	       && p->core.parent)
 	    p = p->core.parent;
 
 	/* ASSERT: p is a WMshell with client_leader set, or p has no parent */
@@ -1517,13 +1517,9 @@ static void ApplicationDestroy(wid)
 {
     ApplicationShellWidget w = (ApplicationShellWidget) wid;
 
-    FreeStringArray(w->application.argv);
-
-    if (w->application.connection) {
-	XtRemoveInput(w->application.input_id);
-	SmcCloseConnection(w->application.connection, 0, NULL);
-    }
+    StopManagingSession(w, w->application.connection);
     XtFree(w->application.session_id);
+    FreeStringArray(w->application.argv);
     FreeStringArray(w->application.restart_command);
     FreeStringArray(w->application.clone_command);
     FreeStringArray(w->application.discard_command);
@@ -2237,18 +2233,17 @@ static Boolean ApplicationSetValues(current, request, new, args, num_args)
 	XtFree(cw->application.session_id);
     }
 
-    if (cw->application.join_session == False &&
-	nw->application.join_session == True)
-	JoinSession(nw);
-    else if (cw->application.join_session == True &&
-	     nw->application.join_session == False)
-	StopManagingSession(nw);
-    else if (cw->application.connection == NULL &&
-	     nw->application.connection != NULL)
-	JoinSession(nw);
-    else if (cw->application.connection != NULL &&
-	     nw->application.connection == NULL)
-	StopManagingSession(nw);
+    if (cw->application.join_session != nw->application.join_session) {
+	if (nw->application.join_session)
+	    JoinSession(nw);
+	else
+	    StopManagingSession(nw, nw->application.connection);
+    } else if (cw->application.connection != nw->application.connection) {
+	if (cw->application.connection)
+	    JoinSession(nw);
+	else
+	    StopManagingSession(nw, NULL);
+    }
 
     if (cw->application.clone_command != nw->application.clone_command) {
 	if (nw->application.clone_command) {
@@ -2419,20 +2414,22 @@ extern String _XtGetUserName();
 static void XtCallSaveCallbacks();
 static void XtCallCancelCallbacks();
 static void XtCallDieCallbacks();
-static void DieCallback();
 static void GetIceEvent();
 static XtCheckpointToken GetToken();
 
-static void StopManagingSession(w)
+static void StopManagingSession(w, connection)
     ApplicationShellWidget w;
+    SmcConn connection; /* connection to close, if any */
 {
-    if (w->application.connection) {
+    if (connection)
+	SmcCloseConnection(connection, 0, NULL);
+
+    if (w->application.input_id) {
 	XtRemoveInput(w->application.input_id);
-	w->application.input_id = (XtInputId) NULL;
-	w->application.connection = NULL;
-	XtRemoveCallback((Widget)w, XtNdieCallback,
-			 DieCallback, (XtPointer) NULL);
+	w->application.input_id = 0;
     }
+    w->application.connection = NULL;
+    w->application.join_session = False;
 }
 
 #define XT_MSG_LENGTH 256
@@ -2474,6 +2471,7 @@ static void JoinSession(w)
 	}
     }
     if (w->application.connection) {
+	w->application.join_session = True;
 	if (w->application.session_id == NULL
 	    || (strcmp(w->application.session_id, sm_client_id) != 0)) {
 	    XtFree(w->application.session_id);
@@ -2487,7 +2485,8 @@ static void JoinSession(w)
 			  IceConnectionNumber(ice_conn),
 			  (XtPointer) XtInputReadMask,
 			  GetIceEvent, (XtPointer) ice_conn);
-	XtAddCallback((Widget)w, XtNdieCallback, DieCallback, (XtPointer)NULL);
+    } else {
+	w->application.join_session = False;
     }
 }
 #undef XT_MSG_LENGTH
@@ -2698,39 +2697,15 @@ static void XtCallSaveCallbacks(connection, client_data, save_type, shutdown,
     }
 }
 
-/*ARGSUSED*/
-static void DieCallback(widget, client_data, call_data)
-    Widget	widget;
-    XtPointer	client_data; /*XXX if called by default err handler, the msg */
-    XtPointer	call_data;
-{
-    ApplicationShellWidget w = (ApplicationShellWidget) widget;
-    String *reason_msgs = (String*) client_data;
-    int count = 0;
-
-    if (w->application.connection) {
-	if (reason_msgs) {
-	    while (reason_msgs[count])
-		count++;
-	}
-	XtRemoveInput(w->application.input_id);
-	SmcCloseConnection(w->application.connection, count, reason_msgs);
-	w->application.connection = (SmcConn) NULL;
-	w->application.input_id = 0;
-    }
-}
-
 static void XtCallDieCallbacks(connection, client_data)
     SmcConn	connection;
     SmPointer	client_data;
 {
     ApplicationShellWidget w =  (ApplicationShellWidget) client_data;
+
+    StopManagingSession(w, w->application.connection);
     XtCallCallbackList((Widget)w, w->application.die_callbacks,
 		       (XtPointer) NULL);
-    /* call_data should be modified to include save_type, fast, and
-     * save_success from the previous SaveYourself if it was a shutdown,
-     * else, call_data is NULL.
-     */
 }
 
 static void XtCallCancelCallbacks(connection, client_data)
@@ -2742,14 +2717,17 @@ static void XtCallCancelCallbacks(connection, client_data)
     if (w->application.checkpointing) 
 	w->application.cancel_shutdown = True;
 
+    XtCallCallbackList((Widget)w, w->application.cancel_callbacks,
+		       (XtPointer) NULL);
+
     if (w->application.interact_state == XtInteractPending) {
 	XtRemoveAllCallbacks((Widget)w, XtNinteractCallback);
 	w->application.interact_state = XtInteractNone;
-	w->application.save_success = False;
+	if (w->application.save_tokens == 0) {
+	    w->application.checkpointing = False;
+	    SmcSaveYourselfDone(w->application.connection, False);
+	}
     }
-
-    XtCallCallbackList((Widget)w, w->application.cancel_callbacks,
-		       (XtPointer) NULL);
 }
 
 static void XtInteractPermission(connection, data)
@@ -2858,6 +2836,7 @@ void XtSessionReturnToken(token)
 	if (token->cancel_shutdown == True)
 	    w->application.cancel_shutdown = True;
 	if (has_some) {
+	    token->cancel_shutdown = w->application.cancel_shutdown;
 	    _XtPeekCallback((Widget)w, w->application.interact_callbacks,
 			    &callback, &client_data);
 	    XtRemoveCallback((Widget)w, XtNinteractCallback,
