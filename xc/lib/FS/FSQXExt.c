@@ -1,6 +1,5 @@
-/* $XConsortium$ */
-
-/* @(#)FSQXExt.c	4.1	91/05/02
+/* $XConsortium: FSQXExt.c,v 1.2 91/05/13 15:11:50 gildea Exp $ */
+/*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
@@ -83,7 +82,22 @@ FSQueryXExtents16(svr, fid, range_type, str, str_len, extents)
     req->range = range_type;
     req->num_ranges = str_len;
     req->length += ((str_len * sizeof(fsChar2b)) + 3) >> 2;
-    _FSSend(svr, (char *) str, (str_len * sizeof(fsChar2b)));
+    if (FSProtocolVersion(svr) == 1)
+    {
+	fsChar2b_version1 *swapped_str;
+
+	swapped_str = (fsChar2b_version1 *)
+	    FSmalloc(sizeof(fsChar2b_version1) * str_len);
+	if (!swapped_str)
+	    return FSBadAlloc;
+	for (i = 0; i < str_len; i++) {
+	    swapped_str[i].low = str->low;
+	    swapped_str[i].high = str->high;
+	}
+	_FSSend(svr, (char *)swapped_str, (str_len*sizeof(fsChar2b_version1)));
+	FSfree(swapped_str);
+    } else
+	_FSSend(svr, (char *) str, (str_len * sizeof(fsChar2b)));
 
     /* get back the info */
     if (!_FSReply(svr, (fsReply *) & reply,

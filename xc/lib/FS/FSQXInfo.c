@@ -1,6 +1,5 @@
-/* $XConsortium$ */
-
-/* @(#)FSQXInfo.c	4.1	91/05/02
+/* $XConsortium: FSQXInfo.c,v 1.2 91/05/13 15:11:51 gildea Exp $ */
+/*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
  * Massachusetts Institute of Technology
@@ -53,6 +52,15 @@ FSQueryXInfo(svr, fid, info, props, offsets, prop_data)
 	return FSBadAlloc;
     }
     bcopy((char *) &reply.header, (char *) info, sizeof(fsFontHeader));
+    if (FSProtocolVersion(svr) == 1)
+    {
+	info->char_range.min_char.high = reply.header.char_range.min_char.low;
+	info->char_range.min_char.low = reply.header.char_range.min_char.high;
+	info->char_range.max_char.high = reply.header.char_range.max_char.low;
+	info->char_range.max_char.low = reply.header.char_range.max_char.high;
+	info->default_char.high = reply.header.default_char.low;
+	info->default_char.low = reply.header.default_char.high;
+    }
     /* get the prop header */
     _FSReadPad(svr, (char *) props, sizeof(fsPropInfo));
     /* prepare for prop data */
