@@ -1,4 +1,4 @@
-/* $Header: cfbmskbits.c,v 4.0 87/08/31 20:59:26 toddb Locked $ */
+/* $Header: cfbmskbits.c,v 4.1 87/09/01 22:23:21 sun Locked $ */
 /*
  * The Sun X drivers are a product of Sun Microsystems, Inc. and are provided
  * for unrestricted use provided that this legend is included on all tape
@@ -49,6 +49,7 @@ bit index 32-n in a longword
 */
 #include	<X.h>
 #include	<Xmd.h>
+#include	<servermd.h>
 
 #if	(BITMAP_BIT_ORDER == MSBFirst)
 /* NOTE:

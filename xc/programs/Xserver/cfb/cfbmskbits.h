@@ -1,4 +1,4 @@
-/* $Header: cfbmaskbits.h,v 3.1 87/08/08 17:52:30 toddb Exp $ */
+/* $Header: cfbmskbits.h,v 4.0 87/08/31 20:59:34 sun Locked $ */
 /*
  * The Sun X drivers are a product of Sun Microsystems, Inc. and are provided
  * for unrestricted use provided that this legend is included on all tape
@@ -204,6 +204,7 @@ getleftbits(psrc, w, dst)
 
 #include	<X.h>
 #include	<Xmd.h>
+#include	<servermd.h>
 #if	(BITMAP_BIT_ORDER == MSBFirst)
 #define SCRLEFT(lw, n)	((lw) << ((n)*PSZ))
 #define SCRRIGHT(lw, n)	((lw) >> ((n)*PSZ))
