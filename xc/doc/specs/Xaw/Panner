@@ -1,4 +1,4 @@
-.NH 2 
+.NH 2
 Panner Widget
 .LP
 .XS
@@ -64,10 +64,12 @@ backgroundStipple	BackgroundStipple	String		NULL
 borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
-defaultScale	DefaultScale	Dimension		8
-canvasWidth	CanvasWidth	Dimension		0
 canvasHeight	CanvasHeight	Dimension		0
+canvasWidth	CanvasWidth	Dimension		0
 colormap	Colormap	Pointer		Parent's Colormap
+cursor	Cursor	Cursor		None
+cursorName	Cursor	String		NULL
+defaultScale	DefaultScale	Dimension		8
 depth	Depth	int	C	Parent's Depth
 destroyCallback	Callback	XtCallbackList		NULL
 foreground	Foreground	Pixel		XtDefaultForeground
@@ -75,6 +77,8 @@ height	Height	Dimension	A	depends on orientation
 internalSpace	InternalSpace	Dimension		4
 lineWidth	LineWidth	Dimension		0
 mappedWhenManaged	MappedWhenManaged	Boolean		True
+pointerColor	Foreground	Pixel		XtDefaultForeground
+pointerColorBackground	Background	Pixel		XtDefaultBackground
 reportCallback	ReportCallback	Callback		NULL
 resize	Resize	Boolean		True
 rubberBand	RubberBand	Boolean		False
@@ -115,6 +119,8 @@ the area representing the canvas.
 .IP \fBcanvasWidth\fP 1.5i
 The size of the canvas.
 .Cm
+.Cu
+.Pn
 .IP \fBdefaultScale\fP 1.5i
 The percentage size that the Panner widget should have relative
 to the size of the canvas.
@@ -132,6 +138,8 @@ and the edge of the Panner widget.
 The width of the lines in the rubberbanding rectangle when rubberbanding
 is in effect instead of continuous scrolling.  The default is 0.
 .Mm
+.Pf
+.Pb
 .IP \fBreportCallback\fP 1.5i
 All functions on this callback list are called when the
 \fBnotify\fP action is invoked.  See the \fBPanner Actions\fP section 
