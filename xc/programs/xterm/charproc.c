@@ -1251,10 +1251,10 @@ int		(*func)();
 
 					status = XtMakeResizeRequest (
 					    (Widget) term, 
-					    (unsigned) FontWidth(screen) * j
+					    (Dimension) FontWidth(screen) * j
 					        + 2*screen->border
 						+ screen->scrollbar,
-					    (unsigned) FontHeight(screen)
+					    (Dimension) FontHeight(screen)
 						* (screen->max_row + 1)
 						+ 2 * screen->border,
 					    &replyWidth, &replyHeight);
@@ -1456,10 +1456,10 @@ XtermWidget term;
 					XtGeometryResult status;
 					status = XtMakeResizeRequest (
 					    (Widget) term,
-					    (unsigned) FontWidth(screen) * j 
+					    (Dimension) FontWidth(screen) * j 
 						+ 2*screen->border
 						+ screen->scrollbar,
-					    (unsigned) FontHeight(screen)
+					    (Dimension) FontHeight(screen)
 						* (screen->max_row + 1)
 						+ 2*screen->border,
 					    &replyWidth, &replyHeight);
@@ -2027,8 +2027,9 @@ XSetWindowAttributes *values;
 	  sizehints.flags |= USSize;
 	else sizehints.flags |= PSize;
 
-	(void) XtMakeResizeRequest((Widget) term, width, height, &term->core.width,
-			&term->core.height);
+	(void) XtMakeResizeRequest((Widget) term,
+				   (Dimension)width, (Dimension)height,
+				   &term->core.width, &term->core.height);
 
 	/* XXX This is bogus.  We are parsing geometries too late.  This
 	 * is information that the shell widget ought to have before we get
@@ -2362,9 +2363,9 @@ int full;
 		        Dimension junk;
 			XtMakeResizeRequest(
 			    (Widget) term,
-			    (unsigned) 80*FontWidth(screen)
+			    (Dimension) 80*FontWidth(screen)
 				+ 2 * screen->border + screen->scrollbar,
-			    (unsigned) FontHeight(screen)
+			    (Dimension) FontHeight(screen)
 			        * (screen->max_row + 1) + 2 * screen->border,
 			    &junk, &junk);
 			XSync(screen->display, FALSE);	/* synchronize */
