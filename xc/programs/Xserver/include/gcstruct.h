@@ -1,4 +1,4 @@
-/* $Header: gcstruct.h,v 1.1 87/09/11 07:49:45 rws Locked $ */
+/* $Header: gcstruct.h,v 1.2 87/11/09 14:10:10 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -109,8 +109,5 @@ typedef struct _GC{
     void (* DestroyClip) ();
     void (* CopyClip)();
 } GC;
-
-extern GC *CreateGC();
-extern void FreeGC();
 
 #endif /* GCSTRUCT_H */
