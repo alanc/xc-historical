@@ -2360,3 +2360,90 @@ To remove any standard colormap property, use
 This function will remove the specified property from the specified screen,
 releasing any resources used by the colormap(s) of the property, if
 possible.
+.LP
+.NH 1
+Widget Description Functions
+.LP
+The functions defined in this section are for building a description of 
+the structure of and resources associated with a hierarchy of widget classes.
+This package is typically used by applications that wish to manipulate the 
+widget set itself.
+.LP
+The definitions needed to use these interfaces are in the header file
+.Pn < X11/Xmu/WidgetNode.h >.
+The following function must be called before any of the others described
+below:
+.sp
+.FD 0
+void XmuWnInitializeNodes(\fInode_array\fP, \fInum_nodes\fP)
+.br
+      XmuWidgetNode *\fInode_array\fP;
+.br
+      int \fInum_nodes\fP;
+.FN
+.IP \fInode_array\fP 1i
+specifies a list of widget classes, in alphabetical order
+.IP \fInum_nodes\fP 1i
+specfies the number of widget classes in the node array
+.LP
+To determine the resources provided by a widget class or classes, use
+.sp
+.FD 0
+void XmuWnFetchResources(\fInode\fP, \fItoplevel\fP, \fItop_node\fP)
+.br
+      XmuWidgetNode *\fInode\fP;
+.br
+      Widget \fItoplevel\fP;
+.br
+      XmuWidgetNode *\fItop_node\fP;
+.FN
+.IP \fInode\fP 1i
+specifies the widget class for which resources should be obtained.
+.IP \fItoplevel\fP 1i
+specifies the widget that should be used for creating an instance of \fInode\fP
+from which resources are extracted.  This is typically the value returned
+by \fBXtAppInitialize\fP.
+.IP \fItop_node\fP 1i
+specifies the ancestor of \fInode\fP that should be treated as the root
+of the widget inheritance tree (used in determining which ancestor contributed 
+which resources).
+.LP
+Each widget class inherits the resources of its parent.  To count the number
+of resources contributed by a particular widget class, use:
+.sp
+.FD 0
+int XmuWnCountOwnedResources(\fInode\fP, \fIowner_node\fP, \fIconstraints\fP)
+.br
+      XmuWidgetNode *\fInode\fP;
+.br
+      XmuWidgetNode *\fIowner_node\fP;
+.br
+      Bool \fIconstraints\fP;
+.FN
+.IP \fInode\fP 1i
+specifies the widget class whose resources are being examined.
+.IP \fIowner_node\fP 1i
+specifies the widget class of the ancestor of \fInode\fP whose contributions
+are being counted.
+.IP \fIconstraints\fP 1i
+specifies whether or not to count constraint resources or normal resources.
+.LP
+This routine returns the number of resources contributed (or ``owned'') by
+the specified widget class.
+.sp
+.FD 0
+XmuWidgetNode *XmuWnNameToNode(\fInode_list\fP, \fInum_nodes\fP, \fIname\fP)
+.br
+      XmuWidgetNode *\fInode_list\fP;
+      int \fInum_nodes\fP;
+      char *\fIname\fP;
+.FN
+.IP \fInode_list\fP 1i
+specifies a list of widget nodes
+.IP \fInum_nodes\fP 1i
+specifies the number of nodes in the list
+.IP \fIname\fP 1i
+specifies the name of the widget class in the node list to search for
+.LP
+This function returns the WidgetNode in the list that matches the given
+widget name or widget class name.  If no match is found, it returns NULL.
