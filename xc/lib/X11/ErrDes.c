@@ -1,13 +1,13 @@
 #include "copyright.h"
 
-/* $Header: XErrDes.c,v 11.15 87/06/14 18:00:13 swick Locked $ */
+/* $Header: XErrDes.c,v 11.16 87/11/23 11:49:09 rws Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
+#include <X11/Xos.h>
 #include "Xlibint.h"
 #include "Xresource.h"
 #include "Quarks.h"
-#include <strings.h>
 
 char *XErrorList[] = {
 	/* No error	*/	"",

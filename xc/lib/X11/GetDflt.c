@@ -1,6 +1,6 @@
 #include <copyright.h>
 
-/* $Header: XGetDflt.c,v 1.1 87/08/22 10:24:06 ham Exp $ */
+/* $Header: XGetDflt.c,v 1.1 87/08/22 10:24:06 rws Locked $ */
 /* Copyright (c) 1985, Massachusetts Institute of Technology */
 
 /*
@@ -16,7 +16,7 @@
  */
 
 #include <stdio.h>
-#include <strings.h>
+#include <X11/Xos.h>
 #include <ctype.h>
 #include "Xlibint.h"
 #include "Xresource.h"
