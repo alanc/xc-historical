@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.116 92/09/15 15:56:16 rws Exp $ */
+/* $XConsortium: utils.c,v 1.117 92/09/15 18:52:23 rws Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -32,6 +32,7 @@ SOFTWARE.
 #ifndef SYSV
 #include <sys/resource.h>
 #endif
+#include <time.h>
 
 #ifdef SIGNALRETURNSINT
 #define SIGVAL int
@@ -642,6 +643,30 @@ OsInitAllocator ()
     else
 	been_here = 1;
 #endif
+}
+
+/*VARARGS1*/
+void
+AuditF( f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
+    char *f;
+    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
+{
+#ifdef X_NOT_STDC_ENV
+    long tm;
+#else
+    time_t tm;
+#endif
+    char *autime, *nl;
+
+    if (*f != ' ')
+    {
+	time(&tm);
+	autime = ctime(&tm);
+	if (nl = index(autime, '\n'))
+	    *nl = '\0';
+	ErrorF("AUDIT: %s: ", autime);
+    }
+    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
 }
 
 /*VARARGS1*/
