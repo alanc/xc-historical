@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.1 91/05/10 14:45:48 keith Exp $
+ * $XConsortium: pcfread.c,v 1.2 91/05/10 15:58:34 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -512,7 +512,7 @@ pcfReadFont(pFont, file, bit, byte, glyph, scan)
 	            cols;
 
 	r = pFont->info.defaultCh >> 8;
-	c = pFont->info.defaultCh && 0xFF;
+	c = pFont->info.defaultCh & 0xFF;
 	if (pFont->info.firstRow <= r && r <= pFont->info.lastRow &&
 		pFont->info.firstCol <= c && c <= pFont->info.lastCol) {
 	    cols = pFont->info.lastCol - pFont->info.firstCol + 1;

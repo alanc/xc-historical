@@ -22,7 +22,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.2 91/05/10 15:58:36 keith Exp $ */
+/* $XConsortium: snfread.c,v 1.3 91/05/14 15:44:59 rws Exp $ */
 
 #include <ctype.h>
 #include "fontfilest.h"
@@ -283,7 +283,7 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
 	            cols;
 
 	r = pFont->info.defaultCh >> 8;
-	c = pFont->info.defaultCh && 0xFF;
+	c = pFont->info.defaultCh & 0xFF;
 	if (pFont->info.firstRow <= r && r <= pFont->info.lastRow &&
 		pFont->info.firstCol <= c && c <= pFont->info.lastCol) {
 	    cols = pFont->info.lastCol - pFont->info.firstCol + 1;
