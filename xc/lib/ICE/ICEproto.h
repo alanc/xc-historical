@@ -1,4 +1,4 @@
-/* $XConsortium: ICEproto.h,v 1.3 93/11/22 16:23:50 mor Exp $ */
+/* $XConsortium: ICEproto.h,v 1.4 93/12/07 11:04:02 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -37,7 +37,7 @@ typedef struct {
     CARD16	unused B16;
     CARD32	offendingSequenceNum B32;
     /* n	varying values */
-    /* p	p = pad (n) */
+    /* p	p = pad (n, 8) */
 } iceErrorMsg;
 
 typedef struct {
@@ -56,11 +56,11 @@ typedef struct {
     CARD32	length B32;
     CARD8	mustAuthenticate;
     CARD8	unused[7];
-    /* i	XPCS		vendor */
-    /* j	XPCS		release */
-    /* k	LIST of XPCS	authentication-protocol-names */
+    /* i	STRING		vendor */
+    /* j	STRING		release */
+    /* k	LIST of STRING	authentication-protocol-names */
     /* m	LIST of VERSION version-list */
-    /* p	p = pad (i+j+k+m) */
+    /* p	p = pad (i+j+k+m, 8) */
 } iceConnectionSetupMsg;
 
 typedef struct {
@@ -72,7 +72,7 @@ typedef struct {
     CARD16	authDataLength B16;
     CARD8	unused2[6];
     /* n	varying data */
-    /* p	p = pad (n) */
+    /* p	p = pad (n, 8) */
 } iceAuthRequiredMsg;
 
 typedef struct {
@@ -83,7 +83,7 @@ typedef struct {
     CARD16	authDataLength B16;
     CARD8	unused2[6];
     /* n	varying data */
-    /* p	p = pad (n) */
+    /* p	p = pad (n, 8) */
 } iceAuthReplyMsg;
 
 typedef struct {
@@ -94,7 +94,7 @@ typedef struct {
     CARD16	authDataLength B16;
     CARD8	unused2[6];
     /* n	varying data */
-    /* p	p = pad (n) */
+    /* p	p = pad (n, 8) */
 } iceAuthNextPhaseMsg;
 
 typedef struct {
@@ -103,9 +103,9 @@ typedef struct {
     CARD8	versionIndex;
     CARD8	unused;
     CARD32	length B32;
-    /* i	XPCS		vendor */
-    /* j	XPCS		release */
-    /* p	p = pad (i+j) */
+    /* i	STRING		vendor */
+    /* j	STRING		release */
+    /* p	p = pad (i+j, 8) */
 } iceConnectionReplyMsg;
 
 typedef struct {
@@ -117,12 +117,12 @@ typedef struct {
     CARD8	versionCount;
     CARD8	authCount;
     CARD8	unused[6];
-    /* i	XPCS		protocol-name */
-    /* j	XPCS		vendor */
-    /* k	XPCS		release */
-    /* m	LIST of XPCS	authentication-protocol-names */
+    /* i	STRING		protocol-name */
+    /* j	STRING		vendor */
+    /* k	STRING		release */
+    /* m	LIST of STRING	authentication-protocol-names */
     /* n	LIST of VERSION version-list */
-    /* p        p = pad (i+j+k+m+n) */
+    /* p        p = pad (i+j+k+m+n, 8) */
 } iceProtocolSetupMsg;
 
 typedef struct {
@@ -131,9 +131,9 @@ typedef struct {
     CARD8	versionIndex;
     CARD8	protocolOpcode;
     CARD32	length B32;
-    /* i	XPCS		vendor */
-    /* j	XPCS		release */
-    /* p	p = pad (i+j) */
+    /* i	STRING		vendor */
+    /* j	STRING		release */
+    /* p	p = pad (i+j, 8) */
 } iceProtocolReplyMsg;
 
 typedef iceMsg  icePingMsg;
