@@ -34,6 +34,7 @@ void done_choosing_filename();
 
 FILE *recordfile;
 FILE *playbackfile;
+extern FILE *yyin;
 
 /*ARGSUSED*/
 void toggle_recordbutton(w,closure,call_data)
@@ -186,25 +187,14 @@ void cancel_playback()
 
 void chose_playback_filename()
 {
-  if (playbackfile = fopen(filename,"r"))
-    read_playback_file();
-}
-
-void read_playback_file()
-{
-  char buf[80];
-  char stupid[5];
-  int fscanfresult;
- 
-  while ((fscanfresult = fscanf(playbackfile,"%[^\n]",buf)) != EOF) {
-    fscanf(playbackfile,"\n",stupid);
-    if (buf[0] != '#') interpret(buf,TRUE);
+  if (playbackfile = fopen(filename,"r")) {
+    yyin = playbackfile;
+    yyparse();
   }
-  fclose(playbackfile);
 }
 
 void read_from_keyboard()
 {
-  playbackfile = stdin;
-  read_playback_file();
+  yyin = stdin;
+  yyparse();
 }
