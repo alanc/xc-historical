@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: init.c,v 1.3 91/07/08 11:16:26 keith Exp $ */
+/* $XConsortium: init.c,v 1.4 91/08/26 13:27:24 rws Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -47,15 +47,13 @@ extern void wsMouseProc();
 extern void wsKeybdProc();
 extern void wsClick();
 extern void wsChangePointerControl();
+
+
 extern KeybdCtrl defaultKeyboardControl;
 ws_event_queue	*queue;
 
-#define NUMFORMATS 2
-static	PixmapFormatRec formats[] = {
-	{1, 1, BITMAP_SCANLINE_PAD},     /* 1 bit deep */
-	{8, 8, BITMAP_SCANLINE_PAD},     /* 8-bit deep */
-	{24, 32, BITMAP_SCANLINE_PAD},
-};
+static int NumFormats;
+static int bitsPerDepth[33];
 
 Bool fbInitProc();
 extern int num_accelerator_types;
@@ -98,6 +96,7 @@ commandLinePairMatch( argc, argv, pat, pmatch)
 ws_descriptor wsinfo;
 int wsFd;
 int ws_cpu;
+int forceDepth;
 
 int wsScreenPrivateIndex;
 /* the following filth is forced by a broken dix interface */
@@ -107,7 +106,7 @@ InitOutput(screenInfo, argc, argv)
     int argc;
     char **argv;
 {
-    int i;
+    int i, j;
     int si = 0;
     static int inited = FALSE;
     static int ma = 4;
@@ -115,22 +114,11 @@ InitOutput(screenInfo, argc, argv)
     static PtrCtrl ctrl;
     static int  clicklevel;
 
-    screenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
-    screenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
-    screenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
-    screenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
-    screenInfo->numPixmapFormats = NUMFORMATS;
-
-    for (i=0; i< NUMFORMATS; i++) {
-	screenInfo->formats[i].depth = formats[i].depth;
-	screenInfo->formats[i].bitsPerPixel = formats[i].bitsPerPixel;
-	screenInfo->formats[i].scanlinePad = formats[i].scanlinePad;
-    }
-
     if (!inited) {
 	char *clickvolume;
 	char *mouseAcceleration;
 	char *mouseThreshold;
+	char *forceD;
 	ws_keyboard_control control;
         inited = TRUE;
         if ((wsFd = open("/dev/mouse",  O_RDWR, 0)) < 0) {
@@ -170,8 +158,69 @@ InitOutput(screenInfo, argc, argv)
 		sscanf( mouseAcceleration, "%d", &ma);
 	if (commandLinePairMatch( argc, argv, "-t", &mouseThreshold))
 		sscanf( mouseThreshold, "%d", &mt);
-
+	if (commandLinePairMatch( argc, argv, "-forceDepth", &forceD))
+		sscanf ( forceD, "%d", &forceDepth);
     }
+    for (i = 1; i <= 32; i++)
+	bitsPerDepth[i] = 0;
+
+    for (i = 0; i < wsinfo.num_screens_exist; i++)
+    {
+	ws_screen_descriptor	screeninfo;
+	ws_depth_descriptor	depthinfo;
+	
+	screeninfo.screen = i;
+	ioctl (wsFd, GET_SCREEN_INFO, &screeninfo);
+	for (j = 0; j < screeninfo.allowed_depths; j++) 
+	{
+	    depthinfo.screen = i;
+	    depthinfo.which_depth = j;
+	    ioctl (wsFd, GET_DEPTH_INFO, &depthinfo);
+	    if (forceDepth)
+		depthinfo.depth = forceDepth;
+	    if (bitsPerDepth[depthinfo.depth] &&
+		bitsPerDepth[depthinfo.depth] != depthinfo.bits_per_pixel)
+	    {
+		FatalError ("Screens with mismatching bpp for depth %d\n",
+			    depthinfo.depth);
+	    }
+	    bitsPerDepth[depthinfo.depth] = depthinfo.bits_per_pixel;
+	}
+    }
+    if (!bitsPerDepth[1])
+	bitsPerDepth[1] = 1;
+#define INCLUDE_ALL_CFB
+#ifdef INCLUDE_ALL_CFB
+    j = 0;
+    for (i = 1; i <= 32; i++)
+	if (bitsPerDepth[i])
+	    j |= 1 << (bitsPerDepth[i] - 1);
+    if (!(j & (1 << 7)))
+	bitsPerDepth[8] = 8;
+    if (!(j & (1 << 15)))
+	bitsPerDepth[12] = 16;
+    if (!(j & (1 << 31)))
+	bitsPerDepth[24] = 32;
+#endif    
+    NumFormats = 0;
+    for (i = 1; i <= 32; i++)
+    {
+	if (j = bitsPerDepth[i]) {
+	    if (NumFormats >= MAXFORMATS)
+		FatalError ("MAXFORMATS is too small for this machine\n");
+	    screenInfo->formats[NumFormats].depth = i;
+	    screenInfo->formats[NumFormats].bitsPerPixel = j;
+	    screenInfo->formats[NumFormats].scanlinePad = BITMAP_SCANLINE_PAD;
+	    NumFormats++;
+	}
+    }
+
+    screenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
+    screenInfo->bitmapScanlineUnit = BITMAP_SCANLINE_UNIT;
+    screenInfo->bitmapScanlinePad = BITMAP_SCANLINE_PAD;
+    screenInfo->bitmapBitOrder = BITMAP_BIT_ORDER;
+    screenInfo->numPixmapFormats = NumFormats;
+
     ctrl.num = ma;
     ctrl.den = 1;
     ctrl.threshold = mt;

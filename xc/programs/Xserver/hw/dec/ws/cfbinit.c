@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cfbinit.c,v 1.2 91/07/08 11:16:22 keith Exp $ */
 /***********************************************************
 Copyright 1991 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -203,6 +203,8 @@ colorNameToColor( pname, pred, pgreen, pblue)
     }
 }
 
+extern Bool mfbScreenInit (), mcfbScreenInit(), cfbScreenInit();
+extern Bool cfb16ScreenInit(), cfb32ScreenInit();
 
 Bool
 fbInitProc(index, pScreen, argc, argv)
@@ -211,11 +213,11 @@ fbInitProc(index, pScreen, argc, argv)
     int argc;
     char **argv;
 {
-    register    PixmapPtr pPixmap;
     int		dpix, dpiy, i;
     static int  mapOnce = FALSE;
     wsScreenPrivate *wsp;
-    Bool success = FALSE;
+    int	    depthIndex;
+    Bool    (*screenInit)();
     ws_depth_descriptor *dd;
     ws_visual_descriptor vd;
     static ws_map_control mc;
@@ -242,21 +244,33 @@ fbInitProc(index, pScreen, argc, argv)
     /* since driver does not support unmap (yet), only map screen once */
     if (! mapped[index]) {
 	depthDesc[index].screen = screenDesc[index].screen;
-	for (i = 0; i < wsp->screenDesc->allowed_depths; i++) {
-		depthDesc[index].which_depth = i;	
-		if (ioctl(wsFd, GET_DEPTH_INFO, &depthDesc[index]) == -1) {
-		    ErrorF("GET_DEPTH_INFO failed");
-		    exit (1);
-		}
-	    if (depthDesc[index].depth == 8 ||depthDesc[index].depth == 1){
-		    success = TRUE;
-		    break;
+	depthIndex = -1;
+	for (i = 0; i < wsp->screenDesc->allowed_depths; i++) 
+	{
+	    extern int forceDepth;
+
+	    depthDesc[index].which_depth = i;	
+	    if (ioctl(wsFd, GET_DEPTH_INFO, &depthDesc[index]) == -1) {
+		ErrorF("GET_DEPTH_INFO failed");
+		exit (1);
 	    }
+	    if (forceDepth)
+		depthDesc[index].depth = forceDepth;
+	    switch (depthDesc[index].bits_per_pixel) {
+	    case 1:
+	    case 8:
+	    case 16:
+	    case 32:
+		break;
+	    default:
+		continue;
+	    }
+	    depthIndex = i;
 	}
-	if (!success) return FALSE;
+	if (depthIndex == -1) return FALSE;
 
 	mc.screen = screenDesc[index].screen;
-	mc.which_depth = i;
+	mc.which_depth = depthIndex;
 	mc.map_unmap = MAP_SCREEN;
 	if (ioctl(wsFd,  MAP_SCREEN_AT_DEPTH, &mc) == -1)    {
 	    ErrorF("MAP_SCREEN_AT_DEPTH failed");
@@ -272,6 +286,8 @@ fbInitProc(index, pScreen, argc, argv)
 	    ErrorF("GET_DEPTH_INFO failed");
 	    return FALSE;
 	}
+	if (forceDepth)
+	    depthDesc[index].depth = forceDepth;
 	mapped[index] = TRUE;
     }
 
@@ -321,11 +337,16 @@ fbInitProc(index, pScreen, argc, argv)
     switch (dd->bits_per_pixel)
     {
     case 1:
-	if (!mfbScreenInit(pScreen, dd->pixmap, wsp->screenDesc->width,
-	    wsp->screenDesc->height, dpix, dpiy, dd->fb_width))
-	{
-		return FALSE;
-	}
+	screenInit = mfbScreenInit;
+	break;
+    case 8:
+    case 16:
+    case 32:
+	screenInit = mcfbScreenInit;
+	break;
+    }
+    if (dd->depth == 1) 
+    {
 	pScreen->blackPixel = 0;
 	pScreen->whitePixel = 1;
     	if(screenArgs[index].flags & ARG_BLACKVALUE)
@@ -339,15 +360,9 @@ fbInitProc(index, pScreen, argc, argv)
 	    	pScreen->whitePixel = i;
 	    else
 	    	wsPixelError(index);
-	if (!(mfbCreateDefColormap (pScreen)))
-	    return FALSE;
-	break;
-    case 8:
-	if (!cfbScreenInit(pScreen, dd->pixmap, wsp->screenDesc->width,
-	    wsp->screenDesc->height, dpix, dpiy, dd->fb_width))
-	{
-	    return FALSE;
-	}
+    }
+    else
+    {
     	if(screenArgs[index].flags & ARG_BLACKVALUE)
 	    colorNameToColor(screenArgs[index].blackValue, &blackred,
 			     &blackgreen, &blackblue); 
@@ -356,27 +371,32 @@ fbInitProc(index, pScreen, argc, argv)
 	    colorNameToColor(screenArgs[index].whiteValue, &whitered, 
 			    &whitegreen, &whiteblue);
 
-	/* copy of cfbCreateDefColormap, except variable colors */
-    	for (pVisual = pScreen->visuals;
-	     pVisual->vid != pScreen->rootVisual;
-	     pVisual++)
-	    ;
-    
-    	if (CreateColormap(pScreen->defColormap, pScreen, pVisual, &pCmap,
-		       	   (pVisual->class & DynamicClass) ? AllocNone : AllocAll,
-		       	   0)
-	    != Success)
-	    return FALSE;
-    	if ((AllocColor(pCmap, &whitered, &whitegreen, &whiteblue,
-		        &(pScreen->whitePixel), 0) != Success) ||
-    	    (AllocColor(pCmap, &blackred, &blackgreen, &blackblue,
-		        &(pScreen->blackPixel), 0) != Success))
-	{
-    	    return FALSE;
-	}
-    	(*pScreen->InstallColormap)(pCmap);
-	break;
     }
+
+    if (!(*screenInit) (pScreen, dd->pixmap, wsp->screenDesc->width,
+	wsp->screenDesc->height, dpix, dpiy, dd->fb_width, dd->bits_per_pixel, dd->depth))
+    {
+	return FALSE;
+    }
+    /* copy of cfbCreateDefColormap, except variable colors */
+    for (pVisual = pScreen->visuals;
+	 pVisual->vid != pScreen->rootVisual;
+	 pVisual++)
+	;
+
+    if (CreateColormap(pScreen->defColormap, pScreen, pVisual, &pCmap,
+		       (pVisual->class & DynamicClass) ? AllocNone : AllocAll,
+		       0)
+	!= Success)
+	return FALSE;
+    if ((AllocColor(pCmap, &whitered, &whitegreen, &whiteblue,
+		    &(pScreen->whitePixel), 0) != Success) ||
+	(AllocColor(pCmap, &blackred, &blackgreen, &blackblue,
+		    &(pScreen->blackPixel), 0) != Success))
+    {
+	return FALSE;
+    }
+    (*pScreen->InstallColormap)(pCmap);
 
     planemask_addr = dd->plane_mask;
     

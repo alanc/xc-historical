@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ws_color.c,v 1.3 91/07/08 11:16:31 keith Exp $ */
+/* $XConsortium: ws_color.c,v 1.4 91/07/08 13:32:31 keith Exp $ */
 
 /* 
  * ws_color.c - device specific color routines, stored in screen
@@ -117,7 +117,7 @@ wsInstallColormap(pcmap)
     pPrivScreen->pInstalledMap = pcmap;
 
     /* if Turbochannel mfb (2 entry StaticGray), do not store any colors */
-    if (pcmap->class != StaticGray || entries != 2) {
+    if ((int) pcmap->devPriv != 2) {
 
 	/* If we have an 8 entry TrueColor map, then get all 256 pixel
 	    values so we can fake a TrueColor visual with an undecomposed

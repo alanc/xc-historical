@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ws.h,v 1.1 91/05/11 10:51:12 rws Exp $ */
+/* $XConsortium: ws.h,v 1.2 91/07/08 11:16:30 keith Exp $ */
 
 #define NOMAPYET        (ColormapPtr) 1
 
@@ -36,6 +36,7 @@ SOFTWARE.
 #define	 ARG_EDGE_T	(1 << 8)
 #define	 ARG_EDGE_B	(1 << 9)
 #define  ARG_MONITOR	(1 << 10)
+#define	 ARG_DEPTH	(1 << 11)
 
 typedef struct  {
 	int flags;
@@ -50,6 +51,7 @@ typedef struct  {
 	int edge_top;
 	int edge_bottom;
 	ws_monitor monitor;
+	int depth;
 } ScreenArgsRec;
 
 typedef struct {
@@ -78,6 +80,7 @@ extern ScreenArgsRec screenArgs[];
 
 extern ScreenPtr wsScreens[];
 extern int class;
+extern int forceDepth;
 extern int fdPM;   /* this is the file descriptor for screen so
 		    can do IOCTL to colormap */
 extern int ws_cpu;
