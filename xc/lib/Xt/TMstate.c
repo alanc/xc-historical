@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$xHeader: TMstate.c,v 1.3 88/08/29 14:58:11 asente Exp $";
+static char rcsid[] = "$xHeader: TMstate.c,v 1.49 88/08/31 10:26:27 swick Exp $";
 /* $oHeader: TMstate.c,v 1.3 88/08/29 14:58:11 asente Exp $ */
 #endif lint
 /*LINTLIBRARY*/
@@ -34,7 +34,7 @@ SOFTWARE.
 #define XK_LATIN1
 #include <X11/Xlib.h>
 #include <X11/keysymdef.h>
-#include <strings.h>
+#include <X11/Xos.h>
 #include "StringDefs.h"
 #include <stdio.h>
 #include "IntrinsicI.h"
