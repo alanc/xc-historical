@@ -1,9 +1,9 @@
 /*
- *	$XConsortium: resize.c,v 1.7 89/03/23 09:21:11 jim Exp $
+ *	$XConsortium: resize.c,v 1.8 89/03/23 09:31:00 jim Exp $
  */
 
 #ifndef lint
-static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.7 89/03/23 09:21:11 jim Exp $";
+static char *rcsid_resize_c = "$XConsortium: resize.c,v 1.8 89/03/23 09:31:00 jim Exp $";
 #endif	/* lint */
 
 #include <X11/copyright.h>
@@ -75,7 +75,7 @@ extern struct passwd *fgetpwent();
 #endif	/* USE_SYSV_TERMIO */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: resize.c,v 1.7 89/03/23 09:21:11 jim Exp $";
+static char rcs_id[] = "$XConsortium: resize.c,v 1.8 89/03/23 09:31:00 jim Exp $";
 #endif
 
 #define	EMULATIONS	2
@@ -183,8 +183,8 @@ char **argv;
 #endif	/* sun */
 	char *getenv();
 	int onintr();
-#ifdef CANT_OPEN_DEV_TTY
 	char *name_of_tty;
+#ifdef CANT_OPEN_DEV_TTY
 	extern char *ttyname();
 #endif
 
@@ -343,9 +343,9 @@ char **argv;
 	       the current height & width of the window in pixels.  We try
 	       our best by computing the font height and width from the "old"
 	       struct winsize values, and multiplying by these ratios...*/
-	    if (ws.ws_xpixel != 0)
+	    if (ws.ws_col != 0)
 	        ws.ws_xpixel = cols * (ws.ws_xpixel / ws.ws_col);
-	    if (ws.ws_ypixel != 0)
+	    if (ws.ws_row != 0)
 	        ws.ws_ypixel = rows * (ws.ws_ypixel / ws.ws_row);
 	    ws.ws_row = rows;
 	    ws.ws_col = cols;
