@@ -1,13 +1,7 @@
-.\" $XConsortium: userguide.mm,v 1.3 92/06/30 21:05:49 rws Exp $
-'
-.ds dN "\s-1MIT\s0-3-01.3
+.\" $XConsortium: userguide.mm,v 1.4 92/07/03 15:47:12 gildea Exp $
 '
 .ds dD User Guide for the X Test Suite
 .so 00.header
-.ds xT X\ test suite
-.ds xW X\ Window System
-.ds xP X\ Protocol tests
-.ds xL Xlib tests
 '\"
 '\" Start and end of a user-typed display
 '\"
@@ -28,19 +22,19 @@
 '\"	###
 .H 1 "Introduction"
 This document is a guide to installing and running
-release 1.1 of the revised \*(xT.
+\*(xR of the \*(xT.
 In order to do this, please work through all of the steps described
 in this guide in order. Information on the content, purpose and goals of the 
 \*(xT
 is found in a series of appendices, which follow the installation 
 instructions.
 .P
-Please read the "Release Notes for the X\ test\ suite -
-release 1.1", which describe particular features of this release.
+Please read the "Release Notes for the \*(xT",
+which describe particular features of this release.
 .P
 Further information, which would be required by a programmer to modify or extend 
 the \*(xT, is contained in a separate document, "Programmers Guide for the 
-X\ test\ suite (release 1.1)".
+\*(xT".
 .P
 Included in this release is a version of the
 "Test Environment Toolkit"
@@ -902,8 +896,8 @@ The portability library source is kept in \fC$TET_ROOT/port\fP.
 .P
 The portability library may be useful in porting the \*(xT to other
 environments as described below.
-Please refer to the "Release Notes for the X\ test\ suite -
-release 1.1" for details of the target execution environments, 
+Please refer to the "Release Notes for the \*(xT"
+for details of the target execution environments, 
 and a list of systems to which it has already been ported.
 .H 3 "Porting to a POSIX.1 system"
 If your system conforms to
@@ -1156,14 +1150,18 @@ Move to the directory \fC$TET_ROOT/xtest/fonts\fP.
 cd $TET_ROOT/xtest/fonts
 .cE
 .LI
-Compile the seven \fCbdf\fP files into \fCsnf\fP or \fCpcf\fP format,
-as appropriate for your system.
+Compile the seven \fCbdf\fP files into \fCsnf\fP, \fCpcf\fP, or \fCfb\fP
+format, as appropriate for your system.
 .cS
 pmake comp_snf
 .cE
 or
 .cS
 pmake comp_pcf
+.cE
+or
+.cS
+pmake comp_fb
 .cE
 .LI
 Copy the compiled fonts into the server font directory
@@ -1174,6 +1172,10 @@ pmake install_snf
 or
 .cS
 pmake install_pcf
+.cE
+or
+.cS
+pmake install_fb
 .cE
 .LE
 .H 2 "Building the \fCmc\fP utility"
@@ -2924,10 +2926,10 @@ pclean
 .P
 No journal file is created when \fCpclean\fP is executed directly.
 .SK
-.H 1 "Appendix A - Contents of release 1.1"
+.H 1 "Appendix A - Contents of \*(xR"
 This section describes the contents of the directories in the \fCTET_ROOT\fP
 directory which are supplied in
-release 1.1 of the \*(xT. The revised \*(xT has been developed from the 
+this release of the \*(xT. The revised \*(xT has been developed from the 
 T7 \*(xT.
 This section therefore also explains how the arrangement of the 
 revised \*(xT compares with the T7 \*(xT.
