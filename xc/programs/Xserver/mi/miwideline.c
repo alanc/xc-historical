@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.32 91/05/24 16:34:10 keith Exp $
+ * $XConsortium: miwideline.c,v 1.33 91/05/28 18:37:13 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1761,12 +1761,22 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     unsigned long   pixel;
     Bool	    projectLeft, projectRight;
     LineFaceRec	    leftFace, rightFace, prevRightFace;
+    LineFaceRec	    firstFace;
     int		    first;
     int		    dashIndex, dashOffset;
     register int    prevDashIndex;
     SpanDataRec	    spanDataRec;
     SpanDataPtr	    spanData;
+    Bool	    somethingDrawn = FALSE;
+    Bool	    selfJoin;
+    Bool	    endIsFg, startIsFg, firstIsFg;
 
+    if (pGC->lineStyle == LineDoubleDash && 
+	(pGC->fillStyle == FillOpaqueStippled || pGC->fillStyle == FillTiled))
+    {
+	miWideLine (pDrawable, pGC, mode, npt, pPts);
+	return;
+    }
     /* XXX backward compatibility */
     if (pGC->lineWidth == 0)
     {
@@ -1779,7 +1789,30 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     x2 = pPts->x;
     y2 = pPts->y;
     first = TRUE;
-    projectLeft = pGC->capStyle == CapProjecting;
+    selfJoin = FALSE;
+    if (mode == CoordModePrevious)
+    {
+	int nptTmp;
+	DDXPointPtr pPtsTmp;
+
+	x1 = x2;
+	y1 = y2;
+	nptTmp = npt;
+	pPtsTmp = pPts + 1;
+	while (--nptTmp)
+	{
+	    x1 += pPtsTmp->x;
+	    y1 += pPtsTmp->y;
+	    ++pPtsTmp;
+	}
+	if (x2 == x1 && y2 == y1)
+	    selfJoin = TRUE;
+    }
+    else if (x2 == pPts[npt-1].x && y2 == pPts[npt-1].y)
+    {
+	selfJoin = TRUE;
+    }
+    projectLeft = pGC->capStyle == CapProjecting && !selfJoin;
     projectRight = FALSE;
     dashIndex = 0;
     dashOffset = 0;
@@ -1797,43 +1830,78 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
 	    x2 += x1;
 	    y2 += y1;
 	}
-	if (x1 == x2 && y1 == y2)
-	    continue;
-	if (npt == 1 && pGC->capStyle == CapProjecting)
-	    projectRight = TRUE;
-	prevDashIndex = dashIndex;
+	if (x1 != x2 || y1 != y2)
+	{
+	    somethingDrawn = TRUE;
+	    if (npt == 1 && pGC->capStyle == CapProjecting && !selfJoin)
+		projectRight = TRUE;
+	    prevDashIndex = dashIndex;
+	    miWideDashSegment (pDrawable, pGC, spanData, &dashOffset, &dashIndex,
+				x1, y1, x2, y2,
+				projectLeft, projectRight, &leftFace, &rightFace);
+	    startIsFg = !(prevDashIndex & 1);
+	    endIsFg = (dashIndex & 1) ^ (dashOffset != 0);
+	    if (pGC->lineStyle == LineDoubleDash || startIsFg)
+	    {
+	    	pixel = startIsFg ? pGC->fgPixel : pGC->bgPixel;
+	    	if (first)
+	    	{
+	    	    if (selfJoin)
+		    {
+		    	firstFace = leftFace;
+			firstIsFg = startIsFg;
+		    }
+	    	    else if (pGC->capStyle == CapRound)
+		    	miLineArc (pDrawable, pGC, pixel, spanData,
+			       	   &leftFace, (LineFacePtr) NULL,
+			       	   (double)0.0, (double)0.0, TRUE);
+	    	}
+	    	else
+	    	{
+	    	    miLineJoin (pDrawable, pGC, pixel, spanData, &leftFace,
+		            	&prevRightFace);
+	    	}
+	    }
+	    prevRightFace = rightFace;
+	    first = FALSE;
+	    projectLeft = FALSE;
+	    if (pGC->lineStyle == LineDoubleDash || endIsFg)
+	    {
+	    	if (npt == 1 && somethingDrawn)
+	    	{
+		    pixel = endIsFg ? pGC->fgPixel : pGC->bgPixel;
+		    if (selfJoin && (pGC->lineStyle == LineDoubleDash || firstIsFg))
+			miLineJoin (pDrawable, pGC, pixel, spanData, &firstFace,
+				    &rightFace);
+		    else if (pGC->capStyle == CapRound)
+			miLineArc (pDrawable, pGC, pixel, spanData,
+				   (LineFacePtr) NULL, &rightFace,
+				   (double)0.0, (double)0.0, TRUE);
+	    	}
+	    }
+	}
+    }
+    /* handle crock where all points are coincedent */
+    if (!somethingDrawn && (pGC->lineStyle == LineDoubleDash || !(dashIndex & 1)))
+    {
+	/* not the same as endIsFg computation above */
+	pixel = (dashIndex & 1) ? pGC->bgPixel : pGC->fgPixel;
+	projectLeft = pGC->capStyle == CapProjecting;
 	miWideDashSegment (pDrawable, pGC, spanData, &dashOffset, &dashIndex,
-			   x1, y1, x2, y2,
-			   projectLeft, projectRight, &leftFace, &rightFace);
-	if (pGC->lineStyle == LineDoubleDash || !(prevDashIndex & 1))
+			    x1, y1, x2, y2,
+			    projectLeft, projectRight, &leftFace, &rightFace);
+	if (pGC->capStyle == CapRound)
 	{
-	    pixel = (prevDashIndex & 1) ? pGC->bgPixel : pGC->fgPixel;
-	    if (first)
-	    {
-	    	if (pGC->capStyle == CapRound)
-		    miLineArc (pDrawable, pGC, pixel, spanData,
-			       &leftFace, (LineFacePtr) NULL,
-			       (double)0.0, (double)0.0, TRUE);
-	    }
-	    else
-	    {
-	    	miLineJoin (pDrawable, pGC, pixel, spanData, &leftFace,
-		            &prevRightFace);
-	    }
+	    miLineArc (pDrawable, pGC, pixel, spanData,
+		       &leftFace, (LineFacePtr) NULL,
+		       (double)0.0, (double)0.0,
+		       TRUE);
+	    rightFace.dx = -1;	/* sleezy hack to make it work */
+	    miLineArc (pDrawable, pGC, pixel, spanData,
+		       (LineFacePtr) NULL, &rightFace,
+ 		       (double)0.0, (double)0.0,
+		       TRUE);
 	}
-	if (pGC->lineStyle == LineDoubleDash || !(dashIndex & 1))
-	{
-	    if (npt == 1 && pGC->capStyle == CapRound)
-	    {
-		pixel = ((dashIndex & 1) ^ (dashOffset == 0)) ? pGC->bgPixel : pGC->fgPixel;
-	    	miLineArc (pDrawable, pGC, pixel, spanData,
-			   (LineFacePtr) NULL, &rightFace,
-			   (double)0.0, (double)0.0, TRUE);
-	    }
-	}
-	prevRightFace = rightFace;
-	first = FALSE;
-	projectLeft = FALSE;
     }
     if (spanData)
 	miCleanupSpanData (pDrawable, pGC, spanData);
