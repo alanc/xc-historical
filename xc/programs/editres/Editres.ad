@@ -1,0 +1,61 @@
+
+! The App-defaults file for Resedit.
+
+Editres.Geometry:			500x600
+
+*ShapeStyle:				Oval
+*allowVert:       			True
+*allowHoriz:      			True
+*Scrollbar*BorderWidth:			0
+
+*userMessage*allowResize:		True
+
+! Menu Button Names
+
+*Box*commands.Label:			Commands
+*Box*treeCommands.Label:		Tree Operations
+
+! Menu Entry Names
+
+*SimpleMenu*quit.Label:			Quit
+*SimpleMenu*sendTree.Label:		Get Widget Tree
+*SimpleMenu*setValues.Label:		Set Values
+
+*SimpleMenu*selectAll.Label:		Select All
+*SimpleMenu*unselectAll.Label:		Unselect All
+*SimpleMenu*invertAll.Label:		Invert All
+*SimpleMenu*selectChildren.Label:	Select Children
+*SimpleMenu*selectParents.Label:	Select Parents
+*SimpleMenu*selectDescendants.Label:	Select Descendants
+*SimpleMenu*selectAncestors.Label:	Select Ancestors
+*SimpleMenu*showWidgetNames.Label:	Show Widget Names
+*SimpleMenu*showClassNames.Label:	Show Class Names
+*SimpleMenu*showWidgetIDs.Label:	Show Widget IDs
+
+! For the SetValuesPopup widget
+
+*setValuesPopup*resizable:		True
+*setValuesPopup*left:			ChainLeft
+*setValuesPopup*right:			ChainLeft
+
+*setValuesPopup*label*Label:		Use <Tab> to Change Fields.
+*setValuesPopup*Label*BorderWidth:	0
+
+*setValuesPopup*resourceLabel.Label:	Resource Name:
+*setValuesPopup*valueLabel.Label:	Value:
+
+*setValuesPopup*Text*EditType:		Edit
+*setValuesPopup*Text*resize:		Width
+
+*setValuesPopup*resourceText.Translations: #override \
+  <Key>Return:     	   no-op(RingBell) \n\
+   Ctrl<Key>q,<Key>Tab:    insert-char()    \n\
+   <Btn1Down>:             select-start() SVActiveEntry(Resource) \n\
+   <Key>Tab:               SVActiveEntry(Value)
+
+*setValuesPopup*valueText.Translations: #override \
+   <Key>Return:     	   no-op(RingBell) \n\
+   Ctrl<Key>q,<Key>Tab:    insert-char()     \n\
+   <Btn1Down>:             select-start() SVActiveEntry(Value)\n\
+   <Key>Tab:               SVActiveEntry(Resource)
+
