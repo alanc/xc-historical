@@ -7,7 +7,7 @@
 #endif
 XCOMM -------------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $XConsortium: Imake.tmpl,v 1.146 92/05/22 11:46:05 rws Exp $
+XCOMM $XConsortium: Imake.tmpl,v 1.147 92/05/26 14:55:37 rws Exp $
 XCOMM
 XCOMM Platform-specific parameters may be set in the appropriate <vendor>.cf
 XCOMM configuration files.  Site-specific parameters should be set in the file
@@ -897,14 +897,9 @@ TagsTarget()
 MakefileAdditions()
 #endif
 
-#if HasSaberC
-saber:
-	XCOMM load $(ALLDEFINES) $(SRCS)
+SaberLoadTarget(saber,$(SRCS),NullParameter,$(ALLDEFINES))
 
-osaber:
-	XCOMM load $(ALLDEFINES) $(OBJS)
-#endif
-
+SaberLoadTarget(osaber,$(OBJS),NullParameter,$(ALLDEFINES))
 
 #ifdef IHaveSubdirs
 XCOMM -------------------------------------------------------------------------
