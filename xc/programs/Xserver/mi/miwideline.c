@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.18 89/11/08 17:11:44 keith Exp $
+ * $XConsortium: miwideline.c,v 1.19 89/11/08 18:16:23 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -145,6 +145,8 @@ miFillPolyHelper (pDrawable, pGC, pixel, spanData, y, overall_height,
     }
     if (!spanData)
     {
+	if (ppt - pptInit > overall_height)
+	    printf ("Too many spans\n");
     	(*pGC->ops->FillSpans) (pDrawable, pGC, ppt - pptInit, pptInit, pwidthInit, TRUE);
     	DEALLOCATE_LOCAL (pwidthInit);
     	DEALLOCATE_LOCAL (pptInit);
@@ -177,7 +179,6 @@ miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
     PolyEdgePtr	edge;
 {
     int	    x, y, e;
-    int	    signdx;
     int	    xady;
 
     if (dy < 0)
@@ -186,48 +187,42 @@ miPolyBuildEdge (x0, y0, k, dx, dy, xi, yi, left, edge)
 	dx = -dx;
 	k = -k;
     }
-    signdx = 1;
-    if (dx < 0)
-	signdx = -1;
 
+#ifdef NOTDEF
+    {
+	double	realk, kerror;
+    	realk = x0 * dy - y0 * dx;
+    	kerror = fabs (realk - k);
+    	if (kerror > .1)
+	    printf ("realk: %g k: %g\n", realk, k);
+    }
+#endif
     y = ICEIL (y0);
     xady = ICEIL (k) + y * dx;
-    if (left)
-    {
-	if (xady <= 0)
-	    x = xady / dy;
-	else
-	    x = (xady - 1) / dy + 1;
-	if (dx < 0)
-	    e = x * dy - xady;
-	else
-	    e = xady - x * dy - 1;
-    }
+
+    if (xady <= 0)
+	x = - (-xady / dy) - 1;
     else
+	x = (xady - 1) / dy;
+
+    e = xady - x * dy;
+
+    if (dx >= 0)
     {
-	if (xady <= 0)
-	    x = xady / dy - 1;
-	else
-	    x = (xady - 1) / dy;
-	if (dx < 0)
-	    e = x * dy - xady - 1;
-	else
-	    e = xady - x * dy;
-    }
-
-    if (e < 0)
-	e += dy;
-
-    edge->stepx = dx / dy;
-    if ((edge->signdx = signdx) == 1)
+	edge->signdx = 1;
+	edge->stepx = dx / dy;
 	edge->dx = dx % dy;
+    }
     else
-	edge->dx = (-dx) % dy;
+    {
+	edge->signdx = -1;
+	edge->stepx = - (-dx / dy);
+	edge->dx = -dx % dy;
+	e = dy - e + 1;
+    }
     edge->dy = dy;
-    edge->x = x + xi;
-    edge->e = e - dy;
-    if (dx == 0)
-	edge->e = -1;
+    edge->x = x + left + xi;
+    edge->e = e;
     return y + yi;
 }
 
@@ -245,6 +240,7 @@ miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, 
 {
     int	    top, bottom;
     double  miny, maxy;
+    double  k;
     int	    i, j;
     int	    clockwise;
     int	    slopeoff;
@@ -291,11 +287,10 @@ miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, 
 	if (slopes[s].dy != 0)
 	{
 	    y = miPolyBuildEdge (vertices[i].x, vertices[i].y,
- 		       vertices[i].x * slopes[s].dy -
-			vertices[i].y * slopes[s].dx,
-		       slopes[s].dx, slopes[s].dy,
-		       xi, yi, 0,
-		       &right[nright]);
+			slopes[s].k,
+			slopes[s].dx, slopes[s].dy,
+			xi, yi, 0,
+			&right[nright]);
 	    if (nright != 0)
 	    	right[nright-1].height = y - lasty;
 	    else
@@ -323,8 +318,7 @@ miPolyBuildPoly (vertices, slopes, count, xi, yi, left, right, pnleft, pnright, 
 	if (slopes[s].dy != 0)
 	{
 	    y = miPolyBuildEdge (vertices[i].x, vertices[i].y,
- 		       vertices[i].x * slopes[s].dy -
-			vertices[i].y * slopes[s].dx,
+			   slopes[s].k,
 		       	   slopes[s].dx,  slopes[s].dy, xi, yi, 1,
 		       	   &left[nleft]);
     
@@ -396,20 +390,19 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
     vertices[0].y = pRight->ya;
     slopes[0].dx = -pRight->dy;
     slopes[0].dy =  pRight->dx;
+    slopes[0].k = 0;
 
     vertices[1].x = 0;
     vertices[1].y = 0;
     slopes[1].dx =  pLeft->dy;
     slopes[1].dy = -pLeft->dx;
+    slopes[1].k = 0;
 
     vertices[2].x = pLeft->xa;
     vertices[2].y = pLeft->ya;
 
     if (joinStyle == JoinMiter)
     {
-	slopes[2].dx = -pLeft->dx;
-	slopes[2].dy = -pLeft->dy;
-
     	my = (pLeft->dy  * (pRight->xa * pRight->dy - pRight->ya * pRight->dx) -
               pRight->dy * (pLeft->xa  * pLeft->dy  - pLeft->ya  * pLeft->dx )) /
 	      (double) denom;
@@ -432,19 +425,23 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
     {
 	slopes[2].dx = pLeft->dx;
 	slopes[2].dy = pLeft->dy;
+	slopes[2].k =  pLeft->k;
 	if (swapslopes)
 	{
 	    slopes[2].dx = -slopes[2].dx;
 	    slopes[2].dy = -slopes[2].dy;
+	    slopes[2].k  = -slopes[2].k;
 	}
 	vertices[3].x = mx;
 	vertices[3].y = my;
 	slopes[3].dx = pRight->dx;
 	slopes[3].dy = pRight->dy;
+	slopes[3].k  = pRight->k;
 	if (swapslopes)
 	{
 	    slopes[3].dx = -slopes[3].dx;
 	    slopes[3].dy = -slopes[3].dy;
+	    slopes[3].k  = -slopes[3].k;
 	}
 	edgecount = 4;
     }
@@ -463,6 +460,7 @@ miLineJoin (pDrawable, pGC, pixel, spanData, pLeft, pRight)
 	    scale = adx;
 	slopes[2].dx = (dx * 65536) / scale;
 	slopes[2].dy = (dy * 65536) / scale;
+	slopes[2].k = pLeft->xa * slopes[2].dy - pLeft->ya * slopes[2].dx;
 	edgecount = 3;
     }
 
@@ -733,15 +731,15 @@ miLineArc (pDraw, pGC, pixel, spanData, leftFace, rightFace, xorg, yorg, isInt)
 	}
 	if (leftFace && rightFace)
 	{
-	    /* miComputeRoundClip (); */
+	    /* miRoundJoinClip (); */
 	}
 	else if (leftFace)
 	{
-	    /* edgey1 = miPolyBuildEdge (); */
+	    /* edgey1 = miRoundCapClip (); */
 	}
 	else if (rightFace)
 	{
-	    /* edgey2 = miPolyBuildEdge (); */
+	    /* edgey2 = miRoundCapClip (); */
 	}
     }
     if (!spanData)
@@ -824,8 +822,8 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
     double	k;
     int		x, y;
     int		dx, dy;
-    PolyEdgeRec	left, right;
-    PolyEdgeRec	top, bottom;
+    PolyEdgePtr	left, right;
+    PolyEdgePtr	top, bottom;
     int		lefty, righty, topy, bottomy;
     int		signdx;
     PolyEdgeRec	lefts[2], rights[2];
@@ -872,8 +870,10 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
     {
 	rightFace->xa = 0;
 	rightFace->ya = (double) lw / 2.0;
+	rightFace->k = -(double) (lw * dx) / 2.0;
 	leftFace->xa = 0;
 	leftFace->ya = -rightFace->ya;
+	leftFace->k = rightFace->k;
 	lefts[0].height = lw;
 	lefts[0].x = x1;
 	if (projectLeft)
@@ -899,8 +899,10 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
     {
 	leftFace->xa =  (double) lw / 2.0;
 	leftFace->ya = 0;
-	rightFace->xa = -leftFace->xa;;
+	leftFace->k = (double) (lw * dy) / 2.0;
+	rightFace->xa = -leftFace->xa;
 	rightFace->ya = 0;
+	rightFace->k = leftFace->k;
 	topy = y1;
 	bottomy = y1 + dy;
 	if (projectLeft)
@@ -929,6 +931,20 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
     	l = ((double) lw) / 2.0;
     	L = hypot ((double) dx, (double) dy);
 
+	if (dx < 0)
+	{
+	    right = &rights[1];
+	    left = &lefts[0];
+	    top = &rights[0];
+	    bottom = &lefts[1];
+	}
+	else
+	{
+	    right = &rights[0];
+	    left = &lefts[1];
+	    top = &lefts[0];
+	    bottom = &rights[1];
+	}
 	r = l / L;
 
 	/* coord of upper bound at integral y */
@@ -946,15 +962,17 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
 
 	leftFace->xa = xa;
 	leftFace->ya = ya;
+	leftFace->k = k;
 	rightFace->xa = -xa;
 	rightFace->ya = -ya;
+	rightFace->k = k;
 
 	if (projectLeft)
 	    righty = miPolyBuildEdge (xa - projectXoff, ya - projectYoff,
-				      k, dx, dy, x1, y1, 0, &right);
+				      k, dx, dy, x1, y1, 0, right);
 	else
 	    righty = miPolyBuildEdge (xa, ya,
-				      k, dx, dy, x1, y1, 0, &right);
+				      k, dx, dy, x1, y1, 0, right);
 
 	/* coord of lower bound at integral y */
 	ya = -ya;
@@ -965,10 +983,10 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
 
 	if (projectLeft)
 	    lefty = miPolyBuildEdge (xa - projectXoff, ya - projectYoff,
-				     k, dx, dy, x1, y1, 1, &left);
+				     k, dx, dy, x1, y1, 1, left);
 	else
 	    lefty = miPolyBuildEdge (xa, ya,
-				     k, dx, dy, x1, y1, 1, &left);
+				     k, dx, dy, x1, y1, 1, left);
 
 	/* coord of top face at integral y */
 
@@ -983,10 +1001,10 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
 	    double xap = xa - projectXoff;
 	    double yap = ya - projectYoff;
 	    topy = miPolyBuildEdge (xap, yap, xap * dx + yap * dy,
-				    -dy, dx, x1, y1, dx > 0, &top);
+				    -dy, dx, x1, y1, dx > 0, top);
 	}
 	else
-	    topy = miPolyBuildEdge (xa, ya, 0.0, -dy, dx, x1, y1, dx > 0, &top);
+	    topy = miPolyBuildEdge (xa, ya, 0.0, -dy, dx, x1, y1, dx > 0, top);
 
 	/* coord of bottom face at integral y */
 
@@ -995,36 +1013,24 @@ miWideSegment (pDrawable, pGC, pixel, spanData,
 	    double xap = xa + projectXoff;
 	    double yap = ya + projectYoff;
 	    bottomy = miPolyBuildEdge (xap, yap, xap * dx + yap * dy,
-				       -dy, dx, x2, y2, dx < 0, &bottom);
+				       -dy, dx, x2, y2, dx < 0, bottom);
 	}
 	else
 	    bottomy = miPolyBuildEdge (xa, ya,
-				       0.0, -dy, dx, x2, y2, dx < 0, &bottom);
+				       0.0, -dy, dx, x2, y2, dx < 0, bottom);
 
 	if (dx < 0)
 	{
-	    left.height = bottomy - lefty;
-	    right.height = bottomy - lefty;
-	    top.height = righty - topy;
-	    bottom.height = righty - topy;
-	    lefts[0] = left;
-	    lefts[1] = bottom;
-	    rights[0] = top;
-	    rights[1] = right;
+	    right->height = left->height = bottomy - lefty;
+	    top->height = bottom->height = righty - topy;
 	}
 	else
 	{
-	    left.height = bottomy - righty;
-	    right.height = bottomy - righty;
-	    top.height = lefty - topy;
-	    bottom.height = lefty - topy;
-	    lefts[0] = top;
-	    lefts[1] = left;
-	    rights[0] = right;
-	    rights[1] = bottom;
+	    right->height =  left->height = bottomy - righty;
+	    top->height = bottom->height = lefty - topy;
 	}
 	miFillPolyHelper (pDrawable, pGC, pixel, spanData, topy,
-		     bottom.height + bottomy - topy, lefts, rights, 2, 2);
+		     bottom->height + bottomy - topy, lefts, rights, 2, 2);
     }
 }
 
@@ -1188,6 +1194,7 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
     int		    dashIndex, dashRemain;
     unsigned char   *pDash;
     double	    L, l;
+    double	    k;
     PolyVertexRec   vertices[4];
     PolyVertexRec   saveRight, saveBottom;
     PolySlopeRec    slopes[4];
@@ -1201,6 +1208,7 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
     double	    r;
     double	    rdx, rdy;
     double	    dashDx, dashDy;
+    double	    saveK;
     Bool	    first = TRUE;
     double	    lcenterx, lcentery, rcenterx, rcentery;
     
@@ -1241,21 +1249,26 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 	rdx = r * dx;
 	rdy = r * dy;
     }
+    k = l * L;
     LRemain = L;
     /* All position comments are relative to a line with dx and dy > 0,
      * but the code does not depend on this */
     /* top */
     slopes[V_TOP].dx = dx;
     slopes[V_TOP].dy = dy;
+    slopes[V_TOP].k = k;
     /* right */
     slopes[V_RIGHT].dx = -dy;
     slopes[V_RIGHT].dy = dx;
+    slopes[V_RIGHT].k = 0;
     /* bottom */
     slopes[V_BOTTOM].dx = -dx;
     slopes[V_BOTTOM].dy = -dy;
+    slopes[V_BOTTOM].k = k;
     /* left */
     slopes[V_LEFT].dx = dy;
     slopes[V_LEFT].dy = -dx;
+    slopes[V_LEFT].k = 0;
 
     leftFace->x = x1;
     leftFace->y = y1;
@@ -1281,6 +1294,8 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 
 	vertices[V_LEFT].x -= rdx;
 	vertices[V_LEFT].y -= rdy;
+
+	slopes[V_LEFT].k = rdx * dx + rdy * dy;
     }
 
     lcenterx = x1;
@@ -1300,6 +1315,8 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 	vertices[V_BOTTOM].x += dashDx;
 	vertices[V_BOTTOM].y += dashDy;
 
+	slopes[V_RIGHT].k = vertices[V_RIGHT].x * dx + vertices[V_RIGHT].y * dy;
+
 	if (pGC->lineStyle == LineDoubleDash || !(dashIndex & 1))
 	{
 	    if (pGC->lineStyle == LineOnOffDash &&
@@ -1307,6 +1324,7 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 	    {
 		saveRight = vertices[V_RIGHT];
 		saveBottom = vertices[V_BOTTOM];
+		saveK = slopes[V_RIGHT].k;
 		
 		if (!first)
 		{
@@ -1315,14 +1333,23 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
     
 		    vertices[V_LEFT].x -= rdx;
 		    vertices[V_LEFT].y -= rdy;
+
+		    slopes[V_LEFT].k = vertices[V_LEFT].x *
+				       slopes[V_LEFT].dy -
+				       vertices[V_LEFT].y *
+				       slopes[V_LEFT].dx;
 		}
 		
 		vertices[V_RIGHT].x += rdx;
-		vertices[V_RIGHT].x += rdy;
+		vertices[V_RIGHT].y += rdy;
 
 		vertices[V_BOTTOM].x += rdx;
 		vertices[V_BOTTOM].y += rdy;
 
+		slopes[V_RIGHT].k = vertices[V_RIGHT].x *
+				   slopes[V_RIGHT].dy -
+				   vertices[V_RIGHT].y *
+				   slopes[V_RIGHT].dx;
 	    }
 	    y = miPolyBuildPoly (vertices, slopes, 4, x1, y1,
 			     	 left, right, &nleft, &nright, &h);
@@ -1336,6 +1363,7 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 		case CapProjecting:
 		    vertices[V_BOTTOM] = saveBottom;
 		    vertices[V_RIGHT] = saveRight;
+		    slopes[V_RIGHT].k = saveK;
 		    break;
 		case CapRound:
 		    miLineArc (pDrawable, pGC, pixel, spanData,
@@ -1359,6 +1387,7 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 
 	vertices[V_TOP] = vertices[V_RIGHT];
 	vertices[V_LEFT] = vertices[V_BOTTOM];
+	slopes[V_LEFT].k = -slopes[V_RIGHT].k;
 	first = FALSE;
     }
 
@@ -1375,6 +1404,7 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 
 	vertices[V_BOTTOM].x = -rdy;
 	vertices[V_BOTTOM].y = rdx;
+
 	
 	if (projectRight)
 	{
@@ -1383,7 +1413,13 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
     
 	    vertices[V_BOTTOM].x += rdx;
 	    vertices[V_BOTTOM].y += rdy;
+	    slopes[V_RIGHT].k = vertices[V_RIGHT].x *
+				slopes[V_RIGHT].dy -
+				vertices[V_RIGHT].y *
+				slopes[V_RIGHT].dx;
 	}
+	else
+	    slopes[V_RIGHT].k = 0;
 
 	if (!first && pGC->lineStyle == LineOnOffDash &&
 	    pGC->capStyle == CapProjecting)
@@ -1393,7 +1429,14 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 
 	    vertices[V_LEFT].x -= rdx;
 	    vertices[V_LEFT].y -= rdy;
+	    slopes[V_LEFT].k = vertices[V_LEFT].x *
+			       slopes[V_LEFT].dy -
+			       vertices[V_LEFT].y *
+			       slopes[V_LEFT].dx;
 	}
+	else
+	    slopes[V_LEFT].k += dx * dx + dy * dy;
+
 
 	y = miPolyBuildPoly (vertices, slopes, 4, x2, y2,
 			     left, right, &nleft, &nright, &h);
@@ -1419,11 +1462,13 @@ miWideDashSegment (pDrawable, pGC, spanData, pDashOffset, pDashIndex,
 
     leftFace->xa = rdy;
     leftFace->ya = -rdx;
+    leftFace->k = k;
 
     rightFace->x = x2;
     rightFace->y = y2;
     rightFace->xa = -rdy;
     rightFace->ya = rdx;
+    rightFace->k = k;
 
     *pDashIndex = dashIndex;
     *pDashOffset = pDash[dashIndex] - dashRemain;

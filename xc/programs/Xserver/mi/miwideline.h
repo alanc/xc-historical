@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.h,v 1.2 89/10/29 11:30:31 rws Exp $
+ * $XConsortium: miwideline.h,v 1.3 89/10/31 17:38:52 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -52,6 +52,7 @@ typedef struct _PolyVertex {
 
 typedef struct _PolySlope {
     int	    dx, dy;
+    double  k;	    /* x0 * dy - y0 * dx */
 } PolySlopeRec, *PolySlopePtr;
 
 /*
@@ -62,6 +63,7 @@ typedef struct _LineFace {
     double  xa, ya;
     int	    dx, dy;
     int	    x, y;
+    double  k;
 } LineFaceRec, *LineFacePtr;
 
 /*
@@ -94,7 +96,7 @@ typedef struct _LineFace {
 
 #define MIPOLYSTEPLEFT  left_x += left_stepx; \
     	    	    	left_e += left_dx; \
-    	    	    	if (left_e >= 0) \
+    	    	    	if (left_e > left_dy) \
     	    	    	{ \
 	    	    	    left_x += left_signdx; \
 	    	    	    left_e -= left_dy; \
@@ -102,7 +104,7 @@ typedef struct _LineFace {
 
 #define MIPOLYSTEPRIGHT right_x += right_stepx; \
     	    	    	right_e += right_dx; \
-    	    	    	if (right_e >= 0) \
+    	    	    	if (right_e > right_dy) \
     	    	    	{ \
 	    	    	    right_x += right_signdx; \
 	    	    	    right_e -= right_dy; \
