@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.13 93/11/08 11:27:24 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.14 93/11/22 19:09:42 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -66,7 +66,7 @@ char 		*errorStringRet;
     {
 	if ((_SmcOpcode = IceRegisterForProtocolSetup ("XSMP",
 	    SmVendorString, SmReleaseString, _SmVersionCount, _SmcVersions,
-            _SmAuthCount, _SmcAuthRecs, NULL)) < 0)
+            _SmAuthCount, _SmAuthNames, _SmcAuthProcs, NULL)) < 0)
 	{
 	    strncpy (errorStringRet,
 	        "Could not register XSMP protocol with ICE", errorLength);
@@ -97,8 +97,9 @@ char 		*errorStringRet;
 	return (NULL);
     }
 
-    setupstat = IceProtocolSetup (iceConn,
-	_SmcOpcode, _SmAuthCount, NULL,	0, &majorVersion, &minorVersion,
+    setupstat = IceProtocolSetup (iceConn, _SmcOpcode,
+	False /* mustAuthenticate */,
+	&majorVersion, &minorVersion,
 	&vendor, &release, errorLength, errorStringRet);
 
     if (setupstat == IceProtocolSetupFailure)
