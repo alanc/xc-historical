@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.6 90/07/25 09:32:10 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.7 90/07/27 12:07:11 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -180,6 +180,7 @@ String						Reference
 
 Name						Reference
 ----						---------
+"Acorn-Noise"					[49]
 "Adobe-DPS-Extension"				[42]
 "AixDeviceControlExtension"			[33]
 "AixExtension"					[33]
@@ -557,6 +558,7 @@ Name						Reference
 "XLogo"						[47]
 "Xman"						[47]
 "Xmh"						[47]
+"Xsm"						[49]
 "XTerm"						[47]
 
 
