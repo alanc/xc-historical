@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.8 89/04/28 15:05:43 kit Exp $
+ * $XConsortium: man.c,v 1.9 89/07/10 17:43:36 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -338,7 +338,7 @@ char * path;
 #ifdef DEBUG
     sprintf(error_buf,"Can't open directory %s", path);
     PrintWarning(NULL, error_buf);
-#endif DEBUG
+#endif /* DEBUG */
     return;
   }
   
@@ -383,13 +383,13 @@ int number;
 
 #ifdef DEBUG
   printf("sorting section %d - %s\n", i, man->blabel);
-#endif DEBUG
+#endif /* DEBUG */
 
     qsort(man->entries, man->nentries, sizeof( char * ), CmpEntryLabel);
 
 #ifdef DEBUG
     printf("removing from section %d.\n", i);
-#endif DEBUG
+#endif /* DEBUG */
 
     if ( (l1 = rindex(man->entries[j], '/')) == NULL)
       PrintError("Internal error while removing duplicate manual pages.");
@@ -473,4 +473,4 @@ DumpManual(number)
   }
 }
 
-#endif DEBUG
+#endif /* DEBUG */

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByL.h,v 1.2 88/09/06 17:47:28 jim Exp $
+ * $XConsortium: ScrollByL.h,v 1.3 89/05/06 21:16:16 kit Exp $
  * $Athena: ScrollByL.h,v 4.0 88/08/31 22:11:16 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -41,7 +41,7 @@
 #define MANPAGE_NORMAL   "*-new century schoolbook-medium-r-normal--*-120-*"
 #define MANPAGE_BOLD     "*-new century schoolbook-bold-r-normal--*-120-*"
 #define MANPAGE_ITALIC   "*-new century schoolbook-bold-i-normal--*-120-*"
-#endif ATHENA
+#endif /* ATHENA */
 
 #define XtNindent           "indent"
 #define XtNforceVert        "forceVert"
@@ -58,5 +58,4 @@ extern WidgetClass scrollByLineWidgetClass;
 typedef struct _ScrollByLineClassRec *ScrollByLineWidgetClass;
 typedef struct _ScrollByLineRec      *ScrollByLineWidget;
 
-#endif _XtScrollByLine_h
-/* DON'T ADD STUFF AFTER THIS #endif */
+#endif /* _XtScrollByLine_h --- DON'T ADD STUFF AFTER THIS LINE */

@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: ScrollByLP.h,v 1.3 89/05/06 21:16:18 kit Exp $
+ * $XConsortium: ScrollByLP.h,v 1.4 89/05/16 13:54:36 kit Exp $
  * $Athena: ScrollByLP.h,v 4.0 88/08/31 22:11:21 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
@@ -87,5 +87,4 @@ typedef struct _ScrollByLineRec {
     ScrollByLinePart  scroll;
 } ScrollByLineRec;
 
-#endif _XtScrollByLinePrivate_h
-/* DON'T ADD STUFF AFTER THIS #endif */
+#endif /* _XtScrollByLinePrivate_h --- DON'T ADD STUFF AFTER THIS LINE */
