@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: protocol.ms,v 1.8 92/05/18 14:28:12 gildea Exp $
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''
@@ -1804,6 +1804,8 @@ which the character codes appear in the set.
 At least one metric for each character shall be non-zero
 unless the character is not encoded in the font, in which case
 all-zero metrics are returned.
+A blank, zero-width character can be encoded
+with non-zero but equal left and right bearings.
 .sp
 If FONTID is not associated with any open fonts, a 
 .PN Font 
@@ -1910,7 +1912,7 @@ pixels specified by FORMAT.IMAGE-RECT.  Within the image, set
 and clear bits represent inked and non-inked pixels,
 respectively.
 .sp
-Each scanline of a glyph image, from top to bottom, is padded
+Each scanline of a glyph image, from top to bottom, is zero-padded
 on the right to a multiple of the number of bits specified by
 FORMAT.SCANLINE-PAD.  The scanline is then divided from left
 to right into a sequence of FORMAT.SCANLINE-UNIT bits.  The
