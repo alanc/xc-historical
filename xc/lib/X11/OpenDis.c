@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.57 88/02/20 20:23:25 rws Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.58 88/06/19 16:34:54 rws Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -171,6 +171,7 @@ Display *XOpenDisplay (display)
 	dpy->xdefaults		= (char *)NULL;
 	dpy->scratch_length	= 0L;
 	dpy->scratch_buffer	= NULL;
+	dpy->key_bindings	= NULL;
 	dpy->motion_buffer	= u.setup->motionBufferSize;
 	dpy->nformats		= u.setup->numFormats;
 	dpy->nscreens		= u.setup->numRoots;
@@ -470,8 +471,12 @@ _XFreeDisplayStructure(dpy)
 	   Xfree (dpy->buffer);
 	if (dpy->keysyms)
 	   Xfree ((char *) dpy->keysyms);
+	if (dpy->modifiermap)
+	   XFreeModifiermap(dpy->modifiermap);
 	if (dpy->xdefaults)
 	   Xfree (dpy->xdefaults);
+	if (dpy->key_bindings)
+	   _XFreeKeyBindings(dpy);
 
 	_XFreeExtData (dpy->ext_data);
         
