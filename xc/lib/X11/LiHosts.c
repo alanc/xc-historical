@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XLiHosts.c,v 11.10 87/06/03 13:19:49 jg Exp $ */
+/* $Header: XLiHosts.c,v 11.10 87/07/31 16:38:10 toddb Locked $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 /* This can really be considered an os dependent routine */
 
@@ -32,7 +32,7 @@ XHostAddress *XListHosts (dpy, nhosts, enabled)
 	}
 
     *enabled = False;
-    if (reply.enabled == xTrue) *enabled = True;
+    if (reply.enabled == EnableAccess) *enabled = True;
     *nhosts = reply.nHosts;
     if (*nhosts == 0) {
 	UnlockDisplay(dpy);
