@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.6 91/02/04 19:17:37 gildea Exp $
+ * $XConsortium: access.c,v 1.7 91/02/11 21:00:17 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -79,9 +79,9 @@ typedef struct _displayEntry {
     HostEntry		    *hosts;
 } DisplayEntry;
 
-DisplayEntry	*database;
+static DisplayEntry	*database;
 
-ARRAY8		localAddress;
+static ARRAY8		localAddress;
 
 ARRAY8Ptr
 getLocalAddress ()
@@ -154,7 +154,7 @@ FreeAccessDatabase ()
 
 #define WORD_LEN    256
 static char	wordBuffer[WORD_LEN];
-int		nextIsEOF;
+static int	nextIsEOF;
 
 static char *
 ReadWord (file, EOFatEOL)

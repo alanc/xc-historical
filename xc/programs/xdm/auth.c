@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.37 91/04/01 10:28:27 rws Exp $
+ * $XConsortium: auth.c,v 1.38 91/04/03 17:14:47 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -118,7 +118,7 @@ ValidAuthorization (name_length, name)
     return FALSE;
 }
 
-Xauth *
+static Xauth *
 GenerateAuthorization (name_length, name)
 unsigned short	name_length;
 char		*name;
@@ -223,6 +223,7 @@ int	len;
     *dst = '\0';
 }
 
+static
 MakeServerAuthFile (d)
     struct display  *d;
 {
@@ -409,7 +410,7 @@ char	*data;
 
 static
 dumpAuth (auth)
-Xauth	*auth;
+    Xauth	*auth;
 {
 	Debug ("family: %d\n", auth->family);
 	Debug ("addr:   ");
@@ -459,7 +460,7 @@ static checkEntry ();
 
 static
 saveEntry (auth)
-Xauth	*auth;
+    Xauth	*auth;
 {
 	struct addrList	*new;
 
@@ -508,7 +509,7 @@ Xauth	*auth;
 
 static
 checkEntry (auth)
-Xauth	*auth;
+    Xauth	*auth;
 {
 	struct addrList	*a;
 
@@ -531,8 +532,8 @@ static int  doWrite;
 
 static
 writeAuth (file, auth)
-FILE	*file;
-Xauth	*auth;
+    FILE	*file;
+    Xauth	*auth;
 {
 	dumpAuth (auth);
 	if (doWrite)
@@ -541,11 +542,11 @@ Xauth	*auth;
 
 static
 writeAddr (family, addr_length, addr, file, auth)
-int	family;
-int	addr_length;
-char	*addr;
-FILE	*file;
-Xauth	*auth;
+    int		family;
+    int		addr_length;
+    char	*addr;
+    FILE	*file;
+    Xauth	*auth;
 {
 	auth->family = (unsigned short) family;
 	auth->address_length = addr_length;
@@ -557,8 +558,8 @@ Xauth	*auth;
 
 static
 DefineLocal (file, auth)
-FILE	*file;
-Xauth	*auth;
+    FILE	*file;
+    Xauth	*auth;
 {
 	char	displayname[100];
 
@@ -782,9 +783,9 @@ setAuthNumber (auth, name)
 
 static
 writeLocalAuth (file, auth, name)
-FILE	*file;
-Xauth	*auth;
-char	*name;
+    FILE	*file;
+    Xauth	*auth;
+    char	*name;
 {
     int	fd;
     Debug ("writeLocalAuth\n");

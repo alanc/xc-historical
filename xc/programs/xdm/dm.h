@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dm.h,v 1.44 91/04/01 10:43:38 rws Exp $
+ * $XConsortium: dm.h,v 1.45 91/04/02 11:35:32 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -40,9 +40,13 @@
 #endif
 
 #ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+# include	<limits.h>
+#else
 #define _POSIX_SOURCE
 # include	<limits.h>
 #undef _POSIX_SOURCE
+#endif
 #endif
 #ifndef NGROUPS_MAX
 # include	<sys/param.h>
@@ -56,11 +60,15 @@
 #endif /* pegasus */
 
 #ifndef X_NOT_POSIX
+#ifdef _POSIX_SOURCE
+#include <sys/wait.h>
+#else
 #define _POSIX_SOURCE
 #include <sys/wait.h>
 #undef _POSIX_SOURCE
-# define waitCode(w)	WEXITSTATUS(w)
-# define waitSig(w)	WTERMSIG(w)
+#endif
+# define waitCode(w)	(WIFEXITED(w) ? WEXITSTATUS(w) : 0)
+# define waitSig(w)	(WIFSIGNALED(w) ? WTERMSIG(w) : 0)
 # define waitCore(w)    0	/* not in POSIX.  so what? */
 typedef int		waitType;
 #else /* X_NOT_POSIX */
@@ -77,12 +85,6 @@ typedef int		waitType;
 typedef union wait	waitType;
 #endif
 #endif /* X_NOT_POSIX */
-
-#ifdef UDP_SOCKET
-#include	<sys/types.h>
-#include	<netinet/in.h>
-#define BROADCAST_HOSTNAME  "BROADCAST"
-#endif
 
 # define waitCompose(sig,core,code) ((sig) * 256 + (core) * 128 + (code))
 # define waitVal(w)	waitCompose(waitSig(w), waitCore(w), waitCode(w))
@@ -303,7 +305,7 @@ char *malloc(), *realloc();
 char *malloc(), *realloc();
 #endif /* macII */
 
-#ifdef SIGNALRETURNSINT
+#if defined(X_NOT_POSIX) && defined(SIGNALRETURNSINT)
 #define SIGVAL int
 #else
 #define SIGVAL void

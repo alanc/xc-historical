@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.5 91/01/09 17:25:58 keith Exp $
+ * $XConsortium: protodpy.c,v 1.7 91/04/02 12:00:48 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -40,7 +40,7 @@
 # include	<netinet/in.h>
 # include	<sys/un.h>
 
-struct protoDisplay	*protoDisplays;
+static struct protoDisplay	*protoDisplays;
 
 addressEqual (a1, len1, a2, len2)
 struct sockaddr	*a1, *a2;
@@ -68,6 +68,7 @@ int		len1, len2;
     return FALSE;
 }
 
+static
 PrintSockAddr (a, len)
     struct sockaddr *a;
     int		    len;
@@ -87,6 +88,7 @@ PrintSockAddr (a, len)
     }
 }
 
+static
 PrintProtoDisplay (pdpy)
     struct protoDisplay	*pdpy;
 {
@@ -118,6 +120,7 @@ FindProtoDisplay (address, addrlen, displayNumber)
     return (struct protoDisplay *) 0;
 }
 
+static
 TimeoutProtoDisplays (now)
     long    now;
 {

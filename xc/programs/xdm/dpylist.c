@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: dpylist.c,v 1.22 91/01/09 17:27:21 keith Exp $
+ * $XConsortium: dpylist.c,v 1.24 91/04/02 11:55:00 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
 
 # include "dm.h"
 
-struct display	*displays;
+static struct display	*displays;
 
 AnyDisplaysLeft ()
 {

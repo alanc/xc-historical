@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: socket.c,v 1.24 91/01/31 22:03:42 gildea Exp $
+ * $XConsortium: socket.c,v 1.25 91/02/04 19:18:36 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1139,6 +1139,7 @@ NetworkAddressToName(connectionType, connectionAddress, displayNumber)
     }
 }
 
+static
 HostnameToNetworkAddress (name, connectionType, connectionAddress)
 char	    *name;
 CARD16	    connectionType;
@@ -1171,6 +1172,7 @@ ARRAY8Ptr   connectionAddress;
  * the same rules as XOpenDisplay (algorithm cribbed from there)
  */
 
+static
 NameToNetworkAddress(name, connectionTypep, connectionAddress, displayNumber)
 char	    *name;
 CARD16Ptr   connectionTypep;

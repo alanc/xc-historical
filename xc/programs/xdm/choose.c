@@ -1,5 +1,5 @@
 /*
- * $XConsortium: choose.c,v 1.2 91/01/31 22:02:55 gildea Exp $
+ * $XConsortium: choose.c,v 1.3 91/02/04 19:17:49 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -41,56 +41,7 @@
 # include	<netdb.h>
 # include	<ctype.h>
 
-ProcessChooserSocket (fd)
-{
-    int client_fd;
-    char	buf[1024];
-    int		len;
-    XdmcpBuffer	buffer;
-    ARRAY8	clientAddress;
-    CARD16	connectionType;
-    ARRAY8	choice;
-
-    Debug ("Process chooser socket\n");
-    len = sizeof (buf);
-    client_fd = accept (fd, buf, &len);
-    if (client_fd == -1)
-    {
-	LogError ("Cannot accept chooser connection\n");
-	return;
-    }
-    Debug ("Accepted %d\n", client_fd);
-    
-    len = read (client_fd, buf, sizeof (buf));
-    Debug ("Read returns %d\n", len);
-    if (len > 0)
-    {
-    	buffer.data = (BYTE *) buf;
-    	buffer.size = sizeof (buf);
-    	buffer.count = len;
-    	buffer.pointer = 0;
-	clientAddress.data = 0;
-	clientAddress.length = 0;
-	choice.data = 0;
-	choice.length = 0;
-	if (XdmcpReadARRAY8 (&buffer, &clientAddress) &&
-	    XdmcpReadCARD16 (&buffer, &connectionType) &&
-	    XdmcpReadARRAY8 (&buffer, &choice))
-	{
-	    Debug ("Read from chooser succesfully\n");
-	    RegisterIndirectChoice (&clientAddress, connectionType, &choice);
-	}
-	XdmcpDisposeARRAY8 (&clientAddress);
-	XdmcpDisposeARRAY8 (&choice);
-    }
-    else
-    {
-	LogError ("Invalid choice response length %d\n", len);
-    }
-
-    close (client_fd);
-}
-
+static
 FormatBytes (data, length, buf, buflen)
     char    *data;
     int	    length;
@@ -111,6 +62,7 @@ FormatBytes (data, length, buf, buflen)
     return 1;
 }
 
+static
 FormatARRAY8 (a, buf, buflen)
     ARRAY8Ptr	a;
     char	*buf;
@@ -186,6 +138,7 @@ IsIndirectClient (clientAddress, connectionType)
     return 0;
 }
 
+static
 FormatChooserArgument (buf, len)
     char    *buf;
     int	    len;
@@ -274,7 +227,7 @@ IndirectChoice (clientAddress, connectionType)
     return 0;
 }
 
-int
+static int
 RegisterIndirectChoice (clientAddress, connectionType, choice)
     ARRAY8Ptr	clientAddress, choice;
 {
@@ -319,6 +272,7 @@ RegisterIndirectChoice (clientAddress, connectionType, choice)
     return 1;
 }
 
+static
 RemoveIndirectChoice (clientAddress, connectionType)
     ARRAY8Ptr	clientAddress;
     CARD16	connectionType;
@@ -344,6 +298,7 @@ RemoveIndirectChoice (clientAddress, connectionType)
     }
 }
 
+static
 AddChooserHost (connectionType, addr, closure)
     CARD16	connectionType;
     ARRAY8Ptr	addr;
@@ -362,6 +317,56 @@ AddChooserHost (connectionType, addr, closure)
     {
 	*argp = parseArgs (*argp, hostbuf);
     }
+}
+
+ProcessChooserSocket (fd)
+{
+    int client_fd;
+    char	buf[1024];
+    int		len;
+    XdmcpBuffer	buffer;
+    ARRAY8	clientAddress;
+    CARD16	connectionType;
+    ARRAY8	choice;
+
+    Debug ("Process chooser socket\n");
+    len = sizeof (buf);
+    client_fd = accept (fd, buf, &len);
+    if (client_fd == -1)
+    {
+	LogError ("Cannot accept chooser connection\n");
+	return;
+    }
+    Debug ("Accepted %d\n", client_fd);
+    
+    len = read (client_fd, buf, sizeof (buf));
+    Debug ("Read returns %d\n", len);
+    if (len > 0)
+    {
+    	buffer.data = (BYTE *) buf;
+    	buffer.size = sizeof (buf);
+    	buffer.count = len;
+    	buffer.pointer = 0;
+	clientAddress.data = 0;
+	clientAddress.length = 0;
+	choice.data = 0;
+	choice.length = 0;
+	if (XdmcpReadARRAY8 (&buffer, &clientAddress) &&
+	    XdmcpReadCARD16 (&buffer, &connectionType) &&
+	    XdmcpReadARRAY8 (&buffer, &choice))
+	{
+	    Debug ("Read from chooser succesfully\n");
+	    RegisterIndirectChoice (&clientAddress, connectionType, &choice);
+	}
+	XdmcpDisposeARRAY8 (&clientAddress);
+	XdmcpDisposeARRAY8 (&choice);
+    }
+    else
+    {
+	LogError ("Invalid choice response length %d\n", len);
+    }
+
+    close (client_fd);
 }
 
 RunChooser (d)

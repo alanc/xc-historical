@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: policy.c,v 1.7 91/01/31 22:03:21 gildea Exp $
+ * $XConsortium: policy.c,v 1.8 91/02/04 19:18:16 gildea Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -39,7 +39,7 @@ typedef struct _XdmAuth {
     ARRAY8  authorization;
 } XdmAuthRec, *XdmAuthPtr;
 
-XdmAuthRec auth[] = {
+static XdmAuthRec auth[] = {
 #ifdef HASDES
 { {(CARD16) 20, (CARD8 *) "XDM-AUTHENTICATION-1"},
   {(CARD16) 19, (CARD8 *) "XDM-AUTHORIZATION-1"},
