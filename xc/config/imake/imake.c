@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.23 88/02/12 09:00:44 rws Exp $
- * $Locker:  $
+ * $Header: imake.c,v 1.24 88/02/20 19:46:58 rws Exp $
+ * $Locker: toddb $
  *
  * Author:
  *	Todd Brunhoff
@@ -137,9 +137,12 @@ char	*cpp_argv[ ARGUMENTS ] = {
 #ifdef unix
 	"-Uunix",
 #endif /* unix */
-#ifdef pegasus
-	"-Dpegasus",
-#endif /* pegasus */
+#ifdef M4330
+	"-DM4330",
+#endif /* M4330 (Tektronix) */
+#ifdef M4310
+	"-DM4310",
+#endif /* M4310 (Tektronix) */
 };
 int	make_argindex;
 int	cpp_argindex;
