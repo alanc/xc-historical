@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.151 91/02/03 13:46:28 rws Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.152 91/02/17 13:04:31 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2190,20 +2190,10 @@ extern void _XtFree(
 #endif
 );
 
-extern char *_XtHeapMalloc(
-#if NeedFunctionPrototypes
-    XtPointer	/* heap */,
-    unsigned	/* size */,
-    char *	/* file */,
-    int		/* line */
-#endif
-);
-
 #define XtMalloc(size) _XtMalloc(size, __FILE__, __LINE__)
 #define XtRealloc(ptr,size) _XtRealloc(ptr, size, __FILE__, __LINE__)
 #define XtCalloc(num,size) _XtCalloc(num, size, __FILE__, __LINE__)
 #define XtFree(ptr) _XtFree(ptr)
-#define _XtHeapAlloc(heap,bytes) _XtHeapMalloc(heap, bytes, __FILE__, __LINE__)
 
 #endif /* ifdef XTTRACEMEMORY */
 
