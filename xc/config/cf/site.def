@@ -1,4 +1,4 @@
-XCOMM site:  $XConsortium: site.def,v 1.27 91/07/23 15:32:33 rws Exp $
+XCOMM site:  $XConsortium: site.def,v 1.28 91/07/23 23:16:54 keith Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -35,4 +35,16 @@ XCOMM site:  $XConsortium: site.def,v 1.27 91/07/23 15:32:33 rws Exp $
 
 #ifndef HasXdmAuth
 #define HasXdmAuth YES		/* XDMAUTH code is built into libXdmcp.a */
+#endif
+
+#if defined(UltrixArchitecture) && defined(MipsArchitecture)
+#define	SetUIDProgramTarget(program,objects,deplibs,locallibs,syslibs)	@@\
+program: objects deplibs						@@\
+	RemoveTargetProgram($@)						@@\
+	$(CC) -o $@ objects $(LDOPTIONS) locallibs $(LDLIBS) syslibs $(EXTRA_LOAD_FLAGS) @@\
+	root chown root $@						@@\
+	root chmod 4755 $@						@@\
+									@@\
+clean::									@@\
+	$(RM) program
 #endif
