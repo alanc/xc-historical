@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.177 94/04/01 17:59:35 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.178 94/04/04 18:02:52 gildea Exp $
 /*
  * Server Master Makefile
  */
@@ -37,15 +37,8 @@ XCOMM $XConsortium: Imakefile,v 1.177 94/04/01 17:59:35 dpw Exp $
       XIEEXT =  XIE/dixie/libdixie.a XIE/mixie/libmixie.a 
       XIEDIR = XIE
 #endif
-#if BuildLBX
-      LBXDIR      = lbx
-      LBXEXT      = $(LBXDIR)/liblbx.a
-      LBXUTILDIR  = $(LIBSRC)/lbxutil
-      LBXUTILLIB  = $(LBXUTILDIR)/liblbxutil.a
-#endif
-      OTHEREXTS = Xext/libext.a $(XINPUTEXT) $(XIEEXT) $(LBXEXT) $(LBXUTILLIB)
-        EXTDIRS = Xext $(XIDIR) $(XIEDIR) $(PEXDIR) $(LBXDIR)
-        DEPDIRS = $(LBXUTILDIR)
+      OTHEREXTS = Xext/libext.a $(XINPUTEXT) $(XIEEXT)
+        EXTDIRS = Xext $(XIDIR) $(XIEDIR) $(PEXDIR)
      EXTENSIONS = $(OTHEREXTS) $(PEXLIBS)
          XAULIB = $(XAUTHSRC)/libXau.a
        XDMCPLIB = $(XDMCPLIBSRC)/libXdmcp.a
