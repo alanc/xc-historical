@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.41 91/04/02 09:12:59 rws Exp $ */
+/* $XConsortium: os.h,v 1.42 91/04/26 18:58:35 keith Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -38,10 +38,8 @@ SOFTWARE.
 #define SCREEN_SAVER_OFF  1
 #define SCREEN_SAVER_FORCER 2
 
-#if defined(stellar)
+#ifndef MAX_REQUEST_SIZE
 #define MAX_REQUEST_SIZE 65535
-#else
-#define MAX_REQUEST_SIZE 16384
 #endif
 
 typedef pointer	FID;
