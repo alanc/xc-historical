@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.20 88/01/25 18:29:17 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.23 88/01/28 08:06:49 swick Locked $";
 #endif lint
 
 /*
@@ -195,6 +195,7 @@ static void Initialize(request, new, args, num_args)
     ctx->text.gc = DefaultGCOfScreen(XtScreen(ctx));
     ctx->text.hasfocus = FALSE;
     ctx->text.leftmargin = ctx->text.client_leftmargin;
+    ctx->text.update_disabled = False;
 #ifdef notdef
     if (ctx->text.sink)
       BuildLineTable(ctx, ctx->text.lt.top);
