@@ -401,15 +401,16 @@ Bool CalibrateTest(xp, test, seconds, usecperobj)
     int     seconds;
     double  *usecperobj;
 {
-#define goal    1500000.0   /* Try to get up to 1.5 seconds		    */
-#define enough  1000000.0   /* But settle for 1.0 seconds		    */
+#define goal    2500000.0   /* Try to get up to 2.5 seconds		    */
+#define enough  2000000.0   /* But settle for 2.0 seconds		    */
 #define tick      10000.0   /* Assume clock not faster than .01 seconds     */
 
     double  usecs;
     int     reps, exponent;
 
     /* Attempt to get an idea how long each rep lasts by getting enough
-       reps to last more than a second.
+       reps to last more tan enough.  Then scale that up to the number of
+       seconds desired.
 
        If init call to test ever fails, return False and test will be skipped.
     */
