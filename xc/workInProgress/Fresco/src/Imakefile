@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 94/03/08 19:57:24 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/03/18 18:02:03 matt Exp $
 #define DoNormalLib NormalLibFresco
 #define DoSharedLib SharedLibFresco
 #define DoDebugLib DebugLibFresco
@@ -89,7 +89,7 @@ XCOMM  to filter implementation files based on corresponding IDL files.
 XCOMM  You should not have to use this part unless you are modifying the
 XCOMM  the Fresco IDL definitions.
 
-#include <ixx.cf>
+#include <Ixx.tmpl>
 
 INC = ../include
 I = $(INC)/Interfaces

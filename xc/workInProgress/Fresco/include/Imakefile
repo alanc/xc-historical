@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/03/18 14:47:06 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 94/03/18 14:58:38 matt Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
@@ -33,7 +33,7 @@ XCOMM  The stuff from here down is related to running the ixx translator
 XCOMM  to build header files from IDL definitions.  You should not have 
 XCOMM  to use this part unless you are rebuilding the Fresco headers.
 
-#include <ixx.cf>
+#include <Ixx.tmpl>
 
 #define Hdr(name,flags) MakeHeaderFlags(name,flags)
 
