@@ -624,11 +624,11 @@ int fSorted;
 
 		/* width of dest/stipple */
                 xrem = x % stippleWidth;
-	        w = min((stippleWidth - (x % stippleWidth)), width);
+	        w = min((stippleWidth - xrem), width);
 		/* dist to word bound in dest */
 		w = min(w, PPW - (x & PIM));
 		/* dist to word bound in stip */
-		w = min(w, 32 - (x & 0x1f));
+		w = min(w, 32 - (xrem & 0x1f));
 
 		/* Fill tmpSrc with the source pixels */
 		tmpSrc = *(pdst + (x >> PWSH));
