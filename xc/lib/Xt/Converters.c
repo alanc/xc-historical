@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Converters.c,v 1.12 88/02/03 23:06:45 swick Locked $";
+static char rcsid[] = "$Header: Converters.c,v 1.13 88/02/03 23:10:40 swick Exp $";
 #endif lint
 
 /*
@@ -380,7 +380,7 @@ static void CvtStringToCursor(args, num_args, fromVal, toVal)
     if (XReadBitmapFile( DisplayOfScreen(screen), RootWindowOfScreen(screen),
 			 filename, &width, &height, &source, &xhot, &yhot )
 	!= BitmapSuccess) {
-	_XtStringConversionWarning(name, "Cursor");
+	XtStringConversionWarning(name, "Cursor");
 	cursor = None;		/* absolute fall-back for failed conversion */
 	done(&cursor, Cursor);
     }
