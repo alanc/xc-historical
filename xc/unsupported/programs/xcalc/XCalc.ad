@@ -1,11 +1,11 @@
 
-XCalc*cursor:			hand2
+XCalc*Cursor:			hand2
 XCalc.toplevel.icon_name:	Calculator
 XCalc*iconPixmap:		calculator
-XCalc*font:			*-helvetica-medium-r-normal--*-100-*-*-*-*-*-*
-XCalc*bevel.screen.LCD.font:	*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*
+XCalc*Font:			*-helvetica-medium-r-normal--*-100-*-*-*-*-*-*
+XCalc*bevel.screen.LCD.Font:	*-helvetica-bold-r-normal--*-120-*-*-*-*-*-*
 
-XCalc*bevel.background:			black
+XCalc*bevel.Background:			black
 XCalc*bevel.horizDistance:			25
 XCalc*bevel.vertDistance:			6
 
@@ -18,7 +18,7 @@ XCalc*bevel.screen.Label.vertDistance:		0
 XCalc*bevel.screen.Label.internalHeight:	1
 XCalc*bevel.screen.Label.internalWidth:		1
 
-XCalc*bevel.screen.LCD.label:		88888888888
+XCalc*bevel.screen.LCD.Label:		88888888888
 XCalc*bevel.screen.LCD.fromHoriz:	M
 XCalc*bevel.screen.LCD.horizDistance:		0
 XCalc*bevel.screen.LCD.vertDistance:		0
@@ -36,7 +36,7 @@ XCalc*bevel.screen.RAD.fromVert:	LCD
 XCalc*bevel.screen.GRAD.fromHoriz:	RAD
 XCalc*bevel.screen.GRAD.fromVert:	LCD
 
-XCalc*bevel.screen.P.label:		()
+XCalc*bevel.screen.P.Label:		()
 XCalc*bevel.screen.P.fromHoriz:		GRAD
 XCalc*bevel.screen.P.fromVert:		LCD
 XCalc*bevel.screen.P.horizDistance:		2
@@ -46,13 +46,13 @@ XCalc*Command.vertDistance:			4
 XCalc*Command.width:				32
 XCalc*Command.height:				15
 XCalc*Command.internalWidth:			1
+XCalc*Command.ShapeStyle:		Oval
 
-
-XCalc.ti.geometry:				171x252
+XCalc.ti.Geometry:				171x252
 XCalc.ti.bevel.screen.LCD.width:		100
-XCalc.ti.bevel.screen.LCD.ShapeStyle:		rectangle
+XCalc.ti.bevel.screen.LCD.ShapeStyle:	rectangle
 
-XCalc.ti.bevel.screen.LCD.translations:	#replace\n\
+XCalc.ti.bevel.screen.LCD.Translations:	#replace\n\
 				Ctrl<Key>c:quit()\n\
 				Ctrl<Key>h:clear()\n\
 				None<Key>0:digit(0)\n\
@@ -111,94 +111,94 @@ XCalc.ti.bevel.screen.LCD.translations:	#replace\n\
 				<Btn1Down>,<Btn1Up>:toggle()selection()\n
 
 
-XCalc.ti.button1.label:		1/x
-XCalc.ti.button1.translations:		#override<Btn1Up>:reciprocal()unset()
-XCalc.ti.button2.label:		x^2
-XCalc.ti.button2.translations:		#override<Btn1Up>:square()unset()
-XCalc.ti.button3.label:		SQRT
-XCalc.ti.button3.translations:		#override<Btn1Up>:squareRoot()unset()
-XCalc.ti.button4.label:		CE/C
-XCalc.ti.button4.translations:		#override<Btn1Up>:clear()unset()
-XCalc.ti.button5.label:		AC
-XCalc.ti.button5.translations:		#override<Btn1Up>:off()unset()\n\
+XCalc.ti.button1.Label:		1/x
+XCalc.ti.button1.Translations:		#override<Btn1Up>:reciprocal()unset()
+XCalc.ti.button2.Label:		x^2
+XCalc.ti.button2.Translations:		#override<Btn1Up>:square()unset()
+XCalc.ti.button3.Label:		SQRT
+XCalc.ti.button3.Translations:		#override<Btn1Up>:squareRoot()unset()
+XCalc.ti.button4.Label:		CE/C
+XCalc.ti.button4.Translations:		#override<Btn1Up>:clear()unset()
+XCalc.ti.button5.Label:		AC
+XCalc.ti.button5.Translations:		#override<Btn1Up>:off()unset()\n\
 					<Btn3Up>:quit()
 
-XCalc.ti.button6.label:		INV
-XCalc.ti.button6.translations:		#override<Btn1Up>:inverse()unset()
-XCalc.ti.button7.label:		sin
-XCalc.ti.button7.translations:		#override<Btn1Up>:sine()unset()
-XCalc.ti.button8.label:		cos
-XCalc.ti.button8.translations:		#override<Btn1Up>:cosine()unset()
-XCalc.ti.button9.label:		tan
-XCalc.ti.button9.translations:		#override<Btn1Up>:tangent()unset()
-XCalc.ti.button10.label:		DRG
-XCalc.ti.button10.translations: 	#override<Btn1Up>:degree()unset()
+XCalc.ti.button6.Label:		INV
+XCalc.ti.button6.Translations:		#override<Btn1Up>:inverse()unset()
+XCalc.ti.button7.Label:		sin
+XCalc.ti.button7.Translations:		#override<Btn1Up>:sine()unset()
+XCalc.ti.button8.Label:		cos
+XCalc.ti.button8.Translations:		#override<Btn1Up>:cosine()unset()
+XCalc.ti.button9.Label:		tan
+XCalc.ti.button9.Translations:		#override<Btn1Up>:tangent()unset()
+XCalc.ti.button10.Label:		DRG
+XCalc.ti.button10.Translations: 	#override<Btn1Up>:degree()unset()
 
-XCalc.ti.button11.label:		e
-XCalc.ti.button11.translations:	#override<Btn1Up>:e()unset()
-XCalc.ti.button12.label:		EE
-XCalc.ti.button12.translations:	#override<Btn1Up>:scientific()unset()
-XCalc.ti.button13.label:		log
-XCalc.ti.button13.translations:	#override<Btn1Up>:logarithm()unset()
-XCalc.ti.button14.label:		ln
-XCalc.ti.button14.translations:	#override<Btn1Up>:naturalLog()unset()
-XCalc.ti.button15.label:		y^x
-XCalc.ti.button15.translations:	#override<Btn1Up>:power()unset()
+XCalc.ti.button11.Label:		e
+XCalc.ti.button11.Translations:	#override<Btn1Up>:e()unset()
+XCalc.ti.button12.Label:		EE
+XCalc.ti.button12.Translations:	#override<Btn1Up>:scientific()unset()
+XCalc.ti.button13.Label:		log
+XCalc.ti.button13.Translations:	#override<Btn1Up>:logarithm()unset()
+XCalc.ti.button14.Label:		ln
+XCalc.ti.button14.Translations:	#override<Btn1Up>:naturalLog()unset()
+XCalc.ti.button15.Label:		y^x
+XCalc.ti.button15.Translations:	#override<Btn1Up>:power()unset()
 
-XCalc.ti.button16.label:		PI
-XCalc.ti.button16.translations:	#override<Btn1Up>:pi()unset()
-XCalc.ti.button17.label:		x!
-XCalc.ti.button17.translations:	#override<Btn1Up>:factorial()unset()
-XCalc.ti.button18.label:		(
-XCalc.ti.button18.translations:	#override<Btn1Up>:leftParen()unset()
-XCalc.ti.button19.label:		)
-XCalc.ti.button19.translations:	#override<Btn1Up>:rightParen()unset()
-XCalc.ti.button20.label:		/
-XCalc.ti.button20.translations:	#override<Btn1Up>:divide()unset()
+XCalc.ti.button16.Label:		PI
+XCalc.ti.button16.Translations:	#override<Btn1Up>:pi()unset()
+XCalc.ti.button17.Label:		x!
+XCalc.ti.button17.Translations:	#override<Btn1Up>:factorial()unset()
+XCalc.ti.button18.Label:		(
+XCalc.ti.button18.Translations:	#override<Btn1Up>:leftParen()unset()
+XCalc.ti.button19.Label:		)
+XCalc.ti.button19.Translations:	#override<Btn1Up>:rightParen()unset()
+XCalc.ti.button20.Label:		/
+XCalc.ti.button20.Translations:	#override<Btn1Up>:divide()unset()
 
-XCalc.ti.button21.label:		STO
-XCalc.ti.button21.translations:	#override<Btn1Up>:store()unset()
-XCalc.ti.button22.label:		7
-XCalc.ti.button22.translations:	#override<Btn1Up>:digit(7)unset()
-XCalc.ti.button23.label:		8
-XCalc.ti.button23.translations:	#override<Btn1Up>:digit(8)unset()
-XCalc.ti.button24.label:		9
-XCalc.ti.button24.translations:	#override<Btn1Up>:digit(9)unset()
-XCalc.ti.button25.label:		*
-XCalc.ti.button25.translations:	#override<Btn1Up>:multiply()unset()
+XCalc.ti.button21.Label:		STO
+XCalc.ti.button21.Translations:	#override<Btn1Up>:store()unset()
+XCalc.ti.button22.Label:		7
+XCalc.ti.button22.Translations:	#override<Btn1Up>:digit(7)unset()
+XCalc.ti.button23.Label:		8
+XCalc.ti.button23.Translations:	#override<Btn1Up>:digit(8)unset()
+XCalc.ti.button24.Label:		9
+XCalc.ti.button24.Translations:	#override<Btn1Up>:digit(9)unset()
+XCalc.ti.button25.Label:		*
+XCalc.ti.button25.Translations:	#override<Btn1Up>:multiply()unset()
 
-XCalc.ti.button26.label:		RCL
-XCalc.ti.button26.translations:	#override<Btn1Up>:recall()unset()
-XCalc.ti.button27.label:		4
-XCalc.ti.button27.translations:	#override<Btn1Up>:digit(4)unset()
-XCalc.ti.button28.label:		5
-XCalc.ti.button28.translations:	#override<Btn1Up>:digit(5)unset()
-XCalc.ti.button29.label:		6
-XCalc.ti.button29.translations:	#override<Btn1Up>:digit(6)unset()
-XCalc.ti.button30.label:		-
-XCalc.ti.button30.translations:	#override<Btn1Up>:subtract()unset()
+XCalc.ti.button26.Label:		RCL
+XCalc.ti.button26.Translations:	#override<Btn1Up>:recall()unset()
+XCalc.ti.button27.Label:		4
+XCalc.ti.button27.Translations:	#override<Btn1Up>:digit(4)unset()
+XCalc.ti.button28.Label:		5
+XCalc.ti.button28.Translations:	#override<Btn1Up>:digit(5)unset()
+XCalc.ti.button29.Label:		6
+XCalc.ti.button29.Translations:	#override<Btn1Up>:digit(6)unset()
+XCalc.ti.button30.Label:		-
+XCalc.ti.button30.Translations:	#override<Btn1Up>:subtract()unset()
 
-XCalc.ti.button31.label:		SUM
-XCalc.ti.button31.translations:	#override<Btn1Up>:sum()unset()
-XCalc.ti.button32.label:		1
-XCalc.ti.button32.translations:	#override<Btn1Up>:digit(1)unset()
-XCalc.ti.button33.label:		2
-XCalc.ti.button33.translations:	#override<Btn1Up>:digit(2)unset()
-XCalc.ti.button34.label:		3
-XCalc.ti.button34.translations:	#override<Btn1Up>:digit(3)unset()
-XCalc.ti.button35.label:		+
-XCalc.ti.button35.translations:	#override<Btn1Up>:add()unset()
+XCalc.ti.button31.Label:		SUM
+XCalc.ti.button31.Translations:	#override<Btn1Up>:sum()unset()
+XCalc.ti.button32.Label:		1
+XCalc.ti.button32.Translations:	#override<Btn1Up>:digit(1)unset()
+XCalc.ti.button33.Label:		2
+XCalc.ti.button33.Translations:	#override<Btn1Up>:digit(2)unset()
+XCalc.ti.button34.Label:		3
+XCalc.ti.button34.Translations:	#override<Btn1Up>:digit(3)unset()
+XCalc.ti.button35.Label:		+
+XCalc.ti.button35.Translations:	#override<Btn1Up>:add()unset()
 
-XCalc.ti.button36.label:		EXC
-XCalc.ti.button36.translations:	#override<Btn1Up>:exchange()unset()
-XCalc.ti.button37.label:		0
-XCalc.ti.button37.translations:	#override<Btn1Up>:digit(0)unset()
-XCalc.ti.button38.label:		.
-XCalc.ti.button38.translations:	#override<Btn1Up>:decimal()unset()
-XCalc.ti.button39.label:		+/-
-XCalc.ti.button39.translations:	#override<Btn1Up>:negate()unset()
-XCalc.ti.button40.label:		=
-XCalc.ti.button40.translations:	#override<Btn1Up>:equal()unset()
+XCalc.ti.button36.Label:		EXC
+XCalc.ti.button36.Translations:	#override<Btn1Up>:exchange()unset()
+XCalc.ti.button37.Label:		0
+XCalc.ti.button37.Translations:	#override<Btn1Up>:digit(0)unset()
+XCalc.ti.button38.Label:		.
+XCalc.ti.button38.Translations:	#override<Btn1Up>:decimal()unset()
+XCalc.ti.button39.Label:		+/-
+XCalc.ti.button39.Translations:	#override<Btn1Up>:negate()unset()
+XCalc.ti.button40.Label:		=
+XCalc.ti.button40.Translations:	#override<Btn1Up>:equal()unset()
 
 
 XCalc.ti.button1.horizDistance:	4	
@@ -290,12 +290,12 @@ XCalc.ti.button40.fromHoriz:		button39
 XCalc.ti.button40.fromVert:		button35
 
 
-XCalc.hp.geometry:			336x164
+XCalc.hp.Geometry:			336x164
 XCalc.hp.bevel.screen.LCD.width:	180
 
 
 
-XCalc.hp.bevel.screen.LCD.translations:	#replace\n\
+XCalc.hp.bevel.screen.LCD.Translations:	#replace\n\
 				Ctrl<Key>c:quit()\n\
 				Ctrl<Key>h:back()\n\
 				None<Key>0:digit(0)\n\
@@ -352,86 +352,86 @@ XCalc.hp.bevel.screen.LCD.translations:	#replace\n\
 
 
 
-XCalc.hp.button1.label:		SQRT
-XCalc.hp.button1.translations:		#override<Btn1Up>:squareRoot()unset()
-XCalc.hp.button2.label:		e^x
-XCalc.hp.button2.translations:		#override<Btn1Up>:epower()unset()
-XCalc.hp.button3.label:		10^x
-XCalc.hp.button3.translations:		#override<Btn1Up>:tenpower()unset()
-XCalc.hp.button4.label:		y^x
-XCalc.hp.button4.translations:		#override<Btn1Up>:power()unset()
-XCalc.hp.button5.label:		1/x
-XCalc.hp.button5.translations:		#override<Btn1Up>:reciprocal()unset()
-XCalc.hp.button6.label:		CHS
-XCalc.hp.button6.translations:		#override<Btn1Up>:negate()unset()
-XCalc.hp.button7.label:		7
-XCalc.hp.button7.translations:		#override<Btn1Up>:digit(7)unset()
-XCalc.hp.button8.label:		8
-XCalc.hp.button8.translations:		#override<Btn1Up>:digit(8)unset()
-XCalc.hp.button9.label:		9
-XCalc.hp.button9.translations:		#override<Btn1Up>:digit(9)unset()
-XCalc.hp.button10.label:		/
-XCalc.hp.button10.translations:	#override<Btn1Up>:divide()unset()
+XCalc.hp.button1.Label:		SQRT
+XCalc.hp.button1.Translations:		#override<Btn1Up>:squareRoot()unset()
+XCalc.hp.button2.Label:		e^x
+XCalc.hp.button2.Translations:		#override<Btn1Up>:epower()unset()
+XCalc.hp.button3.Label:		10^x
+XCalc.hp.button3.Translations:		#override<Btn1Up>:tenpower()unset()
+XCalc.hp.button4.Label:		y^x
+XCalc.hp.button4.Translations:		#override<Btn1Up>:power()unset()
+XCalc.hp.button5.Label:		1/x
+XCalc.hp.button5.Translations:		#override<Btn1Up>:reciprocal()unset()
+XCalc.hp.button6.Label:		CHS
+XCalc.hp.button6.Translations:		#override<Btn1Up>:negate()unset()
+XCalc.hp.button7.Label:		7
+XCalc.hp.button7.Translations:		#override<Btn1Up>:digit(7)unset()
+XCalc.hp.button8.Label:		8
+XCalc.hp.button8.Translations:		#override<Btn1Up>:digit(8)unset()
+XCalc.hp.button9.Label:		9
+XCalc.hp.button9.Translations:		#override<Btn1Up>:digit(9)unset()
+XCalc.hp.button10.Label:		/
+XCalc.hp.button10.Translations:	#override<Btn1Up>:divide()unset()
 
-XCalc.hp.button11.label:		x!
-XCalc.hp.button11.translations:	#override<Btn1Up>:factorial()unset()
-XCalc.hp.button12.label:		PI
-XCalc.hp.button12.translations:	#override<Btn1Up>:pi()unset()
-XCalc.hp.button13.label:		sin
-XCalc.hp.button13.translations:	#override<Btn1Up>:sine()unset()
-XCalc.hp.button14.label:		cos
-XCalc.hp.button14.translations:	#override<Btn1Up>:cosine()unset()
-XCalc.hp.button15.label:		tan
-XCalc.hp.button15.translations:	#override<Btn1Up>:tangent()unset()
-XCalc.hp.button16.label:		EEX
-XCalc.hp.button16.translations:	#override<Btn1Up>:scientific()unset()
-XCalc.hp.button17.label:		4
-XCalc.hp.button17.translations:	#override<Btn1Up>:digit(4)unset()
-XCalc.hp.button18.label:		5
-XCalc.hp.button18.translations:	#override<Btn1Up>:digit(5)unset()
-XCalc.hp.button19.label:		6
-XCalc.hp.button19.translations:	#override<Btn1Up>:digit(6)unset()
-XCalc.hp.button20.label:		*
-XCalc.hp.button20.translations:	#override<Btn1Up>:multiply()unset()
+XCalc.hp.button11.Label:		x!
+XCalc.hp.button11.Translations:	#override<Btn1Up>:factorial()unset()
+XCalc.hp.button12.Label:		PI
+XCalc.hp.button12.Translations:	#override<Btn1Up>:pi()unset()
+XCalc.hp.button13.Label:		sin
+XCalc.hp.button13.Translations:	#override<Btn1Up>:sine()unset()
+XCalc.hp.button14.Label:		cos
+XCalc.hp.button14.Translations:	#override<Btn1Up>:cosine()unset()
+XCalc.hp.button15.Label:		tan
+XCalc.hp.button15.Translations:	#override<Btn1Up>:tangent()unset()
+XCalc.hp.button16.Label:		EEX
+XCalc.hp.button16.Translations:	#override<Btn1Up>:scientific()unset()
+XCalc.hp.button17.Label:		4
+XCalc.hp.button17.Translations:	#override<Btn1Up>:digit(4)unset()
+XCalc.hp.button18.Label:		5
+XCalc.hp.button18.Translations:	#override<Btn1Up>:digit(5)unset()
+XCalc.hp.button19.Label:		6
+XCalc.hp.button19.Translations:	#override<Btn1Up>:digit(6)unset()
+XCalc.hp.button20.Label:		*
+XCalc.hp.button20.Translations:	#override<Btn1Up>:multiply()unset()
 
-XCalc.hp.button21.label:	
-XCalc.hp.button22.label:	
-XCalc.hp.button23.label:		Rv
-XCalc.hp.button23.translations:	#override<Btn1Up>:roll()unset()
-XCalc.hp.button24.label:		x:y
-XCalc.hp.button24.translations:	#override<Btn1Up>:XexchangeY()unset()
-XCalc.hp.button25.label:		<-
-XCalc.hp.button25.translations:	#override<Btn1Up>:back()unset()
-XCalc.hp.button26.label:		ENTR
-XCalc.hp.button26.translations:	#override<Btn1Up>:enter()unset()
-XCalc.hp.button27.label:		1
-XCalc.hp.button27.translations:	#override<Btn1Up>:digit(1)unset()
-XCalc.hp.button28.label:		2
-XCalc.hp.button28.translations:	#override<Btn1Up>:digit(2)unset()
-XCalc.hp.button29.label:		3
-XCalc.hp.button29.translations:	#override<Btn1Up>:digit(3)unset()
-XCalc.hp.button30.label:		-
-XCalc.hp.button30.translations:	#override<Btn1Up>:subtract()unset()
+XCalc.hp.button21.Label:	
+XCalc.hp.button22.Label:	
+XCalc.hp.button23.Label:		Rv
+XCalc.hp.button23.Translations:	#override<Btn1Up>:roll()unset()
+XCalc.hp.button24.Label:		x:y
+XCalc.hp.button24.Translations:	#override<Btn1Up>:XexchangeY()unset()
+XCalc.hp.button25.Label:		<-
+XCalc.hp.button25.Translations:	#override<Btn1Up>:back()unset()
+XCalc.hp.button26.Label:		ENTR
+XCalc.hp.button26.Translations:	#override<Btn1Up>:enter()unset()
+XCalc.hp.button27.Label:		1
+XCalc.hp.button27.Translations:	#override<Btn1Up>:digit(1)unset()
+XCalc.hp.button28.Label:		2
+XCalc.hp.button28.Translations:	#override<Btn1Up>:digit(2)unset()
+XCalc.hp.button29.Label:		3
+XCalc.hp.button29.Translations:	#override<Btn1Up>:digit(3)unset()
+XCalc.hp.button30.Label:		-
+XCalc.hp.button30.Translations:	#override<Btn1Up>:subtract()unset()
 
-XCalc.hp.button31.label:		ON
-XCalc.hp.button31.translations:	#override<Btn1Up>:off()unset()\n\
+XCalc.hp.button31.Label:		ON
+XCalc.hp.button31.Translations:	#override<Btn1Up>:off()unset()\n\
 						 <Btn3Up>:quit()
-XCalc.hp.button32.label:		DRG
-XCalc.hp.button32.translations:	#override<Btn1Up>:degree()unset()
-XCalc.hp.button33.label:		INV
-XCalc.hp.button33.translations:	#override<Btn1Up>:inverse()unset()
-XCalc.hp.button34.label:		STO
-XCalc.hp.button34.translations:	#override<Btn1Up>:store()unset()
-XCalc.hp.button35.label:		RCL
-XCalc.hp.button35.translations:	#override<Btn1Up>:recall()unset()
-XCalc.hp.button36.label:		0
-XCalc.hp.button36.translations:	#override<Btn1Up>:digit(0)unset()
-XCalc.hp.button37.label:		.
-XCalc.hp.button37.translations:	#override<Btn1Up>:decimal()unset()
-XCalc.hp.button38.label:		SUM
-XCalc.hp.button38.translations:	#override<Btn1Up>:sum()unset()
-XCalc.hp.button39.label:		+
-XCalc.hp.button39.translations:	#override<Btn1Up>:add()unset()
+XCalc.hp.button32.Label:		DRG
+XCalc.hp.button32.Translations:	#override<Btn1Up>:degree()unset()
+XCalc.hp.button33.Label:		INV
+XCalc.hp.button33.Translations:	#override<Btn1Up>:inverse()unset()
+XCalc.hp.button34.Label:		STO
+XCalc.hp.button34.Translations:	#override<Btn1Up>:store()unset()
+XCalc.hp.button35.Label:		RCL
+XCalc.hp.button35.Translations:	#override<Btn1Up>:recall()unset()
+XCalc.hp.button36.Label:		0
+XCalc.hp.button36.Translations:	#override<Btn1Up>:digit(0)unset()
+XCalc.hp.button37.Label:		.
+XCalc.hp.button37.Translations:	#override<Btn1Up>:decimal()unset()
+XCalc.hp.button38.Label:		SUM
+XCalc.hp.button38.Translations:	#override<Btn1Up>:sum()unset()
+XCalc.hp.button39.Label:		+
+XCalc.hp.button39.Translations:	#override<Btn1Up>:add()unset()
 
 
 XCalc.hp.button1.horizDistance:	4
