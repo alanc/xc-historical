@@ -1,4 +1,4 @@
-/* $XConsortium: fservestr.h,v 1.5 91/06/20 15:52:29 keith Exp $ */
+/* $XConsortium: fservestr.h,v 1.6 91/06/21 18:15:45 keith Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -22,8 +22,6 @@
  * OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
- *
- * $NCDId: @(#)fservestr.h,v 1.2 1991/05/24 15:03:06 lemke Exp $
  */
 
 #ifndef _FSERVESTR_H_
@@ -48,6 +46,7 @@
 typedef struct _fs_font {
     CharInfoPtr pDefault;
     CharInfoPtr encoding;
+    CharInfoPtr inkMetrics;	/* pointer to bitmap unused */
     pointer     bitmaps;
 }           FSFontRec, *FSFontPtr;
 
