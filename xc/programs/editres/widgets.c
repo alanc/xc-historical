@@ -1,5 +1,5 @@
 /*
- * $XConsortium: widgets.c,v 1.18 91/07/09 09:46:52 rws Exp $
+ * $XConsortium: widgets.c,v 1.19 91/12/06 17:20:00 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -835,6 +835,8 @@ XtPointer ptr, junk;
     WNode * node = (WNode *) ptr;
     NameInfo *old_name, *name = node->resources->res_box->name_info;
     
+    global_resource_box_up = FALSE;
+
     XtFree((XtPointer) node->resources->res_box);
     node->resources->res_box = NULL;
 

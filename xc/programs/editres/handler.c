@@ -1,5 +1,5 @@
 /*
- * $XConsortium: handler.c,v 1.24 91/10/09 11:21:39 dave Exp $
+ * $XConsortium: handler.c,v 1.25 91/10/09 17:36:13 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -561,9 +561,6 @@ Widget w;
 XtPointer shell_ptr, junk;
 {
     Widget shell = (Widget) shell_ptr;
-
-    if (streq(XtName(shell), RESOURCE_BOX))
-	global_resource_box_up = FALSE;
 
     XtPopdown(shell);
     XtDestroyWidget(shell);
