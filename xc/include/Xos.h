@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.33 91/03/23 14:45:49 rws Exp $
+ * $XConsortium: Xos.h,v 1.34 91/03/27 17:54:53 gildea Exp $
  * 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -23,17 +23,6 @@
 
 #ifndef _XOS_H_
 #define _XOS_H_
-
-#ifdef _POSIX_SOURCE
-
-#include <sys/types.h>
-#include <string.h>
-#define index strchr
-#define rindex strrchr
-#include <fcntl.h>
-#include <unistd.h>
-
-#else /* _POSIX_SOURCE */
 
 #include <X11/Xosdefs.h>
 
@@ -83,8 +72,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #endif
-
-#endif /* not _POSIX_SOURCE */
 
 /*
  * Get struct timeval
