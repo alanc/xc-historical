@@ -14,6 +14,7 @@
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/shape.h>
 #include <stdio.h>
 
 /* Include routines to handle parsing defaults */
@@ -61,11 +62,13 @@ usage()
     fprintf (stderr,
 	"    -wm                  print out window manager hints\n");
     fprintf (stderr,
+	"    -shape               print out shape extents\n");
+    fprintf (stderr,
 	"    -english             print out sizes in english units\n");
     fprintf (stderr,
 	"    -metric              print out sizes in metric units\n");
     fprintf (stderr,
-	"    -all                 -tree, -stats, -bits, -events, -size, -wm\n");
+	"    -all                 -tree, -stats, -bits, -events, -size, -wm, -shape\n");
     fprintf (stderr,
 	"\n");
     exit (1);
@@ -182,7 +185,7 @@ main(argc, argv)
      char **argv;
 {
   register int i;
-  int tree = 0, stats = 0, bits = 0, events = 0, wm = 0, size  = 0;
+  int tree = 0, stats = 0, bits = 0, events = 0, wm = 0, size  = 0, shape = 0;
 
   INIT_NAME;
 
@@ -224,6 +227,10 @@ main(argc, argv)
       size = 1;
       continue;
     }
+    if (!strcmp(argv[i], "-shape")) {
+      shape = 1;
+      continue;
+    }
     if (!strcmp(argv[i], "-english")) {
       english = 1;
       continue;
@@ -233,7 +240,7 @@ main(argc, argv)
       continue;
     }
     if (!strcmp(argv[i], "-all")) {
-      tree = stats = bits = events = wm = size = 1;
+      tree = stats = bits = events = wm = size = shape = 1;
       continue;
     }
     usage();
@@ -279,6 +286,8 @@ main(argc, argv)
     Display_WM_Info(window);
   if (size)
     Display_Size_Hints(window);
+  if (shape)
+    Display_Window_Shape(window);
   printf("\n");
 }
 
@@ -666,6 +675,37 @@ Display_Size_Hints(window)
 	}
 }
 
+
+/*
+ * Display window/border shape info
+ */
+Display_Extents (x, y, w, h)
+{
+    printf("             ==> x, y: %s, %s\n", xscale (x), yscale (y));
+    printf("             ==> width, height: %s, %s\n", xscale (w), yscale (h));
+}
+
+Display_Window_Shape (window)
+    Window  window;
+{
+    int	    ws, bs, xws, yws, wws, hws, xbs, ybs, wbs, hbs;
+
+    XShapeQuery (dpy, window, &ws, &bs,
+		 &xws, &yws, &wws, &hws,
+		 &xbs, &ybs, &wbs, &hbs);
+    if (!ws)
+	  printf("\n         ==> No window shape defined\n");
+    else {
+	  printf("\n         ==> Window shape extents:\n\n");
+	  Display_Extents (xws, yws, wws, hws);
+    }
+    if (!bs)
+	  printf("\n         ==> No border shape defined\n");
+    else {
+	  printf("\n         ==> Border shape extents:\n\n");
+	  Display_Extents (xbs, ybs, wbs, hbs);
+    }
+}
 
 /*
  * Display Window Manager Info
