@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: puzzle.c,v 1.4 88/09/06 17:55:57 jim Exp $
+ *	$XConsortium: puzzle.c,v 1.5 89/04/11 11:41:18 jim Exp $
  */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
@@ -12,7 +12,7 @@
  */
 
 #ifndef lint
-static char *rcsid_puzzle_c = "$XConsortium: puzzle.c,v 1.4 88/09/06 17:55:57 jim Exp $";
+static char *rcsid_puzzle_c = "$XConsortium: puzzle.c,v 1.5 89/04/11 11:41:18 jim Exp $";
 #endif	/* lint */
 
 /**
@@ -29,6 +29,8 @@ static char *rcsid_puzzle_c = "$XConsortium: puzzle.c,v 1.4 88/09/06 17:55:57 ji
  ** indirectly from John Nagle.
  **/
 
+#include <stdio.h>
+#include <X11/Xos.h>
 #include <setjmp.h>
 
 #define min(x,y)	(((x)>(y))?(x):(y))
@@ -426,8 +428,10 @@ initialize()
 
    int i;
    int sp_x, sp_y;
+   struct timeval tv;
 
-   srand(42);
+   gettimeofday (&tv, NULL);
+   srand ((int) tv.tv_usec);
    layers = PuzzleSize / 2;
 
    ExtraRows    = PuzzleHeight - PuzzleSize;
@@ -487,15 +491,17 @@ Scramble()
    int i;
    int new_x, new_y;
    int old_output_state;
+   struct timeval tv;
 
    old_output_state = OutputLogging;
    OutputLogging = 0;
-/*   srand(42); */
-   
+
+   gettimeofday (&tv, NULL);
+   srand ((int) tv.tv_usec);
 
    for (i=0; i<10*PuzzleWidth*PuzzleHeight; i++) {
-      new_x = rand() % PuzzleWidth;
-      new_y = rand() % PuzzleHeight;
+      new_x = (rand() >> 3) % PuzzleWidth;
+      new_y = (rand() >> 3) % PuzzleHeight;
 
       move_space(RIGHT,new_x-space_x);
       move_space(DOWN,new_y-space_y);
