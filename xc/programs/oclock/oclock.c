@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$XConsortium: Exp $";
+static char rcsid[] = "$XConsortium: oclock.c,v 1.2 89/03/28 16:46:29 keith Exp $";
 #endif  lint
 
 #include <X11/Intrinsic.h>
@@ -9,8 +9,8 @@ static char rcsid[] = "$XConsortium: Exp $";
 #include "Clock.h"
 #include <stdio.h> 
 
-#include "clock.bit"
-#include "clock_mask.bit"
+#include "oclock.bit"
+#include "oclock_mask.bit"
 
 extern void exit();
 
@@ -22,7 +22,7 @@ extern void exit();
 void usage()
 {
     fprintf(stderr,
-"usage: clock\n");
+"usage: oclock\n");
     fprintf (stderr, 
 "       [-geometry [{width}][x{height}][{+-}{xoff}[{+-}{yoff}]]] [-display [{host}]:[{vs}]]\n");
     fprintf(stderr,
@@ -63,12 +63,12 @@ void main(argc, argv)
     XtSetArg (arg[i], XtNiconPixmap, 
 	      XCreateBitmapFromData (XtDisplay(toplevel),
 				     XtScreen(toplevel)->root,
-				     clock_bits, clock_width, clock_height));
+				     oclock_bits, oclock_width, oclock_height));
     i++;
     XtSetArg (arg[i], XtNiconMask,
 	      XCreateBitmapFromData (XtDisplay(toplevel),
 				     XtScreen(toplevel)->root,
-				     clock_mask_bits, clock_mask_width, clock_mask_height));
+				     oclock_mask_bits, oclock_mask_width, oclock_mask_height));
     i++;
     XtSetValues (toplevel, arg, i);
 

@@ -1,8 +1,8 @@
-.TH CLOCK 1 "10 Feb 1989" "X Version 11"
+.TH OCLOCK 1 "10 Feb 1989" "X Version 11"
 .SH NAME
-clock \- display time of day
+oclock \- display time of day
 .SH SYNOPSIS
-.B clock
+.B oclock
 [-option ...]
 .SH DESCRIPTION
 .I Clock

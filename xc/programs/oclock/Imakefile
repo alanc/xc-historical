@@ -6,7 +6,7 @@ INCLUDES = -I$(TOP) -I$(TOP)/X11
 SYS_LIBRARIES = -lm
 LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(EXTENSIONLIB) $(XLIB)
 
-SRCS = clock.c Clock.c transform.c
-OBJS = clock.o Clock.o transform.o
+SRCS = oclock.c Clock.c transform.c
+OBJS = oclock.o Clock.o transform.o
 
-ComplexProgramTarget(clock)
+ComplexProgramTarget(oclock)
