@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.c,v 1.53 91/06/12 17:08:29 converse Exp $ */
+/* $XConsortium: AsciiSrc.c,v 1.54 91/07/05 17:59:42 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -33,6 +33,7 @@
 #include <X11/IntrinsicP.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <errno.h>
 #include <X11/StringDefs.h>
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>

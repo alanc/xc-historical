@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.20 91/06/19 13:34:23 converse Exp $ */
+/* $XConsortium: TextPop.c,v 1.21 91/06/25 12:15:50 swick Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -58,6 +58,7 @@ SOFTWARE.
 #include <X11/Xmu/CharSet.h>
 #include <stdio.h>
 #include <X11/Xos.h>		/* for O_RDONLY */
+#include <errno.h>
 
 extern int errno, sys_nerr;
 extern char* sys_errlist[];
