@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.56 90/12/12 14:51:09 rws Exp $ */
+/* $XConsortium: Display.c,v 1.57 90/12/13 15:51:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -23,12 +23,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-
-#include <sys/param.h>
-
-#ifdef pegasus
-#undef dirty			/* some bozo put this in sys/param.h */
-#endif /* pegasus */
 
 #include <X11/Xlib.h>
 #include "IntrinsicI.h"
