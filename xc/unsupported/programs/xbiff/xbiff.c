@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xbiff.c,v 1.15 89/12/12 13:55:33 rws Exp $
+ * $XConsortium: xbiff.c,v 1.16 90/04/30 16:55:34 converse Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -69,20 +69,20 @@ void main (argc, argv)
     int argc;
     char **argv;
 {
+    XtAppContext xtcontext;
     Widget toplevel, w;
 
     ProgramName = argv[0];
 
-    toplevel = XtInitialize ("main", "XBiff", options, XtNumber (options),
-			     (Cardinal *) &argc, argv);
+    toplevel = XtAppInitialize(&xtcontext, "XBiff", options, XtNumber (options),
+			       &argc, argv, NULL, NULL, 0);
     if (argc != 1) Usage ();
 
     /*
      * This is a hack so that f.delete will do something useful in this
      * single-window application.
      */
-    XtAppAddActions (XtWidgetToApplicationContext(toplevel),
-                     xbiff_actions, XtNumber(xbiff_actions));
+    XtAppAddActions (xtcontext, xbiff_actions, XtNumber(xbiff_actions));
     XtOverrideTranslations(toplevel,
 		   XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
 
@@ -93,7 +93,7 @@ void main (argc, argv)
                                     False);
     (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
                             &wm_delete_window, 1);
-    XtMainLoop ();
+    XtAppMainLoop (xtcontext);
 }
 
 static void quit (w, event, params, num_params)
