@@ -1,6 +1,4 @@
-#ifndef lint
-static char Xrcsid[] = "$XConsortium: StripChart.c,v 1.15 90/09/10 17:22:33 converse Exp $";
-#endif
+/* $XConsortium: StripChart.c,v 1.16 90/12/26 16:35:29 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -216,8 +214,8 @@ static void Redisplay(w, event, region)
 /* ARGSUSED */
 static void 
 draw_it(client_data, id)
-caddr_t client_data;
-XtIntervalId id;		/* unused */
+XtPointer client_data;
+XtIntervalId *id;		/* unused */
 {
    StripChartWidget w = (StripChartWidget)client_data;
    double value;
@@ -227,7 +225,7 @@ XtIntervalId id;		/* unused */
        XtAppAddTimeOut(XtWidgetToApplicationContext( (Widget) w),
 		       w->strip_chart.update * MS_PER_SEC,draw_it,client_data);
 
-   if (w->strip_chart.interval >= w->core.width)
+   if (w->strip_chart.interval >= (int)w->core.width)
        MoveChart( (StripChartWidget) w, TRUE);
 
    /* Get the value, stash the point and draw corresponding line. */
@@ -252,8 +250,8 @@ XtIntervalId id;		/* unused */
 
    w->strip_chart.valuedata[w->strip_chart.interval] = value;
    if (XtIsRealized((Widget)w)) {
-       int y = (int) (w->core.height - (w->core.height * value) /
-		      w->strip_chart.scale);
+       int y = (int) (w->core.height
+		      - (int)(w->core.height * value) / w->strip_chart.scale);
 
        XFillRectangle(XtDisplay(w), XtWindow(w), w->strip_chart.fgGC,
 		      w->strip_chart.interval, y, 
@@ -326,7 +324,7 @@ int left, width;
 	/* Draw data point lines. */
 	for (i = left; i < width; i++) {
 	    int y = (int) (w->core.height -
-			   (w->core.height * w->strip_chart.valuedata[i]) /
+			   (int)(w->core.height * w->strip_chart.valuedata[i]) /
 			   w->strip_chart.scale);
 
 	    XFillRectangle(dpy, win, w->strip_chart.fgGC, 
@@ -336,7 +334,7 @@ int left, width;
 
 	/* Draw graph reference lines */
 	for (i = 1; i < w->strip_chart.scale; i++) {
-	    j = i * (w->core.height / w->strip_chart.scale);
+	    j = i * ((int)w->core.height / w->strip_chart.scale);
 	    XDrawLine(dpy, win, w->strip_chart.hiGC, left, j, scalewidth, j);
 	}
     }
@@ -405,7 +403,7 @@ Boolean blit;
     /* Draw graph reference lines */
     left = j;
     for (i = 1; i < w->strip_chart.scale; i++) {
-      j = i * (w->core.height / w->strip_chart.scale);
+      j = i * ((int)w->core.height / w->strip_chart.scale);
       XDrawLine(XtDisplay((Widget) w), XtWindow( (Widget) w),
 		w->strip_chart.hiGC, left, j, (int)w->core.width, j);
     }
