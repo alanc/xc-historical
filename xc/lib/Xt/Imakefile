@@ -13,9 +13,10 @@ HEADERS = \
 	AsciiText.h \
 	Atoms.h \
 	Box.h \
-	Cascade.h \
+	Cardinal.h \
 	Clock.h \
 	Command.h \
+	Convert.h \
 	Dialog.h \
 	Form.h \
 	Grip.h \
@@ -24,7 +25,6 @@ HEADERS = \
 	Load.h \
 	Misc.h \
 	Popup.h \
-	Quarks.h \
 	Scroll.h \
 	Shell.h \
 	Text.h \
@@ -39,11 +39,17 @@ SRCS = \
 	AsciiSink.c \
 	AsciiText.c \
 	Box.c \
-	Cascade.c \
+	Callback.c \
 	Clock.c \
 	Command.c \
-	Conversion.c \
+	Composite.c \
+	Constraint.c \
+	Convert.c \
+	Converters.c \
+	Core.c \
+	Create.c \
 	Cursors.c \
+	Destroy.c \
 	Dialog.c \
 	DiskSrc.c \
 	Error.c \
@@ -57,15 +63,18 @@ SRCS = \
 	Intrinsic.c \
 	Label.c \
 	Load.c \
+	Manage.c \
 	NextEvent.c \
 	Popup.c \
 	Resources.c \
 	Scroll.c \
+	Shell.c \
 	Simple.c \
 	StringSrc.c \
 	Text.c \
 	TMparse.c \
 	TMstate.c \
+	Vendor.c \
 	Viewport.c \
 	VPaned.c
 
@@ -75,11 +84,18 @@ OBJS = \
 	AsciiSink.o \
 	AsciiText.o \
 	Box.o \
+	Callback.o \
 	Cascade.o \
 	Clock.o \
 	Command.o \
-	Conversion.o \
+	Composite.o \
+	Constraint.o \
+	Convert.o \
+	Converters.o \
+	Core.o \
+	Create.o \
 	Cursors.o \
+	Destroy.o \
 	Dialog.o \
 	DiskSrc.o \
 	Error.o \
@@ -93,15 +109,18 @@ OBJS = \
 	Intrinsic.o \
 	Label.o \
 	Load.o \
+	Manage.o \
 	NextEvent.o \
 	Popup.o \
 	Resources.o \
 	Scroll.o \
+	Shell.o \
 	Simple.o \
 	StringSrc.o \
 	Text.o \
 	TMparse.o \
 	TMstate.o \
+	Vendor.o \
 	Viewport.o \
 	VPaned.o
 

@@ -1,31 +1,35 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiText.c,v 1.2 88/01/07 13:52:35 swick Locked $";
+static char rcsid[] = "$Header: AsciiText.c,v 1.3 88/01/27 09:24:13 swick Locked $";
 #endif lint
 
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #include <X/copyright.h>
-#include <X/Intrinsic.h>
-#include <X/Atoms.h>
-#include <X/AsciiText.h>
+#include "IntrinsicP.h"
+#include "Atoms.h"
 #include "AsciiTextP.h"
 
-extern void ForceBuildLineTable();
+/* from Text.c */
+#define DEFAULTVALUE ~0
+
+extern void ForceBuildLineTable(); /* in Text.c */
 
 static XtResource string_resources[] = {
-  {XtNstring, XtCString, XrmRString, sizeof(String),
-     XtOffset(AsciiStringWidget, ascii_string.string), XrmRString, NULL}
+  {XtNstring, XtCString, XtRString, sizeof(String),
+     XtOffset(AsciiStringWidget, ascii_string.string), XtRString, NULL}
 };
 
 static XtResource disk_resources[] = {
-  {XtNfile, XtCFile, XrmRString, sizeof(String),
-     XtOffset(AsciiDiskWidget, ascii_disk.file_name), XrmRString, NULL}
+  {XtNfile, XtCFile, XtRString, sizeof(String),
+     XtOffset(AsciiDiskWidget, ascii_disk.file_name), XtRString, NULL}
 };
 
-static void StringClassInitialize(), StringInitialize(), StringDestroy();
+static void StringClassInitialize(), StringInitialize(),
+    StringCreateSourceSink(), StringDestroy();
 static Boolean StringSetValues();
 
-static void DiskClassInitialize(), DiskInitialize(), DiskDestroy();
+static void DiskClassInitialize(), DiskInitialize(),
+    DiskCreateSourceSink(), DiskDestroy();
 static Boolean DiskSetValues();
 
 AsciiStringClassRec asciiStringClassRec = {
@@ -34,8 +38,10 @@ AsciiStringClassRec asciiStringClassRec = {
     /* class_name       */      "Text",
     /* widget_size      */      sizeof(AsciiStringRec),
     /* class_initialize */      StringClassInitialize,
+    /* class_part_init  */	NULL,
     /* class_inited     */      FALSE,
     /* initialize       */      StringInitialize,
+    /* initialize_hook  */	StringCreateSourceSink,
     /* realize          */      XtInheritRealize,
     /* actions          */      textActionsTable,
     /* num_actions      */      0,
@@ -44,14 +50,19 @@ AsciiStringClassRec asciiStringClassRec = {
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
     /* compress_exposure*/      FALSE,
+    /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      StringDestroy,
     /* resize           */      XtInheritResize,
     /* expose           */      XtInheritExpose,
     /* set_values       */      StringSetValues,
+    /* set_values_hook  */	NULL,
+    /* set_values_almost*/	XtInheritSetValuesAlmost,
+    /* get_values_hook  */	NULL,
     /* accept_focus     */      XtInheritAcceptFocus,
+    /* version          */	XtVersion,
     /* callback_private */      NULL,
-    /* reserved_private */      NULL
+    /* tm_table         */      NULL
   },
   { /* text fields */
     /* empty            */      0
@@ -67,8 +78,10 @@ AsciiDiskClassRec asciiDiskClassRec = {
     /* class_name       */      "Text",
     /* widget_size      */      sizeof(AsciiDiskRec),
     /* class_initialize */      DiskClassInitialize,
+    /* class_part_init  */	NULL,
     /* class_inited     */      FALSE,
     /* initialize       */      DiskInitialize,
+    /* initialize_hook  */	DiskCreateSourceSink,
     /* realize          */      XtInheritRealize,
     /* actions          */      textActionsTable,
     /* num_actions      */      0,
@@ -77,14 +90,19 @@ AsciiDiskClassRec asciiDiskClassRec = {
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
     /* compress_exposure*/      FALSE,
+    /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      DiskDestroy,
     /* resize           */      XtInheritResize,
     /* expose           */      XtInheritExpose,
     /* set_values       */      DiskSetValues,
+    /* set_values_hook  */	NULL,
+    /* set_values_almost*/	XtInheritSetValuesAlmost,
+    /* get_values_hook  */	NULL,
     /* accept_focus     */      XtInheritAcceptFocus,
+    /* version          */	XtVersion,
     /* callback_private */      NULL,
-    /* reserved_private */      NULL
+    /* tm_table         */      NULL
   },
   { /* text fields */
     /* empty            */      0
@@ -106,33 +124,40 @@ static void StringClassInitialize()
 
 
 /* ARGSUSED */
-static void StringInitialize(request, new, args, num_args)
+static void StringInitialize(request, new)
     Widget request, new;
+{
+    /* superclass Initialize can't set the following,
+     * as it didn't know the source or sink when it was called */
+    if (request->core.height == DEFAULTVALUE)
+	new->core.height = DEFAULTVALUE;
+}
+
+static void StringCreateSourceSink(widget, args, num_args)
+    Widget widget;
     ArgList args;
     Cardinal *num_args;
 {
-    AsciiStringWidget w = (AsciiStringWidget)new;
+    AsciiStringWidget w = (AsciiStringWidget)widget;
 
     w->text.source = XtStringSourceCreate( w->core.parent, args, *num_args );
     w->text.sink = XtAsciiSinkCreate( w->core.parent, args, *num_args );
 
-    /* superclass Initialize can't set the following,
-     * as it didn't know the source or sink when it was called */
-    if (request->core.height == DEFAULTVALUE)
-        w->core.height += (*w->text.sink->MaxHeight)(new, 1);
+
+    if (w->core.height == DEFAULTVALUE)
+        w->core.height += (*w->text.sink->MaxHeight)(w, 1);
 
     w->text.lastPos = /* GETLASTPOS */
       (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
 			        XtsdRight, 1, TRUE );
 
-    ForceBuildLineTable( (TextWidget)new );
+    ForceBuildLineTable( (TextWidget)w );
 }
 
 
 /* ARGSUSED */
-static Boolean StringSetValues(current, request, new, last)
+static Boolean StringSetValues(current, request, new)
     Widget current, request, new;
-    Boolean last;
 {
     AsciiStringWidget old = (AsciiStringWidget)current;
     AsciiStringWidget w = (AsciiStringWidget)new;
@@ -159,33 +184,39 @@ static void DiskClassInitialize()
 
 
 /* ARGSUSED */
-static void DiskInitialize(request, new, args, num_args)
+static void DiskInitialize(request, new)
     Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
 {
-    AsciiDiskWidget w = (AsciiDiskWidget)new;
-
-    w->text.source = XtDiskSourceCreate( w->core.parent, args, *num_args );
-    w->text.sink = XtAsciiSinkCreate( w->core.parent, args, *num_args );
-
     /* superclass Initialize can't set the following,
      * as it didn't know the source or sink when it was called */
     if (request->core.height == DEFAULTVALUE)
-        w->core.height += (*w->text.sink->MaxHeight)(new, 1);
+	new->core.height = DEFAULTVALUE;
+}
+
+static void DiskCreateSourceSink(widget, args, num_args)
+    Widget widget;
+    ArgList args;
+    Cardinal *num_args;
+{
+    AsciiDiskWidget w = (AsciiDiskWidget)widget;
+
+    w->text.source = XtDiskSourceCreate( w->core.parent, args, *num_args );
+    w->text.sink = XtAsciiSinkCreate( w->core.parent, args, *num_args );
 
     w->text.lastPos = /* GETLASTPOS */
       (*w->text.source->Scan) ( w->text.source, 0, XtstAll,
 			        XtsdRight, 1, TRUE );
 
-    ForceBuildLineTable( (TextWidget)new );
+    if (w->core.height == DEFAULTVALUE)
+        w->core.height += (*w->text.sink->MaxHeight)(w, 1);
+
+    ForceBuildLineTable( (TextWidget)w );
 }
 
 
 /* ARGSUSED */
-static Boolean DiskSetValues(current, request, new, last)
+static Boolean DiskSetValues(current, request, new)
     Widget current, request, new;
-    Boolean last;
 {
     AsciiDiskWidget old = (AsciiDiskWidget)current;
     AsciiDiskWidget w = (AsciiDiskWidget)new;

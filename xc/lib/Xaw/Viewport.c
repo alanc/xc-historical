@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Viewport.c,v 1.12 88/01/28 10:09:48 swick Locked $";
+static char rcsid[] = "$Header: Viewport.c,v 1.13 88/01/28 14:48:37 swick Locked $";
 #endif lint
 
 /*
@@ -26,9 +26,8 @@ static char rcsid[] = "$Header: Viewport.c,v 1.12 88/01/28 10:09:48 swick Locked
  */
 
 
-#include <X/Xlib.h>
-#include <X/Intrinsic.h>
-#include <X/Misc.h>
+#include "IntrinsicP.h"
+#include "Misc.h"
 #include <X/Scroll.h>
 #include <X/Atoms.h>
 #include "ViewportP.h"
@@ -40,16 +39,16 @@ static Boolean defFalse = False;
 
 #define offset(field) XtOffset(ViewportWidget,viewport.field)
 static XtResource resources[] = {
-    {XtNforceBars, XtCBoolean, XrmRBoolean, sizeof(Boolean),
-	 offset(forcebars), XrmRBoolean, (caddr_t)&defFalse },
-    {XtNallowHoriz, XtCBoolean, XrmRBoolean, sizeof(Boolean),
-	 offset(allowhoriz), XrmRBoolean, (caddr_t)&defFalse },
-    {XtNallowVert, XtCBoolean, XrmRBoolean, sizeof(Boolean),
-	 offset(allowvert), XrmRBoolean, (caddr_t)&defFalse },
-    {XtNuseBottom, XtCBoolean, XrmRBoolean, sizeof(Boolean),
-	 offset(usebottom), XrmRBoolean, (caddr_t)&defFalse },
-    {XtNuseRight, XtCBoolean, XrmRBoolean, sizeof(Boolean),
-	 offset(useright), XrmRBoolean, (caddr_t)&defFalse },
+    {XtNforceBars, XtCBoolean, XtRBoolean, sizeof(Boolean),
+	 offset(forcebars), XtRBoolean, (caddr_t)&defFalse },
+    {XtNallowHoriz, XtCBoolean, XtRBoolean, sizeof(Boolean),
+	 offset(allowhoriz), XtRBoolean, (caddr_t)&defFalse },
+    {XtNallowVert, XtCBoolean, XtRBoolean, sizeof(Boolean),
+	 offset(allowvert), XtRBoolean, (caddr_t)&defFalse },
+    {XtNuseBottom, XtCBoolean, XtRBoolean, sizeof(Boolean),
+	 offset(usebottom), XtRBoolean, (caddr_t)&defFalse },
+    {XtNuseRight, XtCBoolean, XtRBoolean, sizeof(Boolean),
+	 offset(useright), XtRBoolean, (caddr_t)&defFalse },
 };
 #undef offset
 
@@ -65,8 +64,10 @@ ViewportClassRec viewportClassRec = {
     /* class_name	  */	"Viewport",
     /* widget_size	  */	sizeof(ViewportRec),
     /* class_initialize	  */	ClassInitialize,
+    /* class_part_init    */    NULL,
     /* class_inited	  */	FALSE,
     /* initialize	  */	Initialize,
+    /* initialize_hook    */    NULL,
     /* realize		  */	Realize,
     /* actions		  */	NULL,
     /* num_actions	  */	0,
@@ -75,14 +76,19 @@ ViewportClassRec viewportClassRec = {
     /* xrm_class	  */	NULLQUARK,
     /* compress_motion	  */	TRUE,
     /* compress_exposure  */	TRUE,
+    /* compress_enterleave*/    TRUE,
     /* visible_interest	  */	FALSE,
     /* destroy		  */	NULL,
     /* resize		  */	Resize,
     /* expose		  */	NULL, /* inherited */
     /* set_values	  */	SetValues,
+    /* set_values_hook    */    NULL,
+    /* set_values_almost  */    XtInheritSetValuesAlmost,
+    /* get_values_hook    */	NULL,
     /* accept_focus	  */	NULL,
+    /* version            */    XtVersion,
     /* callback_private	  */	NULL,
-    /* reserved_private	  */	NULL
+    /* tm_table    	  */	NULL
   },
   { /* composite_class fields */
     /* geometry_manager	  */	GeometryManager,
@@ -128,8 +134,6 @@ static Widget CreateScrollbar(w, horizontal)
     Widget clip = w->viewport.clip;
     ViewportConstraints constraints =
 	(ViewportConstraints)clip->core.constraints;
-    static XtCallbackRec scrollCallback[] = { {NULL, NULL}, {NULL, NULL} };
-    static XtCallbackRec thumbCallback[] = { {NULL, NULL}, {NULL, NULL} };
     static Arg barArgs[] = {
 	{XtNorientation, NULL},
 	{XtNlength, NULL},
@@ -137,13 +141,9 @@ static Widget CreateScrollbar(w, horizontal)
 	{XtNright, NULL},
 	{XtNtop, NULL},
 	{XtNbottom, NULL},
-	{XtNscrollProc, (XtArgVal)scrollCallback},
-	{XtNthumbProc, (XtArgVal)thumbCallback},
     };
     Widget bar;
 
-    XtSetCallback( scrollCallback[0], ScrollUpDownProc, w );
-    XtSetCallback( thumbCallback[0], ThumbProc, w );
     XtSetArg(barArgs[0], XtNorientation,
 	      horizontal ? XtorientHorizontal : XtorientVertical );
     XtSetArg(barArgs[1], XtNlength,
@@ -160,6 +160,8 @@ static Widget CreateScrollbar(w, horizontal)
     bar = XtCreateWidget( (horizontal ? "horizontal" : "vertical"),
 			  scrollbarWidgetClass, (Widget)w,
 			  barArgs, XtNumber(barArgs) );
+    XtAddCallback( bar, XtNscrollProc, ScrollUpDownProc, (caddr_t)w );
+    XtAddCallback( bar, XtNthumbProc, ThumbProc, (caddr_t)w );
 
     if (horizontal) {
 	Dimension bw = bar->core.border_width;
@@ -184,10 +186,8 @@ static Widget CreateScrollbar(w, horizontal)
 }
 
 /* ARGSUSED */
-static void Initialize(request, new, args, num_args)
+static void Initialize(request, new)
     Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
 {
     ViewportWidget w = (ViewportWidget)new;
     static Arg clip_args[] = {
@@ -224,10 +224,8 @@ static void Initialize(request, new, args, num_args)
 }
 
 /* ARGSUSED */
-static void ConstraintInitialize(request, new, args, num_args)
+static void ConstraintInitialize(request, new)
     Widget request, new;
-    ArgList args;
-    Cardinal *num_args;
 {
     ((ViewportConstraints)new->core.constraints)->viewport.reparented = False;
 }
@@ -258,9 +256,8 @@ static void Realize(widget, value_mask, attributes)
 }
 
 /* ARGSUSED */
-static Boolean SetValues(current, request, new, last)
+static Boolean SetValues(current, request, new)
     Widget current, request, new;
-    Boolean last;
 {
     ViewportWidget w = (ViewportWidget)new;
     ViewportWidget cw = (ViewportWidget)current;

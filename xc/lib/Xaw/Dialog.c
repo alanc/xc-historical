@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Dialog.c,v 1.5 88/01/07 17:18:48 swick Locked $";
+static char rcsid[] = "$Header: Dialog.c,v 1.6 88/01/25 13:37:02 swick Locked $";
 #endif lint
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -31,25 +31,22 @@ static char rcsid[] = "$Header: Dialog.c,v 1.5 88/01/07 17:18:48 swick Locked $"
 
 #include <X/Xlib.h>
 #include <X/Xos.h>
-#include <X/Intrinsic.h>
+#include "IntrinsicP.h"
 #include <X/Misc.h>
 #include <X/Atoms.h>
-#include <X/Form.h>
-#include <X/Dialog.h>
 #include <X/AsciiText.h>
 #include <X/Command.h>
 #include <X/Label.h>
-#include "FormP.h"
 #include "DialogP.h"
 
 
 XtResource resources[] = {
-  {XtNlabel, XtCLabel, XrmRString, sizeof(String),
-     XtOffset(DialogWidget, dialog.label), XrmRString, NULL},
-  {XtNvalue, XtCValue, XrmRString, sizeof(String),
-     XtOffset(DialogWidget, dialog.value), XrmRString, NULL},
-  {XtNmaximumLength, XtCMax, XrmRInt, sizeof(int),
-     XtOffset(DialogWidget, dialog.max_length), XrmRString, "256"}
+  {XtNlabel, XtCLabel, XtRString, sizeof(String),
+     XtOffset(DialogWidget, dialog.label), XtRString, NULL},
+  {XtNvalue, XtCValue, XtRString, sizeof(String),
+     XtOffset(DialogWidget, dialog.value), XtRString, NULL},
+  {XtNmaximumLength, XtCMax, XtRInt, sizeof(int),
+     XtOffset(DialogWidget, dialog.max_length), XtRString, "256"}
 };
 
 static void Initialize(), ConstraintInitialize();
@@ -61,8 +58,10 @@ DialogClassRec dialogClassRec = {
     /* class_name         */    "Dialog",
     /* widget_size        */    sizeof(DialogRec),
     /* class_initialize   */    NULL,
+    /* class_part init    */    NULL,
     /* class_inited       */    FALSE,
     /* initialize         */    Initialize,
+    /* initialize_hook    */    NULL,
     /* realize            */    XtInheritRealize,
     /* actions            */    NULL,
     /* num_actions        */    0,
@@ -71,14 +70,19 @@ DialogClassRec dialogClassRec = {
     /* xrm_class          */    NULLQUARK,
     /* compress_motion    */    TRUE,
     /* compress_exposure  */    TRUE,
+    /* compress_enterleave*/    TRUE,
     /* visible_interest   */    FALSE,
     /* destroy            */    NULL,
     /* resize             */    XtInheritResize,
     /* expose             */    XtInheritExpose,
     /* set_values         */    SetValues,
+    /* set_values_hook    */    NULL,
+    /* set_values_almost  */    XtInheritSetValuesAlmost,
+    /* get_values_hook    */    NULL,
     /* accept_focus       */    NULL,
+    /* version            */    XtVersion,
     /* callback_private   */    NULL,
-    /* reserved_private   */    NULL
+    /* tm_table           */    NULL
   },
   { /* composite_class fields */
     /* geometry_manager   */   XtInheritGeometryManager,
@@ -108,10 +112,8 @@ WidgetClass dialogWidgetClass = (WidgetClass)&dialogClassRec;
 
 
 /* ARGSUSED */
-static void Initialize(request, new, args, num_args)
+static void Initialize(request, new)
 Widget request, new;
-ArgList args;
-Cardinal *num_args;
 {
     DialogWidget dw = (DialogWidget)new;
     static Arg label_args[] = {
@@ -150,7 +152,7 @@ Cardinal *num_args;
 #ifdef notdef
 	static int grabfocus;
 	static Resource resources[] = {
-	    {XtNgrabFocus, XtCGrabFocus, XrmRBoolean, sizeof(int),
+	    {XtNgrabFocus, XtCGrabFocus, XtRBoolean, sizeof(int),
 		 (caddr_t)&grabfocus, (caddr_t)NULL}
 	};
 	XrmNameList names;
@@ -172,10 +174,8 @@ Cardinal *num_args;
 
 
 /* ARGSUSED */
-static void ConstraintInitialize(request, new, args, num_args)
+static void ConstraintInitialize(request, new)
 Widget request, new;
-ArgList args;
-Cardinal *num_args;
 {
     DialogWidget dw = (DialogWidget)new->core.parent;
     WidgetList children = dw->composite.children;
@@ -206,9 +206,8 @@ Cardinal *num_args;
 
 
 /* ARGSUSED */
-static Boolean SetValues(current, request, new, last)
+static Boolean SetValues(current, request, new)
 Widget current, request, new;
-Boolean last;
 {
     return False;
 }

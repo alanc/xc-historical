@@ -1,11 +1,12 @@
 #include <X/copyright.h>
 
-/* $Header: $ */
+/* $Header: AsciiTextP.h,v 1.1 87/12/23 16:43:02 swick Locked $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #ifndef _AsciiTextP_h
 #define _AsciiTextP_h
 
+#include <X/AsciiText.h>
 #include "TextP.h"		/* AsciiText is a subclass of Text */
 
 extern XtActionsRec textActionsTable[];

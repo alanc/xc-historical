@@ -1,5 +1,5 @@
 /*
-* $Header: TextP.h,v 1.9 88/01/25 13:45:27 swick Locked $
+* $Header: TextP.h,v 1.10 88/01/28 08:08:37 swick Locked $
 */
 
 /*
@@ -24,9 +24,12 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-#ifndef _XtTextPrivate_h
-#define _XtTextPrivate_h
+#ifndef _XtTextP_h
+#define _XtTextP_h
 
+
+#include <X/Text.h>
+#include "CoreP.h"
 
 /****************************************************************
  *
@@ -46,8 +49,6 @@
 #define EditDone 0
 #define EditError 1
 #define PositionError 2
-
-#define DEFAULTVALUE -9999
 
 typedef enum {XtsdLeft, XtsdRight} XtTextScanDirection;
 typedef enum {XtstPositions, XtstWhiteSpace, XtstEOL, XtstParagraph, XtstAll}
@@ -127,7 +128,7 @@ typedef int (*ActionProc)();
 
 /* New fields for the Text widget class record */
 
-typedef struct {int foo;} TextClassPart;
+typedef struct {int empty;} TextClassPart;
 
 /* Full class record declaration */
 typedef struct _TextClassRec {
@@ -190,5 +191,4 @@ typedef struct _TextRec {
 } TextRec;
 
 
-#endif _XtTextPrivate_h
-/* DON'T ADD STUFF AFTER THIS #endif */
+#endif _XtTextP_h

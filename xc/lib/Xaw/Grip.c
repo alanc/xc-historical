@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Grip.c,v 1.8 88/01/07 08:04:53 swick Exp $";
+static char rcsid[] = "$Header: Grip.c,v 1.9 88/01/22 20:29:38 swick Locked $";
 #endif lint
 
 /*
@@ -30,38 +30,31 @@ static char rcsid[] = "$Header: Grip.c,v 1.8 88/01/07 08:04:53 swick Exp $";
  */
 
 
-#include <X/Intrinsic.h>
+#include "IntrinsicP.h"
 #include <X/Atoms.h>
-#include <X/Grip.h>
 #include "GripP.h"
 
-static char *defaultTranslation[] = {
-    NULL
-};
-static caddr_t defaultTranslations = (caddr_t)defaultTranslation;
+static int defDim = 6;
+static int defBorder = 0;
 
 static XtResource resources[] = {
-   {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-      XtOffset(GripWidget, core.width), XtRString, "6" },
-   {XtNheight, XtCHeight, XrmRInt, sizeof(int),
-      XtOffset(GripWidget, core.height), XtRString, "6" },
-   {XtNbackground, XtCBackground, XrmRPixel, sizeof(Pixel),
+   {XtNwidth, XtCWidth, XtRInt, sizeof(int),
+      XtOffset(GripWidget, core.width), XtRInt, (caddr_t)&defDim},
+   {XtNheight, XtCHeight, XtRInt, sizeof(int),
+      XtOffset(GripWidget, core.height), XtRInt, (caddr_t)&defDim},
+   {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
       XtOffset(GripWidget, core.background_pixel), XtRString, "Black"},
-   {XtNborderWidth, XtCBorderWidth, XrmRInt, sizeof(int),
-      XtOffset(GripWidget, core.border_width), XtRString, "0"},
-   {XtNcallback, XtCCallback, XtRPointer, sizeof(caddr_t), 
-      XtOffset(GripWidget, grip.grip_action), XtRPointer, (caddr_t)NULL},
-   {XtNtranslations, XtCTranslations, XtRTranslationTable,
-      sizeof(XtTranslations),
-      XtOffset(GripWidget, core.translations),XtRTranslationTable,
-      (caddr_t)&defaultTranslations}
+   {XtNborderWidth, XtCBorderWidth, XtRInt, sizeof(int),
+      XtOffset(GripWidget, core.border_width), XtRInt, (caddr_t)&defBorder},
+   {XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t), 
+      XtOffset(GripWidget, grip.grip_action), XtRPointer, NULL},
 };
 
 void GripAction( /* Widget, XEvent*, String*, Cardinal */ );
 
 static XtActionsRec actionsList[] =
 {
-  {"GripAction",	GripAction},
+  {"GripAction",      GripAction},
 };
 
 
@@ -72,8 +65,10 @@ GripClassRec gripClassRec = {
     /* class name         */   "Grip",
     /* size               */   sizeof(GripRec),
     /* class initialize   */   NULL,
+    /* class_part_init    */   NULL,
     /* class_inited       */   FALSE,
     /* initialize         */   NULL,
+    /* initialize_hook    */   NULL,
     /* realize            */   XtInheritRealize,
     /* actions            */   actionsList,
     /* num_actions        */   XtNumber(actionsList),
@@ -82,16 +77,21 @@ GripClassRec gripClassRec = {
     /* xrm_class          */   NULLQUARK,
     /* compress_motion    */   TRUE,
     /* compress_exposure  */   TRUE,
+    /* compress_enterleave*/   TRUE,
     /* visible_interest   */   FALSE,
     /* destroy            */   NULL,
     /* resize             */   NULL,
     /* expose             */   NULL,
     /* set_values         */   NULL,
+    /* set_values_hook    */   NULL,
+    /* set_values_almost  */   XtInheritSetValuesAlmost,
+    /* get_values_hook    */   NULL,
     /* accept_focus       */   NULL,
+    /* version            */   XtVersion,
     /* callback_private   */   NULL,
-    /* reserved_private   */   NULL,
+    /* tm_table           */   NULL,
    }, {
-    /* mumble             */   0  /* make C compiler happy */
+    /* empty              */   0  /* make C compiler happy */
    }
 };
 
@@ -101,13 +101,13 @@ static void GripAction( widget, event, params, num_params )
     Widget widget;
     XEvent *event;
     String *params;
-    Cardinal num_params;
+    Cardinal *num_params;
 {
     GripCallDataRec call_data;
 
     call_data.event = event;
     call_data.params = params;
-    call_data.num_params = num_params;
+    call_data.num_params = *num_params;
 
-    XtCallCallbacks( widget, XtNcallback, &call_data );
+    XtCallCallbacks( widget, XtNcallback, (caddr_t)&call_data );
 }

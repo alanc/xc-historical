@@ -1,6 +1,6 @@
 #include <X/copyright.h>
 
-/* $Header: AsciiText.h,v 1.2 88/01/22 11:13:49 swick Locked $ */
+/* $Header: AsciiText.h,v 1.3 88/01/27 15:42:31 swick Locked $ */
 /* Copyright	Massachusetts Institute of Technology	1987 */
 
 #ifndef _AsciiText_h
@@ -40,6 +40,12 @@
 
 
 #include <X/Text.h>		/* AsciiText is a subclass of Text */
+
+#define XtNstring		"string"
+#define XtNfile			"file"
+
+#define XtCString		"String"
+#define XtCFile			"File"
 
 typedef struct _AsciiStringClassRec	*AsciiStringWidgetClass;
 typedef struct _AsciiStringRec		*AsciiStringWidget;

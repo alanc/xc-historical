@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: AsciiSink.c,v 1.7 87/12/23 16:25:21 swick Locked $";
+static char rcsid[] = "$Header: AsciiSink.c,v 1.8 87/12/29 08:20:48 swick Locked $";
 #endif lint
 
 /*
@@ -27,7 +27,7 @@ static char rcsid[] = "$Header: AsciiSink.c,v 1.7 87/12/23 16:25:21 swick Locked
 #include <X/Xlib.h>
 #include <X/Xutil.h>
 #include <X/Xatom.h>
-#include <X/Intrinsic.h>
+#include "IntrinsicP.h"
 #include <X/Atoms.h>
 #include <X/Text.h>
 #include "TextP.h"
@@ -51,10 +51,10 @@ static char *buf = NULL;
 /* XXX foreground default should be XtDefaultFGPixel. How do i do that?? */
 
 static XtResource SinkResources[] = {
-    {XtNfont, XtCFont, XrmRFontStruct, sizeof (XFontStruct *),
-        XtOffset(AsciiSinkPtr, font), XrmRString, "Fixed"},
-    {XtNforeground, XtCColor, XrmRPixel, sizeof (int),
-        XtOffset(AsciiSinkPtr, foreground), XrmRString, "Black"},    
+    {XtNfont, XtCFont, XtRFontStruct, sizeof (XFontStruct *),
+        XtOffset(AsciiSinkPtr, font), XtRString, "Fixed"},
+    {XtNforeground, XtCColor, XtRPixel, sizeof (int),
+        XtOffset(AsciiSinkPtr, foreground), XtRString, "Black"},    
 };
 
 /* Utilities */

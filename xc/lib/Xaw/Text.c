@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Text.c,v 1.23 88/01/28 08:06:49 swick Locked $";
+static char rcsid[] = "$Header: Text.c,v 1.24 88/01/28 09:46:45 swick Locked $";
 #endif lint
 
 /*
@@ -26,8 +26,7 @@ static char rcsid[] = "$Header: Text.c,v 1.23 88/01/28 08:06:49 swick Locked $";
  */
 /* File: Text.c */
 
-#include <X/Intrinsic.h>
-#include <X/Text.h>
+#include "IntrinsicP.h"
 #include <X/Label.h>
 #include <X/Command.h>
 #include <X/Dialog.h>
@@ -35,16 +34,17 @@ static char rcsid[] = "$Header: Text.c,v 1.23 88/01/28 08:06:49 swick Locked $";
 #include <X/Shell.h>
 #include <X/Popup.h>
 #include <X/Atoms.h>
-#include <X/Xutil.h>
 #include <X/Xos.h>
 #include "TextP.h"
 
 Atom FMT8BIT = NULL;
 
 extern void bcopy();
-extern void _XLowerCase();
+extern void LowerCase();
 extern int errno, sys_nerr;
 extern char* sys_errlist[];
+
+#define DEFAULTVALUE ~0
 
 #define abs(x)	(((x) < 0) ? (-(x)) : (x))
 #define min(x,y)	((x) < (y) ? (x) : (y))
@@ -74,38 +74,40 @@ static XtTextSelectType defaultSelectTypes[] = {
 };
 
 static caddr_t defaultSelectTypesPtr = (caddr_t)defaultSelectTypes;
-extern caddr_t defaultTextTranslations;	/* fwd ref */
+extern char defaultTextTranslations[];	/* fwd ref */
+static int defWidth = 100;
+static int defHeight = DEFAULTVALUE;
+static int defZero = 0;
+static int defMargin = 10;
+static int defLeftMargin = 2;
 
 #define offset(field) XtOffset(TextWidget, field)
 static XtResource resources[] = {
-    {XtNwidth, XtCWidth, XrmRInt, sizeof(int),
-        offset(core.width), XrmRString, "100"},
-    {XtNheight, XtCHeight, XrmRInt, sizeof(int),
-        offset(core.height), XrmRString, "-9999" /*DEFAULTVALUE*/},
-    {XtNtextOptions, XtCTextOptions, XrmRInt, sizeof (int),
-        offset(text.options), XrmRString, "0"},
-    {XtNdialogHOffset, XtCMargin, XrmRInt, sizeof(int),
-	 offset(text.dialog_horiz_offset), XrmRString, "10"},
-    {XtNdialogVOffset, XtCMargin, XrmRInt, sizeof(int),
-	 offset(text.dialog_vert_offset), XrmRString, "10"},
-    {XtNdisplayPosition, XtCTextPosition, XrmRInt,
-	 sizeof (XtTextPosition), offset(text.lt.top), XrmRString, "0"},
+    {XtNwidth, XtCWidth, XtRInt, sizeof(int),
+        offset(core.width), XtRInt, (caddr_t)&defWidth},
+    {XtNheight, XtCHeight, XtRInt, sizeof(int),
+        offset(core.height), XtRInt, (caddr_t)&defHeight},
+    {XtNtextOptions, XtCTextOptions, XtRInt, sizeof (int),
+        offset(text.options), XtRInt, (caddr_t)&defZero},
+    {XtNdialogHOffset, XtCMargin, XtRInt, sizeof(int),
+	 offset(text.dialog_horiz_offset), XtRInt, (caddr_t)&defMargin},
+    {XtNdialogVOffset, XtCMargin, XtRInt, sizeof(int),
+	 offset(text.dialog_vert_offset), XtRInt, (caddr_t)&defMargin},
+    {XtNdisplayPosition, XtCTextPosition, XtRInt,
+	 sizeof (XtTextPosition), offset(text.lt.top), XtRInt, (caddr_t)&defZero},
     {XtNinsertPosition, XtCTextPosition, XtRInt,
-        sizeof(XtTextPosition), offset(text.insertPos), XrmRString, "0"},
-    {XtNleftMargin, XtCMargin, XrmRInt, sizeof (int),
-        offset(text.client_leftmargin), XrmRString, "2"},
-    {XtNselectTypes, XtCSelectTypes, XrmRPointer,
+        sizeof(XtTextPosition), offset(text.insertPos), XtRInt, (caddr_t)&defZero},
+    {XtNleftMargin, XtCMargin, XtRInt, sizeof (int),
+        offset(text.client_leftmargin), XtRInt, (caddr_t)&defLeftMargin},
+    {XtNselectTypes, XtCSelectTypes, XtRPointer,
         sizeof(XtTextSelectType*), offset(text.sarray),
-	XrmRPointer, (caddr_t)&defaultSelectTypesPtr},
-    {XtNtextSource, XtCTextSource, XrmRPointer, sizeof (caddr_t),
-         offset(text.source), XrmRPointer, NULL},
-    {XtNtextSink, XtCTextSink, XrmRPointer, sizeof (caddr_t),
-         offset(text.sink), XrmRPointer, NULL},
-    {XtNselection, XtCSelection, XrmRPointer, sizeof(caddr_t),
-	 offset(text.s), XrmRPointer, NULL},
-    {XtNtranslations, XtCTranslations, XtRTranslationTable,
-        sizeof(XtTranslations), offset(core.translations),
-	XtRTranslationTable, (caddr_t)&defaultTextTranslations},
+	XtRPointer, (caddr_t)&defaultSelectTypesPtr},
+    {XtNtextSource, XtCTextSource, XtRPointer, sizeof (caddr_t),
+         offset(text.source), XtRPointer, NULL},
+    {XtNtextSink, XtCTextSink, XtRPointer, sizeof (caddr_t),
+         offset(text.sink), XtRPointer, NULL},
+    {XtNselection, XtCSelection, XtRPointer, sizeof(caddr_t),
+	 offset(text.s), XtRPointer, NULL},
 };
 #undef offset
 
@@ -120,8 +122,9 @@ static  XrmQuark  XtQTextAppend;
 static  XrmQuark  XtQTextEdit;
 
 /* ARGSUSED */
-static void CvtStringToEditMode(screen, fromVal, toVal)
-    Screen	*screen;
+static void CvtStringToEditMode(args, num_args, fromVal, toVal)
+    XrmValuePtr *args;		/* unused */
+    Cardinal	*num_args;	/* unused */
     XrmValuePtr	fromVal;
     XrmValuePtr	toVal;
 {
@@ -130,7 +133,7 @@ static void CvtStringToEditMode(screen, fromVal, toVal)
     char        lowerName[1000];
 
 /* ||| where to put LowerCase */
-    _XLowerCase((char *)fromVal->addr, lowerName);
+    LowerCase((char *)fromVal->addr, lowerName);
     q = XrmAtomToQuark(lowerName);
     if (q == XtQTextRead ) {
         editType = XttextRead;
@@ -158,15 +161,13 @@ static void ClassInitialize()
     XtQTextAppend = XrmAtomToQuark(XtEtextAppend);
     XtQTextEdit   = XrmAtomToQuark(XtEtextEdit);
 
-    XrmRegisterTypeConverter(XrmRString, XtREditMode, CvtStringToEditMode);
+    XtAddConverter(XtRString, XtREditMode, CvtStringToEditMode, NULL, 0);
 }
 
 
 /* ARGSUSED */
-static void Initialize(request, new, args, num_args)
+static void Initialize(request, new)
  Widget request, new;
- ArgList args;
- Cardinal *num_args;
 {
     TextWidget ctx = (TextWidget) new;
 
@@ -202,21 +203,17 @@ static void Initialize(request, new, args, num_args)
 #endif
 
     if (ctx->text.options & scrollVertical) {
-	static XtCallbackRec scrollCallback[] = { {NULL, NULL}, {NULL, NULL} };
-	static XtCallbackRec thumbCallback[] = { {NULL, NULL}, {NULL, NULL} };
 	static Arg args[] = {
 	    {XtNheight, NULL},
-	    {XtNscrollProc, (XtArgVal)scrollCallback},
-	    {XtNthumbProc, (XtArgVal)thumbCallback},
 	};
 	Dimension bw;
 	Widget sbar;
-	XtSetCallback( scrollCallback[0], ScrollUpDownProc, ctx );
-	XtSetCallback( thumbCallback[0], ThumbProc, ctx );
         args[0].value = (XtArgVal)ctx->core.height;
 	ctx->text.sbar = sbar =
 	    XtCreateWidget("scrollbar", scrollbarWidgetClass, ctx,
 			   args, XtNumber(args));
+	XtAddCallback( sbar, XtNscrollProc, ScrollUpDownProc, (caddr_t)ctx );
+	XtAddCallback( sbar, XtNthumbProc, ThumbProc, (caddr_t)ctx );
 	ctx->text.leftmargin +=
 	    sbar->core.width + (bw = sbar->core.border_width);
 	XtMoveWidget( sbar, -bw, -bw );
@@ -1335,26 +1332,15 @@ static void Resize(w)
  * This routine allow the application program to Set attributes.
  */
 
-static Boolean SetValues(current, request, new, last)
+static Boolean SetValues(current, request, new)
 Widget current, request, new;
-Boolean last;
 {
     TextWidget oldtw = (TextWidget) current;
     TextWidget newtw = (TextWidget) new;
     Boolean    redisplay = FALSE;
-    XtWidgetGeometry reqGeom;
-    XtGeometryResult reply;
 
     _XtTextPrepareToUpdate(oldtw);
     
-    reply = XtSetValuesGeometryRequest( current, new, &reqGeom );
-
-    if (reply == XtGeometryAlmost)
-        reply = XtMakeGeometryRequest( current, &reqGeom, &reqGeom );
-
-    if (reply == XtGeometryYes)
-        redisplay = TRUE;
-
     if (oldtw->text.source != newtw->text.source || redisplay) {
 	ForceBuildLineTable(oldtw);
 	redisplay = TRUE;
@@ -2405,7 +2391,7 @@ static void InsertFile(w, event)
 	{XtNy, NULL},
 	{XtNiconName, (XtArgVal)DIALOG_LABEL},
 	{XtNgeometry, NULL},
-	{XtNallowshellresize, True},
+	{XtNallowShellResize, True},
     };
     Arg args[2];
     static XtCallbackRec callbacks[] = { {NULL, NULL}, {NULL, NULL} };
@@ -2469,7 +2455,7 @@ static void InsertFile(w, event)
 	dialog->next = NULL;
 	popup_args[0].value = (XtArgVal)x;
 	popup_args[1].value = (XtArgVal)y;
-	popup = XtCreatePopupShell( "insertFile", popupWidgetClass, w,
+	popup = XtCreatePopupShell( "insertFile", transientShellWidgetClass, w,
 				    popup_args, XtNumber(popup_args) );
 
 	XtSetArg( args[0], XtNlabel, DIALOG_LABEL );
@@ -2555,73 +2541,59 @@ XtActionsRec textActionsTable [] = {
 
 Cardinal textActionsTableCount = XtNumber(textActionsTable); /* for subclasses */
 
-char *defaultTextEventBindings[] = {
-/* motion bindings */
-    "Ctrl<Key>F:		forward-character()",
-    "<Key>0xff53:		forward-character()", 
-    "Ctrl<Key>B:		backward-character()",
-    "<Key>0xff51:		backward-character()",
-    "Meta<Key>F:		forward-word()",
-    "Meta<Key>B:		backward-word()",
-    "Meta<Key>]:		forward-paragraph()",
-    "Ctrl<Key>[:		backward-paragraph()",
-    "Ctrl<Key>A:		beginning-of-line()",
-    "Ctrl<Key>E:		end-of-line()",
-    "Ctrl<Key>N:		next-line()",
-    "<Key>0xff54:		next-line()",
-    "Ctrl<Key>P:		previous-line()",
-    "<Key>0xff52:		previous-line()",
-    "Ctrl<Key>V:		next-page()",
-    "Meta<Key>V:		previous-page()",
-    "Meta<Key>\\<:		beginning-of-file()",
-    "Meta<Key>\\>:		end-of-file()",
-    "Ctrl<Key>Z:		scroll-one-line-up()",
-    "Meta<Key>Z:		scroll-one-line-down()",
-/* delete binding*/
-    "Ctrl<Key>D:		delete-next-character()",
-    "Ctrl<Key>H:		delete-previous-character()",
-    "<Key>0xff7f:		delete-previous-character()",
-    "<Key>0xffff:		delete-previous-character()",
-    "<Key>0xff08:		delete-previous-character()",
-    "Meta<Key>D:		delete-next-word()",
-    "Meta<Key>H:		delete-previous-word()",
-/* kill bindings */
-    "Shift Meta<Key>D:		kill-word()",
-    "Shift Meta<Key>H:		backward-kill-word()",
-    "Ctrl<Key>W:		kill-selection()",
-    "Ctrl<Key>K:		kill-to-end-of-line()",
-    "Meta<Key>K:		kill-to-end-of-paragraph()",
-/* unkill bindings */
-    "Ctrl<Key>Y:		unkill()",
-    "Meta<Key>Y:		stuff()",
-/* new line stuff */
-    "Ctrl<Key>J:		newline-and-indent()",
-    "<Key>0xff0a:		newline-and-indent()",
-    "Ctrl<Key>O:		newline-and-backup()",
-    "Ctrl<Key>M:		newline()",
-    "<Key>0xff0d:		newline()",
-/* Miscellaneous */
-    "Ctrl<Key>L:		redraw-display()",
-    "Meta<Key>I:		insert-file()",
-   "<FocusIn>:			focus-in()",
-   "<FocusOut>:			focus-out()",
-/* selection stuff */
-    "<Btn1Down>:		select-start()",
-    "Button1<PtrMoved>:		extend-adjust()",
-    "<Btn1Up>:			extend-end()",
-    "<Btn2Down>:		stuff()",
-    "<Btn3Down>:		extend-start()",
-    "Button3<PtrMoved>:		extend-adjust()",
-    "<Btn3Up>:			extend-end()",
-/* default character handling */
-    "<Key>:			insert-char()",
-    "Shift<Key>:		insert-char()",
-    
-    NULL
-};
-
-/* grodyness needed because Xrm wants pointer to thing, not thing... */
-static caddr_t defaultTextTranslations = (caddr_t)defaultTextEventBindings;
+char defaultTextTranslations[] =
+    "Ctrl<Key>F:		forward-character() \n\
+     <Key>0xff53:		forward-character() \n\
+     Ctrl<Key>B:		backward-character() \n\
+     <Key>0xff51:		backward-character() \n\
+     Meta<Key>F:		forward-word() \n\
+     Meta<Key>B:		backward-word() \n\
+     Meta<Key>]:		forward-paragraph() \n\
+     Ctrl<Key>[:		backward-paragraph() \n\
+     Ctrl<Key>A:		beginning-of-line() \n\
+     Ctrl<Key>E:		end-of-line() \n\
+     Ctrl<Key>N:		next-line() \n\
+     <Key>0xff54:		next-line() \n\
+     Ctrl<Key>P:		previous-line() \n\
+     <Key>0xff52:		previous-line() \n\
+     Ctrl<Key>V:		next-page() \n\
+     Meta<Key>V:		previous-page() \n\
+     Meta<Key>\\<:		beginning-of-file() \n\
+     Meta<Key>\\>:		end-of-file() \n\
+     Ctrl<Key>Z:		scroll-one-line-up() \n\
+     Meta<Key>Z:		scroll-one-line-down() \n\
+     Ctrl<Key>D:		delete-next-character() \n\
+     Ctrl<Key>H:		delete-previous-character() \n\
+     <Key>0xff7f:		delete-previous-character() \n\
+     <Key>0xffff:		delete-previous-character() \n\
+     <Key>0xff08:		delete-previous-character() \n\
+     Meta<Key>D:		delete-next-word() \n\
+     Meta<Key>H:		delete-previous-word() \n\
+     Shift Meta<Key>D:		kill-word() \n\
+     Shift Meta<Key>H:		backward-kill-word() \n\
+     Ctrl<Key>W:		kill-selection() \n\
+     Ctrl<Key>K:		kill-to-end-of-line() \n\
+     Meta<Key>K:		kill-to-end-of-paragraph() \n\
+     Ctrl<Key>Y:		unkill() \n\
+     Meta<Key>Y:		stuff() \n\
+     Ctrl<Key>J:		newline-and-indent() \n\
+     <Key>0xff0a:		newline-and-indent() \n\
+     Ctrl<Key>O:		newline-and-backup() \n\
+     Ctrl<Key>M:		newline() \n\
+     <Key>0xff0d:		newline() \n\
+     Ctrl<Key>L:		redraw-display() \n\
+     Meta<Key>I:		insert-file() \n\
+     <FocusIn>:			focus-in() \n\
+     <FocusOut>:		focus-out() \n\
+     <Btn1Down>:		select-start() \n\
+     Button1<PtrMoved>:		extend-adjust() \n\
+     <Btn1Up>:			extend-end() \n\
+     <Btn2Down>:		stuff() \n\
+     <Btn3Down>:		extend-start() \n\
+     Button3<PtrMoved>:		extend-adjust() \n\
+     <Btn3Up>:			extend-end() \n\
+     <Key>:			insert-char() \n\
+     Shift<Key>:		insert-char()";
 
 TextClassRec textClassRec = {
   { /* core fields */
@@ -2629,8 +2601,10 @@ TextClassRec textClassRec = {
     /* class_name       */      "Text",
     /* widget_size      */      sizeof(TextRec),
     /* class_initialize */      ClassInitialize,
+    /* class_part_init  */	NULL,
     /* class_inited     */      FALSE,
     /* initialize       */      Initialize,
+    /* initialize_hook  */	NULL,
     /* realize          */      Realize,
     /* actions          */      textActionsTable,
     /* num_actions      */      XtNumber(textActionsTable),
@@ -2639,14 +2613,19 @@ TextClassRec textClassRec = {
     /* xrm_class        */      NULLQUARK,
     /* compress_motion  */      TRUE,
     /* compress_exposure*/      FALSE,
+    /* compress_enterleave*/	TRUE,
     /* visible_interest */      FALSE,
     /* destroy          */      TextDestroy,
     /* resize           */      Resize,
     /* expose           */      ProcessExposeRegion,
     /* set_values       */      SetValues,
+    /* set_values_hook  */	NULL,
+    /* set_values_almost*/	XtInheritSetValuesAlmost,
+    /* get_values_hook  */	NULL,
     /* accept_focus     */      NULL,
+    /* version          */	XtVersion,
     /* callback_private */      NULL,
-    /* reserved_private */      NULL
+    /* tm_table         */      defaultTextTranslations,
   },
   { /* text fields */
     /* empty            */	0
