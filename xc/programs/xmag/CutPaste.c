@@ -1,4 +1,4 @@
-/* $XConsortium: CutPaste.c,v 1.5 93/01/25 17:45:40 converse Exp $
+/* $XConsortium: CutPaste.c,v 1.6 93/01/26 11:47:07 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -65,7 +65,7 @@ ConvertSelection(w, selection, target, type, value, length, format)
 	   Xt converts MULTIPLE, and we convert PIXMAP and BITMAP.
 	 */
 	success = XmuConvertStandardSelection(w, (Time)0, selection, target,
-					      type, (caddr_t *)value, length,
+					      type, (XPointer *)value, length,
 					      format);
 	if (success && *target == XA_TARGETS(XtDisplay(w))) {
 	    Atom* tmp;
