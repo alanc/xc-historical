@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.20 94/12/14 20:00:30 mor Exp mor $ */
+/* $XConsortium: choose.c,v 1.21 94/12/16 17:29:07 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -134,7 +134,7 @@ Bool **locked_ret;
 	{
 	    char *name = (char *) entry->d_name + 5;
 	    char *id = NULL;
-	    Bool locked = CheckSessionLocked (name, True, &id);
+	    Bool locked = CheckSessionLocked (name, long_names_ret, &id);
 
 	    (*short_names_ret)[*count_ret] = XtNewString (name);
 	    (*locked_ret)[*count_ret] = locked;
