@@ -1,4 +1,4 @@
-/* $XConsortium: pexUtils.c,v 5.2 91/04/16 20:31:56 keith Exp $ */
+/* $XConsortium: pexUtils.c,v 5.3 91/04/16 20:38:35 keith Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -256,7 +256,7 @@ ddListType	type;
 {
     listofObj	*pList;
 
-    /* allocate in one chunk */
+    /* allocate in two chunks */
     pList = (listofObj *)Xalloc( sizeof(listofObj) );
     if ( !pList ) return NULL;
 
