@@ -325,6 +325,7 @@ int TRANS(GetConnectionNumber)(
 int TRANS(MakeAllCOTSServerListeners)(
 #if NeedFunctionPrototypes
     char *,		/* port */
+    int *,		/* max_ret */
     int *,		/* count_ret */
     XtransConnInfo **	/* ciptrs_ret */
 #endif
@@ -333,6 +334,7 @@ int TRANS(MakeAllCOTSServerListeners)(
 int TRANS(MakeAllCLTSServerListeners)(
 #if NeedFunctionPrototypes
     char *,		/* port */
+    int *,		/* max_ret */
     int *,		/* count_ret */
     XtransConnInfo **	/* ciptrs_ret */
 #endif
