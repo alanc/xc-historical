@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.35 92/11/11 13:06:31 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.36 92/11/11 14:34:46 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -410,12 +410,13 @@ void HardwareSync(xp)
     /*
      * Some graphics hardware allows the server to claim it is done,
      * while in reality the hardware is busily working away.  So fetch
-     * a pixel from the window that was drawn to, which should be
+     * a pixel from the drawable that was drawn to, which should be
      * enough to make the server wait for the graphics hardware.
      */
     XImage *image;
 
-    image = XGetImage(xp->d, xp->w, WIDTH-1, HEIGHT-1, 1, 1, ~0, ZPixmap);
+    image = XGetImage(xp->d, xp->p ? xp->p : xp->w, WIDTH-1, HEIGHT-1, 
+		      1, 1, ~0, ZPixmap);
     XDestroyImage(image);
 }
 
@@ -581,10 +582,11 @@ int CalibrateTest(xp, test, seconds, usecperobj)
 	if (usecs >= enough) break;
 
 	/* Don't let too short a clock make new reps wildly high */
-	if (usecs < tick) usecs = tick;
-
-	/* Try to get up to goal seconds. */
-	reps = (int) (goal * (double)reps / usecs) + 1;
+	if (usecs <= tick)reps = reps*10;
+	else{
+	    /* Try to get up to goal seconds. */
+	    reps = (int) (goal * (double)reps / usecs) + 1;
+	}
     }
 
     *usecperobj = usecs / (double) (reps * test->parms.objects);
@@ -682,14 +684,17 @@ int AllocateColor(display, name, pixel)
 		    "Can't allocate colormap entry for color %s\n", name);
 	    }
 	} else {
-	    (void) fprintf(stderr, "Can't parse color name %s\n", name);
+	    if(*name >= '0' && *name <= '9')
+		pixel = atoi(name);
+	    else
+		(void) fprintf(stderr, "Can't parse color name %s\n", name);
 	}
     }
     return pixel;
 } /* AllocateColor */
 
 
-void DisplayStatus(d, message, test)
+void DisplayStatus(d, message, test, try)
     Display *d;
     char    *message;
     char    *test;
@@ -697,7 +702,7 @@ void DisplayStatus(d, message, test)
     char    s[500];
 
     XClearWindow(d, status);
-    sprintf(s, "%s %s", message, test);
+    sprintf(s, "%d %s %s", try, message, test);
     /* We should really look at the height, descent of the font, etc. but
        who cares.  This works. */
     XDrawString(d, status, tgc, 10, 13, s, strlen(s));
@@ -716,18 +721,27 @@ void ProcessTest(xp, test, func, pm, label)
     int     j;
 
     CreatePerfGCs(xp, func, pm);
-    DisplayStatus(xp->d, "Calibrating", label);
+    DisplayStatus(xp->d, "Calibrating", label, 0);
     reps = CalibrateTest(xp, test, seconds, &time);
     if (reps != 0) {
-	DisplayStatus(xp->d, "Testing", label);
+	srand(1);	/* allow reproducible results */
 	XDestroySubwindows(xp->d, xp->w);
 	XClearWindow(xp->d, xp->w);
 	reps = (*test->init) (xp, &test->parms, reps);
+	/*
+	 * if using fixedReps then will not have done CalibrateTest so must
+	 * check result of init for 0 here
+	 */
+	if(reps == 0){
+	    DestroyPerfGCs(xp);
+	    return;
+	}
 	/* Create clip windows if requested */
 	CreateClipWindows(xp, test->clips);
 
 	totalTime = 0.0;
 	for (j = 0; j != repeat; j++) {
+	    DisplayStatus(xp->d, "Testing", label, j+1);
 	    time = DoTest(xp, test, reps);
 	    totalTime += time;
 	    ReportTimes (time, reps * test->parms.objects,
@@ -748,6 +762,26 @@ void ProcessTest(xp, test, func, pm, label)
     DestroyPerfGCs(xp);
 } /* ProcessTest */
 
+#ifndef X_NOT_STDC_ENV
+#define Strstr strstr
+#else
+char *Strstr(s1, s2)
+    char *s1, *s2;
+{
+    int n1, n2;
+
+    n1 = strlen(s1);
+    n2 = strlen(s2);
+    for ( ; n1 >= n2; s1++, n1--) {
+	if (!strncmp(s1, s2, n2))
+	    return s1;
+    }	
+    return NULL;
+}
+#endif
+
+#define LABELP(i) (test[i].label14 && (xparms.version >= VERSION1_4) \
+		        ? test[i].label14 : test[i].label)
 
 main(argc, argv)
     int argc;
@@ -901,6 +935,7 @@ main(argc, argv)
 	} else if (strcmp(argv[i], "-v1.3") == 0) {
 	    xparms.version = VERSION1_3;
 	} else {
+	    int len,found;
 	    ForEachTest (j) {
 		if (strcmp (argv[i], test[j].option) == 0 &&
 		    (test[j].versions & xparms.version)) {
@@ -908,14 +943,29 @@ main(argc, argv)
 		    goto LegalOption;
 		}
 	    }
-	    usage ();
+	    found = False;
+	    len = strlen(argv[i]);
+	    if(len>=3)
+	    ForEachTest (j) {
+		if (Strstr (test[j].option, argv[i]+1) != 0) {
+		    fprintf(stderr,"	-> %s	%s\n", test[j].option, LABELP(j));
+		    doit[j] = found = True;
+		}
+	    }
+	    if(!found)
+	    ForEachTest (j) {
+		if (Strstr (LABELP(j), argv[i]+1) != 0) {
+		    fprintf(stderr,"	-> %s	%s\n", test[j].option, LABELP(j));
+		    doit[j] = found = True;
+		}
+	    }
+	    if(!found)
+		usage ();
 	LegalOption: 
 		foundOne = True;
 	}
     }
 
-#define LABEL_POINTER (test[i].label14 && (xparms.version >= VERSION1_4) \
-		        ? test[i].label14 : test[i].label)
     if (labels) {
 	/* Just print out list of tests for use with .sh programs that
 	   assemble data from different x11perf runs into a nice format */
@@ -924,7 +974,7 @@ main(argc, argv)
 	    if (doit[i] && (test[i].versions & xparms.version)) {
 		switch (test[i].testType) {
 		    case NONROP:
-			printf ("%s\n", LABEL_POINTER);
+			printf ("%s\n", LABELP(i));
 			break;
     
 		    case ROP:
@@ -933,17 +983,17 @@ main(argc, argv)
 			    for (pm = 0; pm < numPlanemasks; pm++) {
 				if (planemasks[pm] == ~0) {
 				    if (rops[rop] == GXcopy) {
-					printf ("%s\n", LABEL_POINTER);
+					printf ("%s\n", LABELP(i));
 				    } else {
 					printf ("(%s) %s\n",
 					    ropNames[rops[rop]].name,
-					    LABEL_POINTER);
+					    LABELP(i));
 				    }
 				} else {
 				    printf ("(%s 0x%x) %s\n",
 					    ropNames[rops[rop]].name,
 					    planemasks[pm],
-					    LABEL_POINTER);
+					    LABELP(i));
 				}
 			    } /* for pm */
 			} /* for rop */
@@ -952,7 +1002,7 @@ main(argc, argv)
 		    case WINDOW:
 			for (child = 0; child != numSubWindows; child++) {
 			    printf ("%s (%d kids)\n",
-				LABEL_POINTER, subWindows[child]);
+				LABELP(i), subWindows[child]);
 			}
 			break;
 		} /* switch */
@@ -1047,6 +1097,7 @@ main(argc, argv)
     tgcv.background = WhitePixel(xparms.d, screen);
     tgc = XCreateGC(xparms.d, status, GCForeground | GCBackground, &tgcv);
    
+    xparms.p = (Pixmap)0;
 
     if (synchronous)
 	XSynchronize (xparms.d, True);
@@ -1055,7 +1106,7 @@ main(argc, argv)
        software cursor machines it will slow graphics performance.  On
        all current MIT-derived servers it will slow window 
        creation/configuration performance. */
-    XWarpPointer(xparms.d, None, status, 0, 0, 0, 0, WIDTH, 20);
+    XWarpPointer(xparms.d, None, status, 0, 0, 0, 0, WIDTH+10, 20+10);
 
     /* Figure out how long to call HardwareSync, so we can adjust for that
        in our total elapsed time */
@@ -1070,7 +1121,7 @@ main(argc, argv)
 	    switch (test[i].testType) {
 	        case NONROP:
 		    /* Simplest...just run it once */
-		    strcpy (label, LABEL_POINTER);
+		    strcpy (label, LABELP(i));
 		    ProcessTest(&xparms, &test[i], GXcopy, ~0, label);
 		    break;
 
@@ -1080,17 +1131,17 @@ main(argc, argv)
 			for (pm = 0; pm < numPlanemasks; pm++) {
 			    if (planemasks[pm] == ~0) {
 				if (rops[rop] == GXcopy) {
-				    sprintf (label, "%s", LABEL_POINTER);
+				    sprintf (label, "%s", LABELP(i));
 				} else {
 				    sprintf (label, "(%s) %s",
 					ropNames[rops[rop]].name,
-					LABEL_POINTER);
+					LABELP(i));
 				}
 			    } else {
 				sprintf (label, "(%s 0x%x) %s",
 					ropNames[rops[rop]].name,
 					planemasks[pm],
-					LABEL_POINTER);
+					LABELP(i));
 			    }
 			    ProcessTest(&xparms, &test[i], rops[rop],
 				        planemasks[pm], label);
@@ -1103,7 +1154,7 @@ main(argc, argv)
 		    for (child = 0; child != numSubWindows; child++) {
 			test[i].parms.objects = subWindows[child];
 			sprintf(label, "%s (%d kids)",
-			    LABEL_POINTER, test[i].parms.objects);
+			    LABELP(i), test[i].parms.objects);
 			ProcessTest(&xparms, &test[i], GXcopy, ~0, label);
 		    }
 		    break;
