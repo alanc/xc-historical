@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.35 94/04/02 18:00:47 rws Exp $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.36 94/04/07 15:47:14 rws Exp $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture
@@ -43,6 +43,7 @@ XCOMM operating system:  OSName
 #define HasWChar32		YES
 #define DefaultCCOptions	-std1
 #define XawI18nDefines		-DHAS_WCHAR_H
+#define BuildServer		NO
 #endif
 #ifdef MipsArchitecture
 #define DefaultCCOptions	-Xc
