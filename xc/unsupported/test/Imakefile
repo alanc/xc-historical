@@ -1,13 +1,16 @@
-# $XConsortium: Imakefile,v 1.7 88/02/17 18:28:33 rws Exp $
+# $XConsortium: Imakefile,v 1.8 88/09/06 18:00:09 jim Exp $
    ZOIDSRCS = zoidtest.c
    ZOIDOBJS = zoidtest.o
  BEZIERSRCS = beziertest.c
  BEZIEROBJS = beziertest.o
+POLYMORPHSRCS = shapetest.c
+POLYMORPHOBJS = shapetest.o
    INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I../include
 
-all: zoidtest beziertest
+all: zoidtest beziertest shapetest
 
 SingleProgramTarget(zoidtest,$(ZOIDOBJS),$(EXTENSIONLIB) $(XLIB),)
 SingleProgramTarget(beziertest,$(BEZIEROBJS),$(EXTENSIONLIB) $(XLIB),)
+SingleProgramTarget(shapetest,$(POLYMORPHOBJS),$(EXTENSIONLIB) $(XLIB),)
 
 DependTarget()
