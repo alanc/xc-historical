@@ -1,4 +1,4 @@
-/* "$XConsortium: Initialize.c,v 1.162 90/12/12 14:51:41 rws Exp $"; */
+/* "$XConsortium: Initialize.c,v 1.163 90/12/14 18:02:37 converse Exp $"; */
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 
 /***********************************************************
@@ -618,7 +618,7 @@ void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 void
 XtAppSetFallbackResources(
 XtAppContext app_context,
-_Xconst char* _Xconst *specification_list
+_Xconst char* *specification_list
 )
 #else
 void
@@ -654,7 +654,7 @@ XrmOptionDescRec *options,
 Cardinal num_options,
 Cardinal *argc_in_out,
 String *argv_in_out,
-_Xconst char * _Xconst * fallback_resources,
+_Xconst char* *fallback_resources,
 ArgList args_in,
 Cardinal num_args_in
 )
