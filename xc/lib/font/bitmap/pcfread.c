@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfread.c,v 1.11 92/05/29 17:10:17 gildea Exp $
+ * $XConsortium: pcfread.c,v 1.12 93/08/24 18:49:04 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -24,9 +24,9 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "fontfilest.h"
-#include    "bitmap.h"
-#include    "pcf.h"
+#include "fntfilst.h"
+#include "bitmap.h"
+#include "pcf.h"
 
 /* Read PCF font files */
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmap.h,v 1.2 91/09/07 11:59:30 keith Exp $
+ * $XConsortium: bitmap.h,v 1.3 91/09/11 11:12:52 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -26,7 +26,7 @@
 #ifndef _BITMAP_H_
 #define _BITMAP_H_
 
-#include <fontfileio.h>
+#include <fntfilio.h>
 #include <stdio.h>  /* just for NULL */
 
 /*

@@ -1,4 +1,4 @@
-/* $XConsortium: t1info.c,v 1.9 92/03/20 16:00:13 eswu Exp $ */
+/* $XConsortium: t1info.c,v 1.10 93/08/24 18:48:57 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -55,7 +55,7 @@
  */
 
 #include <stdio.h> 
-#include "fontfilest.h"
+#include "fntfilst.h"
 #include "FSproto.h"
 #include "t1intf.h"
  

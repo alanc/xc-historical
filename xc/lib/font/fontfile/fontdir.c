@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.11 92/11/22 11:31:23 gildea Exp $
+ * $XConsortium: fontdir.c,v 1.12 93/08/24 18:49:18 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -23,7 +23,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "fontfilest.h"
+#include    "fntfilst.h"
 #include    <X11/keysym.h>
 
 Bool

@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: fontfileio.h,v 1.1 91/09/07 11:59:55 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *

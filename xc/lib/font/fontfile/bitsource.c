@@ -1,6 +1,6 @@
 /* $NCDId: @(#)bitsource.c,v 1.4 1991/07/02 17:00:59 lemke Exp $ */
 /*
- * $XConsortium: bitsource.c,v 1.4 91/07/16 18:05:53 keith Exp $
+ * $XConsortium: bitsource.c,v 1.5 91/07/17 14:29:54 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "fontfilest.h"
+#include "fntfilst.h"
 
 BitmapSourcesRec	FontFileBitmapSources;
 

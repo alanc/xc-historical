@@ -1,4 +1,4 @@
-/* $XConsortium: spint.h,v 1.6 92/09/17 11:57:07 gildea Exp $ */
+/* $XConsortium: spint.h,v 1.7 93/08/24 18:48:53 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -28,9 +28,9 @@
 #define NDEBUG
 #endif
 
-#include	<stdio.h>
-#include	"fontfilest.h"
-#include	"speedo.h"
+#include <stdio.h>
+#include "fntfilst.h"
+#include "speedo.h"
 
 #define	SaveMetrics	0x1
 #define ComputeBoundsOnly	0x2

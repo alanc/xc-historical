@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.13 93/08/24 18:49:02 gildea Exp $
+ * $XConsortium: bitscale.c,v 1.14 93/08/26 19:49:57 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -24,8 +24,8 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "fontfilest.h"
-#include    "bitmap.h"
+#include "fntfilst.h"
+#include "bitmap.h"
 #include <math.h>
 
 extern Atom MakeAtom();

@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.11 93/08/24 18:48:56 gildea Exp $ */
+/* $XConsortium: t1funcs.c,v 1.12 93/09/17 16:01:59 dpw Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -54,12 +54,12 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
  
-#include    <string.h>
-#include    <math.h>
-#include    "X11/Xfuncs.h"
-#include    "fontfilest.h"
-#include    "FSproto.h"
-#include    "t1intf.h"
+#include <string.h>
+#include <math.h>
+#include "X11/Xfuncs.h"
+#include "fntfilst.h"
+#include "FSproto.h"
+#include "t1intf.h"
  
 #include "objects.h"
 #include "spaces.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: spfuncs.c,v 1.8 92/09/17 11:57:04 gildea Exp $ */
+/* $XConsortium: spfuncs.c,v 1.9 93/08/24 18:48:48 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -23,9 +23,9 @@
  * Author: Dave Lemke, Network Computing Devices, Inc
  */
 
-#include	<X11/Xos.h>
-#include	"fontfilest.h"
-#include	"spint.h"
+#include <X11/Xos.h>
+#include "fntfilst.h"
+#include "spint.h"
 
 /* ARGSUSED */
 SpeedoOpenScalable (fpe, pFont, flags, entry, fileName, vals, format, fmask)

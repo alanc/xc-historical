@@ -1,5 +1,5 @@
 #endif /* lint */
- * $XConsortium: dirfile.c,v 1.5 91/12/11 19:49:06 eswu Exp $
+ * $XConsortium: dirfile.c,v 1.6 92/11/20 15:30:50 gildea Exp $
  *
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -29,7 +29,7 @@
  *
  * Read fonts.dir and fonts.alias files
  */
-#include    "fontfilest.h"
+#include    "fntfilst.h"
 #include    <stdio.h>
 #include    <sys/types.h>
 #include    <errno.h>

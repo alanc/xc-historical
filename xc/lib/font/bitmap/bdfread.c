@@ -22,10 +22,10 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: bdfread.c,v 1.15 92/11/18 21:30:59 gildea Exp $ */
+/* $XConsortium: bdfread.c,v 1.16 93/08/24 18:48:59 gildea Exp $ */
 
 #include <ctype.h>
-#include "fontfilest.h"
+#include "fntfilst.h"
 /* use bitmap structure */
 #include "bitmap.h"
 #include "bdfint.h"

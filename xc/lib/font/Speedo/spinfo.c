@@ -1,4 +1,4 @@
-/* $XConsortium: spinfo.c,v 1.8 92/09/17 11:57:06 gildea Exp $ */
+/* $XConsortium: spinfo.c,v 1.9 93/08/24 18:48:51 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -23,9 +23,9 @@
  * Author: Dave Lemke, Network Computing Devices, Inc
  */
 
-#include	"fontfilest.h"
-#include	"spint.h"
-#include	<math.h>
+#include "fntfilst.h"
+#include "spint.h"
+#include <math.h>
 
 /* percentage of pointsize used to specify ascent & descent */
 #define	STRETCH_FACTOR	120

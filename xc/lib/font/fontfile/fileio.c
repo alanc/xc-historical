@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fileio.c,v 1.1 91/09/07 11:58:03 keith Exp $
+ * $XConsortium: fileio.c,v 1.2 93/09/12 18:27:53 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -23,7 +23,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include <fontfileio.h>
+#include <fntfilio.h>
 #include <X11/Xos.h>
 #ifndef O_BINARY
 #define O_BINARY 0

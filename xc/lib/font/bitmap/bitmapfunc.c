@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmapfuncs.c,v 1.4 91/09/07 11:59:18 keith Exp $
+ * $XConsortium: bitmapfunc.c,v 1.5 93/08/24 18:49:01 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -23,8 +23,8 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "fontfilest.h"
-#include    "bitmap.h"
+#include "fntfilst.h"
+#include "bitmap.h"
 
 typedef struct _BitmapFileFunctions {
     int         (*ReadFont) ( /* pFont, file, bit, byte, glyph, scan */ );

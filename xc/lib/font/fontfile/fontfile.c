@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.c,v 1.13 93/09/05 10:18:05 rws Exp $
+ * $XConsortium: fontfile.c,v 1.14 93/09/17 16:01:29 dpw Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -24,7 +24,7 @@
  */
 /* $NCDId: @(#)fontfile.c,v 1.6 1991/07/02 17:00:46 lemke Exp $ */
 
-#include    "fontfilest.h"
+#include    "fntfilst.h"
 
 /*
  * Map FPE functions to renderer functions

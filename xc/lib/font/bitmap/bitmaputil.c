@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmaputils.c,v 1.2 91/05/10 15:58:23 keith Exp $
+ * $XConsortium: bitmaputil.c,v 1.3 91/05/31 14:23:06 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -22,8 +22,8 @@
  *
  */
 
-#include    "fontfilest.h"
-#include    "bitmap.h"
+#include "fntfilst.h"
+#include "bitmap.h"
 
 #ifndef MAXSHORT
 #define MAXSHORT    32767

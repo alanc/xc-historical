@@ -22,10 +22,10 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: snfread.c,v 1.12 92/05/29 17:10:19 gildea Exp $ */
+/* $XConsortium: snfread.c,v 1.13 93/08/24 18:49:06 gildea Exp $ */
 
 #include <ctype.h>
-#include "fontfilest.h"
+#include "fntfilst.h"
 #include "bitmap.h"
 #include "snfstr.h"
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfilest.h,v 1.3 91/07/16 20:15:16 keith Exp $
+ * $XConsortium: fontfilest.h,v 1.4 93/08/24 18:49:24 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -26,11 +26,11 @@
 #ifndef _FONTFILEST_H_
 #define _FONTFILEST_H_
 
-#include    <X11/Xos.h>
-#include    "fontmisc.h"
-#include    "fontstruct.h"
-#include    "fontfile.h"
-#include    "fontxlfd.h"
+#include <X11/Xos.h>
+#include "fontmisc.h"
+#include "fontstruct.h"
+#include "fntfil.h"
+#include "fontxlfd.h"
 
 typedef struct _FontName {
     char	*name;

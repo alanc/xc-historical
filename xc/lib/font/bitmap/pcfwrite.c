@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pcfwrite.c,v 1.2 91/05/10 15:58:16 keith Exp $
+ * $XConsortium: pcfwrite.c,v 1.3 92/03/26 17:37:17 gildea Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -24,9 +24,9 @@
  */
 
 
-#include    "fontfilest.h"
-#include    "bitmap.h"
-#include    "pcf.h"
+#include "fntfilst.h"
+#include "bitmap.h"
+#include "pcf.h"
 
 /* Write PCF font files */
 

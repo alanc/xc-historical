@@ -1,4 +1,4 @@
-/* $XConsortium: spfile.c,v 1.7 92/09/17 11:57:01 gildea Exp $ */
+/* $XConsortium: spfile.c,v 1.8 93/08/24 18:48:45 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the
@@ -23,18 +23,18 @@
  * Author: Dave Lemke, Network Computing Devices Inc
  */
 
-#include	<stdio.h>
-#include	"fontfilest.h"
+#include <stdio.h>
+#include "fntfilst.h"
 
-#include	"spint.h"
+#include "spint.h"
 
 SpeedoFontPtr sp_fp_cur = (SpeedoFontPtr) 0;
 
 #ifdef EXTRAFONTS
-#include	"ncdkeys.h"
+#include "ncdkeys.h"
 #endif
 
-#include	"keys.h"
+#include "keys.h"
 
 #ifdef EXTRAFONTS
 static ufix8 skey[] =

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmap.c,v 1.2 91/05/14 15:41:13 rws Exp $
+ * $XConsortium: bitmap.c,v 1.3 91/05/30 19:06:55 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -23,8 +23,8 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "fontfilest.h"
-#include    "bitmap.h"
+#include "fntfilst.h"
+#include "bitmap.h"
 
 int         bitmapGetGlyphs(), bitmapGetMetrics();
 int         bitmapGetBitmaps(), bitmapGetExtents();

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontscale.c,v 1.8 93/08/24 18:49:21 gildea Exp $
+ * $XConsortium: fontscale.c,v 1.9 93/09/17 16:01:44 dpw Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -23,7 +23,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "fontfilest.h"
+#include    "fntfilst.h"
 #include    "math.h"
 
 Bool

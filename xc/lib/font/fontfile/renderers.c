@@ -1,5 +1,5 @@
 /*
- * $XConsortium: renderers.c,v 1.1 91/05/10 14:46:38 keith Exp $
+ * $XConsortium: renderers.c,v 1.2 91/10/10 13:02:11 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -23,7 +23,7 @@
  * Author:  Keith Packard, MIT X Consortium
  */
 
-#include    "fontfilest.h"
+#include "fntfilst.h"
 
 FontFileRegisterFontFileFunctions ()
 {

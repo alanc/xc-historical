@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontfile.h,v 1.2 92/11/22 11:22:49 gildea Exp $
+ * $XConsortium: fontfile.h,v 1.3 93/08/24 18:49:23 gildea Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
