@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.47 94/04/17 20:45:39 rws Exp rws $
+.\" $XConsortium: a2x.ms,v 1.48 94/10/01 22:08:49 rws Exp rws $
 .de Ds
 .RS
 .nf
@@ -23,14 +23,14 @@
 .sp 10
 .ce 2
 Bob Scheifler
-MIT X Consortium
+X Consortium
 .ps 9
 .nr PS 9
 .sp 10
 .LP
 .nf
 DragonDictate is a trademark of Dragon Systems, Inc.
-X Window System is a trademark of the Massachusetts Institute of Technology
+X Window System is a trademark of X Consortium, Inc.
 DESQview/X is a trademark of Quarterdeck Office Systems
 .fi
 .ps 10
@@ -902,7 +902,7 @@ If an application grabs exclusive control of the server (using the Xlib
 function XGrabServer), \fBa2x\fP might not be able to function; protocol
 requests from \fBa2x\fP might be suspended just as other X clients will have
 their requests suspended.  Newer versions of the DEC-XTRAP (version 3.2a)
-and XTEST (version 2.2) extensions provide a mechanism to make \fBa2x\fP
+and XTEST (version 2.2, in R6) extensions provide a mechanism to make \fBa2x\fP
 impervious to server grabs, so this will not be a problem when using a new
 enough version of one of these extensions.
 .LP
