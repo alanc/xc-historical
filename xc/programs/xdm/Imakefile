@@ -24,6 +24,9 @@ DEPLIBS = $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) \
 	  $(DEPXAUTHLIB) $(DEPXDMCPLIB)
 LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
 		  $(XAUTHLIB) $(XDMCPLIB) $(XLIB) $(RPCLIB)
+#ifdef MacIIArchitecture
+SYSLIBS = -lposix
+#endif
           SRCS1 = auth.c daemon.c server.c dpylist.c dm.c error.c \
 		  file.c greet.c reset.c resource.c protodpy.c policy.c \
 		  session.c socket.c util.c verify.c Login.c mitauth.c \
@@ -83,7 +86,7 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 		  '-DDEF_ACCESS_FILE="$(XDMDIR)/Xaccess"' \
 		  '-DCPP_PROGRAM="$(CPP_PROGRAM)"'
 
-ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES), /**/)
+ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),$(SYSLIBS))
 SingleProgramTarget(xdmshell,$(OBJS2), /**/, /**/)
 SingleProgramTarget(sessreg,$(OBJS4), /**/, /**/)
 #if BuildChooser
