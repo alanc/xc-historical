@@ -29,7 +29,7 @@
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.8 87/05/29 08:44:41 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.9 87/06/04 03:02:51 dkk Locked $";
 #endif
 
 #include <X11/X.h>
@@ -37,6 +37,7 @@ static char *rcsid_xwd_c = "$Header: xwd.c,v 1.8 87/05/29 08:44:41 dkk Locked $"
 #include <sys/types.h>
 #include <stdio.h>
 #include <strings.h>
+#include <fonts/cursorfont.h>
 
 char *calloc();
 
@@ -61,10 +62,7 @@ char *calloc();
 
 #define DONT_KNOW_YET 17
 
-#define target 50
-
 extern int errno;
-extern XImage *XCreateImage();
 
 main(argc, argv)
     int argc;
@@ -73,7 +71,7 @@ main(argc, argv)
     register int i, *histbuffer;
     register u_short *wbuffer;
     register char *buffer, *cbuffer;
-
+    
     unsigned buffer_size;
 /*    unsigned int x, y;  %*/
     unsigned int shape;
@@ -101,6 +99,7 @@ main(argc, argv)
 
     Pixmap source;
     Pixmap mask;
+    XImage *XCreateImage();
     XColor *scolor;
     XColor *bcolor;
     XColor *pixcolors;
@@ -178,9 +177,9 @@ main(argc, argv)
     /*
      * Store the cursor incase we need it.
      */
-    shape = target;
-    source = BlackPixel(dpy, screen); /* *target_bits; %%*/
-    mask = WhitePixel(dpy, screen);   /* *target_mask_bits; %%*/
+    shape = XC_tcross;  /* Value = 104.  Comes from fonts/cursorfont.h */
+    source = BlackPixel(dpy, screen);
+    mask = WhitePixel(dpy, screen);
     if (debug) fprintf(stderr,"xwd: Storing target cursor.\n");
     if(!(cursor = XCreateFontCursor(dpy, shape)))
 
@@ -264,7 +263,10 @@ main(argc, argv)
     /*
      * Determine the pixmap size.
      */
-    if (format == XYPixmap) {
+    if (format == XYBitmap) {
+      buffer_size = BitmapSize(virt_width, virt_height);
+    }
+    else if (format == XYPixmap) {
 	buffer_size = XYPixmapSize(virt_width, virt_height,
 				   DisplayPlanes(dpy, screen));
 	if (debug) {
@@ -307,6 +309,8 @@ main(argc, argv)
     width = virt_width;
     height = virt_height;
     plane_mask = 1;
+
+    XCreateImage (dpy, visual, depth, format, 0, image->data, width, height);
 
     image = XGetImage ( dpy, image_win, virt_x, virt_y, width, 
 		       height, plane_mask, format);
@@ -406,7 +410,7 @@ if(DisplayPlanes(dpy, screen) > 16)
     if (debug) fprintf(stderr,"xwd: Constructing and dumping file header.\n");
     header.header_size = header_size;
     header.file_version = XWD_FILE_VERSION;
-    header.display_type = DisplayType(dpy, screen);
+    header.display_type = 0; /* DisplayType(dpy, screen);  [obsolete] %*/
     header.display_planes = DisplayPlanes(dpy, screen);
     header.pixmap_format = format;
     header.pixmap_width = virt_width;
@@ -431,7 +435,7 @@ if(DisplayPlanes(dpy, screen) > 16)
     /*
      * Write out the buffer.
      */
-    if (debug) fprintf(stderr,"xwd: Dumping pixmap.\n");
+    if (debug) fprintf(stderr,"xwd: Dumping pixmap.  bufsize=%d\n",buffer_size);
     (void) fwrite(image->data, (int) buffer_size, 1, out_file);
 
     /*
