@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 1.33 88/07/29 11:44:13 keith Exp $ */
+/* $XConsortium: mfbimage.c,v 1.34 88/09/06 14:53:31 jim Exp $ */
 
 #include "X.h"
 
@@ -59,6 +59,7 @@ SOFTWARE.
  */
 
 
+/*ARGSUSED*/
 void
 mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     DrawablePtr dst;
@@ -83,10 +84,7 @@ mfbPutImage(dst, pGC, depth, x, y, w, h, leftPad, format, pImage)
     /* mfb is always depth 1 */
     pFakePixmap = (PixmapPtr)mfbCreatePixmap(dst->pScreen, w+leftPad, h, 1);
     if (!pFakePixmap)
-    {
-	ErrorF( "mfbPutImage can't make temp pixmap\n");
 	return;
-    }
 
     pbits = pFakePixmap->devPrivate;
     pFakePixmap->devPrivate = (pointer)pImage;
@@ -125,7 +123,8 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     RegionPtr prgnDst;
     pointer pspare;
 
-    if (planeMask & 0x1)
+    if ((planeMask & 0x1) &&
+	(pPixmap = (PixmapPtr)mfbCreatePixmap(pDrawable->pScreen, w, h, 1)))
     {
         if (pDrawable->type == DRAWABLE_WINDOW)
         {
@@ -138,7 +137,6 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 	    yorg = 0;
         }
 
-        pPixmap = (PixmapPtr)mfbCreatePixmap(pDrawable->pScreen, w, h, 1);
         pspare = pPixmap->devPrivate;
         pPixmap->devPrivate = pdstLine;
         ptSrc.x = sx + xorg;
@@ -149,7 +147,7 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
         box.y2 = h;
 
         prgnDst = (*pDrawable->pScreen->RegionCreate)(&box, 1);
-        mfbDoBitblt(pDrawable, pPixmap, GXcopy, prgnDst, &ptSrc);
+        mfbDoBitblt(pDrawable, (DrawablePtr)pPixmap, GXcopy, prgnDst, &ptSrc);
 
 	if ((pDrawable->type == DRAWABLE_WINDOW) &&
 	    (((WindowPtr)pDrawable)->backingStore != NotUseful))
@@ -164,6 +162,6 @@ mfbGetImage( pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
     }
     else
     {
-	bzero(pdstLine, PixmapBytePad(w, 1) * h);
+	bzero((char *)pdstLine, PixmapBytePad(w, 1) * h);
     }
 }

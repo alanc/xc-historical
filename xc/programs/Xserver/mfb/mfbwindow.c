@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 1.10 88/10/20 20:02:34 keith Exp $ */
+/* $XConsortium: mfbwindow.c,v 1.11 89/03/16 14:46:52 jim Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -33,8 +33,9 @@ SOFTWARE.
 
 extern WindowRec WindowTable[];
 
-Bool mfbCreateWindow(pWin)
-register WindowPtr pWin;
+Bool
+mfbCreateWindow(pWin)
+    register WindowPtr pWin;
 {
     register mfbPrivWin *pPrivWin;
 
@@ -43,7 +44,7 @@ register WindowPtr pWin;
     pWin->PaintWindowBorder = mfbPaintWindowPR;
 
     pWin->CopyWindow = mfbCopyWindow;
-    if(!(pPrivWin = (mfbPrivWin *)Xalloc(sizeof(mfbPrivWin))))
+    if(!(pPrivWin = (mfbPrivWin *)xalloc(sizeof(mfbPrivWin))))
 	 return (FALSE);
     pWin->devPrivate = (pointer)pPrivWin;
     pPrivWin->pRotatedBorder = NullPixmap;
@@ -58,7 +59,7 @@ register WindowPtr pWin;
  * on some devices for Destroy to fail */
 Bool 
 mfbDestroyWindow(pWin)
-WindowPtr pWin;
+    WindowPtr pWin;
 {
     register mfbPrivWin *pPrivWin;
 
@@ -67,7 +68,7 @@ WindowPtr pWin;
     /* mfbDestroyPixmap() deals with any NULL pointers */
     mfbDestroyPixmap(pPrivWin->pRotatedBorder);
     mfbDestroyPixmap(pPrivWin->pRotatedBackground);
-    Xfree(pWin->devPrivate);
+    xfree(pWin->devPrivate);
     if (pWin->backingStore != NotUseful)
     {
 	miFreeBackingStore(pWin);
@@ -75,8 +76,9 @@ WindowPtr pWin;
     return (TRUE);
 }
 
+/*ARGSUSED*/
 Bool mfbMapWindow(pWindow)
-WindowPtr pWindow;
+    WindowPtr pWindow;
 {
     return (TRUE);
 }
@@ -89,10 +91,11 @@ or otherwise.)
 in pPrivWin->pRotated*
 */
 
+/*ARGSUSED*/
 Bool 
 mfbPositionWindow(pWin, x, y)
-register WindowPtr pWin;
-int x, y;
+    register WindowPtr pWin;
+    int x, y;
 {
     register mfbPrivWin *pPrivWin;
 
@@ -145,9 +148,10 @@ int x, y;
     return (TRUE);
 }
 
+/*ARGSUSED*/
 Bool 
 mfbUnmapWindow(pWindow)
-WindowPtr pWindow;
+    WindowPtr pWindow;
 {
     return (TRUE);
 }
@@ -202,7 +206,8 @@ mfbCopyWindow(pWin, ptOldOrg, prgnSrc)
     Duff(i, ppt->x = pbox->x1 + dx; ppt->y = pbox->y1 + dy; ppt++; pbox++);
 #endif  /* PURDUE */
 
-    mfbDoBitblt(pwinRoot, pwinRoot, GXcopy, prgnDst, pptSrc);
+    mfbDoBitblt((DrawablePtr)pwinRoot, (DrawablePtr)pwinRoot,
+		GXcopy, prgnDst, pptSrc);
     DEALLOCATE_LOCAL(pptSrc);
     (* pWin->drawable.pScreen->RegionDestroy)(prgnDst);
 }
@@ -260,18 +265,26 @@ mfbChangeWindowAttributes(pWin, mask)
 	      {
 		  if(mfbPadPixmap(pWin->backgroundTile))
 		  {
-		      pPrivWin->fastBackground = 1;
-		      pPrivWin->oldRotate.x = pWin->absCorner.x;
-		      pPrivWin->oldRotate.y = pWin->absCorner.y;
 		      if (pPrivWin->pRotatedBackground)
 			  mfbDestroyPixmap(pPrivWin->pRotatedBackground);
 		      pPrivWin->pRotatedBackground =
 			mfbCopyPixmap(pWin->backgroundTile);
-		      mfbXRotatePixmap(pPrivWin->pRotatedBackground,
-				       pWin->absCorner.x);
-		      mfbYRotatePixmap(pPrivWin->pRotatedBackground,
-				       pWin->absCorner.y);
-		      pWin->PaintWindowBackground = mfbPaintWindow32;
+		      if (pPrivWin->pRotatedBackground)
+		      {
+			  pPrivWin->fastBackground = 1;
+			  mfbXRotatePixmap(pPrivWin->pRotatedBackground,
+					   pWin->absCorner.x);
+			  mfbYRotatePixmap(pPrivWin->pRotatedBackground,
+					   pWin->absCorner.y);
+			  pPrivWin->oldRotate.x = pWin->absCorner.x;
+			  pPrivWin->oldRotate.y = pWin->absCorner.y;
+			  pWin->PaintWindowBackground = mfbPaintWindow32;
+		      }
+		      else
+		      {
+			  pPrivWin->fastBackground = 0;
+			  pWin->PaintWindowBackground = miPaintWindow;
+		      }
 		  }
 		  else
 		  {
@@ -320,4 +333,3 @@ mfbChangeWindowAttributes(pWin, mask)
      * we've called, so we have to assume it worked */
     return (TRUE);
 }
-
