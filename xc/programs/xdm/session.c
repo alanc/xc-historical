@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: session.c,v 1.36 90/09/13 18:28:28 keith Exp $
+ * $XConsortium: session.c,v 1.37 90/09/14 17:51:38 keith Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -114,6 +114,10 @@ struct display	*d;
      */
     LoadXloginResources (d);
     dpy = InitGreet (d);
+    if (!dpy) {
+	LogError ("Cannot reopen display %s for greet window\n", d->name);
+	exit (RESERVER_DISPLAY);
+    }
     for (;;) {
 	/*
 	 * Greet user, requesting name/password
