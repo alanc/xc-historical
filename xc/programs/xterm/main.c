@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.169 91/02/21 16:41:12 rws Exp $ */
+/* $XConsortium: main.c,v 1.170 91/03/04 14:50:28 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -113,7 +113,10 @@ SOFTWARE.
 #ifdef hpux
 #define HAS_BSD_GROUPS
 #include <sys/ptyio.h>
-#endif
+#endif /* hpux */
+#ifdef sgi
+#include <sys/sysmacros.h>
+#endif /* sgi */
 #endif /* SYSV */
 
 #ifndef SYSV				/* BSD systems */
@@ -1038,7 +1041,6 @@ char *basename(name)
 char *name;
 {
 	register char *cp;
-	char *rindex();
 
 	return((cp = rindex(name, '/')) ? cp + 1 : name);
 }
@@ -1067,7 +1069,7 @@ int *pty;
 #else
 	static int devindex, letter = 0;
 
-#if defined(umips) && defined (SYSTYPE_SYSV)
+#if defined(sgi) || (defined(umips) && defined (SYSTYPE_SYSV))
 	struct stat fstat_buf;
 
 	*pty = open ("/dev/ptc", O_RDWR);
@@ -1075,11 +1077,13 @@ int *pty;
 	  return(1);
 	}
 	sprintf (ttydev, "/dev/ttyq%d", minor(fstat_buf.st_rdev));
+#ifndef sgi
 	sprintf (ptydev, "/dev/ptyq%d", minor(fstat_buf.st_rdev));
 	if ((*tty = open (ttydev, O_RDWR)) < 0) {
 	  close (*pty);
 	  return(1);
 	}
+#endif /* !sgi */
 	/* got one! */
 	return(0);
 #else /* not (umips && SYSTYPE_SYSV) */
@@ -1637,7 +1641,7 @@ spawn ()
 #endif	/* USE_SYSV_PGRP */
 		while (1) {
 #ifdef TIOCNOTTY
-			if (!no_dev_tty && (tty = open ("/dev/tty", 2)) >= 0) {
+			if (!no_dev_tty && (tty = open ("/dev/tty", O_RDWR)) >= 0) {
 				ioctl (tty, TIOCNOTTY, (char *) NULL);
 				close (tty);
 			}
@@ -2260,7 +2264,8 @@ spawn ()
 			if (get_pty(&screen->respond)) {
 			    /* no more ptys! */
 			    (void) fprintf(stderr,
-				   "%s: no available ptys\n", xterm_name);
+			      "%s: child process can find no available ptys\n",
+			      xterm_name);
 			    handshake.status = PTY_NOMORE;
 			    write(pc_pipe[1], (char *) &handshake, sizeof(handshake));
 			    exit (ERROR_PTYS);
@@ -2425,11 +2430,15 @@ Exit(n)
 	if (!am_slave) {
 		/* restore ownership of tty and pty */
 		chown (ttydev, 0, 0);
+#ifndef sgi
 		chown (ptydev, 0, 0);
+#endif /* !sgi */
 
 		/* restore modes of tty and pty */
 		chmod (ttydev, 0666);
+#ifndef sgi
 		chmod (ptydev, 0666);
+#endif /* !sgi */
 	}
 	exit(n);
 	SIGNAL_RETURN;
