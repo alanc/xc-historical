@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.43 93/08/22 10:09:45 rws Exp $ */
+/* $XConsortium: x11perf.c,v 2.44 93/08/22 11:18:04 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -66,6 +66,7 @@ static int	seconds		= 5;
 
 static Window   status;     /* Status window and GC */
 static GC       tgc;
+static int	HSx, HSy;
 
 static double syncTime = 0.0;
 
@@ -423,7 +424,7 @@ void HardwareSync(xp)
      */
     XImage *image;
 
-    image = XGetImage(xp->d, xp->p ? xp->p : xp->w, WIDTH-1, HEIGHT-1, 
+    image = XGetImage(xp->d, xp->p ? xp->p : xp->w, HSx, HSy, 
 		      1, 1, ~0, ZPixmap);
     if (image) XDestroyImage(image);
 }
@@ -1122,6 +1123,12 @@ main(argc, argv)
     xparms.ddbackground =
 	AllocateColor(xparms.d, ddbackground, WhitePixel(xparms.d, screen));
     xparms.w = CreatePerfWindow(&xparms, 2, 2, WIDTH, HEIGHT);
+    HSx = WIDTH-1;
+    if (3 + WIDTH > DisplayWidth(xparms.d, screen))
+	HSx = DisplayWidth(xparms.d, screen) - 4;
+    HSy = HEIGHT-1;
+    if (3 + HEIGHT > DisplayHeight(xparms.d, screen))
+	HSy = DisplayHeight(xparms.d, screen) - 4;
     status = CreatePerfWindow(&xparms, 2, HEIGHT+5, WIDTH, 20);
     tgcv.foreground = BlackPixel(xparms.d, screen);
     tgcv.background = WhitePixel(xparms.d, screen);
