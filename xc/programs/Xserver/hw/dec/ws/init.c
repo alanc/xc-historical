@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: init.c,v 1.4 91/08/26 13:27:24 rws Exp $ */
+/* $XConsortium: init.c,v 1.5 92/04/06 18:18:58 keith Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -43,8 +43,8 @@ SOFTWARE.
 #include <sys/inputdevice.h>
 #include "ws.h"
 
-extern void wsMouseProc();
-extern void wsKeybdProc();
+extern int wsMouseProc();
+extern int wsKeybdProc();
 extern void wsClick();
 extern void wsChangePointerControl();
 
