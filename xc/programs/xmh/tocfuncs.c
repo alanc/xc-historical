@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: tocfuncs.c,v 2.16 88/09/06 17:23:37 jim Exp $";
+static char rcs_id[] = "$XConsortium: tocfuncs.c,v 2.17 89/04/10 11:50:20 converse Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -240,19 +240,24 @@ Scrn scrn;
     if (toc == NULL) return;
     mlist = CurMsgListOrCurMsg(toc);
     i = 0;
-    while (i < mlist->nummsgs) {
-	strcpy( str, app_resources.defPrintCommand );
-	used = strlen(str) + 2;
-	while (i < mlist->nummsgs &&
-	       (msg = MsgFileName(mlist->msglist[i])) &&
-	       (used + (len = strlen(msg) + 1)) < MAX_SYSTEM_LEN) {
-	    strcat( str, " " );
-	    strcat( str, msg );
-	    used += len;
-	    i++;
+    if (mlist->nummsgs) {
+	while (i < mlist->nummsgs) {
+	    strcpy( str, app_resources.defPrintCommand );
+	    used = strlen(str) + 2;
+	    while (i < mlist->nummsgs &&
+		   (msg = MsgFileName(mlist->msglist[i])) &&
+		   (used + (len = strlen(msg) + 1)) < MAX_SYSTEM_LEN) {
+		strcat( str, " " );
+		strcat( str, msg );
+		used += len;
+		i++;
+	    }
+	    DEBUG( str );
+	    (void) system(str);
 	}
-	DEBUG( str );
-	(void) system(str);
+    }
+    else {
+	PopupNotice( "print: no messages selected", NULL, NULL );
     }
     FreeMsgList(mlist);
 }
@@ -271,7 +276,7 @@ Scrn scrn;
     argv[1] = TocMakeFolderName(toc);
     argv[2] = "-pack";
     argv[3] = "-fast";
-    DoCommand(argv, (char *) NULL, "/dev/null");
+    DoCommand(argv, (char *) NULL, (char *) NULL);
     XtFree(argv[1]);
     XtFree((char *) argv);
     TocForceRescan(toc);
@@ -290,7 +295,7 @@ Scrn scrn;
     argv[0] = "sortm";
     argv[1] = TocMakeFolderName(toc);
     argv[2] = "-noverbose";
-    DoCommand(argv, (char *) NULL, "/dev/null");
+    DoCommand(argv, (char *) NULL, (char *) NULL);
     XtFree(argv[1]);
     XtFree((char *) argv);
     TocForceRescan(toc);
@@ -436,7 +441,7 @@ TwiddleOperation op;
 	(void) sprintf(str, "%d", MsgGetId(mlist->msglist[i]));
 	argv[6 + i] = MallocACopy(str);
     }
-    DoCommand(argv, (char *) NULL, "/dev/null");
+    DoCommand(argv, (char *) NULL, (char *) NULL);
     for (i = 0; i < mlist->nummsgs; i++)
         free((char *) argv[6 + i]);
     XtFree(argv[1]);
