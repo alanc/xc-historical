@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.57 88/09/16 12:38:45 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.58 88/09/21 16:11:05 swick Exp $";
 #endif
 
 
@@ -162,6 +162,21 @@ static void ClassInitialize()
     XtAddConverter(XtRString, XtREditMode, CvtStringToEditMode, NULL, 0);
 }
 
+static void CreateScrollbar(w)
+    TextWidget w;
+{
+    Arg args[1];
+    Dimension bw;
+    Widget sbar;
+
+    XtSetArg(args[0], XtNheight, w->core.height);
+    w->text.sbar = sbar =
+	    XtCreateWidget("scrollbar", scrollbarWidgetClass, w, args, ONE);
+    XtAddCallback( sbar, XtNscrollProc, ScrollUpDownProc, (caddr_t)w );
+    XtAddCallback( sbar, XtNthumbProc, ThumbProc, (caddr_t)w );
+    w->text.leftmargin += sbar->core.width + (bw = sbar->core.border_width);
+    XtMoveWidget( sbar, -(Position)bw, -(Position)bw );
+}
 
 /* ARGSUSED */
 static void Initialize(request, new)
@@ -197,22 +212,8 @@ static void Initialize(request, new)
     ctx->text.update_disabled = False;
     ctx->text.old_insert = -1;
 
-    if (ctx->text.options & scrollVertical) {
-	static Arg args[] = {
-	    {XtNheight, NULL},
-	};
-	Dimension bw;
-	Widget sbar;
-        args[0].value = (XtArgVal)ctx->core.height;
-	ctx->text.sbar = sbar =
-	    XtCreateWidget("scrollbar", scrollbarWidgetClass, ctx,
-			   args, XtNumber(args));
-	XtAddCallback( sbar, XtNscrollProc, ScrollUpDownProc, (caddr_t)ctx );
-	XtAddCallback( sbar, XtNthumbProc, ThumbProc, (caddr_t)ctx );
-	ctx->text.leftmargin +=
-	    sbar->core.width + (bw = sbar->core.border_width);
-	XtMoveWidget( sbar, -(Position)bw, -(Position)bw );
-    }
+    if (ctx->text.options & scrollVertical)
+	CreateScrollbar(ctx);
 }
 
 void ForceBuildLineTable();
@@ -1374,22 +1375,38 @@ Widget current, request, new;
 
     _XtTextPrepareToUpdate(oldtw);
     
-    if (oldtw->text.source != newtw->text.source || redisplay) {
+    if ((oldtw->text.options & scrollVertical)
+		!= (newtw->text.options & scrollVertical)) {
+	newtw->text.leftmargin = newtw->text.client_leftmargin;
+	if (newtw->text.options & scrollVertical)
+	    CreateScrollbar(newtw);
+	else {
+	    XtDestroyWidget(oldtw->text.sbar);
+	    newtw->text.sbar = NULL;
+	}
+    }
+    else if (oldtw->text.client_leftmargin != newtw->text.client_leftmargin) {
+	newtw->text.leftmargin = newtw->text.client_leftmargin;
+	if (newtw->text.options & scrollVertical) {
+	    newtw->text.leftmargin +=
+		    newtw->text.sbar->core.width +
+		    newtw->text.sbar->core.border_width;
+	}
+    }
+
+    if (oldtw->text.source != newtw->text.source ||
+	oldtw->text.sink != newtw->text.sink ||
+	oldtw->text.lt.top != newtw->text.lt.top ||
+	oldtw->text.leftmargin != newtw->text.leftmargin ||
+	((oldtw->text.options & wordBreak)
+			!= (newtw->text.options & wordBreak)))
+    {
 	ForceBuildLineTable(newtw);
 	redisplay = TRUE;
     }
 
-    if (oldtw->text.sink != newtw->text.sink)
-	redisplay = TRUE;
-
     if (oldtw->text.insertPos != newtw->text.insertPos)
 	oldtw->text.showposition = TRUE;
-
-    if (oldtw->text.lt.top != newtw->text.lt.top)
-	redisplay = TRUE;
-
-    if (oldtw->text.leftmargin != newtw->text.leftmargin)
-	redisplay = TRUE;
 
     if (XtIsRealized(newtw)
 	&& ((oldtw->text.options & wordBreak)
