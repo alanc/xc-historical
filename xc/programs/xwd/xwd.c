@@ -26,11 +26,24 @@
  *      V5 padding at the end. Up to 16-bit displays are supported. I
  *      don't yet know how 24- to 32-bit displays will be handled under
  *      the Version 11 protocol.
+ *
+ *  6/15/87 David Krikorian, MIT Project Athena
+ *    - VERSION 7 runs under the X Version 11 servers, while the previous
+ *      versions of xwd were are for X Version 10.  This version is based
+ *      on xwd version 6, and should eventually have the same color
+ *      abilities. (Xwd V7 has yet to be tested on a color machine, so
+ *      all color-related code is commented out until color support
+ *      becomes practical.)
  */
 
 #ifndef lint
-static char *rcsid_xwd_c = "$Header: xwd.c,v 1.10 87/06/11 12:02:47 dkk Locked $";
+static char *rcsid_xwd_c = "$Header: xwd.c,v 1.11 87/06/13 10:55:15 dkk Locked $";
 #endif
+
+/*%
+ *%    This is the format for commenting out color-related code until
+ *%  color can be supported.
+%*/
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
@@ -51,8 +64,11 @@ char *calloc();
 #define UBPS (sizeof(short)/2) /* useful bytes per short */
 #define BitmapSize(width, height) (((((width) + 15) >> 3) &~ 1) * (height) * UBPS)
 #define XYPixmapSize(width, height, planes) (BitmapSize(width, height) * (planes))
+
+/*%
 #define BZPixmapSize(width, height) ((width) * (height))
 #define WZPixmapSize(width, height) (((width) * (height)) << 1)
+%*/
 
 #define FAILURE 0
 
@@ -76,7 +92,7 @@ main(argc, argv)
     int virt_x, virt_y;
     int win_name_size;
     int header_size;
-    int ncolors = 0;
+/*%    int ncolors = 0;   %*/
     int pointer_mode, keyboard_mode;
     int screen;
     int depth;
@@ -95,9 +111,11 @@ main(argc, argv)
 
     Pixmap source;
     Pixmap mask;
+/*%
     XColor *scolor;
     XColor *bcolor;
     XColor *pixcolors;
+%*/
     Display *dpy;
     Window target_win;
     Window confine_to;
@@ -115,7 +133,7 @@ main(argc, argv)
 
     pointer_mode = keyboard_mode = GrabModeAsync;
 
-/*    *bcolor = *scolor = DONT_KNOW_YET    %%*/
+/*%    *bcolor = *scolor = DONT_KNOW_YET    %*/
 
     for (i = 1; i < argc; i++) {
 	str_index = (char *)index (argv[i], ':');
@@ -172,7 +190,7 @@ main(argc, argv)
     /*
      * Store the cursor incase we need it.
      */
-    shape = XC_center_ptr;  /* Value = %%.  Comes from fonts/cursorfont.h */
+    shape = XC_center_ptr;  /* Comes from fonts/cursorfont.h */
     source = BlackPixel(dpy, screen);
     mask = WhitePixel(dpy, screen);
     if (debug) fprintf(stderr,"xwd: Storing target cursor.\n");
@@ -262,6 +280,8 @@ main(argc, argv)
     if (format == XYBitmap) {
       buffer_size = BitmapSize(virt_width, virt_height);
     }
+
+/*%
     else if (format == XYPixmap) {
 	buffer_size = XYPixmapSize(virt_width, virt_height,
 				   DisplayPlanes(dpy, screen));
@@ -284,14 +304,19 @@ main(argc, argv)
 	      "xwd: Pixmap in word ZFormat, size %d bytes.\n", buffer_size);
 	}
     }
+%*/
 
     /*
-     * Snarf the pixmap out of the frame buffer.
+     * Snarf the pixmap with XGetImage.
      * Color windows get snarfed in Z format first to check the color
      * map allocations before resnarfing if XY format selected.
      */
 
     plane_mask = 1;
+
+/*    XGetImage() calls XCreateImage() internally, and this, in turn
+ *  does the memory allocation so we don't have to.
+ */
 
     image = XGetImage ( dpy, image_win, 0, 0, virt_width,
 		       virt_height, plane_mask, format);
@@ -301,15 +326,17 @@ main(argc, argv)
     /*
      * Find the number of colors used, then write them out to the file.
      */
-    ncolors = 0;
+
+/*%    ncolors = 0;
   if(DisplayPlanes(dpy, screen) > 1) {
 	if(DisplayPlanes(dpy, screen) < 9) {
 	    histbuffer = (int *)calloc(256, sizeof(int));
 	    bzero(histbuffer, 256*sizeof(int));
 	    pixcolors = (XColor *)calloc(1, sizeof(XColor));
 	    for(i=0; i<buffer_size; i++) {
-
+%*/
 		/* if previously found, skip color query */
+/*%
 		if(histbuffer[(int)buffer[i]] == 0) {
 		    pixcolors = 
 		      (XColor *)realloc(pixcolors, sizeof(XColor)*(++ncolors));
@@ -333,9 +360,9 @@ main(argc, argv)
 	    bzero(histbuffer, 65536*sizeof(int));
 	    pixcolors = (XColor *)calloc(1, sizeof(XColor));
 	    for(i=0; i<(buffer_size/sizeof(u_short)); i++) {
-
+%*/
 		/* if previously found, skip color query */
-
+/*%
 		if(histbuffer[(int)wbuffer[i]] == 0) {
 		    pixcolors = 
 		      (XColor *)realloc(pixcolors, sizeof(XColor)*(++ncolors));
@@ -357,17 +384,22 @@ main(argc, argv)
 	else
 if(DisplayPlanes(dpy, screen) > 16)
 	  Error("Unable to handle more than 16 planes at this time");
-
+%*/
 	/* reread in XY format if necessary */
+/*%
 	if(format == XYPixmap) {
 	    image = XGetImage(dpy, image_win, 0, 0, virt_width,
 	                      virt_height, plane_mask, format);
-		 /*  plane mask must be assigned a value  %%*/
-	}
+%*/
 
+/*%
+ *%    Plane mask must be assigned a value.
+%*/
+
+/*%	}
 	free(histbuffer);
-
    }
+%*/
 
     /*
      * Inform the user that the image has been retrieved.
@@ -398,7 +430,7 @@ if(DisplayPlanes(dpy, screen) > 16)
     header.window_x = win_info.x;
     header.window_y = win_info.y;
     header.window_bdrwidth = win_info.border_width;
-    header.window_ncolors = ncolors;
+    header.window_ncolors = 0;  /*%  = ncolors;  %*/
 
     (void) fwrite((char *)&header, sizeof(header), 1, out_file);
     (void) fwrite(win_name, win_name_size, 1, out_file);
@@ -406,14 +438,22 @@ if(DisplayPlanes(dpy, screen) > 16)
     /*
      * Write out the color maps, if any
      */
-
+/*%
     if (debug) fprintf(stderr,"xwd: Dumping %d colors.\n",ncolors);
     (void) fwrite(pixcolors, sizeof(XColor), ncolors, out_file);
+%*/
 
     /*
      * Write out the buffer.
      */
     if (debug) fprintf(stderr,"xwd: Dumping pixmap.  bufsize=%d\n",buffer_size);
+
+/*
+ *    This copying of the bit stream (data) to a file is to be replaced
+ *  by an X server call which hasn't been written yet.  It is not clear
+ *  what other functions of xwd will be taken over by this (as yet)
+ *  non-existant X function.
+ */
     (void) fwrite(image->data, (int) buffer_size, 1, out_file);
 
     /*
@@ -425,8 +465,10 @@ if(DisplayPlanes(dpy, screen) > 16)
     /*
      * free the color buffer.
      */
+/*%
     if(debug && ncolors > 0) fprintf(stderr,"xwd: Freeing color map.\n");
     if(ncolors > 0) free(pixcolors);
+%*/
 
     /*
      * Free the pixmap buffer.
