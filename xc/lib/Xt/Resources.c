@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Resources.c,v 1.41 88/03/16 10:44:48 swick Exp $";
+static char rcsid[] = "$Header: Resources.c,v 1.42 88/03/16 10:56:01 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -265,7 +265,8 @@ static void XrmGetResources(widget, base, names, classes, length,
 	    searchList = NULL;
 	    do {
 		searchList = (XrmHashTable*)
-		    XtRealloc(searchList, (searchListSize *= 2));
+		    XtRealloc(searchList,
+			      sizeof(XrmHashTable) * (searchListSize *= 2));
 		status = XrmQGetSearchList(XtDefaultDB, names, classes,
 					   searchList, searchListSize);
 	    } while (!status);
