@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.30 90/04/20 16:41:43 kit Exp $";
+static char Xrcsid[] = "$XConsortium: TextAction.c,v 1.31 90/04/26 17:35:57 converse Exp $";
 #endif /* lint && SABER */
 
 /***********************************************************
@@ -139,20 +139,26 @@ int buffer;
   XtFree(text.ptr);
 }
 
+/*ARGSUSED*/
 static void 
-UnKill(ctx, event)
+UnKill(ctx, event, p, n)
 TextWidget ctx;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   StartAction(ctx, event);
   StuffFromBuffer(ctx, 1);
   EndAction(ctx);
 }
 
+/*ARGSUSED*/
 static void
-Stuff(ctx, event)
+Stuff(ctx, event, p, n)
 TextWidget ctx;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   StartAction(ctx, event);
   StuffFromBuffer(ctx, 0);
@@ -298,64 +304,88 @@ Boolean include;
   EndAction(ctx);
 }
 
+/*ARGSUSED*/
 static void 
-MoveForwardChar(w, event)
+MoveForwardChar(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
    Move((TextWidget) w, event, XawsdRight, XawstPositions, TRUE);
 }
 
+/*ARGSUSED*/
 static void 
-MoveBackwardChar(w, event)
+MoveBackwardChar(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   Move((TextWidget) w, event, XawsdLeft, XawstPositions, TRUE);
 }
 
+/*ARGSUSED*/
 static void 
-MoveForwardWord(w, event)
+MoveForwardWord(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   Move((TextWidget) w, event, XawsdRight, XawstWhiteSpace, FALSE);
 }
 
+/*ARGSUSED*/
 static void 
-MoveBackwardWord(w, event)
+MoveBackwardWord(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   Move((TextWidget) w, event, XawsdLeft, XawstWhiteSpace, FALSE);
 }
 
-static void MoveForwardParagraph(w, event)
+/*ARGSUSED*/
+static void MoveForwardParagraph(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   Move((TextWidget) w, event, XawsdRight, XawstParagraph, FALSE);
 }
 
-static void MoveBackwardParagraph(w, event)
+/*ARGSUSED*/
+static void MoveBackwardParagraph(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   Move((TextWidget) w, event, XawsdLeft, XawstParagraph, FALSE);
 }
 
+/*ARGSUSED*/
 static void 
-MoveToLineEnd(w, event)
+MoveToLineEnd(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   Move((TextWidget) w, event, XawsdRight, XawstEOL, FALSE);
 }
 
+/*ARGSUSED*/
 static void 
-MoveToLineStart(w, event)
+MoveToLineStart(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   Move((TextWidget) w, event, XawsdLeft, XawstEOL, FALSE);
 }
@@ -395,34 +425,46 @@ XawTextScanDirection dir;
   EndAction(ctx);
 }
 
+/*ARGSUSED*/
 static void 
-MoveNextLine(w, event)
+MoveNextLine(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   MoveLine( (TextWidget) w, event, XawsdRight);
 }
 
+/*ARGSUSED*/
 static void 
-MovePreviousLine(w, event)
+MovePreviousLine(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   MoveLine( (TextWidget) w, event, XawsdLeft);
 }
 
+/*ARGSUSED*/
 static void
-MoveBeginningOfFile(w, event)
+MoveBeginningOfFile(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   Move((TextWidget) w, event, XawsdLeft, XawstAll, TRUE);
 }
 
+/*ARGSUSED*/
 static void 
-MoveEndOfFile(w, event)
+MoveEndOfFile(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   Move((TextWidget) w, event, XawsdRight, XawstAll, TRUE);
 }
@@ -443,18 +485,24 @@ XawTextScanDirection dir;
   EndAction(ctx);
 }
 
+/*ARGSUSED*/
 static void 
-ScrollOneLineUp(w, event)
+ScrollOneLineUp(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   Scroll( (TextWidget) w, event, XawsdLeft);
 }
 
+/*ARGSUSED*/
 static void 
-ScrollOneLineDown(w, event)
+ScrollOneLineDown(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   Scroll( (TextWidget) w, event, XawsdRight);
 }
@@ -476,18 +524,24 @@ XawTextScanDirection dir;
   EndAction(ctx);
 }
 
+/*ARGSUSED*/
 static void 
-MoveNextPage(w, event)
+MoveNextPage(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   MovePage((TextWidget) w, event, XawsdRight);
 }
 
+/*ARGSUSED*/
 static void 
-MovePreviousPage(w, event)
+MovePreviousPage(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   MovePage((TextWidget) w, event, XawsdLeft);
 }
@@ -558,62 +612,83 @@ Boolean	   include, kill;
   EndAction(ctx);
 }
 
+/*ARGSUSED*/
 static void 
-DeleteForwardChar(w, event)
+DeleteForwardChar(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   DeleteOrKill((TextWidget) w, event, XawsdRight, XawstPositions, TRUE, FALSE);
 }
 
+/*ARGSUSED*/
 static void
-DeleteBackwardChar(w, event)
+DeleteBackwardChar(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   DeleteOrKill((TextWidget) w, event, XawsdLeft, XawstPositions, TRUE, FALSE);
 }
 
+/*ARGSUSED*/
 static void 
-DeleteForwardWord(w, event)
+DeleteForwardWord(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   DeleteOrKill((TextWidget) w, event,
 	       XawsdRight, XawstWhiteSpace, FALSE, FALSE);
 }
 
+/*ARGSUSED*/
 static void 
-DeleteBackwardWord(w, event)
+DeleteBackwardWord(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   DeleteOrKill((TextWidget) w, event,
 	       XawsdLeft, XawstWhiteSpace, FALSE, FALSE);
 }
 
+/*ARGSUSED*/
 static void 
-KillForwardWord(w, event)
+KillForwardWord(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   DeleteOrKill((TextWidget) w, event, 
 	       XawsdRight, XawstWhiteSpace, FALSE, TRUE);
 }
 
+/*ARGSUSED*/
 static void 
-KillBackwardWord(w, event)
+KillBackwardWord(w, event, p, n)
 TextWidget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   DeleteOrKill((TextWidget) w, event,
 	       XawsdLeft, XawstWhiteSpace, FALSE, TRUE);
 }
 
+/*ARGSUSED*/
 static void
-KillToEndOfLine(w, event)
+KillToEndOfLine(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   TextWidget ctx = (TextWidget) w;
   XawTextPosition end_of_line;
@@ -630,10 +705,13 @@ XEvent *event;
   _XawTextSetScrollBars(ctx);
 }
 
+/*ARGSUSED*/
 static void 
-KillToEndOfParagraph(w, event)
+KillToEndOfParagraph(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   DeleteOrKill((TextWidget) w, event, XawsdRight, XawstParagraph, FALSE, TRUE);
 }
@@ -650,18 +728,24 @@ Boolean kill;
   _XawTextSetScrollBars(ctx);
 }
 
+/*ARGSUSED*/
 static void 
-KillCurrentSelection(w, event)
+KillCurrentSelection(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   _XawTextZapSelection( (TextWidget) w, event, TRUE);
 }
 
+/*ARGSUSED*/
 static void 
-DeleteCurrentSelection(w, event)
+DeleteCurrentSelection(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   _XawTextZapSelection( (TextWidget) w, event, FALSE);
 }
@@ -726,18 +810,24 @@ XEvent *event;
   return(XawEditDone);
 }
 
+/*ARGSUSED*/
 static void
-InsertNewLine(w, event)
+InsertNewLine(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   (void) LocalInsertNewLine( (TextWidget) w, event);
 }
 
+/*ARGSUSED*/
 static void 
-InsertNewLineAndIndent(w, event)
+InsertNewLineAndIndent(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   XawTextBlock text;
   XawTextPosition pos1, pos2;
@@ -913,9 +1003,11 @@ Cardinal *num_params;
 
 /* ARGSUSED */
 static void 
-RedrawDisplay(w, event)
+RedrawDisplay(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   StartAction( (TextWidget) w, event);
   _XawTextClearAndCenterDisplay((TextWidget) w);
@@ -924,9 +1016,11 @@ XEvent *event;
 
 /*ARGSUSED*/
 static void
-TextFocusIn (w, event)
+TextFocusIn (w, event, p, n)
 TextWidget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   TextWidget ctx = (TextWidget) w;
 
@@ -935,9 +1029,11 @@ XEvent *event;
 
 /*ARGSUSED*/
 static void
-TextFocusOut(w, event)
+TextFocusOut(w, event, p, n)
 TextWidget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   TextWidget ctx = (TextWidget) w;
 
@@ -988,10 +1084,13 @@ TextWidget ctx;
 
 }
 
+/*ARGSUSED*/
 static void
-InsertChar(w, event)
+InsertChar(w, event, p, n)
 Widget w;
 XEvent *event;
+String *p;
+Cardinal *n;
 {
   TextWidget ctx = (TextWidget) w;
   char *ptr, strbuf[BUFSIZ];
@@ -1494,7 +1593,7 @@ XtActionsRec textActionsTable[] = {
 /* new line stuff */
   {"newline-and-indent", 	InsertNewLineAndIndent},
   {"newline-and-backup", 	InsertNewLineAndBackup},
-  {"newline", 			(XtActionProc)InsertNewLine},
+  {"newline", 			InsertNewLine},
 /* Selection stuff */
   {"select-word", 		SelectWord},
   {"select-all", 		SelectAll},
