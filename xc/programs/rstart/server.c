@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: server.c,v 1.8 94/02/06 16:16:19 mor Exp $ */
 
 /************************************************************************/
 /* Copyright (c) 1993 Quarterdeck Office Systems			*/
@@ -176,7 +176,7 @@ Strdup(s)
 
     if (!s)
 	return s;
-    cs = malloc(strlen(s));
+    cs = malloc(strlen(s)+1);
     strcpy(cs, s);
     return cs;
 }
