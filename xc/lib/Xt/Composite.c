@@ -1,4 +1,4 @@
-/* $XConsortium: Composite.c,v 1.16 91/01/06 13:32:04 rws Exp $ */
+/* $XConsortium: Composite.c,v 1.17 91/02/17 13:56:48 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -37,11 +37,11 @@ static XtResource resources[] = {
      XtOffsetOf(CompositeRec, composite.insert_position), XtRImmediate, NULL},
 };
 
-void CompositeClassPartInitialize();
-void CompositeInitialize();
-void CompositeInsertChild();
-void CompositeDeleteChild();
-void CompositeDestroy();
+static void CompositeClassPartInitialize();
+static void CompositeInitialize();
+static void CompositeInsertChild();
+static void CompositeDeleteChild();
+static void CompositeDestroy();
 
 externaldef(compositeclassrec) CompositeClassRec compositeClassRec = {
   { /******* CorePart *******/
@@ -89,7 +89,7 @@ externaldef(compositeclassrec) CompositeClassRec compositeClassRec = {
 
 externaldef(compositewidgetclass) WidgetClass compositeWidgetClass = (WidgetClass) &compositeClassRec;
 
-void CompositeClassPartInitialize(widgetClass)
+static void CompositeClassPartInitialize(widgetClass)
 	WidgetClass widgetClass;
 {
     register CompositePartPtr wcPtr;
@@ -130,13 +130,13 @@ void CompositeClassPartInitialize(widgetClass)
 
 }
 
-void CompositeDestroy(w)
+static void CompositeDestroy(w)
     CompositeWidget	w;
 {
     XtFree((char *) w->composite.children);
 }
 
-void CompositeInsertChild(w)
+static void CompositeInsertChild(w)
     Widget	w;
 {
     register Cardinal	     position;
@@ -167,7 +167,7 @@ void CompositeInsertChild(w)
     cw->composite.num_children++;
 }
 
- void CompositeDeleteChild(w)
+static void CompositeDeleteChild(w)
     Widget	w;
 {
     register Cardinal	     position;
@@ -191,7 +191,7 @@ void CompositeInsertChild(w)
 }
 
 /* ARGSUSED */
-void CompositeInitialize(requested_widget, new_widget, args, num_args)
+static void CompositeInitialize(requested_widget, new_widget, args, num_args)
     Widget   new_widget, requested_widget;
     ArgList args;
     Cardinal *num_args;
