@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCmap.c,v 1.4 91/02/07 17:35:59 dave Exp $" */
+/* $XConsortium: XcmsCmap.c,v 1.5 91/02/11 18:17:26 dave Exp $" */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -31,15 +31,16 @@
  *
  */
 
+#define NEED_EVENTS
+#include "Xlibint.h"
 #include "Xcmsint.h"
-#include "Xlibos.h"
 #include "Xutil.h"
-#include <X11/Xproto.h>
 
 /*
  *      FORWARD DECLARATIONS
  */
 XcmsCmapRec *_XcmsAddCmapRec();
+static void _XcmsFreeClientCmaps();
 
 /*
  *      LOCAL VARIABLES
@@ -281,6 +282,7 @@ _XcmsAddCmapRec(dpy, cmap, windowID, visual)
     pNew->visual = visual;
     pNew->pNext = (XcmsCmapRec *)dpy->cms.clientCmaps;
     dpy->cms.clientCmaps = (caddr_t)pNew;
+    dpy->free_funcs->clientCmaps = _XcmsFreeClientCmaps;
 
     /*
      * Note, we don't create the XcmsCCC for pNew->pCCC here because
@@ -391,7 +393,7 @@ _XcmsDeleteCmapRec(dpy, cmap)
  *
  *	SYNOPSIS
  */
-void
+static void
 _XcmsFreeClientCmaps(dpy)
     Display *dpy;
 /*
