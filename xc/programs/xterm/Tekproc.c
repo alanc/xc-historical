@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.27 88/02/27 09:38:17 rws Exp $
+ * $Header: Tekproc.c,v 1.28 88/02/27 15:27:50 rws Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.27 88/02/27 09:38:17 rws Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.28 88/02/27 15:27:50 rws Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -289,7 +289,7 @@ Tekparse()
 				/* Set cross-hair cursor raster array */
 			if(GINcursor = make_tcross(
 			    screen->mousecolor,
-			    tekWidget->core.background_pixel))
+			    term->core.background_pixel))
 				XDefineCursor(
 				    screen->display,
 				    TShellWindow,
@@ -1111,7 +1111,7 @@ static void TekRealize (gw, valuemaskp, values)
 
     screen->xorplane = 1;
 
-    screen->Tbackground = tw->core.background_pixel;
+    screen->Tbackground = term->core.background_pixel;
     screen->Tforeground = screen->foreground;
     screen->Tcursorcolor = screen->foreground;
 
