@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.38 89/07/26 12:47:42 jim Exp $
+ * $XConsortium: screen.h,v 1.39 89/09/19 17:51:40 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -38,6 +38,13 @@
 #include "list.h"
 #include "menus.h"
 #include "iconmgr.h"
+
+typedef struct _StdCmap {
+    struct _StdCmap *next;
+    Atom atom;
+    int nmaps;
+    XStandardColormap *maps;
+} StdCmap;
 
 typedef struct ScreenInfo
 {
@@ -75,6 +82,11 @@ typedef struct ScreenInfo
     MouseButton WindowFunction;
 
     Colormap CMap;		/* default color map */
+    struct {
+	StdCmap *head, *tail;		/* list of maps */
+	StdCmap *mru;			/* most recently used in list */
+	int mruindex;			/* index of mru in entry */
+    } StdCmapInfo;
     ColorPair BorderTileC;	/* border tile colors */
     ColorPair TitleC;		/* titlebar colors */
     ColorPair MenuC;		/* menu colors */

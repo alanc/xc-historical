@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.69 89/10/27 13:44:16 jim Exp $
+ * $XConsortium: twm.c,v 1.70 89/10/27 14:01:36 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.69 89/10/27 13:44:16 jim Exp $";
+"$XConsortium: twm.c,v 1.70 89/10/27 14:01:36 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -257,7 +257,7 @@ main(argc, argv, environ)
 	RedirectError = FALSE;
 	XSetErrorHandler(Other);
 	XSelectInput(dpy, RootWindow (dpy, scrnum),
-	    ColormapChangeMask | EnterWindowMask | 
+	    ColormapChangeMask | EnterWindowMask | PropertyChangeMask | 
 	    SubstructureRedirectMask | KeyPressMask |
 	    ButtonPressMask | ButtonReleaseMask | ExposureMask);
 	XSync(dpy, 0);
@@ -318,6 +318,10 @@ main(argc, argv, environ)
 	 */
 	Scr->CMap = attr.colormap;
 	XInstallColormap(dpy, Scr->CMap);
+	Scr->StdCmapInfo.head = Scr->StdCmapInfo.tail = 
+	  Scr->StdCmapInfo.mru = NULL;
+	Scr->StdCmapInfo.mruindex = 0;
+	LocateStandardColormaps();
 	Scr->MyDisplayWidth = DisplayWidth(dpy, scrnum);
 	Scr->MyDisplayHeight = DisplayHeight(dpy, scrnum);
 

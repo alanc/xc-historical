@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.24 89/10/27 13:44:10 jim Exp $
+ * $XConsortium: util.c,v 1.25 89/10/27 14:01:01 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.24 89/10/27 13:44:10 jim Exp $";
+"$XConsortium: util.c,v 1.25 89/10/27 14:01:01 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -409,17 +409,87 @@ char *name;
     return pm;
 }
 
-/* list of standard colormaps */
-static Atom colormaps[] = {
-XA_RGB_COLOR_MAP,
-XA_RGB_BEST_MAP,
-XA_RGB_BLUE_MAP,
-XA_RGB_DEFAULT_MAP,
-XA_RGB_GRAY_MAP,
-XA_RGB_GREEN_MAP,
-XA_RGB_RED_MAP };
+InsertRGBColormap (a, maps, nmaps, replace)
+    Atom a;
+    XStandardColormap *maps;
+    int nmaps;
+    Bool replace;
+{
+    StdCmap *sc = NULL;
 
-static int nummaps = sizeof(colormaps) / sizeof(Atom);
+    if (replace) {			/* locate existing entry */
+	for (sc = Scr->StdCmapInfo.head; sc; sc = sc->next) {
+	    if (sc->atom == a) break;
+	}
+    }
+
+    if (!sc) {				/* no existing, allocate new */
+	sc = (StdCmap *) malloc (sizeof (StdCmap));
+	if (!sc) {
+	    fprintf (stderr, "twm: unable to allocate %d bytes for StdCmap\n",
+		     sizeof (StdCmap));
+	    return;
+	}
+    }
+
+    if (replace) {			/* just update contents */
+	if (sc->maps) XFree ((char *) maps);
+	if (sc == Scr->StdCmapInfo.mru) Scr->StdCmapInfo.mru = NULL;
+    } else {				/* else appending */
+	sc->next = NULL;
+	sc->atom = a;
+	if (Scr->StdCmapInfo.tail) {
+	    Scr->StdCmapInfo.tail->next = sc;
+	} else {
+	    Scr->StdCmapInfo.head = sc;
+	}
+	Scr->StdCmapInfo.tail = sc;
+    }
+    sc->nmaps = nmaps;
+    sc->maps = maps;
+
+    return;
+}
+
+RemoveRGBColormap (a)
+    Atom a;
+{
+    StdCmap *sc, *prev;
+
+    prev = NULL;
+    for (sc = Scr->StdCmapInfo.head; sc; sc = sc->next) {  
+	if (sc->atom == a) break;
+	prev = sc;
+    }
+    if (sc) {				/* found one */
+	if (sc->maps) XFree ((char *) sc->maps);
+	if (prev) prev->next = sc->next;
+	if (Scr->StdCmapInfo.head == sc) Scr->StdCmapInfo.head = sc->next;
+	if (Scr->StdCmapInfo.tail == sc) Scr->StdCmapInfo.tail = prev;
+	if (Scr->StdCmapInfo.mru == sc) Scr->StdCmapInfo.mru = NULL;
+    }
+    return;
+}
+
+LocateStandardColormaps()
+{
+    Atom *atoms;
+    int natoms;
+    int i;
+
+    atoms = XListProperties (dpy, Scr->Root, &natoms);
+    for (i = 0; i < natoms; i++) {
+	XStandardColormap *maps = NULL;
+	int nmaps;
+
+	if (XGetRGBColormaps (dpy, Scr->Root, &maps, &nmaps, atoms[i])) {
+	    /* if got one, then append to current list */
+	    InsertRGBColormap (atoms[i], maps, nmaps, False);
+	}
+    }
+    if (atoms) XFree ((char *) atoms);
+    return;
+}
 
 int
 GetColor(kind, what, name)
@@ -427,7 +497,6 @@ int kind;
 int *what;
 char *name;
 {
-    static XStandardColormap last = {0,0,0,0,0,0,0,0,0,0};
     XColor color, junkcolor;
     Status stat;
 
@@ -450,6 +519,7 @@ char *name;
 	/* if we could not allocate the color, let's see if this is a
 	 * standard colormap
 	 */
+	XStandardColormap *stdcmap = NULL;
 
 	/* parse the named color */
 	if (name[0] != '#')
@@ -460,35 +530,43 @@ char *name;
 	    return;
 	}
 
-        /* check to see if this is one of the standard colormaps */
-        if (last.colormap != Scr->CMap)
-        {
-            int i;
-            for (i = 0; i < nummaps; i++)
-            {
-                if (XGetStandardColormap(dpy, Scr->Root, &last, colormaps[i]))
-                {
-                    if (last.colormap == Scr->CMap)
-                        break;
-                }
-            }
-            if (last.colormap != Scr->CMap)
-                last.colormap = 0;
-        }
+	/*
+	 * look through the list of standard colormaps (check cache first)
+	 */
+	if (Scr->StdCmapInfo.mru && Scr->StdCmapInfo.mru->maps &&
+	    (Scr->StdCmapInfo.mru->maps[Scr->StdCmapInfo.mruindex].colormap ==
+	     Scr->CMap)) {
+	    stdcmap = &(Scr->StdCmapInfo.mru->maps[Scr->StdCmapInfo.mruindex]);
+	} else {
+	    StdCmap *sc;
 
-	/* if we found a standard colormap, figure out the pixel value */
-        if (last.colormap)
-        {
-            color.pixel = last.base_pixel +
-		(unsigned long)((color.red / 65535.0) * last.red_max + 0.5) *
-		last.red_mult +
-                (unsigned long)((color.green /65535.0) * last.green_max + 0.5)*
-		last.green_mult +
-		(unsigned long)((color.blue  / 65535.0) * last.blue_max + 0.5)*
-		last.blue_mult;
-        }
-        else
-	{
+	    for (sc = Scr->StdCmapInfo.head; sc; sc = sc->next) {
+		int i;
+
+		for (i = 0; i < sc->nmaps; i++) {
+		    if (sc->maps[i].colormap == Scr->CMap) {
+			Scr->StdCmapInfo.mru = sc;
+			Scr->StdCmapInfo.mruindex = i;
+			stdcmap = &(sc->maps[i]);
+			goto gotit;
+		    }
+		}
+	    }
+	}
+
+      gotit:
+	if (stdcmap) {
+            color.pixel = (stdcmap->base_pixel +
+			   ((unsigned long)((color.red / 65535.0) *
+					   stdcmap->red_max + 0.5) *
+			    stdcmap->red_mult) +
+			   ((unsigned long)((color.green /65535.0) *
+					    stdcmap->green_max + 0.5) *
+			    stdcmap->green_mult) +
+			   ((unsigned long)((color.blue  / 65535.0) *
+					    stdcmap->blue_max + 0.5) *
+			    stdcmap->blue_mult));
+        } else {
 	    fprintf (stderr, "twm: couldn't allocate color \"%s\"\n", name);
 	    return;
 	}

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.91 89/10/27 13:44:12 jim Exp $
+ * $XConsortium: events.c,v 1.92 89/10/27 14:01:11 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.91 89/10/27 13:44:12 jim Exp $";
+"$XConsortium: events.c,v 1.92 89/10/27 14:01:11 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -515,6 +515,26 @@ HandlePropertyNotify()
 #ifdef DEBUG_EVENTS
     fprintf(stderr, "PropertyNotify = %d\n", Event.xproperty.atom);
 #endif
+
+    /* watch for standard colormap changes */
+    if (Event.xproperty.window == Scr->Root) {
+	XStandardColormap *maps = NULL;
+	int nmaps;
+
+	switch (Event.xproperty.state) {
+	  case PropertyNewValue:
+	    if (XGetRGBColormaps (dpy, Scr->Root, &maps, &nmaps, 
+				  Event.xproperty.atom)) {
+		/* if got one, then replace any existing entry */
+		InsertRGBColormap (Event.xproperty.atom, maps, nmaps, True);
+	    }
+	    return;
+
+	  case PropertyDelete:
+	    RemoveRGBColormap (Event.xproperty.atom);
+	    return;
+	}
+    }
 
     if (Tmp_win == NULL)
 	return;
