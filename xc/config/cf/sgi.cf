@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.22 91/03/26 13:02:43 rws Exp $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.9 91/03/27 09:13:23 rws Exp $
 
 #define OSName			IRIX
 XCOMM operating system:  OSName
@@ -17,6 +17,7 @@ XCOMM operating system:  OSName
 
 #if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion > 2)
 #define NeedVarargsPrototypes	YES
+#define NeedConstPrototypes	YES
 #define NeedWidePrototypes	NO
 #endif
 
