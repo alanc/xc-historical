@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.36 91/04/07 17:58:57 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.37 91/04/10 11:41:42 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -541,10 +541,11 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    else
 		    {
 		    	tmp = BitLeft (bits, firstoff);
-		    	if (firstoff > 28)
+		    	if (firstoff >= 28)
 		    	{
 			    bits = *psrc++;
-			    tmp |= BitRight (bits, secondoff);
+			    if (firstoff != 28)
+				tmp |= BitRight (bits, secondoff);
 		    	}
 		    }
 		    src = GetFourBits(tmp);
@@ -552,24 +553,21 @@ cfbCopyPlane1to8 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc, planemask)
 		    pdst++;
 	    	}
 	    	nl = nlMiddle;
+		while (nl >= 8)
 		{
-	    	    while (nl >= 8)
-	    	    {
-		    	int	i;
-		    	nl -= 8;
-		    	tmp = BitLeft(bits, leftShift);
-		    	bits = *psrc++;
-		    	if (rightShift != 32)
-		    	    tmp |= BitRight(bits, rightShift);
-			StoreRopBits0(tmp);	FirstStep(tmp);
-			StoreRopBits(1,tmp);	Step(tmp);
-			StoreRopBits(2,tmp);	Step(tmp);
-			StoreRopBits(3,tmp);	Step(tmp);
-			StoreRopBits(4,tmp);	Step(tmp);
-			StoreRopBits(5,tmp);	Step(tmp);
-			StoreRopBits(6,tmp);	Step(tmp);
-			StoreRopBits(7,tmp);	EndStep(pdst,8);
-	    	    }
+		    nl -= 8;
+		    tmp = BitLeft(bits, leftShift);
+		    bits = *psrc++;
+		    if (rightShift != 32)
+			tmp |= BitRight(bits, rightShift);
+		    StoreRopBits0(tmp);	FirstStep(tmp);
+		    StoreRopBits(1,tmp);	Step(tmp);
+		    StoreRopBits(2,tmp);	Step(tmp);
+		    StoreRopBits(3,tmp);	Step(tmp);
+		    StoreRopBits(4,tmp);	Step(tmp);
+		    StoreRopBits(5,tmp);	Step(tmp);
+		    StoreRopBits(6,tmp);	Step(tmp);
+		    StoreRopBits(7,tmp);	EndStep(pdst,8);
 		}
 	    	if (nl || endmask)
 	    	{
