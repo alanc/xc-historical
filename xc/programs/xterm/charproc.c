@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.139 91/03/06 20:12:33 gildea Exp $
+ * $XConsortium: charproc.c,v 1.140 91/03/13 14:05:36 gildea Exp $
  */
 
 
@@ -1181,6 +1181,7 @@ v_write(f, d, len)
 
 static int select_mask;
 static int write_mask;
+static int pty_read_bytes;
 
 in_put()
 {
@@ -1189,6 +1190,41 @@ in_put()
     static struct timeval select_timeout;
 
     for( ; ; ) {
+	if (select_mask & pty_mask && eventMode == NORMAL) {
+	    if (screen->logging)
+		FlushLog(screen);
+	    bcnt = read(screen->respond, bptr = buffer, BUF_SIZE);
+	    if (bcnt < 0) {
+		if (errno == EIO)
+		    Cleanup (0);
+		else if (errno != EWOULDBLOCK)
+		    Panic(
+			  "input: read returned unexpected error (%d)\n",
+			  errno);
+	    } else if (bcnt == 0)
+		Panic("input: read returned zero\n", 0);
+	    else {
+		/* read from pty was successful */
+		if (!screen->output_eight_bits) {
+		    register int bc = bcnt;
+		    register Char *b = bptr;
+
+		    for (; bc > 0; bc--, b++) {
+			*b &= (Char) 0x7f;
+		    }
+		}
+		if (screen->scrollWidget && screen->scrollttyoutput &&
+		   screen->topline < 0)
+		    /* Scroll to bottom */
+		    WindowScroll(screen, 0);
+		pty_read_bytes += bcnt;
+		/* stop speed reading at some point to look for X stuff */
+		if (pty_read_bytes > 4096) /* random large number */
+		    select_mask &= ~pty_mask;
+		break;
+	    }
+	}
+	pty_read_bytes = 0;
 	/* update the screen */
 	if (screen->scroll_amt)
 	    FlushScroll(screen);
@@ -1232,36 +1268,6 @@ in_put()
 	    xevents();
 	}
 
-	if (select_mask & pty_mask) {
-	    if (screen->logging)
-		FlushLog(screen);
-	    bcnt = read(screen->respond, bptr = buffer, BUF_SIZE);
-	    if (bcnt < 0) {
-		if (errno == EIO)
-		    Cleanup (0);
-		else if (errno != EWOULDBLOCK)
-		    Panic(
-			  "input: read returned unexpected error (%d)\n",
-			  errno);
-	    } else if (bcnt == 0)
-		Panic("input: read returned zero\n", 0);
-	    else {
-		/* read from pty was successful */
-		if (!screen->output_eight_bits) {
-		    register int bc = bcnt;
-		    register Char *b = bptr;
-
-		    for (; bc > 0; bc--, b++) {
-			*b &= (Char) 0x7f;
-		    }
-		}
-		if (screen->scrollWidget && screen->scrollttyoutput &&
-		   screen->topline < 0)
-		    /* Scroll to bottom */
-		    WindowScroll(screen, 0);
-		break;
-	    }
-	}
     }
     bcnt--;
     return(*bptr++);
