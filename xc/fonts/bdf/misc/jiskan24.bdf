@@ -1,6 +1,7 @@
 STARTFONT 2.1
 COMMENT 24x24 kanji font
-COMMENT from Japanese Industrial Standard, JIS X 9052-1983, by permission
+COMMENT from Japanese Industrial Standard, JIS X 9052-1983
+COMMENT named "24-dots Matrix Character Patterns for Dot Printer"
 FONT -JIS-Fixed-Medium-R-Normal--24-230-75-75-C-240-JISX0208.1983-0
 SIZE 6 78 78
 FONTBOUNDINGBOX 24 24 0 2
@@ -8,7 +9,7 @@ STARTPROPERTIES 19
 FONT_ASCENT 22
 FONT_DESCENT 2
 DEFAULT_CHAR 8481
-COPYRIGHT "from JIS X 9051-1984, by permission"
+COPYRIGHT "from JIS X 9052-1983, by permission to use"
 FONTNAME_REGISTRY ""
 FOUNDRY "JIS"
 FAMILY_NAME "Fixed"
