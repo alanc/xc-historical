@@ -1,5 +1,5 @@
 %{
-/* $XConsortium: to_wfont.y,v 5.1 91/02/16 09:46:36 rws Exp $ */
+/* $XConsortium: to_wfont.y,v 5.2 91/03/22 14:52:45 rws Exp $ */
 
 /*****************************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -28,13 +28,16 @@ SOFTWARE.
 
 #define YYMAXDEPTH 10000
 
-#include <stdio.h>
 #include <X11/Xos.h>
+#include <stdio.h>
 #ifndef L_SET
 #define L_SET SEEK_SET
 #endif
 #include "wfont.h"
 
+#ifdef X_NOT_STDC_ENV
+FILE *fopen();
+#endif
 
 typedef struct {
 
@@ -221,8 +224,7 @@ main(argc, argv)
 				;
 			}
 		else {
-			FILE           *fp,
-			               *fopen();
+			FILE           *fp;
 
 			/* standard input redirection */
 			fp = fopen(*argv, "r");
@@ -474,8 +476,7 @@ fini()
 	register Path  *strptr;
 	register Property *prop_ptr;
 
-	FILE           *fp,
-	               *fopen();
+	FILE           *fp;
 	long            offset;
 	int             npath;
 	register int    i,
