@@ -1,5 +1,4 @@
 #include "x11perf.h"
-#include <stdio.h>
 
 #define NUMPOINTS 100
 
