@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.1 89/06/02 17:40:21 jim Exp $
+ * $XConsortium: fontgrid.c,v 1.2 89/06/02 20:08:38 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -52,6 +52,8 @@ static XtResource resources[] = {
 	offset(start_char), XtRString, (caddr_t) "0" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
 	offset(foreground_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
+    { XtNcenterChars, XtCCenterChars, XtRBoolean, sizeof(Boolean),
+	offset(center_chars), XtRString, (caddr_t) "FALSE" },
     { XtNboxChars, XtCBoxChars, XtRBoolean, sizeof(Boolean),
 	offset(box_chars), XtRString, (caddr_t) "FALSE" },
     { XtNboxColor, XtCForeground, XtRPixel, sizeof(Pixel),
@@ -258,26 +260,43 @@ static void paint_grid (fgw, col, row, ncols, nrows)
 	n = prevn;
 	for (i = 0, x = startx; i < ncols; i++, x += cw) {
 	    XChar2b thechar;
+	    int xoff = 0, yoff = 0;
 
 	    if (n > maxn) goto done;	/* no break out of nested */
 
 	    thechar.byte1 = (n >> 8);	/* high eight bits */
 	    thechar.byte2 = (n & 255);	/* low eight bits */
-	    if (p->box_chars) {
+	    if (p->box_chars || p->center_chars) {
 		XCharStruct metrics;
 		int direction, fontascent, fontdescent;
 
-		/*
-		 * XXX - extract info directly....
-		 */
 		XTextExtents16 (p->text_font, &thechar, 1, &direction,
 				&fontascent, &fontdescent, &metrics);
 
-		XDrawRectangle (dpy, wind, p->box_gc,
-				x, y - p->text_font->ascent, 
-				metrics.width, fontascent + fontdescent);
+		if (p->box_chars) {
+		    XDrawRectangle (dpy, wind, p->box_gc,
+				    x, y - p->text_font->ascent, 
+				    metrics.width - 1,
+				    fontascent + fontdescent - 1);
+		}
+		if (p->center_chars) {
+		    /*
+		     * We want to move the origin by enough to center the ink
+		     * within the cell.  The left edge will then be at 
+		     * (cell_width - (rbearing - lbearing)) / 2; so we subtract
+		     * the lbearing to find the origin.  Ditto for vertical.
+		     */
+		    xoff = (((p->cell_width -
+			      (metrics.rbearing - metrics.lbearing)) / 2) -
+			    p->internal_pad - metrics.lbearing);
+		    yoff = (((p->cell_height - 
+			      (metrics.descent + metrics.ascent)) / 2) -
+			    p->internal_pad -
+			    p->text_font->ascent + metrics.ascent);
+		}
 	    }
-	    XDrawString16 (dpy, wind, p->text_gc, x, y, &thechar, 1);
+	    XDrawString16 (dpy, wind, p->text_gc, x + xoff, y + yoff,
+			   &thechar, 1);
 	    n++;
 	}
 	prevn += tcols;

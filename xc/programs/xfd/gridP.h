@@ -15,6 +15,7 @@ extern FontGridClassRec fontgridClassRec;
 typedef struct _FontGridPart {
     XFontStruct *	text_font;		/* font to display */
     Pixel		foreground_pixel;	/* color of text */
+    Boolean		center_chars;	/* center characters in grid */
     Boolean		box_chars;	/* put box around logical width */
     Pixel		box_pixel;	/* for box_chars */
     XtCallbackList	callbacks;	/* for notifying caller */

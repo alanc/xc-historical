@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.2 89/06/02 17:40:24 jim Exp $
+ * $XConsortium: xfd.c,v 1.3 89/06/02 20:08:45 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -45,7 +45,7 @@ static XrmOptionDescRec xfd_options[] = {
 {"-start",	"*startChar",	XrmoptionSepArg, 	(caddr_t) NULL },
 {"-box",	"*grid.boxChars", XrmoptionNoArg,	(caddr_t) "on" },
 {"-bc",		"*grid.boxColor", XrmoptionSepArg, 	(caddr_t) NULL },
-{"-verbose",	"*verbose",	XrmoptionNoArg,		(caddr_t) "on" },
+{"-center",	"*grid.centerChars", XrmoptionNoArg,	(caddr_t) "on" },
 };
 
 static struct resources {
@@ -63,6 +63,7 @@ static XtResource Resources[] = {
 };
 
 static void do_quit(), do_next(), do_prev();
+static char *get_font_name();
 
 static XtActionsRec xfd_actions[] = {
   { "Quit", do_quit },
@@ -91,6 +92,8 @@ main (argc, argv)
     char **cpp;
     static void GotCharacter();
     static XtCallbackRec cb[2] = { { GotCharacter, NULL }, { NULL, NULL } };
+    XFontStruct *fs;
+    char *fontname;
 
     ProgramName = argv[0];
 
@@ -114,11 +117,9 @@ main (argc, argv)
     pane = XtCreateManagedWidget ("pane", panedWidgetClass, toplevel,
 				  NULL, ZERO);
 
-#ifdef notdef
     /* font name */
-    toplabel = XtCreateManagedWidget ("title", labelWidgetClass, pane, 
+    toplabel = XtCreateManagedWidget ("fontname", labelWidgetClass, pane, 
 				      NULL, ZERO);
-#endif
 
     /* button box */
     box = XtCreateManagedWidget ("box", boxWidgetClass, pane, NULL, ZERO);
@@ -144,12 +145,18 @@ main (argc, argv)
     XtSetArg (av[i], XtNbottom, XtChainBottom); i++;
     XtSetArg (av[i], XtNleft, XtChainLeft); i++;
     XtSetArg (av[i], XtNright, XtChainRight); i++;
-/*
-    XtSetArg (av[i], XtNwidth, DEFAULT_DRAWING_WIDTH); i++;
-    XtSetArg (av[i], XtNheight, DEFAULT_DRAWING_HEIGHT); i++;
- */
     XtSetArg (av[i], XtNcallback, cb); i++;
     grid = XtCreateManagedWidget ("grid", fontgridWidgetClass, form, av, i);
+
+    /* set the label at the top to tell us which font this is */
+    i = 0;
+    XtSetArg (av[i], XtNfont, &fs); i++;
+    XtGetValues (grid, av, i);
+    fontname = get_font_name (XtDisplay(toplevel), fs);
+    if (!fontname) fontname = "unknown font!";
+    i = 0;
+    XtSetArg (av[i], XtNlabel, fontname); i++;
+    XtSetValues (toplabel, av, i);
 
     /* and a label in which to put information */
     bottomlabel = XtCreateManagedWidget ("label", labelWidgetClass, pane,
@@ -179,9 +186,9 @@ static void GotCharacter (w, closure, data)
      * XXX - display in a text widget, along with perchar info
      */
     printf ("Character %u, 0x%02x%02x (%d, %d); font ascent %d, descent %d\n",
-	    n, fontascent, fontdescent,
+	    n, (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
 	    (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2,
-	    (unsigned) p->thechar.byte1, (unsigned) p->thechar.byte2);
+	    fontascent, fontdescent);
     printf ("    width %d, left %d, right %d, ascent %d, descent %d\n",
 	    metrics.width, metrics.lbearing, metrics.rbearing,
 	    metrics.ascent, metrics.descent);
@@ -256,3 +263,19 @@ static void do_next (w, event, params, num_params)
     printf ("goto next page\n");
 }
 
+
+static char *get_font_name (dpy, fs)
+    Display *dpy;
+    XFontStruct *fs;
+{
+    register XFontProp *fp;
+    register int i;
+    Atom fontatom = XInternAtom (dpy, "FONT", False);
+
+    for (i = 0, fp = fs->properties; i < fs->n_properties; i++, fp++) {
+	if (fp->name == fontatom) {
+	    return (XGetAtomName (dpy, fp->card32));
+	}
+    }
+    return NULL;
+}

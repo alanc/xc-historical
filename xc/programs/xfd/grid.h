@@ -4,6 +4,9 @@
 typedef struct _FontGridRec *FontGridWidget;
 extern WidgetClass fontgridWidgetClass;
 
+#define XtNcenterChars "centerChars"
+#define XtCCenterChars "CenterChars"
+
 #define XtNboxChars "boxChars"
 #define XtCBoxChars "BoxChars"
 
