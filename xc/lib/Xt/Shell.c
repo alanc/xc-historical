@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.67 89/09/29 14:42:56 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.68 89/09/29 17:45:52 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1303,12 +1303,14 @@ static void ChangeManaged(wid)
 	int x, y, width, height, win_gravity = -1, flag;
 	struct _OldXSizeHints hints, *hintsP;
 
-	if (w->core.width == 0 && w->core.height == 0 && childwid != NULL) {
-	    /* we inherit our child's attributes */
-	    w->core.width = childwid->core.width;
-	    w->core.height = childwid->core.height;
-	    if (is_wmshell)
+	if (childwid != NULL) {
+	    /* we default to our child's size */
+	    if (is_wmshell && (w->core.width == 0 || w->core.height == 0))
 		((WMShellWidget)wid)->wm.size_hints.flags |= PSize;
+	    if (w->core.width == 0)
+		w->core.width = childwid->core.width;
+	    if (w->core.height == 0)
+		w->core.height = childwid->core.height;
 	}
 	if(w->shell.geometry != NULL) {
 	    char def_geom[64];
