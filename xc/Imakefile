@@ -7,17 +7,15 @@ BOOTSTRAPCFLAGS =
         CHECKFN = $(CHECKFNSRC)/checkfn
 
 /**/#
-/**/# Preserve this order!
+/**/# The order given here is necessary for some things to build; note that in
+/**/# R4beta, the "fonts" and "rgb" directories will become subdirectories of
+/**/# server so that BuildServer is no longer necessary.
 /**/#
-  LIBDIRSTOMAKE = include lib extensions
 #if BuildServer
 SERVERDIRSTOMAKE = server fonts rgb
 #endif
-CLIENTDIRSTOMAKE = clients demos examples
-OTHERDIRSTOMAKE = util doc
-     DIRSTOMAKE = $(LIBDIRSTOMAKE) $(SERVERDIRSTOMAKE) $(CLIENTDIRSTOMAKE) 
-
-        SUBDIRS = $(DIRSTOMAKE) $(OTHERDIRSTOMAKE)
+        SUBDIRS = include lib extensions $(SERVERDIRSTOMAKE) clients demos \
+			examples util doc
   LNINSTALLDIRS = $(EXTENSIONSRC) $(LIBSRC)
 
 MakeSubdirs($(SUBDIRS))
@@ -56,11 +54,11 @@ DependSubdirs($(SUBDIRS))
 
  DIRS_CONTRIB = /* $(AWMDIR) $(TWMDIR) */
 
-DIRS_TO_BUILD = $(DIRS_SERVER) /* $(LINTLIBDIR) */ \
+DIRS_TO_CREATE = $(DIRS_SERVER) /* $(LINTLIBDIR) */ \
 	$(USRLIBDIR) $(BINDIR) $(INCDIR) $(LIBDIR) $(CONFIGDIR) \
 	$(DIRS_XINIT) $(DIRS_XDM) $(DIRS_APPDEF) $(DIRS_CONTRIB)
 
-MakeDirectories(install, $(DIRS_TO_BUILD))
+MakeDirectories(install, $(DIRS_TO_CREATE))
 
 MakeDirectories(install.man, $(MANPATH) $(MANDIR) $(LIBMANDIR))
 InstallManPage(X,$(MANDIR))
