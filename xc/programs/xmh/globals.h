@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$Header: globals.h,v 1.8 87/12/24 10:14:50 swick Exp $";
+ *	rcs_id[] = "$Header: globals.h,v 1.9 87/12/24 10:15:25 swick Locked $";
  */
 
 /*
@@ -51,6 +51,7 @@ ext char	*defViewGeometry;
 ext char	*defCompGeometry;
 ext char	*defPickGeometry;
 ext char	*initialFolderName; /* Initial folder to use. */
+ext char	*initialIncFile;	/* -file for inc on initial folder */
 ext char	*draftsFolderName;	/* Folder for drafts. */
 ext char	*draftFile;		/* Filename of draft. */
 ext char	*xmhDraftFile;		/* Filename for sending. */
