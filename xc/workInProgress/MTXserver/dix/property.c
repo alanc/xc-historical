@@ -43,7 +43,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: property.c,v 1.2 94/01/11 20:47:10 rob Exp $ */
+/* $XConsortium: property.c,v 1.3 94/01/17 23:56:41 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -699,7 +699,11 @@ ProcGetProperty(client)
 
 	    if (len)
 	    {
+#ifdef AIXV3
+		bcopy((char *)pProp->data + ind, replyData, len);
+#else
 		bcopy(pProp->data + ind, replyData, len);
+#endif /* AIXV3 */
 		if (client->swapped)
 		{
 		    switch (reply->format) 
