@@ -1,4 +1,4 @@
-XCOMM $XConsortium: svr4.cf,v 1.4 94/04/01 16:59:15 dpw Exp $
+XCOMM $XConsortium: svr4.cf,v 1.5 94/04/01 19:59:16 kaleb Exp $
 /*
  * A default OS name
  */
@@ -38,7 +38,9 @@ XCOMM $XConsortium: svr4.cf,v 1.4 94/04/01 16:59:15 dpw Exp $
 /* Some stuff that all SVR4s should have */
 
 #define SystemV4	YES
+#ifndef HasLdRunPath
 #define HasLdRunPath	YES
+#endif
 #define HasPoll		YES
 #ifndef SVR4Architecture
 #define SVR4Architecture
