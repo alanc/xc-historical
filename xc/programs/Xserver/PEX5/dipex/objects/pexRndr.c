@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndr.c,v 5.3 91/05/01 17:13:54 hersh Exp $ */
+/* $XConsortium: pexRndr.c,v 5.4 91/07/15 15:13:57 hersh Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -249,6 +249,11 @@ pexCreateRendererReq    *strmPtr;
     if (strmPtr->itemMask & PEXRDInvisibilityExcl)
 	CHANGENS(DD_INVIS_EXCL_NS, PEXDynInvisibilityNameset);
 
+    if (strmPtr->itemMask & PEXRDRendererState) {
+	EXTRACT_INT16(prend->state,ptr);
+	SKIP_PADDING(ptr,sizeof(CARD16));
+    }
+
     if (strmPtr->itemMask & PEXRDHlhsrMode) {
 	EXTRACT_INT16(prend->hlhsrMode,ptr);
 	SKIP_PADDING(ptr,sizeof(CARD16));
@@ -434,6 +439,11 @@ pexChangeRendererReq 	*strmPtr;
     if (strmPtr->itemMask & PEXRDInvisibilityExcl)
 	CHANGENS(DD_INVIS_EXCL_NS, PEXDynInvisibilityNameset);
 
+    if (strmPtr->itemMask & PEXRDRendererState) {
+	EXTRACT_INT16(prend->state,ptr);
+	SKIP_PADDING(ptr,sizeof(CARD16));
+    }
+
     if (strmPtr->itemMask & PEXRDHlhsrMode) {
 	EXTRACT_INT16(prend->hlhsrMode,ptr);
 	SKIP_PADDING(ptr,sizeof(CARD16));
@@ -565,6 +575,8 @@ pexGetRendererAttributesReq 	*strmPtr;
     if (strmPtr->itemMask & PEXRDInvisibilityExcl)
 	PACK_CARD32( GetId(prend->ns[(unsigned)DD_INVIS_EXCL_NS]), ptr);
 
+    if (strmPtr->itemMask & PEXRDRendererState) PACK_CARD32( prend->state, ptr);
+
     if (strmPtr->itemMask & PEXRDHlhsrMode) PACK_CARD32( prend->hlhsrMode, ptr);
 
     if (strmPtr->itemMask & PEXRDNpcSubvolume) { 
@@ -579,10 +591,10 @@ pexGetRendererAttributesReq 	*strmPtr;
 		    reply, pexGetRendererAttributesReply, ptr);
 	PACK_CARD32( prend->viewport.minval.x, ptr);
 	PACK_CARD32( prend->viewport.minval.y, ptr);
-	PACK_CARD32( prend->viewport.minval.z, ptr);
+	PACK_FLOAT( prend->viewport.minval.z, ptr);
 	PACK_CARD32( prend->viewport.maxval.x, ptr);
 	PACK_CARD32( prend->viewport.maxval.y, ptr);
-	PACK_CARD32( prend->viewport.maxval.z, ptr);
+	PACK_FLOAT( prend->viewport.maxval.z, ptr);
 	PACK_CARD32( prend->viewport.useDrawable, ptr);
     }
 
