@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.16 91/01/06 20:44:32 rws Exp $
+ * $XConsortium: imakemdep.h,v 1.17 91/01/06 20:49:20 rws Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -31,6 +31,12 @@
 
 #ifdef att
 #define imake_ccflags "-Xc -DSVR4"
+#endif
+
+#ifdef sony
+#ifndef bsd43
+#define imake_ccflags "-DSVR4"
+#endif
 #endif
 
 #ifdef CRAY
@@ -128,6 +134,9 @@ char *cpp_argv[ARGUMENTS] = {
 #endif
 #ifdef att
 	"-Datt",	/* AT&T products */
+#endif
+#ifdef sony
+	"-Dsony",	/* Sony */
 #endif
 #ifdef aix
 	"-Daix",	/* AIX instead of AOS */
