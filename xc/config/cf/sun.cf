@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.136 94/12/05 17:19:52 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: sun.cf,v 1.137 95/01/05 19:27:08 kaleb Exp kaleb $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -133,8 +133,13 @@ XCOMM operating system:  OSName
 #endif
 
 #ifdef i386Architecture
+#if OSMajorVersion > 4
 #define ServerExtraDefines AllocateLocalDefines XFree86ServerDefines
 #define ServerOSDefines    XFree86ServerOSDefines
+#else
+#define ServerExtraDefines AllocateLocalDefines
+#define ServerOSDefines   -DDDXOSINIT
+#endif
 #else
 #define ServerExtraDefines AllocateLocalDefines
 #define ServerOSDefines   -DDDXOSINIT
