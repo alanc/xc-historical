@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.36 94/06/03 14:32:28 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.37 94/06/07 12:08:28 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -132,7 +132,7 @@ void FreeClientInfo ();
 
 extern Status InitWatchProcs ();
 extern void restart_everything ();
-extern void read_save ();
+extern int read_save ();
 extern void write_save ();
 extern Bool HostBasedProc ();
 extern Status set_auth ();
@@ -1010,6 +1010,25 @@ XtPointer 	callData;
 
 
 void
+StartWindowManager ()
+
+{
+    switch(fork()) {
+	case -1:
+	    perror("fork");
+	    break;
+	case 0:
+	    execlp("twm", "twm", (char *)NULL);
+	    perror("twm");
+	    _exit(255);
+	default:
+	    break;
+    }
+}
+
+
+
+void
 StartProxy ()
 
 {
@@ -1269,7 +1288,7 @@ main(argc, argv)
 {
     IceListenObj *listenObjs;
     char 	*networkIds;
-    int  	i;
+    int  	database_read, i;
     char	*p;
     char *	progName;
     char 	errormsg[256];
@@ -1599,16 +1618,6 @@ main(argc, argv)
     if (app_resources.verbose || app_resources.debug)
 	printf ("setenv %s %s\n", environment_name, networkIds);
 
-    /*
-     * Start proxy for old style SM clients.
-     */
-
-    if (app_resources.proxy)
-    {
-	StartProxy ();
-	sleep (2);		/* What should we really do here??? */
-    }
-
 
     /*
      * Read the session save file.  Make sure the session manager
@@ -1616,7 +1625,7 @@ main(argc, argv)
      * identify it.
      */
 
-    read_save(&sm_id);
+    database_read = read_save(&sm_id);
     if (!sm_id)
 	sm_id = SmsGenerateClientID (NULL);
     XChangeProperty (XtDisplay (topLevel), XtWindow (topLevel),
@@ -1627,11 +1636,37 @@ main(argc, argv)
     XtMapWidget (topLevel);
 
 
+    if (!database_read)
+    {
+	/*
+	 * Start window manager.
+	 */
+
+	StartWindowManager();
+
+
+	/*
+	 * Start proxy for old style SM clients.
+	 */
+
+	if (app_resources.proxy)
+	{
+	    StartProxy ();
+	    sleep (2);		/* What should we really do here??? */
+	}
+    }
+
+
     /*
-     * Restart clients and enter main loop.
+     * Restart clients.
      */
 
     restart_everything();
+
+
+    /*
+     * Main loop
+     */
 
     if (app_resources.verbose)
 	printf ("Waiting for connections...\n");
