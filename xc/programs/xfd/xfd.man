@@ -1,9 +1,9 @@
-.TH XFD 1 "1 March 1988" "X Version 11"
+.TH XFD 1 "25 October 1988" "X Version 11"
 .SH NAME
 xfd - font displayer for X
 .SH SYNOPSIS
 .B xfd
-[-options ...] -fn fontname
+[-options ...] -fn \fIfontname\fP
 .SH "OPTIONS"
 .TP 8
 .B \-display \fIdisplay\fP
@@ -121,47 +121,50 @@ window.
 .PP
 \fIXfd\fP uses the following X resources:
 .PP
-.TP 8
+.TP 14
 .B BorderWidth
 Set the border width of the window.
 .PP
-.TP 8
+.TP 14
 .B BorderColor
 Set the border color of the window.
 .PP
-.TP 8
+.TP 14
 .B ReverseVideo
 If ``on'', reverse the definition of foreground and background color.
 .PP
-.TP 8
+.TP 14
 .B Foreground
 Set the foreground color.
 .PP
-.TP 8
+.TP 14
 .B Background
 Set the background color.
 .PP
-.TP 8
+.TP 14
 .B BodyFont
 Set the font to be used in the body of the window.  (I.e., for messages, etc.)
 This is not the font that \fIXfd\fP displays, just the font it uses
 to display information about the font being displayed.
 .PP
-.TP 8
+.TP 14
 .B IconName
 Set the name of the icon.
 .PP
-.TP 8
+.TP 14
 .B IconBitmap
 Set the file we should look in to get the bitmap for the icon.
 .PP
-.TP 8
+.TP 14
 .B Title
 Set the title to be used.
 .SH "SEE ALSO"
 X(1), xlsfonts(1), xrdb(1)
 .SH BUGS
 It should display the name of the font somewhere.
+.PP
+Character information displayed in verbose mode is sometimes clipped to the
+window boundary, hiding it from view.
 .PP
 It should be rewritten to use the X toolkit.
 .PP
