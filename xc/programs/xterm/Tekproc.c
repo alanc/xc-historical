@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.26 88/02/26 07:32:21 swick Exp $
+ * $Header: Tekproc.c,v 1.27 88/02/27 09:38:17 rws Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.26 88/02/26 07:32:21 swick Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.27 88/02/27 09:38:17 rws Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1205,21 +1205,22 @@ static void TekRealize (gw, valuemaskp, values)
     sizehints.flags = PMinSize|PResizeInc;
     sizehints.x = winX;
     sizehints.y = winY;
-    if ((XValue&pr) && (YValue&pr))
-      sizehints.flags |= USPosition;
-    else sizehints.flags |= PPosition;
+    if ((XValue&pr) || (YValue&pr))
+      sizehints.flags |= USSize|USPosition;
+    else sizehints.flags |= PSize|PPosition;
     tw->core.width = sizehints.width = width;
     tw->core.height = sizehints.height = height;
-    if ((WidthValue&pr) && (HeightValue&pr))
+    if ((WidthValue&pr) || (HeightValue&pr))
       sizehints.flags |= USSize;
     else sizehints.flags |= PSize;
 
     (void) XtMakeResizeRequest ((Widget) tw, width, height,
 				&tw->core.width, &tw->core.height);
 
-    /* this shouldn't be necessary, but uwm doesn't seem to pay any
-       attention to USPosition hints that are different from the actual
-       window position */
+    /* XXX This is bogus.  We are parsing geometries too late.  This
+     * is information that the shell widget ought to have before we get
+     * realized, so that it can do the right thing.
+     */
     if (sizehints.flags & USPosition)
       XMoveWindow (XtDisplay(tw), tw->core.parent->core.window,
 		   sizehints.x, sizehints.y);

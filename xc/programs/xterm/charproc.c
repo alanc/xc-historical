@@ -1,5 +1,5 @@
 /*
- * $Header: charproc.c,v 1.21 88/02/26 07:32:53 swick Exp $
+ * $Header: charproc.c,v 1.22 88/02/27 09:37:15 rws Exp $
  */
 
 
@@ -110,7 +110,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.21 88/02/26 07:32:53 swick Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.22 88/02/27 09:37:15 rws Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -1935,21 +1935,22 @@ XSetWindowAttributes *values;
 	sizehints.flags = PMinSize|PResizeInc;
 	sizehints.x = xpos;
 	sizehints.y = ypos;
-	if ((XValue&pr) && (YValue&pr)) 
-	  sizehints.flags |= USPosition;
-	else sizehints.flags |= PPosition;
+	if ((XValue&pr) || (YValue&pr)) 
+	  sizehints.flags |= USSize|USPosition;
+	else sizehints.flags |= PSize|PPosition;
 	sizehints.width = width;
 	sizehints.height = height;
-	if ((WidthValue&pr) && (HeightValue&pr)) 
+	if ((WidthValue&pr) || (HeightValue&pr)) 
 	  sizehints.flags |= USSize;
 	else sizehints.flags |= PSize;
 
 	(void) XtMakeResizeRequest((Widget) term, width, height, &term->core.width,
 			&term->core.height);
 
-        /* this shouldn't be necessary, but uwm doesn't seem to pay any
-	   attention to USPosition hints that are different from the actual
-	   window position */
+	/* XXX This is bogus.  We are parsing geometries too late.  This
+	 * is information that the shell widget ought to have before we get
+	 * realized, so that it can do the right thing.
+	 */
         if (sizehints.flags & USPosition)
 	    XMoveWindow (XtDisplay(term), term->core.parent->core.window,
 			 sizehints.x, sizehints.y);
