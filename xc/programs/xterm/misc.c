@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.72 91/02/05 19:44:25 gildea Exp $
+ *	$XConsortium: misc.c,v 1.73 91/03/04 14:50:41 gildea Exp $
  */
 
 /*
@@ -384,7 +384,7 @@ register TScreen *screen;
 	register char *cp;
 	register int i;
 	static char *log_default;
-	char *malloc(), *rindex();
+	char *malloc();
 #ifdef ALLOWLOGFILEEXEC
 	void logpipe();
 #ifdef SYSV
@@ -689,28 +689,28 @@ Setenv (var, value)
 register char *var, *value;
 {
 	extern char **environ;
-	register int index = 0;
+	register int envindex = 0;
 	register int len = strlen(var);
 
-	while (environ [index] != NULL) {
-	    if (strncmp (environ [index], var, len) == 0) {
+	while (environ [envindex] != NULL) {
+	    if (strncmp (environ [envindex], var, len) == 0) {
 		/* found it */
-		environ[index] = (char *)malloc ((unsigned)len + strlen (value) + 1);
-		strcpy (environ [index], var);
-		strcat (environ [index], value);
+		environ[envindex] = (char *)malloc ((unsigned)len + strlen (value) + 1);
+		strcpy (environ [envindex], var);
+		strcat (environ [envindex], value);
 		return;
 	    }
-	    index ++;
+	    envindex ++;
 	}
 
 #ifdef DEBUG
 	if (debug) fputs ("expanding env\n", stderr);
 #endif	/* DEBUG */
 
-	environ [index] = (char *) malloc ((unsigned)len + strlen (value) + 1);
-	(void) strcpy (environ [index], var);
-	strcat (environ [index], value);
-	environ [++index] = NULL;
+	environ [envindex] = (char *) malloc ((unsigned)len + strlen (value) + 1);
+	(void) strcpy (environ [envindex], var);
+	strcat (environ [envindex], value);
+	environ [++envindex] = NULL;
 }
 
 /*
@@ -721,7 +721,6 @@ char *strindex (s1, s2)
 register char	*s1, *s2;
 {
 	register char	*s3;
-	char		*index();
 	int s2len = strlen (s2);
 
 	while ((s3=index(s1, *s2)) != NULL) {
