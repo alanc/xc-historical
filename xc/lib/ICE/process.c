@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.5 93/09/08 20:03:12 mor Exp $ */
+/* $XConsortium: process.c,v 1.6 93/09/08 20:50:37 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -73,7 +73,17 @@ IceReplyWaitInfo *replyWait;
     Bool		replyReady = False;
     IceReplyWaitInfo	*useThisReplyWait = NULL;
     
-    _IceRead (iceConn, SIZEOF (iceMsg), iceConn->inbuf);
+    if (!_IceRead (iceConn, SIZEOF (iceMsg), iceConn->inbuf))
+    {
+	/*
+	 * If we previously sent a WantToClose and now we detected
+	 * that the connection was closed, _IceRead returns status 0.
+	 * Since the connection was closed, we just want to return here.
+	 */
+
+	return (False);
+    }
+
     header = (iceMsg *) iceConn->inbuf;
     iceConn->inbufptr = iceConn->inbuf + SIZEOF (iceMsg);
 
@@ -1007,6 +1017,18 @@ Bool		swap;
 
 	    if (protocolSetupNotifyCB)
 	    {
+		/*
+		 * Increase the reference count for the number
+		 * of active protocols.
+		 */
+
+		iceConn->proto_ref_count++;
+
+
+		/*
+		 * Notify the client of the Protocol Setup.
+		 */
+
 		(*protocolSetupNotifyCB) (iceConn,
 		    myProtocol->version_recs[iceConn->protosetup_to_me->
 		        my_version_index].major_version,
@@ -1243,6 +1265,17 @@ Bool			swap;
     char 	      	*release = NULL;
     int  	      	accept_setup_now = 0;
 
+    if (iceConn->want_to_close)
+    {
+	/*
+	 * If we sent a WantToClose message, but just got a ProtocolSetup,
+	 * we must cancel our WantToClose.  It is the responsiblity of the
+	 * other client to send a WantToClose later on.
+	 */
+
+	iceConn->want_to_close = 0;
+    }
+
     IceReadCompleteMessage (iceConn, SIZEOF (iceProtocolSetupMsg),
 	iceProtocolSetupMsg, message, pData);
 
@@ -1438,6 +1471,17 @@ Bool			swap;
 
 	if (protocolSetupNotifyCB)
 	{
+	    /*
+	     * Increase the reference count for the number of active protocols.
+	     */
+
+	    iceConn->proto_ref_count++;
+
+
+	    /*
+	     * Notify the client of the Protocol Setup.
+	     */
+
 	    (*protocolSetupNotifyCB) (iceConn,
 		myProtocol->version_recs[myVersionIndex].major_version,
 		myProtocol->version_recs[myVersionIndex].minor_version,
@@ -1552,7 +1596,45 @@ ProcessWantToClose (iceConn)
 IceConn iceConn;
 
 {
-    ;
+    if (iceConn->want_to_close || iceConn->open_ref_count == 0)
+    {
+	/*
+	 * We just received a WantToClose.  Either we also sent a
+	 * WantToClose, so we close the connection, or the iceConn
+	 * is not being used, so we close the connection.  This
+	 * second case is possible if we sent a WantToClose because
+	 * the iceConn->open_ref_count reached zero, but then we
+	 * received a NoClose.
+	 */
+
+	_IceFreeConnection (iceConn, False);
+    }
+    else if (iceConn->proto_ref_count > 0)
+    {
+	/*
+	 * We haven't shut down all of our protocols yet.  We send a NoClose,
+	 * and it's up to us to generate a WantToClose later on.
+	 */
+
+	IceSimpleMessage (iceConn, 0, ICE_NoClose);
+	IceFlush (iceConn);
+    }
+    else
+    {
+	/*
+	 * The reference count on this iceConn is zero.  This means that
+	 * there are no active protocols, but the client didn't explicitly
+	 * close the connection yet.  If we didn't just send a Protocol Setup,
+	 * we send a NoClose, and it's up to us to generate a WantToClose
+	 * later on.
+	 */
+
+	if (!iceConn->protosetup_to_you)
+	{
+	    IceSimpleMessage (iceConn, 0, ICE_NoClose);
+	    IceFlush (iceConn);
+	}
+    }
 }
 
 
@@ -1563,7 +1645,19 @@ ProcessNoClose (iceConn)
 IceConn iceConn;
 
 {
-    ;
+    if (iceConn->want_to_close)
+    {
+	/*
+	 * The other side can't close now.  We cancel our WantToClose,
+	 * and we can expect a WantToClose from the other side.
+	 */
+
+	iceConn->want_to_close = 0;
+    }
+    else
+    {
+	_IceErrorBadState (iceConn, ICE_NoClose, IceCanContinue);
+    }
 }
 
 
