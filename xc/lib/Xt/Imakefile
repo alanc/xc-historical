@@ -35,7 +35,7 @@ HEADERS = \
 	Text.h \
 	TopLevel.h \
 	TM.h \
-	VPane.h
+	VPaned.h
 
 SRCS = \
 	Alloc.c \
@@ -68,7 +68,7 @@ SRCS = \
 	Text.c \
 	TMparse.c \
 	TMstate.c \
-	VPane.c
+	VPaned.c
 
 OBJS = \
 	Alloc.o \
@@ -101,7 +101,7 @@ OBJS = \
 	Text.o \
 	TMparse.o \
 	TMstate.o \
-	VPane.o
+	VPaned.o
 
 #if DebugLibXtk && ProfileLibXtk
 DebuggedAndProfiledLibraryObjectRule()
