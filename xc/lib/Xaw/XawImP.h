@@ -1,4 +1,4 @@
-/* $XConsortium: XawImP.h,v 1.0 94/01/01 00:00:00 kaleb Exp $ */
+/* $XConsortium: XawImP.h,v 1.1 94/01/31 09:57:25 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation
@@ -103,41 +103,113 @@ typedef	struct _contextErrDataRec
     XIM			xim;
 } contextErrDataRec;
 
+void _XawImResizeVendorShell( 
 #if NeedFunctionPrototypes
-void _XawImResizeVendorShell( Widget );
-Dimension _XawImGetShellHeight( Widget );
-void _XawImRealize( Widget );
-void _XawImInitialize( Widget, Widget );
-void _XawImReconnect( Widget );
-void _XawImRegister( Widget );
-void _XawImUnregister( Widget );
-void _XawImSetValues( Widget, ArgList, Cardinal );
-void _XawImVASetValues( Widget, ... );
-void _XawImSetFocusValues( Widget, ArgList, Cardinal );
-void _XawImVASetFocusValues( Widget, ... );
-void _XawImUnsetFocus( Widget );
-int  _XawImWcLookupString( Widget,XKeyPressedEvent*,wchar_t*,int,KeySym*,Status* );
-int  _XawImGetImAreaHeight( Widget );
-void _XawImCallVendorShellExtResize( Widget );
-void _XawImDestroy( Widget, Widget );
-#else
-void _XawImResizeVendorShell();
-Dimension _XawImGetShellHeight();
-void _XawImRealize();
-void _XawImInitialize();
-void _XawImReconnect();
-void _XawImRegister();
-void _XawImUnregister();
-void _XawImSetValues();
-void _XawImVASetValues();
-void _XawImSetFocusValues();
-void _XawImVASetFocusValues();
-void _XawImUnsetFocus();
-int  _XawImWcLookupString();
-int  _XawImGetImAreaShellHeight();
-void _XawImCallVendorShellExtResize();
-void _XawImDestroy();
+    Widget /* w */
 #endif
+);
 
+Dimension _XawImGetShellHeight( 
+#if NeedFunctionPrototypes
+    Widget /* w */
+#endif
+);
+
+void _XawImRealize( 
+#if NeedFunctionPrototypes
+    Widget /* w */
+#endif
+);
+
+void _XawImInitialize( 
+#if NeedFunctionPrototypes
+    Widget, /* w */
+    Widget  /* ext */
+#endif
+);
+
+void _XawImReconnect( 
+#if NeedFunctionPrototypes
+    Widget  /* w */
+#endif
+);
+
+void _XawImRegister( 
+#if NeedFunctionPrototypes
+    Widget  /* w */
+#endif
+);
+
+void _XawImUnregister( 
+#if NeedFunctionPrototypes
+    Widget  /* w */
+#endif
+);
+
+void _XawImSetValues( 
+#if NeedFunctionPrototypes
+    Widget,  /* w */
+    ArgList, /* args */
+    Cardinal /* num_args */
+#endif
+);
+
+void _XawImVASetValues( 
+#if NeedVarargsPrototypes
+    Widget,  /* w */
+    ... 
+#endif
+);
+
+void _XawImSetFocusValues( 
+#if NeedFunctionPrototypes
+    Widget,  /* w */
+    ArgList, /* args */
+    Cardinal /* num_args */
+#endif
+);
+
+void _XawImVASetFocusValues( 
+#if NeedVarargsPrototypes
+    Widget,  /* w */
+    ... 
+#endif
+);
+
+void _XawImUnsetFocus( 
+#if NeedFunctionPrototypes
+    Widget  /* w */
+#endif
+);
+
+int  _XawImWcLookupString( 
+#if NeedFunctionPrototypes
+    Widget,   /* w */
+    XKeyPressedEvent*, /* event */
+    wchar_t*, /* buffer_return */
+    int,      /* bytes_buffer */
+    KeySym*,  /* keysym_return */
+    Status*   /* status return */
+#endif
+);
+
+int  _XawImGetImAreaHeight( 
+#if NeedFunctionPrototypes
+    Widget  /* w */
+#endif
+);
+
+void _XawImCallVendorShellExtResize( 
+#if NeedFunctionPrototypes
+    Widget  /* w */
+#endif
+);
+
+void _XawImDestroy( 
+#if NeedFunctionPrototypes
+    Widget,  /* w */
+    Widget   /* ext */
+#endif
+);
 
 #endif	/* _XawImP_h */
