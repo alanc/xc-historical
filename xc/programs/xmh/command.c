@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: command.c,v 2.9 88/01/07 11:55:15 swick Locked $";
+static char rcs_id[] = "$Header: command.c,v 2.10 88/01/29 16:53:12 swick Exp $";
 #endif lint
 /*
  *			  COPYRIGHT 1987
@@ -87,12 +87,14 @@ DoCommand(argv, inputfile, outputfile)
         old_stdin = dup(stdin);
 	fin = FOpenAndCheck(inputfile, "r");
 	(void) dup2(fileno(fin), fileno(stdin));
+	close(fin);
     }
 
     if (outputfile) {
         old_stdout = dup(stdout);
 	fout = FOpenAndCheck(outputfile, "w");
 	(void) dup2(fileno(fout), fileno(stdout));
+	close(fout);
     }
 
     if (!debug) {		/* Throw away error messages. */
@@ -103,23 +105,21 @@ DoCommand(argv, inputfile, outputfile)
 	    old_stdout = dup(stdout);
 	    (void) dup2(fileno(ferr), fileno(stdout));
 	}
+	close(ferr);
     }
 
     childdone = FALSE;
     (void) signal(SIGCHLD, ChildDone);
     pid = vfork();
     if (inputfile) {
-	fclose(fin);
 	if (pid != 0) dup2(old_stdin,  fileno(stdin));
 	close(old_stdin);
     }
     if (outputfile) {
-	fclose(fout);
 	if (pid != 0) dup2(old_stdout, fileno(stdout));
 	close(old_stdout);
     }
     if (!debug) {
-	fclose(ferr);
 	if (pid != 0) dup2(old_stderr, fileno(stderr));
 	close(old_stderr);
 	if (!outputfile) {
