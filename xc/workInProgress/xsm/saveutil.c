@@ -1,4 +1,4 @@
-/* $XConsortium: saveutil.c,v 1.25 94/12/14 20:01:11 mor Exp mor $ */
+/* $XConsortium: saveutil.c,v 1.26 94/12/16 17:31:08 mor Exp mor $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -326,8 +326,11 @@ char *sm_id;
     {
 	fprintf (f, "%d\n", SAVEFILE_VERSION);
 	fprintf (f, "%s\n", sm_id);
-	fprintf (f, "%d\n", ListCount (RunningList) +
-	    ListCount (RestartAnywayList));
+
+	count = ListCount (RunningList) + ListCount (RestartAnywayList);
+	fprintf (f, "%d\n", count);
+	if (count == 0)
+	    fprintf (f, "\n");
 
 	for (cl = ListFirst (RunningList); cl; cl = ListNext (cl))
 	{
