@@ -697,11 +697,12 @@ static void _RefreshMapping(event)
 {
     XtPerDisplay pd = _XtGetPerDisplay(event->xmapping.display);
     if (pd != NULL) {
-	if (pd->keysyms != NULL)
+	if (pd->keysyms != NULL && event->xmapping.request != MappingPointer)
 	    _XtBuildKeysymTables( event->xmapping.display, pd );
 	if (pd->mapping_callbacks != NULL)
-	    _XtCallCallbacks((Widget) NULL, pd->mapping_callbacks,
-			     (XtPointer)event );
+	    XtCallCallbackList((Widget) NULL,
+			       (XtCallbackList)pd->mapping_callbacks,
+			       (XtPointer)event );
     }
     XRefreshKeyboardMapping(&event->xmapping);
 }
