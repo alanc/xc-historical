@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XAllPlanes.c,v 11.13 87/06/03 11:47:14 jg Exp $ */
+/* $Header: XAllPlanes.c,v 11.13 87/09/11 08:00:55 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -38,7 +38,7 @@ unsigned long *rmask, *gmask, *bmask; /* CARD32 */ /* RETURN */
 	*bmask = rep.blueMask;
 
 	/* sizeof(CARD32) = 4 */
-	_XRead (dpy, (char *) pixels, (long)(ncolors * 4));
+	_XRead32 (dpy, (char *) pixels, (long)(ncolors * 4));
     }
 
     UnlockDisplay(dpy);
