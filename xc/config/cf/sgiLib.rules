@@ -1,21 +1,14 @@
-/* Changed to a single shell command for pmake/smake */
+XCOMM $XConsortium: sgiLib.rules,v 1.6 91/03/24 17:55:58 rws Exp $
 
+#ifndef HasSharedLibraries
+#define HasSharedLibraries YES
+#endif
+#ifndef SharedDataSeparation
+#define SharedDataSeparation YES
+#endif
+#define SharedCodeDef -DSHAREDCODE
+#define SharedLibraryDef -DATTSHAREDLIB
 #define PositionIndependentCFlags -G 0
-
-/*
- * ObjectCompile - compile fragment for a normal object file
- */
-#define	ObjectCompile(options) $(RM) $@ $*.os \				@@\
-	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
-	&& $(LD) -x -r $@ -o $*.os \					@@\
-	&& $(MV) $*.os $@
-
-/*
- * LibObjCompile - compile fragment for shared/profiled/debugged objects
- */
-#define LibObjCompile(dir,options) $(RM) $@ dir/$@ \			@@\
-	&& $(CC) -c options $(CFLAGS) $*.c \				@@\
-	&& $(MV) $@ dir/$@
 
 /*
  * SharedLibraryTarget - generate rules to create a shared library;
