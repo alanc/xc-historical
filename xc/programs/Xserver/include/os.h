@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.36 89/07/20 16:26:31 keith Exp $ */
+/* $XConsortium: os.h,v 1.37 89/07/21 12:56:53 keith Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -74,7 +74,7 @@ pragma on(alloca);
 /*
  * warning: mips alloca is unsuitable in the server, do not use.
  */
-#if defined(vax) || defined(sun)
+#if defined(vax) || defined(sun) || defined(apollo)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
  * decide that you don't want to use alloca, you might want to fix 
