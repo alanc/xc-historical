@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.67 93/09/11 14:39:49 rws Exp $ */
+/* $XConsortium: button.c,v 1.68 93/09/20 17:42:33 hersh Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *
@@ -428,8 +428,9 @@ TrackDown(event)
 			else if (x >= screen->max_row) \
 			    x = screen->max_row;
 
+void
 TrackMouse(func, startrow, startcol, firstrow, lastrow)
-int func, startrow, startcol, firstrow, lastrow;
+    int func, startrow, startcol, firstrow, lastrow;
 {
 	TScreen *screen = &term->screen;
 
@@ -661,56 +662,35 @@ Cardinal *num_params;		/* unused */
 }
 
 
-
-
-
 ScrollSelection(screen, amount)
 register TScreen* screen;
 register int amount;
 {
-    register int minrow = -screen->savedlines;
+    register int minrow = -screen->savedlines - screen->topline;
+    register int maxrow = screen->max_row - screen->topline;
+    register int maxcol = screen->max_col;
 
-    /* Sent by scrollbar stuff, so amount never takes selection out of
-       saved text */
+#define scroll_update_one(row, col) \
+    	row += amount; \
+	if (row < minrow) { \
+	    row = minrow; \
+	    col = 0; \
+	} \
+	if (row > maxrow) { \
+	    row = maxrow; \
+	    col = maxcol; \
+	}
 
-    /* XXX - the preceeding is false; cat /etc/termcap (or anything
-       larger than the number of saved lines plus the screen height) and then
-       hit extend select */
+    scroll_update_one(startRRow, startRCol);
+    scroll_update_one(endRRow, endRCol);
+    scroll_update_one(startSRow, startSCol);
+    scroll_update_one(endSRow, endSCol);
 
-    startRRow += amount; endRRow += amount;
-    startSRow += amount; endSRow += amount;
-    rawRow += amount;
-    screen->startHRow += amount;
-    screen->endHRow += amount;
+    scroll_update_one(rawRow, rawCol);
 
-    if (startRRow < minrow) {
-	startRRow = minrow;
-	startRCol = 0;
-    }
-    if (endRRow < minrow) {
-	endRRow = minrow;
-        endRCol = 0;
-    }
-    if (startSRow < minrow) {
-	startSRow = minrow;
-	startSCol = 0;
-    }
-    if (endSRow < minrow) {
-	endSRow = minrow;
-	endSCol = 0;
-    }
-    if (rawRow < minrow) {
-	rawRow = minrow;
-	rawCol = 0;
-    }
-    if (screen->startHRow < minrow) {
-	screen->startHRow = minrow;
-	screen->startHCol = 0;
-    }
-    if (screen->endHRow < minrow) {
-	screen->endHRow = minrow;
-	screen->endHCol = 0;
-    }
+    scroll_update_one(screen->startHRow, screen->startHCol);
+    scroll_update_one(screen->endHRow, screen->endHCol);
+
     screen->startHCoord = Coordinate (screen->startHRow, screen->startHCol);
     screen->endHCoord = Coordinate (screen->endHRow, screen->endHCol);
 }
@@ -1046,7 +1026,7 @@ ReHiliteText(frow, fcol, trow, tcol)
 	}
 }
 
-static _OwnSelection();
+static void _OwnSelection();
 
 static void
 SaltTextAway(crow, ccol, row, col, params, num_params)
@@ -1246,7 +1226,7 @@ Atom *selection, *target;
 }
 
 
-static /* void */ _OwnSelection(termw, selections, count)
+static void _OwnSelection(termw, selections, count)
     register XtermWidget termw;
     String *selections;
     Cardinal count;

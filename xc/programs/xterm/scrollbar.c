@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.42 91/10/21 14:27:54 eswu Exp $
+ *	$XConsortium: scrollbar.c,v 1.43 93/09/20 17:42:21 hersh Exp $
  */
 
 /*
@@ -270,8 +270,6 @@ WindowScroll(screen, top)
 		return;
 	}
 
-	ScrollSelection(screen, i);
-
 	if(screen->cursor_state)
 		HideCursor();
 	lines = i > 0 ? i : -i;
@@ -287,6 +285,9 @@ WindowScroll(screen, top)
 	x = screen->scrollbar +	screen->border;
 	scrolling_copy_area(screen, scrolltop, scrollheight, -i);
 	screen->topline = top;
+
+	ScrollSelection(screen, i);
+
 	XClearArea(
 	    screen->display,
 	    TextWindow(screen), 
@@ -498,8 +499,8 @@ void HandleScrollForward (gw, event, params, nparams)
     XtermWidget w = (XtermWidget) gw;
     register TScreen *screen = &w->screen;
 
-    ScrollTextUpDownBy (gw, (Opaque) NULL,
-			params_to_pixels (screen, params, (int) *nparams));
+    ScrollTextUpDownBy (gw, (XtPointer) NULL,
+			(XtPointer)params_to_pixels (screen, params, (int) *nparams));
     return;
 }
 
@@ -514,9 +515,7 @@ void HandleScrollBack (gw, event, params, nparams)
     XtermWidget w = (XtermWidget) gw;
     register TScreen *screen = &w->screen;
 
-    ScrollTextUpDownBy (gw, (Opaque) NULL,
-			-params_to_pixels (screen, params, (int) *nparams));
+    ScrollTextUpDownBy (gw, (XtPointer) NULL,
+			(XtPointer)-params_to_pixels (screen, params, (int) *nparams));
     return;
 }
-
-
