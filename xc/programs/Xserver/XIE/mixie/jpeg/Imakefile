@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.6 93/11/01 10:21:16 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.7 93/11/01 11:57:38 rws Exp $
 XCOMM build device dependent machine independent fax processing element objects
 #include <Server.tmpl>
 
@@ -51,9 +51,9 @@ XCOMM build device dependent machine independent fax processing element objects
 	       jutils.o \
 	       jwrjfif.o 
 
-   INCLUDES = -I../include -I../../../include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(INCLUDESRC)/extensions -I../jpeg
-   LINTLIBS = ../../../dixie/export/llib-lexp.ln ../../../dixie/import/llib-limp.ln \
-              ../../../dixie/process/llib-lproc.ln ../../../dixie/request/llib-lreq.ln \
+   INCLUDES = -I../include -I../../include -I$(SERVERSRC)/include -I$(INCLUDESRC) -I$(INCLUDESRC)/extensions -I../jpeg
+   LINTLIBS = ../../dixie/export/llib-lexp.ln ../../dixie/import/llib-limp.ln \
+              ../../dixie/process/llib-lproc.ln ../../dixie/request/llib-lreq.ln \
               ../control/llib-lctrl.ln ../export/llib-lmexp.ln ../fax/llib-lfax.ln \
               ../import/llib-lmimp.ln ../jpeg/llib-ljpeg.ln ../process/llib-lmproc.ln
 

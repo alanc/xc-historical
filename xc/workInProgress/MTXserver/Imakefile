@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.165 93/09/19 10:23:06 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.166 93/09/26 15:41:16 gildea Exp $
 /*
  * Server Master Makefile
  */
@@ -41,7 +41,7 @@ XCOMM $XConsortium: Imakefile,v 1.165 93/09/19 10:23:06 rws Exp $
           XIDIR = Xi
 #endif
 #if BuildXIE
-      XIEEXT =  XIE/dixie/libdixie.a XIE/ddxie/mi/libddxie.a 
+      XIEEXT =  XIE/dixie/libdixie.a XIE/mixie/libmixie.a 
       XIEDIR = XIE
 #endif
       OTHEREXTS = Xext/libext.a $(XINPUTEXT) $(XIEEXT)
