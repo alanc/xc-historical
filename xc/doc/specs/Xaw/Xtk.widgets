@@ -1915,6 +1915,7 @@ New Line	Miscellaneous
 	newline-and-backup		insert-file
 	newline		insert-char
 			insert-string
+			display-caret
 			do-nothing
 
 Kill		Unkill
@@ -1948,12 +1949,36 @@ action deletes a text item and puts the item in the kill buffer
 The \fBunkill\fP
 action inserts the contents of the kill buffer into the text at the current
 position.
-The \fBstuff \fP
+The \fBstuff\fP
 action inserts the contents of the paste buffer (X cut buffer 0) into the
 text at the current position.
 The \fBinsert-selection\fP
 action retrieves the value of a specified X selection or cut
 buffer, with fall-back to alternative selections or cut buffers.
+.IP 5. 5
+The \fBdisplay-caret\fP
+action allows the insert position marker to be turned on and off.
+The first argument specifies the desired state as any of the string
+values accepted for Boolean resources (e.g. "on", "true", "off", "false",
+etc.).  If no arguments are specified, the default value is "on".
+The second argument specifies, for 
+.PN EnterNotify or
+.PN LeaveNotify
+events whether or not the focus field in the event is to be examined.
+If the second argument is not specified, or specified as something other
+than "always" then if the action is bound to an 
+.PN EnterNotify or
+.PN LeaveNotify
+event, the action will be taken only if the focus field is \fBTrue\fP.
+An augmented binding that might be useful is:
+.LP
+.Ds 0
+.TA .5i 2.25i
+.ta .5i 2.25i
+*Text.Translations: #override \\
+	<FocusIn>:	display-caret(on) \\n\\
+	<FocusOut>:	display-caret(off)
+.De
 .NE
 .LP
 The default event bindings for the Text widget are:
@@ -2134,7 +2159,10 @@ T}	T{
 Callbacks for 
 .PN XtDestroyWidget
 T}
+XtNdisplayCaret	Boolean	True	Display a marker at the insert position
+XtNdisplayNonPrinting	Boolean	True	Display control char as ^C
 XtNdisplayPosition	int	0	Character position of first line
+XtNecho	Boolean	True	Whether or not to display output
 XtNeditType	XtEditType	XttextRead	Edit mode (see note)
 T{
 XtNfile
@@ -2226,6 +2254,23 @@ is used, the resource
 specifies a buffer containing the text to be displayed and edited.
 .PN AsciiStringWidget
 does not copy this buffer but uses it in-place.
+.IP 4. 5
+If
+.PN XtNdisplayNonPrinting
+is
+.PN True
+any control characters will be displayed as the two-character
+sequence "^", "C" where "C" is the uppercase (printing) equivalent
+of the control character.  If the value is
+.PN False
+any control characters will be displayed as a single space character.
+.IP 5. 5
+If
+.PN XtNecho
+is
+.PN False
+then no text is displayed.  Text may still be selected and modified,
+though invisibly.
 .NE
 .LP
 The options for the 
@@ -2730,6 +2775,28 @@ XtTextSource XtTextGetSource(\fIw\fP)
 .br    
       Widget \fIw\fP;
 .FN
+.LP
+.sp
+To enable and disable the insert position marker, use
+.PN XtTextDisplayCaret .
+.IN "XtTextDisplayCaret" "" "@DEF@"
+.FD 0
+void XtTextDisplayCaret(\fIw\fP, \fIvisible\fP)
+.br
+      Widget \fIw\fP;
+.br
+      Boolean \fIvisible\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the Text widget.
+.IP \fIvisible\fP 1i
+Specifies whether or not the caret should be displayed.
+.LP
+If visible is \fBFalse\fP the insert position marker will be disabled.
+The marker is re-enabled either by setting visible to \fBTrue\fP, by
+calling
+.PN XtSetValues ,
+or by executing the \fBdisplay-caret\fP action routine.
 .NH 3
 Creating Sources and Sinks
 .LP
@@ -4297,10 +4364,10 @@ Whether
 .PN XtMapWidget
 is automatic
 T}
-XtNmaximumLength	int	0	Length of value buffer
+XtNmaximumLength	int	256	Length of input buffer
 XtNsensitive	Boolean	True	Whether widget receives input
 XtNtranslations	TranslationTable	None	Event-to-action translations
-XtNvalue	char*	NULL	Pointer to input value string
+XtNvalue	char*	NULL	Pointer to default value string
 XtNwidth	Dimension	computed at create	Width of dialog
 XtNx	Position	NULL	x position of dialog
 XtNy	Position	NULL	y position of dialog
@@ -4345,12 +4412,15 @@ Specifies the widget ID of the Dialog box.
 .LP
 If a string was specified in the
 .PN XtNvalue
-resource, Dialog will store the input directly into the string and will
-display any initial value in the string.  The initial value may be used
-as a default value for the user input.
+resource, Dialog copy the string internally and will use it as the
+initial (i.e. default) value for the input text.  The value string
+may be freed immediately after creating the Dialog widget.  If the
+length of the value string is greater than the maximumLength resource,
+the larger value is used.
 .LP
 If no value resource is specified for the Dialog widget, the text user
-input area is not displayed.
+input area is not displayed.  In order to display a blank input area,
+an empty string must be passed as the value resource.
 .LP
 .sp
 .IN "Dialog widget" "removing children"
