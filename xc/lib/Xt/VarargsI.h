@@ -46,13 +46,13 @@ extern void _XtCountVaList(
 
 extern void _XtVaToArgList(
 #if IncludePrototypes
-   Widget widget, ArgList *args_return, Cardinal *num_args_return, va_list var
+   Widget widget, va_list var, int max_count, ArgList *args_return, Cardinal *num_args_return
 #endif
 );
 
 extern void _XtVaToTypedArgList(
 #if IncludePrototypes
-    va_list var, XtTypedArgList *args_return, Cardinal *num_args_return
+    va_list var, int count, XtTypedArgList *args_return, Cardinal *num_args_return
 #endif
 );
 
