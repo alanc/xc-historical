@@ -1,9 +1,9 @@
-.TH XLSFONTS 1 "12 June 1987" "X Version 11"
+.TH XLSFONTS 1 "1 March 1988" "X Version 11"
 .SH NAME
 xlsfonts - X window system font list displayer
 .SH SYNOPSIS
 .B xlsfonts
-[ \fIhost\fP:\fInumber\fP ] [ \fIpattern\fP ]
+[-display \fIhost\fP:\fInumber\fP] [\fIpattern\fP]
 .SH DESCRIPTION
 .I Xlsfonts
 displays all fonts on a given display which match the given \fIpattern\fP.
@@ -16,7 +16,7 @@ As per usual unix style, if no fonts match, nothing is printed.
 .SH "OPTIONS"
 .PP
 .TP 8
-.B \fIhost\fP:\fIdisplay\fP
+.B \-display \fIhost\fP:\fIdisplay\fP
 Normally,
 .I xlsfonts
 gets the host and display number to use from the environment
@@ -33,10 +33,10 @@ orpheus.
 .SH "SEE ALSO"
 X(1), X(8C), xterm(1), xfd(1)
 .SH ENVIRONMENT
-DISPLAY	-	To find out which display you are using.
+.TP 8
+.B DISPLAY
+to get the default host and display to use.
 .SH AUTHOR
+Copyright 1987 Massachusetts Institute of Technology.
+.br
 Mark Lillibridge, MIT Project Athena
-.br
-Copyright (c) 1987 by Massachusetts Institute of Technology.
-.br
-See X(1) for a complete copyright notice.

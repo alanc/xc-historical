@@ -1,4 +1,4 @@
-.TH XINIT 1 "25 January 1986" "X Version 10"
+.TH XINIT 1 "1 March 1988" "X Version 11"
 .SH NAME
 xinit - X window system initializer
 .SH SYNOPSIS
@@ -26,7 +26,7 @@ and for \fIxterm(1)\fP to also exist in the search path.
 It starts
 up the X server on display 0, and then starts up
 .br
-	xterm =+1+1 -n login unix:0
+	xterm -geometry =+1+1 -n login -display unix:0
 .br
 .PP
 A different client and/or server can be specified in the command line, and
@@ -47,17 +47,15 @@ server command line.
 .PP
 Examples:
 .sp
-xinit =80x65+10+10 -fn 8x13 -j -fg white -bg navy
+xinit -geometry =80x65+10+10 -fn 8x13 -j -fg white -bg navy
 .br
 xinit -e widgets -- Xsun -l -c
 .br
-xinit rsh fasthost cpupig workstation:1 -- 1 -a 2 -t 5
+xinit rsh fasthost cpupig -display workstation:1 -- 1 -a 2 -t 5
 .br
+.SH "SEE ALSO"
+X(8C), xterm(1)
 .SH AUTHOR
 Copyright (c) 1986 by Massachusetts Institute of Technology.
 .br
-See \fIX(1)\fP for a complete copyright notice.
-.br
 Bob Scheifler, MIT Laboratory for Computer Science
-.SH "SEE ALSO"
-X(8C), xterm(1)
