@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.32 88/07/12 16:42:53 jim Exp $
+ * $Header: Tekproc.c,v 1.33 88/07/20 15:35:44 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -62,13 +62,6 @@
 extern void exit();
 extern long time();
 
-#ifdef obsolete
-/* ||| Temp stuff till I make this work again */
-char *fore_color;
-char *back_color;
-char *curs_color;
-#endif /* obsolete */
-
 #define TekColormap DefaultColormap( screen->display, \
 				    DefaultScreen(screen->display) )
 #define DefaultGCID DefaultGC(screen->display, DefaultScreen(screen->display))->gid
@@ -120,7 +113,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.32 88/07/12 16:42:53 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.33 88/07/20 15:35:44 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -1120,69 +1113,6 @@ static void TekRealize (gw, valuemaskp, values)
     screen->Tbackground = term->core.background_pixel;
     screen->Tforeground = screen->foreground;
     screen->Tcursorcolor = screen->foreground;
-
-#ifdef obsolete
-	if (DisplayCells(screen->display, DefaultScreen(screen->display)) > 2
-	    && (fore_color || back_color || curs_color)) {
-		if (curs_color &&
-		    XParseColor(screen->display, TekColormap, curs_color, &cdef)) {
-			if(XAllocColorCells(
-			    screen->display,
-			    TekColormap,
-			    0, 
-			    &screen->xorplane, 1,
-			    pixels, 2)) {
-				screen->cellsused = TRUE;
-				screen->colorcells[2] = cdef;
-				screen->Tbackground = pixels[0];
-				screen->Tforeground = pixels[1];
-
-				screen->Tcursorcolor = screen->Tbackground |
-				 screen->xorplane;
-				screen->planeused = TRUE;
-			}
-		} else if (XAllocColorCells(
-		    screen->display,
-		    TekColormap, 0, 
-		    &screen->xorplane, 1, &screen->Tbackground, 1)) {
-			screen->Tforeground = screen->Tbackground |
-			 screen->xorplane;
-			screen->Tcursorcolor = screen->Tforeground;
-			screen->planeused = TRUE;
-		}
-		if (screen->Tbackground != XtDefaultBGPixel) {
-			if (back_color == NULL ||
-				!XParseColor(screen->display,
-				 TekColormap,
-				 back_color, &cdef)) {
-				cdef.pixel = XtDefaultBGPixel;
-				XQueryColor(screen->display, TekColormap, &cdef);
-			}
-			cdef.pixel = screen->Tbackground;
-			XStoreColor(screen->display, TekColormap, &cdef);
-			if(screen->cellsused) {
-				screen->colorcells[0] = cdef;
-				cdef.pixel = screen->Tforeground |
-					screen->xorplane;
-				XStoreColor(screen->display, TekColormap,&cdef);
-			}
-			if (fore_color == NULL ||
-				!XParseColor(screen->display,
-				 TekColormap,
-				 fore_color, &cdef)) {
-				cdef.pixel = XtDefaultFGPixel;
-				XQueryColor(screen->display, TekColormap, &cdef);
-			}
-			cdef.pixel = screen->Tforeground;
-			XStoreColor(screen->display, TekColormap, &cdef);
-			if(screen->cellsused) {
-				screen->colorcells[1] = cdef;
-				cdef.pixel = screen->Tcursorcolor;
-				XStoreColor(screen->display, TekColormap, &cdef);
-			}
-		}
-	}
-#endif /* obsolete */
 
     if (term->misc.T_geometry == NULL) {
 	sprintf (Tdefault, "=%dx%d",
