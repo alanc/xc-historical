@@ -1,0 +1,55 @@
+.TH CLOCK 1 "26 October 1988" "X Version 11"
+.SH NAME
+clock \- display time of day
+.SH SYNOPSIS
+.B clock
+[-option ...]
+.SH DESCRIPTION
+.I Clock
+simply displays the current time on an analog display
+.SH OPTIONS
+.TP 8
+.B \-fg \fIforeground color\fB
+choose a different color for the face/hands/jewel of the clock
+.TP 8
+.B \-bg \fIbackground color\fB
+choose a different color for the background.
+.TP 8
+.B \-face \fIface color\fB
+choose a different color for the face of the clock.
+.TP 8
+.B \-jewel \fIjewel color\fB
+choose a different color for the jewel on the clock.
+.TP 8
+.B \-minute \fIminute color\fB
+choose a different color for the minute hand of the clock.
+.TP 8
+.B \-hour \fIhour color\fB
+choose a different color for the hour hand of the clock.
+.TP 8
+.B \-backing \fI{ WhenMapped Always NotUseful }\fB
+selects an appropriate level of backing store.
+.TP 8
+.B \-geometry \fIgeometry\fB
+define the initial window geometry; see \fIX(1)\fP.
+.TP 8
+.B \-display \fIdisplay\fB
+specify the display to use; see \fIX(1)\fP.
+.TP 8
+.B \-bd \fIborder color\fB
+choose a different color for the window border.
+.TP 8
+.B \-bw \fIborder width\fB
+choose a different width for the window border.
+.TP 8
+.B \-shape
+causes the clock to reshape itself and ancestors to exactly
+fit the outline of the clock.
+.SH "SEE ALSO"
+X(1), X Toolkit documentation
+.SH COPYRIGHT
+Copyright 1989, Massachusetts Institute of Technology.
+.br
+See \fIX(1)\fP for a full statement of rights and permissions.
+.SH AUTHOR
+Keith Packard, MIT X Consortium
