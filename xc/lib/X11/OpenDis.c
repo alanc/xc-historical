@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.118 91/07/22 15:43:33 rws Exp $
+ * $XConsortium: XOpenDis.c,v 11.119 91/07/23 22:27:42 keith Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
@@ -789,6 +789,12 @@ Display *XOpenDisplay (display)
 	    }
 	}
 
+#ifdef MOTIFBC
+	{
+	    extern Display *_XHeadOfDisplayList;
+	    _XHeadOfDisplayList = dpy;
+	}
+#endif
 /*
  * and return successfully
  */
