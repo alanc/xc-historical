@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.160 87/08/20 17:40:23 susan Exp $ */
+/* $Header: window.c,v 1.164 87/08/26 23:31:56 toddb Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -65,6 +65,9 @@ typedef struct _ScreenSaverStuff {
 #define SCREEN_IS_BLANKED   0
 #define SCREEN_IS_TILED     1
 #define SCREEN_ISNT_SAVED   2
+
+#define DONT_USE_GRAVITY 0
+#define USE_GRAVITY   1
 
 extern int ScreenSaverBlanking, ScreenSaverAllowExposures;
 int screenIsSaved = FALSE;
@@ -410,10 +413,12 @@ CreateRootWindow(screen)
     MapWindow(pWin, DONT_HANDLE_EXPOSURES, BITS_DISCARDED, 
 	      DONT_SEND_NOTIFICATION, serverClient);
 
+    /* We SHOULD check for an error value here XXX */
     (*pScreen->ChangeWindowAttributes)(pWin, CWBackPixmap | CWBorderPixel);
 
     (*pWin->PaintWindowBackground)(pWin, pWin->clipList, PW_BACKGROUND);
     EventSelectForWindow(pWin, serverClient, 0);
+    return(Success);
 }
 
 /*****
@@ -594,7 +599,9 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 	pParent->firstChild = pWin;
     }
 
+    /* We SHOULD check for an error value here XXX */
     (*pScreen->CreateWindow)(pWin);
+    /* We SHOULD check for an error value here XXX */
     (*pScreen->PositionWindow)(pWin, pWin->absCorner.x, pWin->absCorner.y);
     if ((vmask & CWEventMask) == 0)
         EventSelectForWindow(pWin, client, 0);
@@ -651,6 +658,7 @@ FreeWindowResources(pWin)
         FreeCursor( pWin->cursor, 0);
 
     DeleteAllWindowProperties(pWin);
+    /* We SHOULD check for an error value here XXX */
     (* pScreen->DestroyWindow)(pWin);
 }
 
@@ -985,7 +993,6 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		    if (pWinT->parent->colormap != CopyFromParent)
 		    {
 			cmap = pWinT->parent->colormap;
-			*( Colormap*)pVlist = cmap;   
 		    }
 		    else
 			pWinT = pWinT->parent;
@@ -1001,7 +1008,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    {
 	        if (pCmap->pVisual->vid == pWin->visual)
 	        { 
-		    pWin->colormap = (Colormap ) *pVlist;
+		    pWin->colormap = (Colormap ) cmap;
 		    xE.u.u.type = ColormapNotify;
 	            xE.u.colormap.new = TRUE;
 	            xE.u.colormap.state = IsMapInstalled(cmap, pWin);
@@ -1059,6 +1066,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
       vmaskCopy |= index;
     }
 PatchUp:
+    	/* We SHOULD check for an error value here XXX */
     (*pScreen->ChangeWindowAttributes)(pWin, vmaskCopy);
 
     /* 
@@ -1259,7 +1267,7 @@ MoveWindow(pWin, x, y, pNextSib)
 
     windowToValidate = MoveWindowInStack(pWin, pNextSib);
 
-    ResizeChildrenWinSize(pWin, FALSE, 0, 0);
+    ResizeChildrenWinSize(pWin, FALSE, 0, 0, DONT_USE_GRAVITY);
     if (WasMapped) 
     {
 
@@ -1277,7 +1285,9 @@ MoveWindow(pWin, x, y, pNextSib)
 	     * exposures aren't supposed to extend into children!
 	     */
        	    (* pWin->CopyWindow)(pWin, oldpt, oldRegion);
-
+            (* pScreen->Subtract)(pParent->exposed, pParent->exposed,
+                                  pWin->borderSize);
+ 
 	}
 	(* pScreen->RegionDestroy)(oldRegion);
 	HandleExposures(pParent); 
@@ -1285,10 +1295,11 @@ MoveWindow(pWin, x, y, pNextSib)
 }
 
 static void
-ResizeChildrenWinSize(pWin, XYSame, dw, dh)
+ResizeChildrenWinSize(pWin, XYSame, dw, dh, useGravity)
     WindowPtr pWin;
     Bool XYSame;
     int dw, dh;
+    Bool useGravity;
 {
     WindowPtr pSib;
     RegionPtr parentReg;
@@ -1307,44 +1318,47 @@ ResizeChildrenWinSize(pWin, XYSame, dw, dh)
     {
 	cwsx = pSib->clientWinSize.x;
 	cwsy = pSib->clientWinSize.y;
-	switch (pSib->winGravity)
-	{
-	  case UnmapGravity: 
+        if (useGravity == USE_GRAVITY)
+        {
+	    switch (pSib->winGravity)
+	    {
+	       case UnmapGravity: 
                     unmap = TRUE;
-	  case NorthWestGravity: 
+	       case NorthWestGravity: 
 		    break;
-          case NorthGravity:  
+               case NorthGravity:  
                    cwsx += dw/2;
 		   break;
-          case NorthEastGravity:    
+               case NorthEastGravity:    
 		   cwsx += dw;	     
 		   break;
-          case WestGravity:         
+               case WestGravity:         
                    cwsy += dh/2;
                    break;
-          case CenterGravity:    
+               case CenterGravity:    
                    cwsx += dw/2;
 		   cwsy += dh/2;
                    break;
-          case EastGravity:         
+               case EastGravity:         
                    cwsx += dw;
 		   cwsy += dh/2;
                    break;
-          case SouthWestGravity:    
+               case SouthWestGravity:    
 		   cwsy += dh;
                    break;
-          case SouthGravity:        
+               case SouthGravity:        
                    cwsx += dw/2;
 		   cwsy += dh;
                    break;
-          case SouthEastGravity:    
+               case SouthEastGravity:    
                    cwsx += dw;
 		   cwsy += dh;
 		   break;
-          case StaticGravity:           /*< XXX */
+               case StaticGravity:           /* XXX */
 		   break;
-	  default:
+	       default:
                    break;
+	    }
 	}
 	box.x1 = x + cwsx;
 	box.y1 = y + cwsy;
@@ -1375,7 +1389,7 @@ ResizeChildrenWinSize(pWin, XYSame, dw, dh)
 	(* pScreen->PositionWindow)(pSib, pSib->absCorner.x, pSib->absCorner.y);
 	pSib->marked = 1;
 	if (pSib->firstChild) 
-            ResizeChildrenWinSize(pSib, XYSame, dw, dh);
+            ResizeChildrenWinSize(pSib, XYSame, dw, dh, useGravity);
         if (unmap)
 	{
             UnmapWindow(pSib, DONT_HANDLE_EXPOSURES, SEND_NOTIFICATION,	TRUE);
@@ -1476,7 +1490,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
 
     dw = w - width;
     dh = h - height;
-    ResizeChildrenWinSize(pWin, XYSame, dw, dh);
+    ResizeChildrenWinSize(pWin, XYSame, dw, dh, USE_GRAVITY);
 
     /* let the hardware adjust background and border pixmaps, if any */
     (* pScreen->PositionWindow)(pWin, pWin->absCorner.x, pWin->absCorner.y);
@@ -1487,7 +1501,7 @@ SlideAndSizeWindow(pWin, x, y, w, h, pSib)
     {
         RegionPtr pRegion;
 
-	anyMarked = MarkSiblingsBelowMe(pFirstChange, pBox, TRUE) || anyMarked;
+	anyMarked = MarkSiblingsBelowMe(pFirstChange, pBox) || anyMarked;
 
         if ((pWin->bitGravity == ForgetGravity) ||
             (pWin->backgroundTile == (PixmapPtr)ParentRelative))
@@ -1811,13 +1825,11 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
             return(pWin->nextSib);
         else
             return(pWin->parent->firstChild);
-        break;
       case Below:
         if (pSib)
             return(pSib->nextSib);
         else
             return((WindowPtr )NULL);
-        break;
       case TopIf:
         if (pSib)
 	{
@@ -1898,7 +1910,7 @@ ReflectStackChange(pWin, pSib)
     if (doValidation)
     {
         box = (* pWin->drawable.pScreen->RegionExtents)(pWin->borderSize);
-        anyMarked = MarkSiblingsBelowMe(pFirstChange, box, FALSE);
+        anyMarked = MarkSiblingsBelowMe(pFirstChange, box);
         (* pWin->drawable.pScreen->ValidateTree)(pParent, pFirstChange,
 					 TRUE, anyMarked);
 	DoObscures(pParent);
@@ -2002,7 +2014,11 @@ ConfigureWindow(pWin, mask, vlist, client)
 	    return(BadMatch);
 	}
     }
-        /* then figure out if the window should be moved.  Doesnt
+	/* root really can't be reconfigured, so just return */
+    if (!pWin->parent)    
+	return Success;
+
+        /* Figure out if the window should be moved.  Doesnt
            make the changes to the window if event sent */
 
     if (mask & CWStackMode)
@@ -2342,16 +2358,10 @@ ReparentWindow(pWin, pParent, x, y, client)
         (* pScreen->RegionCopy)(pWin->borderSize, pWin->winSize);
 
     (* pScreen->PositionWindow)(pWin, pWin->absCorner.x, pWin->absCorner.y);
-    ResizeChildrenWinSize(pWin, FALSE, 0, 0);
+    ResizeChildrenWinSize(pWin, FALSE, 0, 0, DONT_USE_GRAVITY);
 
     if (WasMapped)    
     {
-	(*pScreen->Union)(pParent->clipList, 
-			   pWin->borderSize, pParent->clipList);
-	(*pScreen->Union)(pPrev->clipList, pWin->borderSize,
-			   pPrev->clipList);
-	(* pScreen->RegionCopy)(pPrev->exposed, pWin->borderSize);    
-	
         MapWindow(pWin, HANDLE_EXPOSURES, BITS_DISCARDED, SEND_NOTIFICATION,
 	                                    client);
     }
@@ -2492,11 +2502,12 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
             return(Success);
         pWin->realized = TRUE;
         pWin->viewable = pWin->class == InputOutput;
+    	/* We SHOULD check for an error value here XXX */
         (* pScreen->RealizeWindow)(pWin);
         if (pWin->firstChild)
             RealizeChildren(pWin->firstChild, client);    
         box = (* pScreen->RegionExtents)(pWin->borderSize);
-        anyMarked = MarkSiblingsBelowMe(pWin, box, FALSE);
+        anyMarked = MarkSiblingsBelowMe(pWin, box);
 	(* pScreen->ValidateTree)(pParent, pWin, TRUE, anyMarked);
         if (SendExposures) 
         {
@@ -2524,6 +2535,7 @@ MapWindow(pWin, SendExposures, BitsAvailable, SendNotification, client)
 	pWin->mapped = 1;
         pWin->realized = TRUE;     /* for roots */
         pWin->viewable = pWin->class == InputOutput;
+    	/* We SHOULD check for an error value here XXX */
         (* pScreen->RealizeWindow)(pWin);
     }
     
@@ -2620,6 +2632,7 @@ UnmapWindow(pWin, SendExposures, SendNotification, fromConfigure)
     pWin->realized = pWin->viewable = FALSE;
     if (wasMapped)
     {
+    	/* We SHOULD check for an error value here XXX */
         (* pWin->drawable.pScreen->UnrealizeWindow)(pWin);
         DeleteWindowFromAnyEvents(pWin, FALSE);
         if (pWin->firstChild)
@@ -2669,6 +2682,7 @@ UnmapSubwindows(pWin, sendExposures)
             if (wasMapped)
 	    {
     	        pChild->realized = pChild->viewable = FALSE;
+    		/* We SHOULD check for an error value here XXX */
                 (* UnrealizeWindow)(pChild);
 	        if (pChild->firstChild)
                     UnrealizeChildren(pChild->firstChild);
@@ -2824,7 +2838,7 @@ SaveScreens(on, mode)
 	            new_x = random() % RANDOM_WIDTH;
 	            new_y = random() % RANDOM_WIDTH;
 	            MoveWindow(savedScreenInfo[i].pWindow, -new_x, -new_y, 
-		               savedScreenInfo[i].pWindow->nextSib, Above);
+		               savedScreenInfo[i].pWindow->nextSib);
 		}
 		continue;
 	    }
@@ -2855,6 +2869,7 @@ SaveScreens(on, mode)
                     attributes[0] = None;
 
                 pWin = savedScreenInfo[i].pWindow = 
+    			/* We SHOULD check for an error value here XXX */
 		     CreateWindow(savedScreenInfo[i].wid,
 		     &WindowTable[i], 
 		     -RANDOM_WIDTH, -RANDOM_WIDTH,
