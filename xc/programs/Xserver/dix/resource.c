@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.88 92/04/20 17:34:59 rws Exp $ */
+/* $XConsortium: resource.c,v 1.89 93/07/12 09:23:38 dpw Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -419,6 +419,8 @@ FreeResource(id, skipDeleteFuncType)
     if (!gotOne)
 	FatalError("Freeing resource id=%X which isn't there", id);
 }
+
+
 void
 FreeResourceByType(id, type, skipFree)
     XID id;
@@ -486,6 +488,39 @@ ChangeResourceValue (id, rtype, value)
 	    }
     }
     return FALSE;
+}
+
+void
+FreeClientNeverRetainResources(client)
+    ClientPtr client;
+{
+    ResourcePtr *resources;
+    ResourcePtr this;
+    ResourcePtr *prev;
+    int j;
+
+    if (!client)
+	return;
+
+    resources = clientTable[client->index].resources;
+    for (j=0; j < clientTable[client->index].buckets; j++) 
+    {
+	prev = &resources[j];
+        while (this = *prev)
+	{
+	    RESTYPE rtype = this->type;
+	    if (rtype & RC_NEVERRETAIN)
+	    {
+		*prev = this->next;
+		if (rtype & RC_CACHED)
+		    FlushClientCaches(this->id);
+		(*DeleteFuncs[rtype & TypeMask])(this->value, this->id);
+		xfree(this);	    
+	    }
+	    else
+		prev = &this->next;
+	}
+    }
 }
 
 void
