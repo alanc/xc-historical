@@ -4,7 +4,7 @@ xwd - dump an image of an X window
 .SH SYNOPSIS
 .B "xwd"
 [-debug] [-help] [-nobdrs] [-out \fIfile\fP] [-xy] [-frame] [-add \fIvalue\fP]
-[-root | -id \fIid\fP | -name \fIname\fP ]
+[-root | -id \fIid\fP | -name \fIname\fP ] [-screen]
 [-display \fIdisplay\fP]
 .SH DESCRIPTION
 .PP
@@ -69,6 +69,14 @@ select a window with the pointer.
 This option indicates that the window with the specified WM_NAME property
 should be selected for the window dump, without requiring the user to
 select a window with the pointer.
+.PP
+.TP 8
+.B "-screen"
+This option indicates that the GetImage request used to obtain the image
+should be done on the root window, rather than directly on the specified
+window.  In this way, you can obtain pieces of other windows that overlap
+the specified window, and more importantly, you can capture menus or other
+popups that are independent windows but appear over the specified window.
 .SH ENVIRONMENT
 .PP
 .TP 8
