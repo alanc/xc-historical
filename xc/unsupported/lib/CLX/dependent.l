@@ -762,7 +762,7 @@
 #+lucid
 (defun open-x-stream (host display protocol)
   protocol ;; unused
-  (let ((fd (connect-to-server host (+ *x-tcp-port* display))))
+  (let ((fd (connect-to-server host display)))
     (when (minusp fd)
       (error "Failed to connect to server: ~A ~D" host display))
     (user::make-lisp-stream :input-handle fd
@@ -781,7 +781,7 @@
 #+excl
 (defun open-x-stream (host display protocol)
   (declare (ignore protocol)) ;; unused
-  (let ((fd (connect-to-server host (+ *x-tcp-port* display))))
+  (let ((fd (connect-to-server host display)))
     (when (minusp fd)
       (error "Failed to connect to server: ~A ~D" host display))
     (let ((stm (excl::make-buffered-byte-stream fd t t)))
