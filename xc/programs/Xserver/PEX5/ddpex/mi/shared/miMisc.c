@@ -1,4 +1,4 @@
-/* $XConsortium: miMisc.c,v 5.1 91/02/16 09:56:20 rws Exp $ */
+/* $XConsortium: miMisc.c,v 5.2 91/03/19 18:13:33 keith Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -368,7 +368,7 @@ miEnumType	miParametricSurfaceCharsET[MI_MAXDRAWABLES][SI_P_SURF_CHAR_NUM] = {
 #define PUT_BUF8(buf, value) \
            *(buf).C8++ = (value);
 
-#define PADDING(n) ( (n)%4 ? (4 - (n)%4) : 0)
+#define PADDING(n) ( (n)&3 ? (4 - (n)&3) : 0)
 
 /* be sure k is defined before using this */
 /* size is the size of the string
@@ -392,9 +392,9 @@ miEnumType	miParametricSurfaceCharsET[MI_MAXDRAWABLES][SI_P_SURF_CHAR_NUM] = {
 	switch (itemMask)							\
 	{									\
 		case PEXETIndex:	/* return index values only */		\
-			count += (num * 2);					\
+			count += (num << 1);					\
 			/* add pad if necessary */				\
-			if (num % 2)						\
+			if (num & 1)						\
 				count+=2;					\
 		break;								\
 										\
@@ -438,7 +438,7 @@ miEnumType	miParametricSurfaceCharsET[MI_MAXDRAWABLES][SI_P_SURF_CHAR_NUM] = {
 			for (j=0; j<(num); j++, pet++)					\
 				PUT_BUF16(pbuf, (pet)->index);			\
 			/* add pad if necessary */				\
-			if ((num) % 2)						\
+			if ((num) & 1)						\
 				PUT_BUF16(pbuf, 0);				\
 		break;								\
 										\
@@ -504,7 +504,7 @@ InquireEnumTypeInfo(pDrawable, itemMask, numEnumTypes, pEnumTypeList, pNumLists,
 
     register int        drawType;
     register ddUSHORT  *ptype;
-    register int        i,
+    register unsigned   i,
                         j,
                         k;
     ddUSHORT            size;
