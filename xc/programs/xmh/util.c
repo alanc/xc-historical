@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 2.40 91/07/05 18:30:00 converse Exp $
+ * $XConsortium: util.c,v 2.41 93/09/20 17:51:57 hersh Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -301,8 +301,12 @@ LastModifyDate(file)
 CurrentDate()
 {
     struct timeval time;
+#if defined(SVR4) || defined(WIN32) || defined(VMS)
+    (void) gettimeofday(&time);
+#else
     struct timezone zone;
     (void) gettimeofday(&time, &zone);
+#endif
     return time.tv_sec;
 }
 
