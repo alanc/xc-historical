@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.29 88/09/30 15:34:57 jim Exp $
+ * $XConsortium: XErrDes.c,v 11.31 88/09/30 16:19:36 jim Exp $
  */
 
 /***********************************************************
@@ -69,6 +69,7 @@ XGetErrorText(dpy, code, buffer, nbytes)
     char buf[32];
     register _XExtension *ext;
 
+    if (nbytes == 0) return;
     sprintf(buf, "%d", code);
     if (code <= (XErrorListSize/ sizeof (char *)) && code > 0) {
 	defaultp =  XErrorList[code];
@@ -97,16 +98,19 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
     static int initialized = False;
     char temp[BUFSIZ];
 
+    if (nbytes == 0) return;
     if (initialized == False) {
 	_XInitErrorHandling (&db);
 	initialized = True;
     }
     sprintf(temp, "%s.%s", name, type);
     XrmGetResource(db, temp, "ErrorType.ErrorNumber", &type_str, &result);
-    if (result.addr) {
-	(void) strncpy (buffer, result.addr, nbytes);
-	if (result.size < nbytes) buffer[result.size] = 0;
-    } else (void) strncpy(buffer, defaultp, nbytes);
+    if (!result.addr) {
+	result.addr = (caddr_t) defaultp;
+	result.size = strlen(defaultp);
+    }
+    (void) strncpy (buffer, (char *) result.addr, nbytes);
+    if (result.size >= nbytes) buffer[nbytes-1] = '\0';
 }
 
 _XInitErrorHandling (db)
