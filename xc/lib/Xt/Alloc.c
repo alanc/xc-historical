@@ -1,7 +1,7 @@
 #ifndef lint
-static char rcsid[] = "$Header: Alloc.c,v 1.18 88/02/14 14:52:40 rws Exp $";
+static char rcsid[] = "$xHeader: Alloc.c,v 1.20 88/08/31 09:47:20 swick Exp $";
+/* $oHeader: Alloc.c,v 1.2 88/08/18 15:33:53 asente Exp $ */
 #endif lint
-
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -30,9 +30,10 @@ SOFTWARE.
 /*
  * X Toolkit Memory Allocation Routines
  */
-extern char *malloc(), *realloc(), *calloc();
-extern void exit(), free();
 
+extern char *malloc(), *realloc(), *calloc();
+extern void free();
+extern void exit();
 #include <X11/Xlib.h>
 #include "IntrinsicI.h"
 
@@ -40,10 +41,9 @@ char *XtMalloc(size)
     unsigned size;
 {
     char *ptr;
-
     if ((ptr = malloc(size)) == NULL)
-	XtError("Cannot perform malloc");
-
+        XtErrorMsg("allocError","malloc","XtToolkitError",
+                 "Cannot perform malloc", (String *)NULL, (Cardinal *)NULL);
     return(ptr);
 }
 
@@ -53,7 +53,8 @@ char *XtRealloc(ptr, size)
 {
    if (ptr == NULL) return(XtMalloc(size));
    else if ((ptr = realloc(ptr, size)) == NULL)
-	XtError("Cannot perform realloc");
+            XtErrorMsg("allocError","realloc","XtToolkitError",
+                "Cannot perform realloc", (String *)NULL, (Cardinal *)NULL);
    return(ptr);
 }
 
@@ -61,8 +62,9 @@ char *XtCalloc(num, size)
     unsigned num, size;
 {
     char *ptr;
-
-    if ((ptr = calloc(num, size)) == NULL) XtError("Cannot perform calloc");
+    if ((ptr = calloc(num, size)) == NULL) 
+         XtErrorMsg("allocError","calloc","XtToolkitError",
+                "Cannot perform calloc", (String *)NULL, (Cardinal *)NULL);
     return(ptr);
 }
 
