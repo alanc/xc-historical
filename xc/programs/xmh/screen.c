@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.63 94/08/26 18:05:04 swick Exp swick $
+ * $XConsortium: screen.c,v 2.64 94/08/29 19:47:11 swick Exp swick $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -318,9 +318,6 @@ ScrnKind kind;
 	case STcomp:		MakeComp(scrn);	break;
     }
 
-    if (scrn->parent == toplevel)
-	XtVaSetValues(toplevel, XtNjoinSession, (XtArgVal)True, NULL);
-
     if (kind != STpick) {
 	int	theight, min, max;
 	Arg	args[1];
@@ -373,7 +370,7 @@ ScrnKind kind;
 	(void) XSetWMProtocols(XtDisplay(scrn->parent), XtWindow(scrn->parent),
 			       protocolList, XtNumber(protocolList));
     }
-    scrn->mapped = (numScrns == 1);
+    scrn->mapped = False;
     return scrn;
 }
 

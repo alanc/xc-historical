@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.76 94/08/29 19:46:26 swick Exp swick $
+ * $XConsortium: init.c,v 2.77 94/09/07 19:58:54 swick Exp swick $
  *
  *
  *		        COPYRIGHT 1987, 1989
@@ -262,9 +262,9 @@ static void _Die(w, client_data, call_data)
 
 /* All the start-up initialization goes here. */
 
-InitializeWorld(argc, argv)
+InitializeWorld(argc, argv, envp)
 int argc;
-char **argv;
+char **argv, **envp;
 {
     int l;
     FILEPTR fid;
@@ -364,12 +364,36 @@ char **argv;
     static Arg shell_args[] = {
 	{XtNinput, (XtArgVal)True},
 	{XtNjoinSession, (XtArgVal)False}, /* join is delayed to end of init */
+	{XtNenvironment, NULL},	/* set dynamically below */
+	{XtNmappedWhenManaged, (XtArgVal)False}
     };
 
     ptr = strrchr(argv[0], '/');
     if (ptr) progName = ptr + 1;
     else progName = argv[0];
 
+#ifdef BOGUS_XSMP_SPEC
+    {
+	int i;
+	char **ep, **nep;
+	for (i=1,ep=envp; *ep; ep++)i++;
+	nep = (char**)XtMalloc(i*2*sizeof(char*));
+	for (ep=nep; *envp; envp++) {
+	    char *cp = strchr(*envp, '=');
+	    if (cp) {
+		int l = cp - *envp;
+		*ep = (char*)XtMalloc(l);
+		strncpy(*ep, *envp, l);
+		(*ep++)[l] = '\0';
+		*ep++ = cp+1;
+	    }
+	    else *ep++ = *envp;
+	}
+	envp = nep;
+    }
+#endif
+
+    shell_args[2].value = (XtArgVal)envp;
     toplevel = XtOpenApplication(&app, "Xmh", table, XtNumber(table),
 				 &argc, argv, FallbackResources,
 				 sessionShellWidgetClass,
@@ -509,6 +533,8 @@ char **argv;
     TocSetScrn(InitialFolder, scrn);
 
     DEBUG("done.\n");
+
+    XtVaSetValues(toplevel, XtNjoinSession, (XtArgVal)True, NULL);
 
     MapScrn(scrn);
 }
