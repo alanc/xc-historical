@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$XConsortium: xditview.c,v 1.7 89/05/11 14:07:09 keith Exp $";
+static char rcsid[] = "$XConsortium: xditview.c,v 1.8 89/05/16 14:21:38 keith Exp $";
 #endif  lint
 
 #include <X11/Xatom.h>
@@ -19,7 +19,7 @@ static char rcsid[] = "$XConsortium: xditview.c,v 1.7 89/05/11 14:07:09 keith Ex
 #include <X11/Xaw/Command.h>
 #include <X11/Xaw/Dialog.h>
 #include <X11/Xaw/Label.h>
-#include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/SimpMenu.h>
 
 #include "libXdvi/Dvi.h"
 
