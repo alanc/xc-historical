@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: window.c,v 1.176 87/11/05 11:59:38 rws Locked $ */
+/* $Header: window.c,v 1.177 87/11/07 17:03:15 rws Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -472,25 +472,23 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 
     if (visual == CopyFromParent)
         visual = pParent->visual;
-    else
+
+    for(idepth = 0; idepth < pScreen->numDepths; idepth++)
     {
-        for(idepth = 0; idepth < pScreen->numDepths; idepth++)
-        {
-	    pDepth = (DepthPtr) &pScreen->allowedDepths[idepth];
-	    if (depth == pDepth->depth)
-    	    {
-		for (ivisual = 0; ivisual < pDepth->numVids; ivisual++)
-	        {
-		    if (visual == pDepth->vids[ivisual])
-		        fOK = TRUE;
-	        }
+	pDepth = (DepthPtr) &pScreen->allowedDepths[idepth];
+	if (depth == pDepth->depth)
+	{
+	    for (ivisual = 0; ivisual < pDepth->numVids; ivisual++)
+	    {
+		if (visual == pDepth->vids[ivisual])
+		    fOK = TRUE;
 	    }
-        }
-        if (fOK == 0)
-        {
-            *error = BadMatch;
-	    return (WindowPtr)NULL;
-        }
+	}
+    }
+    if (fOK == FALSE)
+    {
+	*error = BadMatch;
+	return (WindowPtr)NULL;
     }
 
     pWin = (WindowPtr ) Xalloc( sizeof(WindowRec) );
