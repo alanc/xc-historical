@@ -1,4 +1,4 @@
-/* $XConsortium: ddpex.h,v 5.3 91/05/02 13:34:25 hersh Exp $ */
+/* $XConsortium: ddpex.h,v 5.4 91/06/27 14:48:40 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -503,8 +503,8 @@ typedef struct {
 
 /*	Output Command Procedure Vector	used in renderer */
 /*	The index of a procedure is the output command number	*/
-#define OCTABLE_LENGTH PEXMaxOC+1
-#define SEPROC_VECTOR_LENGTH PEXMaxOC+1
+#define OCTABLE_LENGTH (PEXMaxOC+1)
+#define SEPROC_VECTOR_LENGTH (PEXMaxOC+1)
 
 typedef	ddpex2rtn	(*ocTableType)();
 
