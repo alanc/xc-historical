@@ -1,4 +1,4 @@
-/* $XConsortium: XSync.c,v 1.3 93/09/04 16:36:39 rws Exp $ */
+/* $XConsortium: XSync.c,v 1.4 93/09/09 14:06:24 rws Exp $ */
 /***********************************************************
 Copyright 1991,1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 the Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -111,6 +111,7 @@ wire_to_event(dpy, event, wire)
 				    awire->counter_value_hi);
 	aevent->time = awire->time;
 	aevent->count = awire->count;
+	aevent->destroyed = awire->destroyed;
 	return True;
 
       case XSyncAlarmNotify:
@@ -164,6 +165,7 @@ event_to_wire(dpy, event, wire)
 	awire->counter_value_hi = XSyncValueHigh32(aevent->counter_value);
 	awire->time = aevent->time;
 	awire->count = aevent->count;
+	awire->destroyed = aevent->destroyed;
 	return True;
 
       case XSyncAlarmNotify:
@@ -471,7 +473,7 @@ XSyncAwait(dpy, wait_list, n_conditions)
 	wc.test_type = wait_item->trigger.test_type;
 	wc.event_threshold_lo = XSyncValueLow32(wait_item->event_threshold);
 	wc.event_threshold_hi = XSyncValueHigh32(wait_item->event_threshold);
-	Data32(dpy, &wc, SIZEOF(xSyncWaitCondition));
+	Data(dpy, (char *)&wc, SIZEOF(xSyncWaitCondition));
 	wait_item++;		/* get next trigger */
     }
 
@@ -488,8 +490,8 @@ _XProcessAlarmAttributes(dpy, req, valuemask, attributes)
     XSyncAlarmAttributes *attributes;
 {
 
-    CARD32          values[32];
-    CARD32         *value = values;
+    unsigned long  values[32];
+    unsigned long *value = values;
     unsigned int    nvalues;
 
     if (valuemask & XSyncCACounter)
