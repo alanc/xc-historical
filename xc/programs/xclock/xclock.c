@@ -2,7 +2,7 @@
  *  Hacked from Tony Della Fera's much hacked clock program.
  */
 #ifndef lint
-static char rcsid[] = "$XConsortium: xclock.c,v 1.24 89/06/19 13:55:24 jim Exp $";
+static char rcsid[] = "$XConsortium: xclock.c,v 1.25 89/10/09 16:48:24 jim Exp $";
 #endif /* lint */
 
 #include <X11/Xatom.h>
@@ -16,6 +16,7 @@ static char rcsid[] = "$XConsortium: xclock.c,v 1.24 89/06/19 13:55:24 jim Exp $
 #include "clmask.bit"
 
 extern void exit();
+static void quit();
 
 /* Command line options table.  Only resources are entered here...there is a
    pass over the remaining options after XtParseCommand is let loose. */
@@ -33,6 +34,12 @@ static XrmOptionDescRec options[] = {
 {"-analog",	"*clock.analog",	XrmoptionNoArg,		"TRUE"},
 };
 
+
+static XtActionsRec xclock_actions[] = {
+    { "quit",	quit },
+};
+
+static Atom wm_delete_window;
 
 /*
  * Report the syntax for calling xclock.
@@ -56,10 +63,17 @@ void main(argc, argv)
     Widget toplevel;
     Arg arg;
     Pixmap icon_pixmap = None;
+    XtAppContext app_con;
 
-    toplevel = XtInitialize("main", "XClock", options, XtNumber(options),
-			    &argc, argv);
+    toplevel = XtAppInitialize (&app_con, "XClock", options, XtNumber(options),
+				&argc, argv, NULL, NULL, ZERO);
     if (argc != 1) Syntax(argv[0]);
+
+    XtAppAddActions (app_con, xclock_actions, XtNumber(xclock_actions));
+    XtSetArg (arg, XtNtranslations,
+	      XtParseTranslationTable ("<Message>WM_PROTOCOLS: quit()"));
+    XtSetValues (toplevel, &arg, ONE);
+
 
     XtSetArg(arg, XtNiconPixmap, &icon_pixmap);
     XtGetValues(toplevel, &arg, ONE);
@@ -81,5 +95,25 @@ void main(argc, argv)
 
     XtCreateManagedWidget ("clock", clockWidgetClass, toplevel, NULL, ZERO);
     XtRealizeWidget (toplevel);
-    XtMainLoop();
+    wm_delete_window = XInternAtom (XtDisplay(toplevel), "WM_DELETE_WINDOW",
+				    False);
+    (void) XSetWMProtocols (XtDisplay(toplevel), XtWindow(toplevel),
+			    &wm_delete_window, 1);
+    XtAppMainLoop (app_con);
+}
+
+
+static void quit (w, event, params, num_params)
+    Widget w;
+    XEvent *event;
+    String *params;
+    Cardinal *num_params;
+{
+    if (event->type == ClientMessage &&
+	event->xclient.data.l[0] != wm_delete_window) {
+	XBell (XtDisplay(w), 0);
+	return;
+    }
+    XCloseDisplay (XtDisplay(w));
+    exit (0);
 }
