@@ -337,7 +337,7 @@ This option specifies the color to use for displaying text.  The default is
 .TP 8
 .B \-fn \fIfont\fP
 This option specifies the font to be used for displaying normal text.  The
-default is ``vtsingle.''
+default is \fIfixed\fP.
 .TP 8
 .B \-name \fIname\fP
 This option specifies the application name under which resources are to be
