@@ -145,6 +145,10 @@ a terminal or from a shell script.
 This option indicates that the RESOURCE_MANAGER property should be removed
 from its window.
 .TP 8
+.B \-retain
+This option indicates that the server should be instructed not to reset of
+\fIxrdb\fP is the first client.
+.TP 8
 .B \-edit \fIfilename\fP
 This option indicates that the contents of the RESOURCE_MANAGER property
 should be edited into the given file, replacing any values already listed
