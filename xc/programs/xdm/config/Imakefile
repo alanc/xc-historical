@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.8 91/07/16 23:06:23 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.9 91/07/20 14:53:43 rws Exp $
       XDMCONFIG = xdm-config
    XDMRESOURCES = Xresources
      XDMSERVERS = Xservers
@@ -6,8 +6,8 @@ XCOMM $XConsortium: Imakefile,v 1.8 91/07/16 23:06:23 gildea Exp $
 
 all:: Xservers.ws xdm-config
 
-CppScriptTarget(Xservers.ws,Xserv.ws.cpp,-DBINDIR=$(BINDIR),NullParameter)
-CppScriptTarget(xdm-config,xdm-conf.cpp,-DXDMDIR=$(XDMDIR),NullParameter)
+CppFileTarget(Xservers.ws,Xserv.ws.cpp,-DBINDIR=$(BINDIR),NullParameter)
+CppFileTarget(xdm-config,xdm-conf.cpp,-DXDMDIR=$(XDMDIR),NullParameter)
 
 #ifdef XdmServersType
 LinkFile(Xservers,Xservers.XdmServersType)
