@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.33 93/04/02 12:19:36 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.34 93/04/03 10:55:01 rws Exp $
 .de Ds
 .RS
 .nf
@@ -397,10 +397,20 @@ the control sequence:
 {c-t}{c-l}w\fI<digit>\fP{c-t}
 .De
 If the selected window has moved on the screen, the pointer will still warp to
-the correct position relative to its new origin.  Example voice macros using
-these control sequences:
+the correct position relative to its new origin.
+.LP
+Sometimes it is preferable to record the pointer position relative to the
+closest edges of the selected window, rather than relative to its origin.
+For example, if you want to record a location in the "lower right" corner
+of the window, you want to record relative to the closest edges, so that
+if you resize the window you will still go to the lower right.  You can
+record relative to the closest edges with the control sequence:
 .Ds
-add-word /t "[set location]" "{c-t}{c-l}s0{c-t}" invisible
+{c-t}{c-l}S\fI<digit>\fP{c-t}
+.De
+Example voice macros using these control sequences:
+.Ds
+add-word /t "[set location]" "{c-t}{c-l}S0{c-t}" invisible
 add-word /t "[go back]" "{c-t}{c-l}w0{c-t}" invisible
 .De
 .LP
