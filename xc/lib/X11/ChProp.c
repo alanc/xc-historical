@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $XConsortium: XChProp.c,v 11.19 89/12/11 19:08:47 rws Exp $ */
+/* $XConsortium: XChProp.c,v 11.20 90/12/12 09:17:10 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -36,7 +36,11 @@ XChangeProperty (dpy, w, property, type, format, mode, data, nelements)
     req->type = type;
     req->format = format;
     req->mode = mode;
-    req->nUnits = nelements;
+    if (nelements < 0) {
+	req->nUnits = 0;
+	req->format = 0; /* ask for garbage, get garbage */
+    } else
+	req->nUnits = nelements;
     
     switch (format) {
       case 8:
