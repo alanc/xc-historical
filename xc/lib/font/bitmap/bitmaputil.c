@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitmaputils.c,v 1.1 91/05/10 14:45:40 keith Exp $
+ * $XConsortium: bitmaputils.c,v 1.2 91/05/10 15:58:23 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -59,6 +59,7 @@ bitmapComputeFontBounds(pFont)
     xCharInfo  *minbounds,
                *maxbounds;
     int         i;
+    int		numneg = 0, numpos = 0;
 
     if (bitmapFont->bitmapExtra) {
 	minbounds = &bitmapFont->bitmapExtra->info.minbounds;
@@ -77,20 +78,27 @@ bitmapComputeFontBounds(pFont)
 	MINMAX(leftSideBearing, &ci->metrics);
 	MINMAX(rightSideBearing, &ci->metrics);
 	MINMAX(characterWidth, &ci->metrics);
+	if (ci->metrics.characterWidth < 0)
+	    numneg++;
+	else
+	    numpos++;
 	minbounds->attributes &= ci->metrics.attributes;
 	maxbounds->attributes |= ci->metrics.attributes;
 	overlap = ci->metrics.rightSideBearing - ci->metrics.characterWidth;
 	if (maxOverlap < overlap)
 	    maxOverlap = overlap;
     }
-    pFont->info.maxOverlap = maxOverlap;
     if (bitmapFont->bitmapExtra) {
+	if (numneg > numpos)
+	    bitmapFont->bitmapExtra->info.drawDirection = RightToLeft;
+	else
+	    bitmapFont->bitmapExtra->info.drawDirection = LeftToRight;
+	bitmapFont->bitmapExtra->info.maxOverlap = maxOverlap;
 	minbounds = &pFont->info.minbounds;
 	maxbounds = &pFont->info.maxbounds;
 	*minbounds = initMinMetrics;
 	*maxbounds = initMaxMetrics;
 	pci = bitmapFont->encoding;
-	bitmapFont->bitmapExtra->info.maxOverlap = maxOverlap;
 	maxOverlap = MINSHORT;
 	for (r = pFont->info.firstRow; r <= pFont->info.lastRow; r++) {
 	    for (c = pFont->info.firstCol; c <= pFont->info.lastCol; c++) {
@@ -101,6 +109,10 @@ bitmapComputeFontBounds(pFont)
 		    MINMAX(leftSideBearing, &ci->metrics);
 		    MINMAX(rightSideBearing, &ci->metrics);
 		    MINMAX(characterWidth, &ci->metrics);
+		    if (ci->metrics.characterWidth < 0)
+			numneg++;
+		    else
+			numpos++;
 		    minbounds->attributes &= ci->metrics.attributes;
 		    maxbounds->attributes |= ci->metrics.attributes;
 		    overlap = ci->metrics.rightSideBearing -
@@ -110,8 +122,12 @@ bitmapComputeFontBounds(pFont)
 		}
 	    }
 	}
-	pFont->info.maxOverlap = maxOverlap;
     }
+    if (numneg > numpos)
+	pFont->info.drawDirection = RightToLeft;
+    else
+	pFont->info.drawDirection = LeftToRight;
+    pFont->info.maxOverlap = maxOverlap;
 }
 
 void
