@@ -1,5 +1,5 @@
 /*
- * $Header: Tekproc.c,v 1.19 88/02/18 17:07:40 jim Exp $
+ * $Header: Tekproc.c,v 1.20 88/02/18 17:54:42 jim Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -115,7 +115,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.19 88/02/18 17:07:40 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.20 88/02/18 17:54:42 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -246,6 +246,7 @@ static void TekInitialize (request, new)
     if (request->core.height < 1) new->core.height = 1;
     new->core.border_pixel = term->core.border_pixel;
     new->core.background_pixel = term->core.background_pixel;
+    new->core.border_width = term->core.border_width;
     return;
 }
 
