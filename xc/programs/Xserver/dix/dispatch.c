@@ -1,4 +1,4 @@
-/* $Header: dispatch.c,v 1.9 87/09/01 17:00:08 toddb Locked $ */
+/* $Header: dispatch.c,v 1.10 87/09/03 11:59:19 toddb Locked $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -1774,7 +1774,8 @@ ProcGetImage(client)
     {
 	widthBytesLine = PixmapBytePad(stuff->width, 1);
 	xgi.length = (widthBytesLine >> 2) * stuff->height *
-		     Ones(stuff->planeMask); /* only planes asked for */
+		     /* only planes asked for */
+		     Ones(stuff->planeMask & ((1 << pDraw->depth) - 1));
     }
     linesPerBuf = IMAGE_BUFSIZE / widthBytesLine;
     if(!(pBuf = (char *) ALLOCATE_LOCAL(IMAGE_BUFSIZE)))
