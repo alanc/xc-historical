@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.8 93/08/14 16:23:11 rws Exp $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.9 93/08/14 16:26:31 rws Exp $
 
 #define OSName			Microsoft Windows NT 3.1beta
 XCOMM operating system:  OSName
@@ -19,7 +19,7 @@ XCOMM operating system:  OSName
 #define MkdirHierCmd mkdir
 #define DefaultCCOptions -nologo -batch
 #define ExtraLibraries libc.lib kernel32.lib
-#define MakeCmd nmake
+#define MakeCmd nmake -nologo
 #define LdCmd link32
 #define HasSymLinks		NO
 #define HasPutenv		YES
