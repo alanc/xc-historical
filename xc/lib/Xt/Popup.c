@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Popup.c,v 1.19 88/09/06 16:28:26 jim Exp $";
+    "$XConsortium: Popup.c,v 1.20 88/10/18 11:33:25 swick Exp $";
 /* $oHeader: Popup.c,v 1.3 88/09/01 11:45:34 asente Exp $ */
 #endif lint
 
@@ -69,6 +69,22 @@ void XtPopup (widget, grab_kind)
     Widget  widget;
     XtGrabKind grab_kind;
 {
+    switch (grab_kind) {
+
+      case XtGrabNone:
+      case XtGrabExclusive:
+      case XtGrabNonexclusive:
+	break;
+
+      default:
+	XtAppWarningMsg(
+		XtWidgetToApplicationContext(widget),
+		"invalidGrabKind","xtPopup","XtToolkitError",
+		"grab kind argument has invalid value; XtGrabNone assumed",
+		(String *)NULL, (Cardinal *)NULL);
+	grab_kind = XtGrabNone;
+    }
+	
     _XtPopup(widget, grab_kind, FALSE);
 } /* XtPopup */
 
