@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.17 94/03/28 14:21:47 gildea Exp $ */
+/* $XConsortium: iceauth.c,v 1.18 94/03/28 18:25:54 gildea Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -177,8 +177,6 @@ IcePointer	*replyDataRet;
 char    	**errorStringRet;
 
 {
-    IceAuthDataEntry	*entry;
-
     *errorStringRet = NULL;
     *replyDataLenRet = 0;
     *replyDataRet = NULL;
