@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: io.c,v 1.35 87/09/09 13:21:22 toddb Exp $ */
+/* $Header: io.c,v 1.36 87/09/09 23:04:35 rws Locked $ */
 /*****************************************************************
  * i/o functions
  *
@@ -44,7 +44,6 @@ SOFTWARE.
 #include "dixstruct.h"
 
 extern long ClientsWithInput[];
-extern long PartialRequest;
 extern ClientPtr ConnectionTranslation[];
 static int timesThisConnection = 0;
 
