@@ -109,6 +109,9 @@ static void Initialize (greq, gnew)
     ClockWidget w = (ClockWidget)gnew;
     XtGCMask	valuemask;
     XGCValues	myXGCV;
+#ifdef SHAPE
+    int shape_event_base, shape_error_base;
+#endif
 
     valuemask = GCForeground | GCBackground;
     myXGCV.background = w->core.background_pixel;
@@ -129,7 +132,9 @@ static void Initialize (greq, gnew)
     w->clock.interval_id = 0;
 
 #ifdef  SHAPE
-    if (w->clock.shape_window && !XShapeQueryExtension (XtDisplay (w)))
+    if (w->clock.shape_window && !XShapeQueryExtension (XtDisplay (w), 
+							&shape_event_base, 
+							&shape_error_base))
 	w->clock.shape_window = False;
     w->clock.shape_mask = 0;
     w->clock.shapeGC = 0;
