@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ConnDis.c,v 11.103 93/09/29 19:13:51 gildea Exp $
+ * $XConsortium: ConnDis.c,v 11.104 93/10/11 16:37:48 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -22,6 +22,28 @@
  *
  * 
  * This file contains operating system dependencies.
+ */
+/*
+ *
+ * The connection code/ideas for SVR4/Intel environments was contributed by
+ * the following companies/groups:
+ *
+ *	MetroLink Inc
+ *	NCR
+ *	Pittsburgh Powercomputing Corporation (PPc)/Quarterdeck Office Systems
+ *	SGCS
+ *	Unix System Laboratories (USL) / Novell
+ *	XFree86
+ *
+ * The goal is to have common connection code among all SVR4/Intel vendors.
+ *
+ * ALL THE ABOVE COMPANIES DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS 
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, 
+ * IN NO EVENT SHALL THESE COMPANIES BE LIABLE FOR ANY SPECIAL, INDIRECT 
+ * OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS 
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE 
+ * OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE 
+ * OR PERFORMANCE OF THIS SOFTWARE.
  */
 
 #define NEED_EVENTS
