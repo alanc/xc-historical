@@ -1,4 +1,4 @@
-/* $XConsortium: ICElib.h,v 1.10 93/09/14 15:32:54 mor Exp $ */
+/* $XConsortium: ICElib.h,v 1.11 93/09/21 14:15:17 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -24,7 +24,6 @@ purpose.  It is provided "as is" without express or implied warranty.
 #define Status int
 #define True 1
 #define False 0
-#define NULL 0
 
 #if NeedFunctionPrototypes
 typedef void *IcePointer;
@@ -111,6 +110,7 @@ typedef IceOCLauthStatus (*IceOCLauthProc) (
 #if NeedFunctionPrototypes
     IcePointer *	/* authStatePtr */,
     Bool		/* cleanUp */,
+    Bool		/* swap */,
     int			/* authDataLen */,
     IcePointer		/* authData */,
     int *		/* replyDataLenRet */,
@@ -122,6 +122,7 @@ typedef IceOCLauthStatus (*IceOCLauthProc) (
 typedef IceACLauthStatus (*IceACLauthProc) (
 #if NeedFunctionPrototypes
     IcePointer *	/* authStatePtr */,
+    Bool		/* swap */,
     int			/* replyDataLen */,
     IcePointer		/* replyData */,
     int *		/* authDataLenRet */,
@@ -166,11 +167,12 @@ typedef void (*IcePingReplyProc) (
 typedef void (*IceErrorHandler) (
 #if NeedFunctionPrototypes
     IceConn 		/* iceConn */,
+    Bool		/* swap */,
     int			/* offendingMinorOpcode */,
     unsigned long 	/* offendingSequence */,
     int 		/* errorClass */,
     int			/* severity */,
-    IcePointer		/* data */
+    IcePointer		/* values */
 #endif
 );
 
