@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: phigspex.h,v 5.1 91/02/16 09:49:17 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -26,7 +26,7 @@ SOFTWARE.
 #ifndef PHIGSPEX_H_INCLUDED
 #define PHIGSPEX_H_INCLUDED
 
-#ifdef NDEBUG
+#ifndef DEBUG
 #define ASSERT(a)
 #else
 #define ASSERT(__assertion__)                                   \
@@ -35,7 +35,7 @@ SOFTWARE.
                 __FILE__, __LINE__);                            \
      fprintf(stderr, "Assertion: __assertion__\n\n");           \
   }
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
 #define PEX_WS_SUPPORT( _pex_info ) \
     ( !(_pex_info)->subset_info || (_pex_info)->subset_info & 0x2 )

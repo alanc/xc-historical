@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cp_ccom.c,v 5.1 91/02/16 09:48:23 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -1122,7 +1122,7 @@ install_signal_funcs( cph)
     phg_register_signal_func( (unsigned long)cph, sig_chld_proc, SIGCHLD);
 }
 
-#ifndef	NDEBUG			/* If debugging is NOT forbidden */
+#ifdef	DEBUG
 static void
 set_debug_signal_funcs( cph)	/* for debug only */
     Cp_handle	cph;
@@ -1144,7 +1144,7 @@ set_debug_signal_funcs( cph)	/* for debug only */
 	}
     }
 }
-#endif	/* NDEBUG */
+#endif	/* DEBUG */
 
 /* Wait for the child to get going */
 #define	NORMAL_WAIT_FOR_CHILD		60		/* seconds */
@@ -1163,14 +1163,14 @@ handshake_child( cph, fd, pid )
     extern char *getenv();
 
     waittime.tv_sec = NORMAL_WAIT_FOR_CHILD; waittime.tv_usec = 0;
-#ifndef	NDEBUG			/* If debugging is NOT forbidden */
+#ifdef	DEBUG
     env_var_value = getenv("PHIGS_CHILD_WAIT");
     if ( env_var_value != (char *) NULL ) {
 	waittime.tv_sec = atoi( env_var_value );
 	fprintf( stderr, "PHIGS_CHILD_WAIT:\tdebug phigsmon %d", pid );
 	fprintf( stderr, "\tset phigsmon_wait=0\tto continue.\n" );
     }
-#endif	/* NDEBUG */
+#endif	/* DEBUG */
 
     CLEARBITS(rmask);
     do {
@@ -1215,10 +1215,10 @@ attach_shared_mem( cph, fd )
 	cph->shm_buf = (Cp_shm_buf *)shmat(shmid,(char *)NULL,0);
 	if ( cph->shm_buf != (Cp_shm_buf *)-1 )
 	    status = 1;
-#ifndef	NDEBUG			/* If debugging is NOT forbidden */
+#ifdef	DEBUG
 	else
 	    fprintf(stderr, "PARENT: errno is %d after shmat\n", errno);
-#endif	/* NDEBUG */
+#endif	/* DEBUG */
 
 	/* "Remove" the shm segment as long as we have its id.
 	 * fprintf(stderr, "PARENT: removing: status=%d shmid=%d\n",

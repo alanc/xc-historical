@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pex_priv.h,v 5.1 91/02/16 09:50:07 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -70,7 +70,7 @@ SOFTWARE.
   }
 #endif
 
-#ifdef NDEBUG
+#ifndef DEBUG
 #define ASSERT(a)
 #else
 #define ASSERT(__assertion__)					\
@@ -79,7 +79,7 @@ SOFTWARE.
 		__FILE__, __LINE__);				\
      fprintf(stderr, "Assertion: __assertion__\n\n");		\
   }
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
 typedef char* Pointer;
 

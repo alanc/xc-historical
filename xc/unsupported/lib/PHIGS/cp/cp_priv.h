@@ -1,4 +1,4 @@
-/* $XConsortium: cp_priv.h,v 5.1 91/02/16 09:48:41 rws Exp $ */
+/* $XConsortium: cp_priv.h,v 5.2 91/02/17 11:24:05 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -102,7 +102,7 @@ extern int	phg_pex_synchronize;
 #define CP_RELEASE_SHM_LOCK(_shmb,_type) \
     (_shmb)->_type.lock = 0;
 
-#ifndef	NDEBUG			/* If debugging is NOT forbidden */
+#ifdef	DEBUG
 #define CP_CHECK_SHM_LOCK(_shmb,_type) \
     { if( (_shmb)->_type.lock != 0 && (_shmb)->_type.lock != 1 )	\
 	fprintf(stderr, "CHILD checking _type.lock: shm_buf is %#x\n",	\
@@ -110,7 +110,7 @@ extern int	phg_pex_synchronize;
     }
 #else
 #define CP_CHECK_SHM_LOCK(_shmb,_type)	/* do no testing for production */
-#endif	/* NDEBUG */
+#endif	/* DEBUG */
 
 #define CP_DATA_BUF_SIZE_NEEDED(_cph,_size) \
     (( (_size) % sizeof((_cph)->shm_buf->data.buf[0]) == 0 ) \

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ar.h,v 5.2 91/02/16 09:49:27 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1988-1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -49,11 +49,11 @@ SOFTWARE.
 #ifndef PHG_AR_H_INCLUDED
 #define PHG_AR_H_INCLUDED
 
-#ifdef NDEBUG
+#ifndef DEBUG
 #define TOCSIZE	    256
-#else /* !NDEBUG */
+#else
 #define TOCSIZE	    4
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
 #ifdef vax			/* probably others, too */
 #define PHG_AR_HOST_FLOAT_FORMAT    0x2

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ut_ntfy.c,v 5.1 91/02/16 09:50:11 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -170,10 +170,10 @@ unsigned long	usecs;		    /* when alarm should go off */
 	}
 	
 	if (!found) {
-#ifndef NDEBUG
+#ifdef DEBUG
 	    (void)fprintf(stderr, 
 "phg_register_timer_func(): handler doesn't exist for specified client\n");
-#endif /* NDEBUG */
+#endif /* DEBUG */
 	    return;
 	}
 	    
@@ -204,10 +204,10 @@ unsigned long	usecs;		    /* when alarm should go off */
 		new = (timer_list *)NULL;
 	}
 	if ( !new ) {
-#ifndef NDEBUG
+#ifdef DEBUG
 	    (void)fprintf(stderr, 
 "phg_register_timer_func(): ran out of timer_pool slots.\n");
-#endif /* NDEBUG */
+#endif /* DEBUG */
 	    return;
 	}
 	new->in_use = 1;
@@ -335,10 +335,10 @@ int		signal_num;
 	}
 	
 	if (!found) {
-#ifndef NDEBUG
+#ifdef DEBUG
 	    (void)fprintf(stderr, 
 "phg_register_signal_func(): handler doesn't exist for specified client\n");
-#endif /* NDEBUG */
+#endif /* DEBUG */
 	    return;
 	}
 	    

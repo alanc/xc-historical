@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cp_rcom.c,v 5.1 91/02/16 09:48:24 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -31,13 +31,13 @@ SOFTWARE.
 #include "cp_priv.h"
 #include <memory.h>
 
-#ifndef NDEBUG
+#ifdef DEBUG
 int	cpr_print_trace = 0;
 #define	TRACE_GENERAL	(~0)	/* any bit on = trace most CP functions */
 #define	TRACE_DATA	0x02	/* trace CP_OP_*_DATA & CP_OP_FORCE_RETURN */
 #define	TRACE_AWAIT_RET	0x04	/* trace INP_AWAIT & print "CP RETURN" */
 #define	TRACE_SIZES	0x08	/* trace */
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
 #define CPR_EXEC_CMD( cph, args, ret) \
     (*(cph)->funcs[(int)(args)->op & CP_OPCODE_BITS]) ((cph), (args), (ret))
@@ -721,11 +721,11 @@ cpr_send_post_data( cph, args, ret)
 	for ( i = 0, size = 0; i < vcount; i++)
 	    size += sv[i].size;
 
-#ifndef NDEBUG	/* if debugging is NOT forbidden */
+#ifdef DEBUG
 	/* print out size info about the return block */
 	if ( cpr_print_trace & TRACE_SIZES )
 	    fprintf(stderr, "\tRETURNED_DATA %d\n", size);
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
 	if ( size > cph->shm_buf->ret.buf_size ) {
 	    if ( (int)args->op & CP_OP_RET_DATA_IN_SOCKET ) {
@@ -790,7 +790,7 @@ phg_cpr_send_ret( cph, args, ret)
     }
 }
 
-#ifndef NDEBUG
+#ifdef DEBUG
 
 static void
 print_op( op )
@@ -902,7 +902,7 @@ print_op( op )
     }
 }
 
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
 static int
 cpr_exec_cmd( cph, args, ret)
@@ -911,10 +911,10 @@ cpr_exec_cmd( cph, args, ret)
     register Phg_ret		*ret;
 {
 
-#ifndef NDEBUG	/* if debugging is NOT forbidden */
+#ifdef DEBUG
     if ( cpr_print_trace & TRACE_GENERAL )
 	print_op( (Cp_func_op)args->op );
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
     ret->err = 0;
     if ( (int)args->op & CP_OP_PRE_DATA) {
@@ -1017,10 +1017,10 @@ phg_cpr_rcv_cmd_shm( cph )
     phg_register_timer_func((unsigned long)cph, (void(*)())NULL,
 	ITIMER_VIRTUAL, (unsigned long)0);
 
-#ifndef NDEBUG	/* if debugging is NOT forbidden */
+#ifdef DEBUG
     if ( cpr_print_trace & TRACE_AWAIT_RET )
 	fprintf( stderr, "CP RETURN\n");
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
     return( force_return ? 1 : 0);
 }
@@ -1080,10 +1080,10 @@ phg_cpr_rcv_cmd_socket( cph )
     phg_register_timer_func((unsigned long)cph, (void(*)())NULL,
 	ITIMER_VIRTUAL, (unsigned long)0);
 
-#ifndef NDEBUG	/* if debugging is NOT forbidden */
+#ifdef DEBUG
     if ( cpr_print_trace & TRACE_AWAIT_RET )
 	fprintf( stderr, "CP RETURN\n");
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
     return( force_return ? 1 : 0);
 }

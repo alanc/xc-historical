@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: err_rmt.c,v 5.1 91/02/16 09:48:54 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -63,7 +63,7 @@ err_rmt_pex_reply( display, err, codes, ret_code, erh )
     int         *ret_code;
     Err_handle	erh;
 {
-#ifndef NDEBUG
+#ifdef DEBUG
     fprintf( stderr, "X/PEX IO error in phigsmon\n" );
 #endif
     return phg_err_pex_reply( display, err, codes, ret_code, erh );
@@ -74,7 +74,7 @@ err_rmt_x( display, error )
     Display     *display;
     XErrorEvent	*error;
 {
-#ifndef NDEBUG
+#ifdef DEBUG
     fprintf( stderr, "X/PEX error in phigsmon\n" );
 #endif
     return phg_err_x( display, error );

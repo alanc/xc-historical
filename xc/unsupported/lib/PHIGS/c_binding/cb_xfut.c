@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cb_xfut.c,v 5.1 91/02/16 09:48:09 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -773,7 +773,7 @@ peval_view_map_matrix3( map, error_ind, m)
 }
 
 
-#ifndef NDEBUG
+#ifdef DEBUG
 void
 peval_view_map_matrix3_debug( map, error_ind, m)
     Pview_map3	*map;		/* view mapping	*/

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ut_mat.c,v 5.1 91/02/16 09:50:09 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -343,7 +343,7 @@ register	Pvec3	*v;
 
 
 
-#ifndef	NDEBUG		/* If debugging is NOT forbidden */
+#ifdef	DEBUG
 void
 phg_mat_print(m)
 register	Pmatrix3	m;
@@ -358,7 +358,7 @@ register	Pmatrix3	m;
 	(void) fprintf(stderr, "\n");
     }
 }
-#endif	/* NDEBUG */
+#endif	/* DEBUG */
 
 
 /*	
@@ -426,7 +426,7 @@ phg_mat_inv( a )
 	index[i][0] = row;
 	index[i][1] = colum;
 	pivot[i] = a[colum][colum];
-#ifndef NDEBUG
+#ifdef DEBUG
 	if ((pivot[i] < 1.0e-6) && (pivot[i] > -1.0e-6) ) {
 	   /* TODO: restore matix 'a' and call SVD routine */
 	   fprintf(stderr,"Matrix is singular: pivot=%f\n", pivot[i]);

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cpa.h,v 5.1 91/02/16 09:49:24 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -28,7 +28,7 @@ SOFTWARE.
 
 /* Types for PHIGS/PEX CPA module. */
 
-#ifndef NDEBUG
+#ifdef DEBUG
 #define CPA_STRUCT_HASH_SIZE	10
 #else
 #define CPA_STRUCT_HASH_SIZE	100

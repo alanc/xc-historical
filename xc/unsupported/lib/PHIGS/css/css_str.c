@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: css_str.c,v 5.1 91/02/16 09:50:55 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -338,7 +338,7 @@ register Struct_handle	root;
     return(TRUE);
 }
 
-#ifndef	NDEBUG			/* If debugging is NOT forbidden */
+#ifdef	DEBUG
 static
 css_print_structlist(header, structlist)
 char		*header;
@@ -354,7 +354,7 @@ Css_set_ptr	structlist;
     }
     fprintf(stderr, "\n");
 }
-#endif	NDEBUG			/* If debugging is NOT forbidden */
+#endif	/* DEBUG */
 
 /*******************
 

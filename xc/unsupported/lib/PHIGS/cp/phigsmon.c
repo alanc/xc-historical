@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: phigsmon.c,v 5.1 91/02/16 09:48:35 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -92,9 +92,9 @@ attach_shared_mem( cph )
 	     */
 	    break;
 	default:
-#ifndef	NDEBUG			/* If debugging is NOT forbidden */
+#ifdef	DEBUG
 	    fprintf(stderr, "PHIGSMON: errno is %d after shmget\n", errno);
-#endif	/* NDEBUG */
+#endif	/* DEBUG */
 	    ERR_BUF( cph->erh, ERRN50);
 	    break;
 	}
@@ -103,9 +103,9 @@ attach_shared_mem( cph )
 	assure(shmid >= 0)
 	cph->shm_buf = (Cp_shm_buf *)shmat( shmid, (char *)NULL, 0 );
 	if ( cph->shm_buf == (Cp_shm_buf *)-1 ) {
-#ifndef	NDEBUG			/* If debugging is NOT forbidden */
+#ifdef	DEBUG
 	    fprintf(stderr, "PHIGSMON: errno is %d after shmat\n", errno);
-#endif	/* NDEBUG */
+#endif	/* DEBUG */
 	    /* Assign a more specific error number to this error,
 	     * if it is ever observed.
 	     */
@@ -126,12 +126,12 @@ attach_shared_mem( cph )
 
 	    cph->shm_buf->ret.buf_size = sizeof(cph->shm_buf->ret.buf);
 	    status = 1;
-#ifndef	NDEBUG			/* If debugging is NOT forbidden */
+#ifdef	DEBUG
 	    CP_CHECK_SHM_LOCK(cph->shm_buf,args)
 	    if (getenv("PHIGSMON_WAIT") != NULL)
 		fprintf(stderr, "PHIGSMON: shmid is %d; shm_buf is %#x\n",
 					shmid, cph->shm_buf);
-#endif	/* NDEBUG */
+#endif	/* DEBUG */
 	}
     }
 
@@ -324,7 +324,7 @@ phg_check_and_dispatch_event( cph )
 }
 
 
-#ifndef NDEBUG	/* if debugging is NOT forbidden */
+#ifdef DEBUG
 		int		phigsmon_wait = 1;
     extern	int		cpr_print_trace;
 
@@ -337,7 +337,7 @@ phg_check_and_dispatch_event( cph )
     }
 #else
 #define CP_SET_MALLOC_DEBUG_LEVEL	{}
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
 
 extern XtAppContext	phg_cpm_init_toolkit();
@@ -351,7 +351,7 @@ main(argc, argv)
     int			(*rcv_cmd)();
     XtAppContext	app_con;
     
-#ifndef NDEBUG	/* if debugging is NOT forbidden */
+#ifdef DEBUG
     {
 	char	*trace_val;
 
@@ -379,7 +379,7 @@ main(argc, argv)
 		    CP_MICROSLEEP( 100 ); /* sleep(1) won't return on sun4 */
 	}
     }
-#endif /* NDEBUG */
+#endif /* DEBUG */
 
     if ( !(app_con = phg_cpm_init_toolkit( argc, argv )) )
 	exit(4);
@@ -394,7 +394,7 @@ main(argc, argv)
     cph->data.monitor.argc = argc - 2;
     cph->data.monitor.argv = &argv[3];
 
-#ifndef NDEBUG	/* if debugging is NOT forbidden */
+#ifdef DEBUG
     if ( (env = getenv("PHIGSMON_CMD_TIMEOUT")) != NULL) {
 	cph->data.monitor.cmd_timeout.it_value.tv_usec = atoi(env);
 	cph->data.monitor.cmd_timeout.it_interval.tv_usec = atoi(env);

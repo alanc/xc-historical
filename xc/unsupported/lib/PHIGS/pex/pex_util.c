@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pex_util.c,v 5.1 91/02/16 09:50:01 rws Exp $ */
 
 /***********************************************************
 Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -137,7 +137,7 @@ PexEntryCheck( display, add_it )
 			pex_error_handler );
 		    (void)XESetCloseDisplay( display, new->ext_codes->extension,
 			(int(*)())display_close_proc );
-#ifndef NDEBUG
+#ifdef DEBUG
     {	extern char	*getenv();
 	if ( getenv( "PEX_SI_API_SHOW_FIRST_ERR" ) )
 	    fprintf( stderr, "PEX first error = %d\n",
