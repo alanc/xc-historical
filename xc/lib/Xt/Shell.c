@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Shell.c,v 1.55 89/06/16 19:35:27 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Shell.c,v 1.56 89/06/19 13:35:44 jim Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif /* lint */
 
@@ -1110,7 +1110,7 @@ static void ChangeManaged(wid)
 		hintsP = &hints;
 		hints.flags = 0;
 	    }
-	    sprintf( def_geom, "%dx%d%+d%+d", width, height, x, y );
+	    sprintf( def_geom, "%dx%d+%d+%d", width, height, x, y );
 	    flag = XWMGeometry( XtDisplay(wid),
 			        XScreenNumberOfScreen(XtScreen(wid)),
 			        w->shell.geometry, def_geom,
