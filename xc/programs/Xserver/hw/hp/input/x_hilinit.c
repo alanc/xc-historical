@@ -1,4 +1,4 @@
-/* $XConsortium: x_hilinit.c,v 8.203 95/01/24 02:57:56 dpw Exp gildea $ */
+/* $XConsortium: x_hilinit.c,v 8.204 95/01/24 23:30:43 gildea Exp gildea $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -86,7 +86,7 @@ University of California.
 #include <errno.h>
 #include <dl.h>
 #include <sys/fcntl.h>
-#include <sys/ps2io.h>
+#include "ps2io.h"
 
 #include "X.h"
 #include "Xproto.h"
