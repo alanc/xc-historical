@@ -1,4 +1,4 @@
-/* $XConsortium: xprop.c,v 1.40 93/09/20 17:57:46 hersh Exp $*/
+/* $XConsortium: xprop.c,v 1.41 94/02/03 18:33:51 converse Exp $*/
 /*
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -775,7 +775,7 @@ char *Format_Thunk(t, format_char)
 
   switch (format_char) {
   case 's':
-    return(Format_Len_String(t.extra_value, t.value));
+    return(Format_Len_String(t.extra_value, (int)t.value));
   case 'x':
     return(Format_Hex(value));
   case 'c':
@@ -1502,7 +1502,7 @@ Show_Prop(format, dformat, prop)
 	  return;
   }
 
-  thunks = Break_Down_Property(data, length, format, size);
+  thunks = Break_Down_Property(data, (int)length, format, size);
 
   Display_Property(thunks, dformat, format);
 }

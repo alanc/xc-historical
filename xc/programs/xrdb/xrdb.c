@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.73 93/09/13 20:31:12 rws Exp $
+ * $XConsortium: xrdb.c,v 11.74 93/09/20 17:53:10 hersh Exp $
  */
 
 /*
@@ -569,7 +569,7 @@ DoScreenDefines(display, scrno, defs)
     AddNum(defs, "BITS_PER_RGB", visual->bits_per_rgb);
     AddDef(defs, "CLASS", ClassNames[visual->class]);
     sprintf(name, "CLASS_%s", ClassNames[visual->class]);
-    AddNum(defs, name, visual->visualid);
+    AddNum(defs, name, (int)visual->visualid);
     switch(visual->class) {
 	case StaticColor:
 	case PseudoColor:
@@ -587,7 +587,7 @@ DoScreenDefines(display, scrno, defs)
 	if (j < 0) {
 	    sprintf(name, "CLASS_%s_%d",
 		    ClassNames[vinfos[i].class], vinfos[i].depth);
-	    AddNum(defs, name, vinfos[i].visualid);
+	    AddNum(defs, name, (int)vinfos[i].visualid);
 	}
     }
     XFree((char *)vinfos);
