@@ -2,7 +2,7 @@
 Ascii Source Object
 .LP
 .XS
-\*(SN AsciiSrc Object
+	AsciiSrc Object
 .XE
 .IN "AsciiSrc object" "" "@DEF@"
 .IN "AsciiSrc" "" "@DEF@"

@@ -1,5 +1,8 @@
 .NH 2
 Text Functions
+.XS
+	Text Functions
+.XE
 .LP
 The following functions are provided as convenience routines for use with
 the Text widget.  Although many of these actions can be performed by
