@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.126 89/11/28 11:33:03 jim Exp $
+ * $XConsortium: menus.c,v 1.127 89/11/28 14:20:56 jim Exp $
  *
  * twm menu code
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.126 89/11/28 11:33:03 jim Exp $";
+"$XConsortium: menus.c,v 1.127 89/11/28 14:20:56 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1696,8 +1696,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 		XSetWindowBorder(dpy, tmp_win->frame, tmp_win->border);
 		if (tmp_win->title_w)
 		    XSetWindowBorder(dpy, tmp_win->title_w, tmp_win->border);
-		XSetInputFocus(dpy, tmp_win->w, RevertToPointerRoot,
-			CurrentTime);
+		SetFocus (tmp_win);
 		Scr->FocusRoot = FALSE;
 		Scr->Focus = tmp_win;
 	    }
@@ -2193,7 +2192,7 @@ Execute(s)
 void
 FocusOnRoot()
 {
-    XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot, CurrentTime);
+    SetFocus (NULL);
     if (Scr->Focus != NULL)
     {
 	if (Scr->Focus->highlight)
@@ -2349,8 +2348,7 @@ int def_x, def_y;
 		}
 		if (t == Scr->Focus)
 		{
-		    XSetInputFocus(dpy, PointerRoot,
-			RevertToPointerRoot, CurrentTime);
+		    SetFocus (NULL);
 		    Scr->Focus = NULL;
 		    Scr->FocusRoot = TRUE;
 		}
@@ -2384,8 +2382,7 @@ int def_x, def_y;
 
     if (tmp_win == Scr->Focus)
     {
-	XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot,
-	    CurrentTime);
+	SetFocus (NULL);
 	Scr->Focus = NULL;
 	Scr->FocusRoot = TRUE;
     }

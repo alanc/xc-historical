@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.116 89/11/27 14:20:05 jim Exp $
+ * $XConsortium: events.c,v 1.117 89/11/27 16:45:16 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.116 89/11/27 14:20:05 jim Exp $";
+"$XConsortium: events.c,v 1.117 89/11/27 16:45:16 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1633,8 +1633,7 @@ HandleEnterNotify()
 		if (Tmp_win->title_w)
 		    XSetWindowBorder(dpy, Tmp_win->title_w, Tmp_win->border);
 		if(Tmp_win->title_w && Scr->TitleFocus)
-		    XSetInputFocus(dpy, Tmp_win->w, RevertToPointerRoot,
-				   CurrentTime);
+		  SetFocus (Tmp_win);
 		Scr->Focus = Tmp_win;
 	    }
 	    if (Event.xcrossing.window == Tmp_win->w)
@@ -1713,8 +1712,7 @@ HandleLeaveNotify()
 			       Tmp_win->title_w,Tmp_win->gray);
 		    }
 		    if (Scr->TitleFocus)
-			XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot,
-				       CurrentTime);
+		      SetFocus (NULL);
 		    Scr->Focus = NULL;
 		}
 		else if (Event.xcrossing.window == Tmp_win->w)

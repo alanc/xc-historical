@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.30 89/11/27 18:28:00 jim Exp $
+ * $XConsortium: util.c,v 1.31 89/11/28 11:32:52 jim Exp $
  *
  * utility routines for twm
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: util.c,v 1.30 89/11/27 18:28:00 jim Exp $";
+"$XConsortium: util.c,v 1.31 89/11/28 11:32:52 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -649,6 +649,28 @@ MyFont *font;
     }
     font->height = font->font->ascent + font->font->descent;
     font->y = font->font->ascent;
+}
+
+
+/*
+ * SetFocus - separate routine to set focus to make things more understandable
+ * and easier to debug
+ */
+SetFocus (tmp_win)
+    TwmWindow *tmp_win;
+{
+    Window w = (tmp_win ? tmp_win->w : PointerRoot);
+
+#ifdef TRACE
+    if (tmp_win) {
+	printf ("Focusing on window \"%s\"\n", tmp_win->full_name);
+    } else {
+	printf ("Unfocusing; Scr->Focus was \"%s\"\n",
+		Scr->Focus ? Scr->Focus->full_name : "(nil)");
+    }
+#endif
+
+    XSetInputFocus (dpy, w, RevertToPointerRoot, CurrentTime);
 }
 
 
