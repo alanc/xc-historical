@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.14 90/02/05 16:34:45 jim Exp $
+ * $XConsortium: viewres.c,v 1.15 90/02/05 17:08:11 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -27,15 +27,16 @@
 #include <X11/StringDefs.h>
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/Cardinals.h>
-#include <X11/Xaw/Viewport.h>
-#include <X11/Xaw/Command.h>
-#include <X11/Xaw/Paned.h>
 #include <X11/Xaw/Box.h>
+#include <X11/Xaw/Command.h>
 #include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/Sme.h>
 #include <X11/Xaw/SmeBSB.h>
 #include <X11/Xaw/SmeLine.h>
+#include <X11/Xaw/Paned.h>
+#include <X11/Xaw/Viewport.h>
+#include <X11/Xaw/Toggle.h>
 #include "Tree.h"
 #include <X11/Xmu/Converters.h>
 #include <X11/Xmu/CharSet.h>
@@ -56,7 +57,7 @@ static char *help_message[] = {
 };
 
 static XrmOptionDescRec Options[] = {
-    { "-lbw", "*Tree*Command*BorderWidth", XrmoptionSepArg, (caddr_t) NULL },
+    { "-lbw", "*Tree*Toggle*BorderWidth", XrmoptionSepArg, (caddr_t) NULL },
     { "-lw", "*Tree.LineWidth", XrmoptionSepArg, (caddr_t) NULL },
     { "-top", "*topObject", XrmoptionSepArg, (caddr_t) NULL },
     { "-variable", "*showVariable", XrmoptionNoArg, (caddr_t) "on" },
@@ -95,19 +96,20 @@ static XtActionsRec viewres_actions[] = {
     { "SetOrientation", HandleSetOrientation },
 };
 
-static Widget treeWidget;
-static Widget quitButton, formatButton, formatMenu, selectButton, selectMenu;
 #define FORMAT_VARIABLES 0
 #define FORMAT_CLASSES 1
 #define FORMAT_HORIZONTAL 2
 #define FORMAT_VERTICAL 3
 #define FORMAT_number 4
-static Widget format_widgets[FORMAT_number];
 #define SELECT_PARENTS 0
 #define SELECT_ALL 1
 #define SELECT_WITH_RESOURCES 2
 #define SELECT_WITHOUT_RESOURCES 3
 #define SELECT_number 4
+
+static Widget treeWidget;
+static Widget quitButton, formatButton, formatMenu, selectButton, selectMenu;
+static Widget format_widgets[FORMAT_number];
 static Widget select_widgets[SELECT_number], unselectEntry;
 static WidgetNode *topnode;
 
@@ -367,7 +369,7 @@ static void build_tree (node, tree, super)
     XtSetArg (args[n], XtNlabel, (Appresources.show_variable ?
 				  node->label : WnClassname(node))); n++;
 
-    w = XtCreateManagedWidget (node->label, commandWidgetClass, tree, args, n);
+    w = XtCreateManagedWidget (node->label, toggleWidgetClass, tree, args, n);
     node->data = (char *) w;
 
     /*
