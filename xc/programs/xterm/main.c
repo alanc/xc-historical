@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.1 88/02/10 13:08:07 jim Exp $
+ *	$Header: main.c,v 1.2 88/02/12 08:51:57 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.1 88/02/10 13:08:07 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.2 88/02/12 08:51:57 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -445,6 +445,26 @@ char **argv;
 #ifdef VSWITCH
 	d_tio.c_cc[VSWITCH] = '@' & 0x3f;	/* '^@'	*/
 #endif	/* VSWITCH */
+	/* now, try to inherit tty settings */
+	{
+	    int i;
+
+	    for (i = 0; i <= 2; i++) {
+		struct termio deftio;
+		if (ioctl (i, TCGETA, &deftio) == 0) {
+		    d_tio.c_cc[VINTR] = deftio.c_cc[VINTR];
+		    d_tio.c_cc[VQUIT] = deftio.c_cc[VQUIT];
+		    d_tio.c_cc[VERASE] = deftio.c_cc[VERASE];
+		    d_tio.c_cc[VKILL] = deftio.c_cc[VKILL];
+		    d_tio.c_cc[VEOF] = deftio.c_cc[VEOF];
+		    d_tio.c_cc[VEOL] = deftio.c_cc[VEOL];
+#ifdef VSWITCH
+		    d_tio.c_cc[VSWITCH] = deftio.c_cc[TSWITCH];
+#endif
+		    break;
+		}
+	    }
+	}
 #ifdef TIOCSLTC
         d_ltc.t_suspc = '\000';		/* t_suspc */
         d_ltc.t_dsuspc = '\000';	/* t_dsuspc */
