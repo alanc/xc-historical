@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pl_oc_decode.c,v 1.1 92/06/12 15:27:19 mor Exp $ */
 
 /************************************************************************
 Copyright 1992 by the Massachusetts Institute of Technology,
@@ -22,10 +22,11 @@ without specific, written prior permission.
 
 
 PEXOCData *
-PEXDecodeOCs (float_format, oc_count, encoded_ocs)
+PEXDecodeOCs (float_format, oc_count, length, encoded_ocs)
 
 INPUT int		float_format;
 INPUT unsigned long	oc_count;
+INPUT unsigned long	length;
 INPUT char		*encoded_ocs;
 
 {
@@ -40,7 +41,7 @@ INPUT char		*encoded_ocs;
      * Allocate a buffer to hold the decoded OC data.
      */
 
-    ocRet = (PEXOCData *) PEXAllocBuf ((unsigned )
+    ocRet = (PEXOCData *) PEXAllocBuf ((unsigned)
 	(oc_count * sizeof (PEXOCData)));
 
 
@@ -58,6 +59,14 @@ INPUT char		*encoded_ocs;
 	(*PEX_decode_oc_funcs[elemInfo->elementType]) (float_format,
 	    &ocSrc, ocDest);
     }
+
+#ifdef DEBUG
+    if (ocSrc - encoded_ocs != length)
+    {
+	printf ("PEXlib WARNING : Internal error in PEXDecodeOCs :\n");
+	printf ("Number of bytes parsed not equal to size of input buffer.\n");
+    }
+#endif
 
     return (ocRet);
 }
@@ -400,7 +409,7 @@ PEXOCData	*ocDest;
     ocDest->data.SetModelClipVolume.count = oc->numHalfSpaces;
     size = oc->numHalfSpaces * sizeof (PEXHalfSpace);
     ocDest->data.SetModelClipVolume.half_spaces =
-	(PEXHalfSpace *) PEXAllocBuf ((unsigned ) size);
+	(PEXHalfSpace *) PEXAllocBuf ((unsigned) size);
     COPY_AREA ((oc + 1), ocDest->data.SetModelClipVolume.half_spaces, size);
     *ocSrc += (sizeof (pexModelClipVolume) +
 	oc->numHalfSpaces * sizeof (pexHalfSpace));
@@ -421,7 +430,7 @@ PEXOCData	*ocDest;
     ocDest->data.SetModelClipVolume2D.count = oc->numHalfSpaces;
     size = oc->numHalfSpaces * sizeof (PEXHalfSpace2D);
     ocDest->data.SetModelClipVolume2D.half_spaces =
-	(PEXHalfSpace2D *) PEXAllocBuf ((unsigned ) size);
+	(PEXHalfSpace2D *) PEXAllocBuf ((unsigned) size);
     COPY_AREA ((oc + 1), ocDest->data.SetModelClipVolume2D.half_spaces, size);
     *ocSrc += (sizeof (pexModelClipVolume2D) +
 	oc->numHalfSpaces * sizeof (pexHalfSpace2D));
@@ -456,13 +465,13 @@ PEXOCData	*ocDest;
     
     size = oc->numEnable * sizeof (PEXTableIndex);
     ocDest->data.SetLightSourceState.enable =
-	(PEXTableIndex *) PEXAllocBuf ((unsigned ) size);
+	(PEXTableIndex *) PEXAllocBuf ((unsigned) size);
     COPY_AREA ((oc + 1), ocDest->data.SetLightSourceState.enable, size);
     *ocSrc += (sizeof (pexLightState) + PADDED_BYTES (size));
     
     size = oc->numDisable * sizeof (PEXTableIndex);
     ocDest->data.SetLightSourceState.disable =
-	(PEXTableIndex *) PEXAllocBuf ((unsigned ) size);
+	(PEXTableIndex *) PEXAllocBuf ((unsigned) size);
     COPY_AREA (*ocSrc, ocDest->data.SetLightSourceState.disable, size);
     *ocSrc += PADDED_BYTES (size);
 }
@@ -525,7 +534,7 @@ PEXOCData	*ocDest;
 	levelDest->direction.y = levelSrc->direction.y;
 	levelDest->direction.z = levelSrc->direction.z;
 	levelDest->count = levelSrc->numberIntersections;
-	levelDest->parameters = (float *) PEXAllocBuf ((unsigned )
+	levelDest->parameters = (float *) PEXAllocBuf ((unsigned)
 	    (sizeof (float) * levelSrc->numberIntersections));
 	COPY_AREA ((levelSrc + 1), levelDest->parameters,
 	    sizeof (float) * levelSrc->numberIntersections);
@@ -556,7 +565,7 @@ PEXOCData	*ocDest;
     ocDest->data.AddToNameSet.count = elemInfo->length - 1;
     size = (elemInfo->length - 1) * sizeof (PEXName);
     ocDest->data.AddToNameSet.names = (PEXName *)
-	PEXAllocBuf ((unsigned ) size);
+	PEXAllocBuf ((unsigned) size);
     COPY_AREA ((elemInfo + 1), ocDest->data.AddToNameSet.names, size);
     *ocSrc += (sizeof (pexAddToNameSet) + size);
 }
@@ -601,7 +610,7 @@ PEXOCData	*ocDest;
     
     ocDest->data.ApplicationData.length = oc->numElements;
     ocDest->data.ApplicationData.data =
-	(PEXPointer) PEXAllocBuf ((unsigned ) oc->numElements);
+	(PEXPointer) PEXAllocBuf ((unsigned) oc->numElements);
     
     COPY_AREA ((oc + 1), ocDest->data.ApplicationData.data, oc->numElements);
     
@@ -620,7 +629,7 @@ PEXOCData	*ocDest;
     
     ocDest->data.GSE.id = oc->id;
     ocDest->data.GSE.length = oc->numElements;
-    ocDest->data.GSE.data = (char *) PEXAllocBuf ((unsigned ) oc->numElements);
+    ocDest->data.GSE.data = (char *) PEXAllocBuf ((unsigned) oc->numElements);
     
     COPY_AREA ((oc + 1), ocDest->data.GSE.data, oc->numElements);
     
@@ -665,7 +674,7 @@ PEXOCData	*ocDest;
     
     size = ocDest->data.Markers2D.count * sizeof (PEXCoord2D);
     ocDest->data.Markers2D.points = (PEXCoord2D *)
-	PEXAllocBuf ((unsigned ) size);
+	PEXAllocBuf ((unsigned) size);
     COPY_AREA ((oc + 1), ocDest->data.Markers2D.points, size);
     *ocSrc += (sizeof (pexMarker2D) + size);
 }
@@ -686,7 +695,7 @@ PEXOCData	*ocDest;
 	(sizeof (CARD32) * (elemInfo->length - 1)) / sizeof (pexCoord3D);
     
     size = ocDest->data.Polyline.count * sizeof (PEXCoord);
-    ocDest->data.Polyline.points = (PEXCoord *) PEXAllocBuf ((unsigned ) size);
+    ocDest->data.Polyline.points = (PEXCoord *) PEXAllocBuf ((unsigned) size);
     COPY_AREA ((oc + 1), ocDest->data.Polyline.points, size);
     *ocSrc += (sizeof (pexPolyline) + size);
 }
@@ -708,7 +717,7 @@ PEXOCData	*ocDest;
     
     size = ocDest->data.Polyline2D.count * sizeof (PEXCoord2D);
     ocDest->data.Polyline2D.points = (PEXCoord2D *)
-	PEXAllocBuf ((unsigned ) size);
+	PEXAllocBuf ((unsigned) size);
     COPY_AREA ((oc + 1), ocDest->data.Polyline2D.points, size);
     *ocSrc += (sizeof (pexPolyline2D) + size);
 }
@@ -741,7 +750,7 @@ PEXOCData	*ocDest;
 
     size = oc->numEncodings * sizeof (PEXEncodedTextData);
     ocDest->data.EncodedText.encoded_text =
-	(PEXEncodedTextData *) PEXAllocBuf ((unsigned ) size);
+	(PEXEncodedTextData *) PEXAllocBuf ((unsigned) size);
 
     srcEnc = (pexMonoEncoding *) (oc + 1);
     destEnc = ocDest->data.EncodedText.encoded_text;
@@ -752,7 +761,7 @@ PEXOCData	*ocDest;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
 	destEnc->encoding_state = srcEnc->encodingState;
 	destEnc->length = srcEnc->numChars;
-	destEnc->ch = (char *) PEXAllocBuf ((unsigned ) srcEnc->numChars);
+	destEnc->ch = (char *) PEXAllocBuf ((unsigned) srcEnc->numChars);
 	COPY_AREA ((srcEnc + 1), destEnc->ch, srcEnc->numChars);
 	srcEnc = (pexMonoEncoding *) ((char *) srcEnc +
 	    sizeof (pexMonoEncoding) + PADDED_BYTES (srcEnc->numChars));
@@ -782,7 +791,7 @@ PEXOCData	*ocDest;
 
     size = oc->numEncodings * sizeof (PEXEncodedTextData);
     ocDest->data.EncodedText2D.encoded_text =
-	(PEXEncodedTextData *) PEXAllocBuf ((unsigned ) size);
+	(PEXEncodedTextData *) PEXAllocBuf ((unsigned) size);
 
     srcEnc = (pexMonoEncoding *) (oc + 1);
     destEnc = ocDest->data.EncodedText2D.encoded_text;
@@ -793,7 +802,7 @@ PEXOCData	*ocDest;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
 	destEnc->encoding_state = srcEnc->encodingState;
 	destEnc->length = srcEnc->numChars;
-	destEnc->ch = (char *) PEXAllocBuf ((unsigned ) srcEnc->numChars);
+	destEnc->ch = (char *) PEXAllocBuf ((unsigned) srcEnc->numChars);
 	COPY_AREA ((srcEnc + 1), destEnc->ch, srcEnc->numChars);
 	srcEnc = (pexMonoEncoding *) ((char *) srcEnc +
 	    sizeof (pexMonoEncoding) + PADDED_BYTES (srcEnc->numChars));
@@ -827,7 +836,7 @@ PEXOCData	*ocDest;
 
     size = oc->numEncodings * sizeof (PEXEncodedTextData);
     ocDest->data.EncodedAnnoText.encoded_text =
-	(PEXEncodedTextData *) PEXAllocBuf ((unsigned ) size);
+	(PEXEncodedTextData *) PEXAllocBuf ((unsigned) size);
 
     srcEnc = (pexMonoEncoding *) (oc + 1);
     destEnc = ocDest->data.EncodedAnnoText.encoded_text;
@@ -838,7 +847,7 @@ PEXOCData	*ocDest;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
 	destEnc->encoding_state = srcEnc->encodingState;
 	destEnc->length = srcEnc->numChars;
-	destEnc->ch = (char *) PEXAllocBuf ((unsigned ) srcEnc->numChars);
+	destEnc->ch = (char *) PEXAllocBuf ((unsigned) srcEnc->numChars);
 	COPY_AREA ((srcEnc + 1), destEnc->ch, srcEnc->numChars);
 	srcEnc = (pexMonoEncoding *) ((char *) srcEnc +
 	    sizeof (pexMonoEncoding) + PADDED_BYTES (srcEnc->numChars));
@@ -870,7 +879,7 @@ PEXOCData	*ocDest;
 
     size = oc->numEncodings * sizeof (PEXEncodedTextData);
     ocDest->data.EncodedAnnoText2D.encoded_text =
-	(PEXEncodedTextData *) PEXAllocBuf ((unsigned ) size);
+	(PEXEncodedTextData *) PEXAllocBuf ((unsigned) size);
 
     srcEnc = (pexMonoEncoding *) (oc + 1);
     destEnc = ocDest->data.EncodedAnnoText2D.encoded_text;
@@ -881,7 +890,7 @@ PEXOCData	*ocDest;
 	destEnc->character_set_width = srcEnc->characterSetWidth;
 	destEnc->encoding_state = srcEnc->encodingState;
 	destEnc->length = srcEnc->numChars;
-	destEnc->ch = (char *) PEXAllocBuf ((unsigned ) srcEnc->numChars);
+	destEnc->ch = (char *) PEXAllocBuf ((unsigned) srcEnc->numChars);
 	COPY_AREA ((srcEnc + 1), destEnc->ch, srcEnc->numChars);
 	srcEnc = (pexMonoEncoding *) ((char *) srcEnc +
 	    sizeof (pexMonoEncoding) + PADDED_BYTES (srcEnc->numChars));
@@ -983,7 +992,7 @@ PEXOCData	*ocDest;
 	(sizeof (CARD32) * (elemInfo->length - 2)) / sizeof (pexCoord3D);
     
     size = ocDest->data.FillArea.count * sizeof (PEXCoord);
-    ocDest->data.FillArea.points = (PEXCoord *) PEXAllocBuf ((unsigned ) size);
+    ocDest->data.FillArea.points = (PEXCoord *) PEXAllocBuf ((unsigned) size);
     COPY_AREA ((oc + 1), ocDest->data.FillArea.points, size);
     *ocSrc += (sizeof (pexFillArea) + size);
 }
@@ -1008,7 +1017,7 @@ PEXOCData	*ocDest;
     
     size = ocDest->data.FillArea2D.count * sizeof (PEXCoord2D);
     ocDest->data.FillArea2D.points = (PEXCoord2D *)
-	PEXAllocBuf ((unsigned ) size);
+	PEXAllocBuf ((unsigned) size);
     COPY_AREA ((oc + 1), ocDest->data.FillArea2D.points, size);
     *ocSrc += (sizeof (pexFillArea2D) + size);
 }
