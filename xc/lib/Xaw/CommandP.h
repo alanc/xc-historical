@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: CommandP.h,v 1.11 87/10/29 14:44:41 susan BL5 $
 */
 
 /*
@@ -25,7 +25,7 @@
  * SOFTWARE.
  */
 /* 
- * CommandPrivate.h - Private definitions for Command widget
+ * CommandP.h - Private definitions for Command widget
  * 
  * Author:	Mark S. Ackerman
  *              MIT/Project Athena
@@ -36,11 +36,12 @@
 #define _XtCommandPrivate_h
 
 #define XtCallParentProcedure(proc,arg) \
-    (((commandWidgetClass->core_class.superclass))->core_class.proc)(arg)
+    (*((commandWidgetClass->core_class.superclass)->core_class.proc))(arg)
 #define XtCallParentProcedure2Args(proc,arg1,arg2) \
-    (((commandWidgetClass->core_class.superclass))->core_class.proc)(arg1,arg2)
+    (*((commandWidgetClass->core_class.superclass)->core_class.proc)) \
+	(arg1,arg2)
 #define XtCallParentProcedure3Args(proc,arg1,arg2,arg3) \
-    (((commandWidgetClass->core_class.superclass))->core_class.proc) \
+    (*((commandWidgetClass->core_class.superclass)->core_class.proc)) \
        (arg1,arg2,arg3)
 
 #define XtAddSingleCallback(f,resourceName,cb,cl,p)  \
