@@ -1,4 +1,4 @@
-/* $XConsortium: Eyes.c,v 1.23 91/05/22 19:26:09 converse Exp $ */
+/* $XConsortium: Eyes.c,v 1.24 91/05/22 19:48:00 converse Exp $ */
 /*
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -70,6 +70,8 @@ static XtResource resources[] = {
 # define BALL_PAD	(0.05)
 # define EYE_WIDTH	(2.0 - (EYE_THICK + EYE_OFFSET) * 2)
 # define EYE_HEIGHT	EYE_WIDTH
+# define EYE_HWIDTH	(EYE_WIDTH / 2.0)
+# define EYE_HHEIGHT	(EYE_HEIGHT / 2.0)
 # define BALL_HEIGHT	BALL_WIDTH
 # define BALL_DIST	((EYE_WIDTH - BALL_WIDTH) / 2.0 - BALL_PAD)
 # define W_MIN_X	(-1.0 + EYE_OFFSET)
@@ -290,8 +292,8 @@ static TPoint computePupil (num, mouse)
 	double	angle;
 	double	x, y;
 	double	h;
-	double	a, b;
 	double	dx, dy;
+	double	cosa, sina;
 	TPoint	ret;
 
 	dx = mouse.x - EYE_X(num);
@@ -301,18 +303,18 @@ static TPoint computePupil (num, mouse)
 		cy = EYE_Y(num);
 	} else {
 		angle = atan2 ((double) dy, (double) dx);
-		a = EYE_WIDTH / 2.0;
-		b = EYE_HEIGHT / 2.0;
-		h = hypot (b * cos (angle), a * sin (angle));
-		x = a * b * cos (angle) / h;
-		y = a * b * sin (angle) / h;
+		cosa = cos (angle);
+		sina = sin (angle);
+		h = hypot (EYE_HHEIGHT * cosa, EYE_HWIDTH * sina);
+		x = (EYE_HWIDTH * EYE_HHEIGHT) * cosa / h;
+		y = (EYE_HWIDTH * EYE_HHEIGHT) * sina / h;
 		dist = BALL_DIST * hypot (x, y);
 		if (dist > hypot ((double) dx, (double) dy)) {
 			cx = dx + EYE_X(num);
 			cy = dy + EYE_Y(num);
 		} else {
-			cx = dist * cos (angle) + EYE_X(num);
-			cy = dist * sin (angle) + EYE_Y(num);
+			cx = dist * cosa + EYE_X(num);
+			cy = dist * sina + EYE_Y(num);
 		}
 	}
 	ret.x = cx;
@@ -412,15 +414,15 @@ int		num;
 	Display *dpy = XtDisplay(w);
 
 	TFillArc (dpy, d, outgc, &w->eyes.t,
-		  EYE_X(num) - EYE_WIDTH / 2.0 - EYE_THICK,
- 		  EYE_Y(num) - EYE_HEIGHT / 2.0 - EYE_THICK,
+		  EYE_X(num) - EYE_HWIDTH - EYE_THICK,
+ 		  EYE_Y(num) - EYE_HHEIGHT - EYE_THICK,
 		  EYE_WIDTH + EYE_THICK * 2.0,
  		  EYE_HEIGHT + EYE_THICK * 2.0,
  		  90 * 64, 360 * 64);
 	if (centergc) {
     	    TFillArc (dpy, d, centergc, &w->eyes.t,
-		  EYE_X(num) - EYE_WIDTH / 2.0,
- 		  EYE_Y(num) - EYE_HEIGHT / 2.0,
+		  EYE_X(num) - EYE_HWIDTH,
+ 		  EYE_Y(num) - EYE_HHEIGHT,
 		  EYE_WIDTH, EYE_HEIGHT,
 		  90 * 64, 360 * 64);
 	}
