@@ -2,7 +2,7 @@
 
 static Window w;
 static char **charBuf = NULL;
-static GC blackgc, whitegc;
+static GC fggc, bggc;
 static XFontStruct *font, *bfont;
 static int height, ypos;
 static XTextItem *items;
@@ -31,10 +31,10 @@ void InitText(d, p)
 	if (h > height)
 	    height = h;
     }
-    CreatePerfStuff (d, 1, 800, HEIGHT, &w, &whitegc, &blackgc);
+    CreatePerfStuff (d, 1, 800, HEIGHT, &w, &bggc, &fggc);
     gcv.font = font->fid;
-    XChangeGC (d, blackgc, GCFont, &gcv);
-    XChangeGC (d, whitegc, GCFont, &gcv);
+    XChangeGC (d, fggc, GCFont, &gcv);
+    XChangeGC (d, bggc, GCFont, &gcv);
 
     if (charBuf == NULL) {
 	charBuf = (char **) malloc(p->reps*sizeof (char *));
@@ -72,7 +72,7 @@ void DoText(d, p)
     int     i;
 
     for (i = 0; i < p->reps; i++) {
-	XDrawString(d, w, blackgc, XPOS, ypos, charBuf[i], CHARS);
+	XDrawString(d, w, fggc, XPOS, ypos, charBuf[i], CHARS);
 	ypos = (ypos + height) % (HEIGHT - height);
     }
 }
@@ -84,7 +84,7 @@ void DoPolyText(d, p)
     int     i;
 
     for (i = 0; i < p->reps; i++) {
-	XDrawText(d, w, blackgc, XPOS, ypos, &items[i*SEGMENTS], SEGMENTS);
+	XDrawText(d, w, fggc, XPOS, ypos, &items[i*SEGMENTS], SEGMENTS);
 	ypos = (ypos + height) % (HEIGHT - height);
     }
 }
@@ -97,7 +97,7 @@ void DoImageText(d, p)
 
     for (i = 0; i < p->reps; i++) {
 	XDrawImageString(
-	    d, w, (i & 1) ? blackgc : whitegc, XPOS, ypos, charBuf[i], CHARS);
+	    d, w, (i & 1) ? fggc : bggc, XPOS, ypos, charBuf[i], CHARS);
 	ypos = (ypos + height) % (HEIGHT - height);
     }
 }
@@ -114,8 +114,8 @@ void EndText(d, p)
     int i;
 
     XDestroyWindow(d, w);
-    XFreeGC(d, blackgc);
-    XFreeGC(d, whitegc);
+    XFreeGC(d, fggc);
+    XFreeGC(d, bggc);
     for (i = 0; i < p->reps; i++)
 	free(charBuf[i]);
     free(charBuf);
