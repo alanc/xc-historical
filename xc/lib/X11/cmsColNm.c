@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.22 91/07/25 01:08:32 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.23 91/11/05 13:47:37 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -152,7 +152,8 @@ _XcmsColorSpaceOfString(ccc, color_string)
     papColorSpaces = _XcmsDIColorSpaces;
     if (papColorSpaces != NULL) {
 	while (*papColorSpaces != NULL) {
-	    if (strncmp((*papColorSpaces)->prefix, color_string, n) == 0) {
+	    if (strncmp((*papColorSpaces)->prefix, color_string, n) == 0 &&
+		!((*papColorSpaces)->prefix)[n]) {
 		return(*papColorSpaces);
 	    }
 	    papColorSpaces++;
@@ -165,7 +166,8 @@ _XcmsColorSpaceOfString(ccc, color_string)
     papColorSpaces = ((XcmsFunctionSet *)ccc->pPerScrnInfo->functionSet)->DDColorSpaces;
     if (papColorSpaces != NULL) {
 	while (*papColorSpaces != NULL) {
-	    if (strncmp((*papColorSpaces)->prefix, color_string, n) == 0) {
+	    if (strncmp((*papColorSpaces)->prefix, color_string, n) == 0 &&
+		!((*papColorSpaces)->prefix)[n]) {
 		return(*papColorSpaces);
 	    }
 	    papColorSpaces++;
