@@ -1,6 +1,8 @@
-#ifndef lint
-static char rcs_id[] = "$XConsortium: xrdb.c,v 11.34 89/12/12 12:06:21 jim Exp $";
-#endif
+/*
+ * xrdb - X resource manager database utility
+ *
+ * $XConsortium: xrdb.c,v 11.37 90/12/12 14:46:29 gildea Exp $
+ */
 
 /*
  *			  COPYRIGHT 1987
