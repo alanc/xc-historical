@@ -463,7 +463,7 @@ Specifies the number of pixels between the characters and the window border.
 The default is 2.
 .TP 8
 .B "jumpScroll (\fPclass\fB JumpScroll)"
-Specifies whether or not jump scroll should be used.  The default is ``false''.
+Specifies whether or not jump scroll should be used.  The default is ``true''.
 .TP 8
 .B "logFile (\fPclass\fB Logfile)"
 Specifies the name of the file to which a terminal session is logged.  The
