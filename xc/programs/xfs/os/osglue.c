@@ -48,9 +48,10 @@ static AlternateServerPtr alt_servers = (AlternateServerPtr) 0;
 /*
  * XXX
  *
- * Catalogue support is minimal at best.  the guts are here, but
+ * Catalogue support is absolutely minimal.  Some guts are here, but
  * we don't actually do anything with them so the only one exported is
- * 'all'.
+ * 'all'.  Be warned that other parts of the server may incorrectly
+ * assume the catalogue list is global, and will therefore need fixing.
  *
  */
 
