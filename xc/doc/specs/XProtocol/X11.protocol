@@ -5629,7 +5629,7 @@ for horizontal and vertical lines.
 Failing the ideal semantics, 
 it is suggested that the length be measured along the major axis of the line.
 The major axis is defined as the x axis for lines drawn at an angle of
-between \-45 and +45 degrees or between 315 and 225 degrees from the x axis.
+between \-45 and +45 degrees or between 135 and 225 degrees from the x axis.
 For all other lines, the major axis is the y axis.
 .sp
 .LP
