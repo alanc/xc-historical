@@ -1,4 +1,4 @@
-/* $XConsortium: mprgb.c,v 1.1 93/10/26 09:46:15 rws Exp $ */
+/* $XConsortium: mprgb.c,v 1.2 93/10/31 09:48:25 dpw Exp $ */
 /**** module mprgb.c ****/
 /******************************************************************************
 				NOTICE
@@ -371,7 +371,7 @@ DestroyRGB(flo,ped)
  * 
  * NOTE: Investigate use of stock cbrt() function in libc.
  * NOTE: Borrowed from lib/X/XcmsMath.h
- * NOTE: $XConsortium: mprgb.c,v 1.1 93/10/26 09:46:15 rws Exp $
+ * NOTE: $XConsortium: mprgb.c,v 1.2 93/10/31 09:48:25 dpw Exp $
  * NOTE: Copyright 1990 Massachusetts Institute of Technology
  *
  * NOTE: Investigate use of stock cbrt() function in libc.
@@ -380,7 +380,7 @@ DestroyRGB(flo,ped)
  */
 
 #if !defined(XCMS_CUBEROOT)
-#define XCMS_CUBEROOT _XcmsCubeRoot
+#define XCMS_CUBEROOT _cmsCubeRoot
 
 /* Newton's Method:  x_n+1 = x_n - ( f(x_n) / f'(x_n) ) */
 /* for cube roots, x^3 - a = 0,  x_new = x - 1/3 (x - a/x^2) */
@@ -389,7 +389,7 @@ DestroyRGB(flo,ped)
 #endif
 
 double
-_XcmsCubeRoot(a)
+_cmsCubeRoot(a)
     double a;
 {
     register double abs_a, cur_guess, delta;
