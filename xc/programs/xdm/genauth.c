@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: genauth.c,v 1.8 91/07/24 00:07:03 keith Exp $
+ * $XConsortium: genauth.c,v 1.9 91/10/21 14:32:39 eswu Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -62,6 +62,8 @@ long	sum[2];
     if (fd < 0)
 	return 0;
     reads = FILE_LIMIT;
+    sum[0] = 0;
+    sum[1] = 0;
     while ((cnt = read (fd, (char *) buf, sizeof (buf))) > 0 && --reads > 0) {
 	loops = cnt / (2 * sizeof (long));
 	for (i = 0; i < loops; i+= 2) {

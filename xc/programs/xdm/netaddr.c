@@ -1,7 +1,7 @@
 /*
  * xdm - X display manager
  *
- * $XConsortium: netaddr.c,v 1.3 91/07/18 18:49:40 rws Exp $
+ * $XConsortium: netaddr.c,v 1.4 91/07/19 18:50:08 rws Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -40,7 +40,7 @@
    e.g., AF_INET */
 
 int NetaddrFamily(netaddrp)
-    XdmcpNetaddr *netaddrp;
+    XdmcpNetaddr netaddrp;
 {
 #ifdef STREAMSCONN
     short family = *(short *)netaddrp;
