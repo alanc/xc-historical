@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.221 93/07/02 14:13:28 gildea Exp $ */
+/* $XConsortium: Xlib.h,v 11.222 93/07/05 11:24:39 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1239,6 +1239,11 @@ extern XImage *XCreateImage(
     unsigned int	/* height */,
     int			/* bitmap_pad */,
     int			/* bytes_per_line */
+#endif
+);
+extern Status XInitImage(
+#if NeedFunctionPrototypes
+    XImage*		/* image */
 #endif
 );
 extern XImage *XGetImage(
@@ -3321,6 +3326,17 @@ extern int XReadBitmapFile(
     unsigned int*	/* width_return */,
     unsigned int*	/* height_return */,
     Pixmap*		/* bitmap_return */,
+    int*		/* x_hot_return */,
+    int*		/* y_hot_return */
+#endif
+);
+
+extern int XReadBitmapFileData(
+#if NeedFunctionPrototypes
+    _Xconst char*	/* filename */,
+    unsigned int*	/* width_return */,
+    unsigned int*	/* height_return */,
+    unsigned char**	/* data_return */,
     int*		/* x_hot_return */,
     int*		/* y_hot_return */
 #endif
