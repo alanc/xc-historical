@@ -1,5 +1,4 @@
-STD_DEFINES = ServerDefines
-#define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+#include <Server.tmpl>
 
        SRCS = 	xallowev.c \
 		xchgkbd.c \
@@ -8,6 +7,7 @@ STD_DEFINES = ServerDefines
 		xchgprop.c \
 		xchgptr.c \
 		xclosedev.c \
+		xdevbell.c \
 		xexevents.c \
 		xextinit.c \
 		xgetfctl.c \
@@ -31,6 +31,7 @@ STD_DEFINES = ServerDefines
 		xsetmode.c \
 		xsetbmap.c \
 		xsetmmap.c \
+		xstubs.c \
 		xungrdev.c \
 		xungrdevb.c \
 		xungrdevk.c 
@@ -42,6 +43,7 @@ STD_DEFINES = ServerDefines
 		xchgprop.o \
 		xchgptr.o \
 		xclosedev.o \
+		xdevbell.o \
 		xexevents.o \
 		xextinit.o \
 		xgetfctl.o \
@@ -68,7 +70,6 @@ STD_DEFINES = ServerDefines
 		xungrdev.o \
 		xungrdevb.o \
 		xungrdevk.o 
-CDEBUGFLAGS = ServerCDebugFlags
    INCLUDES = -I../../include -I../../../server/include -I$(INCLUDESRC)
    LINTLIBS = ../../../server/dix/llib-ldix.ln ../../../server/os/4.2bsd/llib-los.ln
 
