@@ -1,4 +1,4 @@
-/* $XConsortium: xinit.c,v 11.59 94/11/21 18:25:22 kaleb Exp kaleb $ */
+/* $XConsortium: xinit.c,v 11.60 94/12/12 15:57:46 kaleb Exp kaleb $ */
 
 /*
 
@@ -163,7 +163,7 @@ SIGVAL sigCatch(sig)
 SIGVAL sigAlarm(sig)
 	int sig;
 {
-#ifdef SYSV
+#if defined(SYSV) || defined(SVR4) || defined(linux)
 	signal (sig, sigAlarm);
 #endif
 }
@@ -172,7 +172,7 @@ SIGVAL
 sigUsr1(sig)
 	int sig;
 {
-#ifdef SYSV
+#if defined(SYSV) || defined(SVR4) || defined(linux)
 	signal (sig, sigUsr1);
 #endif
 }
