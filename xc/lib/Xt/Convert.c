@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.58 91/05/10 20:41:01 swick Exp $ */
+/* $XConsortium: Convert.c,v 1.59 91/05/11 14:57:27 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -792,7 +792,7 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
     p = app->converterTable[ProcHash(from_type, to_type) & CONVERTHASHMASK];
     for (; p; p = p->next) {
 	if (from_type == p->from && to_type == p->to) {
-	    Boolean retval;
+	    Boolean retval = False;
 	    /* Compute actual arguments from widget and arg descriptor */
 	    num_args = p->num_args;
 	    if (num_args != 0) {
@@ -814,16 +814,21 @@ Boolean _XtConvert(widget, from_type, from, to_type, to, cache_ref_return)
 		if (cache_ref_return)
 		    *cache_ref_return = NULL;
 		if (tempTo.addr) {
-		    if (to->addr) { /* new-style call */
-			if (to_type == _XtQString)
-			    *(String*)(to->addr) = tempTo.addr;
-			else
-			    XtBCopy(tempTo.addr, to->addr, to->size);
+		    if (to->addr) {	/* new-style call */
+			if (to->size >= tempTo.size) {
+			    if (to_type == _XtQString)
+				*(String*)(to->addr) = tempTo.addr;
+			    else {
+				XtBCopy(tempTo.addr, to->addr, tempTo.size);
+			    }
+			    retval = True;
+			}
+			to->size = tempTo.size;
 		    } else {	/* old-style call */
 			*to = tempTo;
-		    }
-		    retval = True;
-		} else retval = False;
+			retval = True;
+		    } 
+		}
 	    }
 	    if (args) DEALLOCATE_LOCAL( (XtPointer)args );
 	    return retval;
@@ -944,6 +949,7 @@ Boolean XtConvertAndStore(object, from_type_str, from, to_type_str, to)
 	    return False;
 	}
 	bcopy( from->addr, to->addr, from->size );
+	to->size = from->size;
     } else			/* from_type == to_type */
 	*to = *from;
 
