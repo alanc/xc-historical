@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrArc.c,v 11.10 87/09/11 08:09:46 newman Locked $ */
+/* $Header: XDrArc.c,v 11.11 87/12/08 13:28:22 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /* Note to future maintainers:  XDrawArc does NOT batch successive PolyArc
@@ -24,7 +24,7 @@ XDrawArc(dpy, d, gc, x, y, width, height, angle1, angle2)
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
-    GetReqExtra (PolyArc, sizeof(xArc), req);
+    GetReqExtra (PolyArc, SIZEOF(xArc), req);
 
     req->drawable = d;
     req->gc = gc->gid;

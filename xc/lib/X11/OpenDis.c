@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.58 88/06/19 16:34:54 rws Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.59 88/06/20 11:26:17 rws Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -114,7 +114,7 @@ Display *XOpenDisplay (display)
 /*
  * Now see if connection was accepted...
  */
-	_XRead (dpy, (char *)&prefix,(long)sizeof(xConnSetupPrefix));
+	_XRead (dpy, (char *)&prefix,(long)SIZEOF(xConnSetupPrefix));
 
 	if (prefix.majorVersion < X_PROTOCOL) {
 		(void) fputs ("Warning: Client built for newer server!\n", stderr);

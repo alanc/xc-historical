@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XSetHints.c,v 11.22 88/02/07 13:00:41 jim Exp $ */
+/* $Header: XSetHints.c,v 11.23 88/06/19 14:25:36 rws Exp $ */
 
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -122,7 +122,7 @@ XSetIconSizes (dpy, w, list, count)
 {
 	register int i;
 	xPropIconSize *pp, *prop;
-	unsigned nbytes = count * sizeof(xPropIconSize);
+	unsigned nbytes = count * SIZEOF(xPropIconSize);
 	prop = pp = (xPropIconSize *) Xmalloc (nbytes);
 	for (i = 0; i < count; i++) {
 	    pp->minWidth  = list->min_width;

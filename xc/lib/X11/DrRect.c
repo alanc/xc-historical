@@ -1,13 +1,13 @@
 #include "copyright.h"
 
-/* $Header: XDrRect.c,v 11.10 87/05/29 14:27:49 jg Exp $ */
+/* $Header: XDrRect.c,v 11.10 87/09/11 08:10:15 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
 /* precompute the maximum size of batching request allowed */
 
-static int size = sizeof(xPolyRectangleReq) + EPERBATCH * sizeof(xRectangle);
+static int size = SIZEOF(xPolyRectangleReq) + EPERBATCH * SIZEOF(xRectangle);
 
 XDrawRectangle(dpy, d, gc, x, y, width, height)
     register Display *dpy;
@@ -27,15 +27,15 @@ XDrawRectangle(dpy, d, gc, x, y, width, height)
           (req->reqType == X_PolyRectangle)
        && (req->drawable == d)
        && (req->gc == gc->gid)
-       && ((dpy->bufptr + sizeof (xRectangle)) <= dpy->bufmax)
+       && ((dpy->bufptr + SIZEOF(xRectangle)) <= dpy->bufmax)
        && (((char *)dpy->bufptr - (char *)req) < size) ) {
          rect = (xRectangle *) dpy->bufptr;
-	 req->length += sizeof (xRectangle) >> 2;
-	 dpy->bufptr += sizeof (xRectangle);
+	 req->length += SIZEOF(xRectangle) >> 2;
+	 dpy->bufptr += SIZEOF(xRectangle);
 	 }
 
     else {
-	GetReqExtra(PolyRectangle, sizeof(xRectangle), req);
+	GetReqExtra(PolyRectangle, SIZEOF(xRectangle), req);
 	req->drawable = d;
 	req->gc = gc->gid;
 	rect = (xRectangle *) (req + 1);

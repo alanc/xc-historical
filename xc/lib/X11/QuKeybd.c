@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XQuKeybd.c,v 11.8 87/05/24 21:38:12 jg Exp $ */
+/* $Header: XQuKeybd.c,v 11.8 87/09/11 08:06:01 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -21,7 +21,7 @@ XQueryKeymap(dpy, keys)
     LockDisplay(dpy);
     GetEmptyReq(QueryKeymap, req);
     (void) _XReply(dpy, (xReply *)&rep, 
-       (sizeof (xQueryKeymapReply) - sizeof (xReply)) >> 2, xTrue);
+       (SIZEOF(xQueryKeymapReply) - SIZEOF(xReply)) >> 2, xTrue);
     *(struct kmap *) keys = *(struct kmap *)rep.map;  /* faster than bcopy */
     UnlockDisplay(dpy);
     SyncHandle();

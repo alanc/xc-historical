@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XLiHosts.c,v 11.12 87/08/06 16:45:02 jim Locked $ */
+/* $Header: XLiHosts.c,v 11.13 88/02/07 11:58:29 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 /* This can really be considered an os dependent routine */
 
@@ -50,7 +50,7 @@ XHostAddress *XListHosts (dpy, nhosts, enabled)
 	op->family = ((xHostEntry *) bp)->family;
 	op->length =((xHostEntry *) bp)->length; 
 	op->address = (char *) (((xHostEntry *) bp) + 1);
-	bp += sizeof(xHostEntry) + (((op->length + 3) >> 2) << 2);
+	bp += SIZEOF(xHostEntry) + (((op->length + 3) >> 2) << 2);
 	op++;
 	}
 	

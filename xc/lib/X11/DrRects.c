@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrRects.c,v 11.8 87/05/26 16:57:07 jg Exp $ */
+/* $Header: XDrRects.c,v 11.8 87/09/11 08:15:27 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -20,10 +20,10 @@ int n_rects;
     req->drawable = d;
     req->gc = gc->gid;
 
-    /* sizeof(xRectangle) will be a multiple of 4 */
-    req->length += n_rects * (sizeof(xRectangle) / 4);
+    /* SIZEOF(xRectangle) will be a multiple of 4 */
+    req->length += n_rects * (SIZEOF(xRectangle) / 4);
 
-    n_rects *= sizeof(xRectangle);
+    n_rects *= SIZEOF(xRectangle);
 
     PackData (dpy, (char *) rects, (long)n_rects);
     UnlockDisplay(dpy);

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetWAttrs.c,v 11.18 87/08/11 15:40:19 jg Exp $ */
+/* $Header: XGetWAttrs.c,v 11.18 87/09/11 08:09:17 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -22,7 +22,7 @@ Status XGetWindowAttributes(dpy, w, att)
     LockDisplay(dpy);
     GetResReq(GetWindowAttributes, w, req1);
     if (!_XReply (dpy, (xReply *)&rep,
-       (sizeof(xGetWindowAttributesReply) - sizeof(xReply)) >> 2, xTrue)) {
+       (SIZEOF(xGetWindowAttributesReply) - SIZEOF(xReply)) >> 2, xTrue)) {
 		UnlockDisplay(dpy);
 		SyncHandle();
       		return (0);

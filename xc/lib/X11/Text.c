@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XText.c,v 11.13 87/07/29 14:26:14 toddb Locked $ */
+/* $Header: XText.c,v 11.14 87/08/29 13:46:46 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -28,7 +28,7 @@ XDrawString(dpy, d, gc, x, y, string, length)
     req->y = y;
 
 
-    Datalength += sizeof(xTextElt) * ((length + 253) / 254) + length;
+    Datalength += SIZEOF(xTextElt) * ((length + 253) / 254) + length;
 
 
     req->length += (Datalength + 3)>>2;  /* convert to number of 32-bit words */
@@ -52,7 +52,7 @@ XDrawString(dpy, d, gc, x, y, string, length)
 
 	while(PartialNChars > 254)
         {
- 	    nbytes = 254 + sizeof(xTextElt);
+ 	    nbytes = 254 + SIZEOF(xTextElt);
 	    BufAlloc (xTextElt *, elt, nbytes);
 	    elt->delta = 0;
 	    elt->len = 254;
@@ -63,7 +63,7 @@ XDrawString(dpy, d, gc, x, y, string, length)
 	    
         if (PartialNChars)
         {
-	    nbytes = PartialNChars + sizeof(xTextElt);
+	    nbytes = PartialNChars + SIZEOF(xTextElt);
 	    BufAlloc (xTextElt *, elt, nbytes); 
 	    elt->delta = 0;
 	    elt->len = PartialNChars;

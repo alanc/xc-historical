@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPutImage.c,v 11.42 88/02/06 15:41:01 jim Exp $ */
+/* $Header: XPutImage.c,v 11.43 88/02/14 10:34:06 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include <stdio.h>
@@ -611,7 +611,7 @@ PutSubImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y,
     
     Available = ((65536 < dpy->max_request_size) ? (65536 << 2)
 						 : (dpy->max_request_size << 2))
-		- sizeof(xPutImageReq);
+		- SIZEOF(xPutImageReq);
 
     if ((image->depth == 1) || (image->format != ZPixmap)) {
 	left_pad = (image->xoffset + req_xoffset) & (dpy->bitmap_unit - 1);

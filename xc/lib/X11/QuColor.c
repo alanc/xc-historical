@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XQuColor.c,v 11.13 87/06/10 23:10:18 jg Exp $ */
+/* $Header: XQuColor.c,v 11.13 87/09/11 08:05:47 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -23,7 +23,7 @@ XQueryColor(dpy, cmap, def)
 
     if (_XReply(dpy, (xReply *) &rep, 0, xFalse) != 0) {
 
-	    _XRead(dpy, (char *)&color, (long) sizeof(xrgb));
+	    _XRead(dpy, (char *)&color, (long) SIZEOF(xrgb));
 
 	    def->red = color.red;
 	    def->blue = color.blue;

@@ -2,7 +2,7 @@
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
 
 #ifndef lint
-static char rcsid[] = "$Header: XlibInt.c,v 11.67 88/06/07 18:51:25 rws Exp $";
+static char rcsid[] = "$Header: XlibInt.c,v 11.68 88/06/08 08:33:08 rws Exp $";
 #endif
 
 /*
@@ -98,12 +98,12 @@ _XEventsQueued (dpy, mode)
 	    _XFlush(dpy);
 	if (BytesReadable(dpy->fd, (char *) &pend) < 0)
 	    (*_XIOErrorFunction)(dpy);
-	if ((len = pend) < sizeof(xReply))
+	if ((len = pend) < SIZEOF(xReply))
 	    return(dpy->qlen);	/* _XFlush can enqueue events */
 	else if (len > BUFSIZE)
 	    len = BUFSIZE;
-	len /= sizeof(xReply);
-	pend = len * sizeof(xReply);
+	len /= SIZEOF(xReply);
+	pend = len * SIZEOF(xReply);
 	_XRead (dpy, buf, (long) pend);
 	for (rep = (xReply *) buf; len > 0; rep++, len--) {
 	    if (rep->generic.type == X_Error)
@@ -137,18 +137,18 @@ _XReadEvents(dpy)
 
 	    /* must read at least one xEvent; if none is pending, then
 	       we'll just block waiting for it */
-	    if (pend < sizeof(xEvent))
-	    	pend = sizeof (xEvent);
+	    if (pend < SIZEOF(xEvent))
+	    	pend = SIZEOF(xEvent);
 		
 	    /* but we won't read more than the max buffer size */
 	    if (pend > BUFSIZE)
 	    	pend = BUFSIZE;
 
 	    /* round down to an integral number of XReps */
-	    pend = (pend / sizeof (xEvent)) * sizeof (xEvent);
+	    pend = (pend / SIZEOF(xEvent)) * SIZEOF(xEvent);
 
 	    _XRead (dpy, buf, pend);
-	    for (ev = (xEvent *) buf; pend > 0; ev++, pend -= sizeof(xEvent)) {
+	    for (ev = (xEvent *) buf; pend > 0; ev++, pend -= SIZEOF(xEvent)) {
 		if (ev->u.u.type == X_Error)
 		    _XError (dpy, (xError *) ev);
 		else  /* it's an event packet; enqueue it */
@@ -395,7 +395,7 @@ Status _XReply (dpy, rep, extra, discard)
 
     _XFlush(dpy);
     while (1) {
-	_XRead(dpy, (char *)rep, (long)sizeof(xReply));
+	_XRead(dpy, (char *)rep, (long)SIZEOF(xReply));
 	switch ((int)rep->generic.type) {
 
 	    case X_Reply:

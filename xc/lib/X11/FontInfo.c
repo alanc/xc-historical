@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFontInfo.c,v 11.9 87/10/29 23:59:11 jim Locked $ */
+/* $Header: XFontInfo.c,v 11.10 88/02/07 11:17:04 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -31,7 +31,7 @@ XFontStruct **info;
 
     for (i = 0; ; i++) {
 	if (!_XReply (dpy, (xReply *) &reply,
-	   ((sizeof (reply) - sizeof (xGenericReply)) >> 2), xFalse))
+	   ((sizeof (reply) - SIZEOF(xGenericReply)) >> 2), xFalse))
 		return (NULL);
 	if (reply.nameLength == 0)
 	    break;

@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XStColors.c,v 11.9 87/05/24 21:39:55 jg Exp $ */
+/* $Header: XStColors.c,v 11.9 87/09/11 08:07:31 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -20,7 +20,7 @@ int ncolors;
 
     req->cmap = cmap;
 
-    req->length += (ncolors * sizeof(xColorItem)) >> 2; /* assume size is 4*n */
+    req->length += (ncolors * SIZEOF(xColorItem)) >> 2; /* assume size is 4*n */
 
     for (i = 0; i < ncolors; i++) {
 	citem.pixel = defs[i].pixel;
@@ -31,7 +31,7 @@ int ncolors;
 
 	/* note that xColorItem doesn't contain all 16-bit quantities, so
 	   we can't use PackData */
-	Data(dpy, (char *)&citem, (long) sizeof(xColorItem)); 
+	Data(dpy, (char *)&citem, (long) SIZEOF(xColorItem)); 
 			/* assume size is 4*n */
     }
     UnlockDisplay(dpy);

@@ -1,13 +1,13 @@
 #include "copyright.h"
 
-/* $Header: XDrLine.c,v 11.10 87/05/29 14:27:38 jg Exp $ */
+/* $Header: XDrLine.c,v 11.10 87/09/11 08:09:53 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
 /* precompute the maximum size of batching request allowed */
 
-static int size = sizeof(xPolySegmentReq) + EPERBATCH * sizeof(xSegment);
+static int size = SIZEOF(xPolySegmentReq) + EPERBATCH * SIZEOF(xSegment);
 
 XDrawLine (dpy, d, gc, x1, y1, x2, y2)
     register Display *dpy;
@@ -25,15 +25,15 @@ XDrawLine (dpy, d, gc, x1, y1, x2, y2)
           (req->reqType == X_PolySegment)
        && (req->drawable == d)
        && (req->gc == gc->gid)
-       && ((dpy->bufptr + sizeof (xSegment)) <= dpy->bufmax)
+       && ((dpy->bufptr + SIZEOF(xSegment)) <= dpy->bufmax)
        && (((char *)dpy->bufptr - (char *)req) < size) ) {
          segment = (xSegment *) dpy->bufptr;
-	 req->length += sizeof (xSegment) >> 2;
-	 dpy->bufptr += sizeof (xSegment);
+	 req->length += SIZEOF(xSegment) >> 2;
+	 dpy->bufptr += SIZEOF(xSegment);
 	 }
 
     else {
-	GetReqExtra (PolySegment, sizeof(xSegment), req);
+	GetReqExtra (PolySegment, SIZEOF(xSegment), req);
 	req->drawable = d;
 	req->gc = gc->gid;
 	segment = (xSegment *) (req + 1);

@@ -1,6 +1,6 @@
 #include <X11/copyright.h>
 
-/* $Header: Xlibint.h,v 11.44 88/02/10 18:00:57 rws Exp $ */
+/* $Header: Xlibint.h,v 11.45 88/03/24 08:48:28 swick Exp $ */
 /* Copyright 1984, 1985, 1987  Massachusetts Institute of Technology */
 
 /*
@@ -12,7 +12,10 @@
 #ifndef NEED_EVENTS
 #define _XEVENT_
 #endif
+#ifndef _XLIBINT_SYS_TYPES_		/* for braindamaged include files */
+#define _XLIBINT_SYS_TYPES_
 #include <sys/types.h>
+#endif
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include "Xlibos.h"
@@ -46,6 +49,26 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  * X Protocol packetizing macros.
  */
 
+/*   Need to start requests on 64 bit word boundries
+ *   on a CRAY computer so add a NoOp (127) if needed.
+ *   A character pointer on a CRAY computer will be non-zero
+ *   after shifting right 61 bits of it is not pointing to
+ *   a word boundary.
+ */
+#ifdef WORD64
+#define WORD64ALIGN if((long)dpy->bufptr>>61){\
+           dpy->last_req = dpy->bufptr;\
+           *(dpy->bufptr)   = 127;\
+           *(dpy->bufptr+1) =  0;\
+           *(dpy->bufptr+2) =  0;\
+           *(dpy->bufptr+3) =  1;\
+             dpy->request += 1;\
+             dpy->bufptr += 4;\
+         }
+#else /* else does not require alignment on 64-bit boundaries */
+#define WORD64ALIGN
+#endif /* WORD64 */
+
 
 /*
  * GetReq - Get the next avilable X request packet in the buffer and
@@ -56,50 +79,55 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  *
  */
 
+
 #if (defined __STDC__) && (!defined UNIXCPP)
 #define GetReq(name, req) \
-	if ((dpy->bufptr + sizeof(*req)) > dpy->bufmax)\
+        WORD64ALIGN\
+	if ((dpy->bufptr + SIZEOF(x/**/name/**/Req)) > dpy->bufmax)\
 		_XFlush(dpy);\
 	req = (x##name##Req *)(dpy->last_req = dpy->bufptr);\
 	req->reqType = X_##name;\
-	req->length = (sizeof(*req))>>2;\
-	dpy->bufptr += sizeof(*req);\
+	req->length = (SIZEOF(x/**/name/**/Req))>>2;\
+	dpy->bufptr += SIZEOF(x/**/name/**/Req);\
 	dpy->request++
 
 #else  /* non-ANSI C uses empty comment instead of "##" for token concatenation */
 #define GetReq(name, req) \
-	if ((dpy->bufptr + sizeof(*req)) > dpy->bufmax)\
+        WORD64ALIGN\
+	if ((dpy->bufptr + SIZEOF(x/**/name/**/Req)) > dpy->bufmax)\
 		_XFlush(dpy);\
 	req = (x/**/name/**/Req *)(dpy->last_req = dpy->bufptr);\
 	req->reqType = X_/**/name;\
-	req->length = (sizeof(*req))>>2;\
-	dpy->bufptr += sizeof(*req);\
+	req->length = (SIZEOF(x/**/name/**/Req))>>2;\
+	dpy->bufptr += SIZEOF(x/**/name/**/Req);\
 	dpy->request++
 #endif
 
 /* GetReqExtra is the same as GetReq, but allocates "n" additional
    bytes after the request. "n" must be a multiple of 4!  */
 
-
 #if (defined __STDC__) && (!defined UNIXCPP)
 #define GetReqExtra(name, n, req) \
-	if ((dpy->bufptr + sizeof(*req) + n) > dpy->bufmax)\
+        WORD64ALIGN\
+	if ((dpy->bufptr + SIZEOF(*req) + n) > dpy->bufmax)\
 		_XFlush(dpy);\
 	req = (x##name##Req *)(dpy->last_req = dpy->bufptr);\
 	req->reqType = X_##name;\
-	req->length = (sizeof(*req) + n)>>2;\
-	dpy->bufptr += sizeof(*req) + n;\
+	req->length = (SIZEOF(*req) + n)>>2;\
+	dpy->bufptr += SIZEOF(*req) + n;\
 	dpy->request++
 #else
 #define GetReqExtra(name, n, req) \
-	if ((dpy->bufptr + sizeof(*req) + n) > dpy->bufmax)\
+        WORD64ALIGN\
+	if ((dpy->bufptr + SIZEOF(x/**/name/**/Req) + n) > dpy->bufmax)\
 		_XFlush(dpy);\
 	req = (x/**/name/**/Req *)(dpy->last_req = dpy->bufptr);\
 	req->reqType = X_/**/name;\
-	req->length = (sizeof(*req) + n)>>2;\
-	dpy->bufptr += sizeof(*req) + n;\
+	req->length = (SIZEOF(x/**/name/**/Req) + n)>>2;\
+	dpy->bufptr += SIZEOF(x/**/name/**/Req) + n;\
 	dpy->request++
 #endif
+
 
 /*
  * GetResReq is for those requests that have a resource ID 
@@ -109,23 +137,25 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 
 #if (defined __STDC__) && (!defined UNIXCPP)
 #define GetResReq(name, rid, req) \
-	if ((dpy->bufptr + sizeof(xResourceReq)) > dpy->bufmax)\
+        WORD64ALIGN\
+	if ((dpy->bufptr + SIZEOF(xResourceReq)) > dpy->bufmax)\
 	    _XFlush(dpy);\
 	req = (xResourceReq *) (dpy->last_req = dpy->bufptr);\
 	req->reqType = X_##name;\
 	req->length = 2;\
 	req->id = (rid);\
-	dpy->bufptr += sizeof(xResourceReq);\
+	dpy->bufptr += SIZEOF(xResourceReq);\
 	dpy->request++
 #else
 #define GetResReq(name, rid, req) \
-	if ((dpy->bufptr + sizeof(xResourceReq)) > dpy->bufmax)\
+        WORD64ALIGN\
+	if ((dpy->bufptr + SIZEOF(xResourceReq)) > dpy->bufmax)\
 	    _XFlush(dpy);\
 	req = (xResourceReq *) (dpy->last_req = dpy->bufptr);\
 	req->reqType = X_/**/name;\
 	req->length = 2;\
 	req->id = (rid);\
-	dpy->bufptr += sizeof(xResourceReq);\
+	dpy->bufptr += SIZEOF(xResourceReq);\
 	dpy->request++
 #endif
 
@@ -135,23 +165,26 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
  */
 #if (defined __STDC__) && (!defined UNIXCPP)
 #define GetEmptyReq(name, req) \
-	if ((dpy->bufptr + sizeof(xReq)) > dpy->bufmax)\
+        WORD64ALIGN\
+	if ((dpy->bufptr + SIZEOF(xReq)) > dpy->bufmax)\
 	    _XFlush(dpy);\
 	req = (xReq *) (dpy->last_req = dpy->bufptr);\
 	req->reqType = X_##name;\
 	req->length = 1;\
-	dpy->bufptr += sizeof(xReq);\
+	dpy->bufptr += SIZEOF(xReq);\
 	dpy->request++
 #else
 #define GetEmptyReq(name, req) \
-	if ((dpy->bufptr + sizeof(xReq)) > dpy->bufmax)\
+        WORD64ALIGN\
+	if ((dpy->bufptr + SIZEOF(xReq)) > dpy->bufmax)\
 	    _XFlush(dpy);\
 	req = (xReq *) (dpy->last_req = dpy->bufptr);\
 	req->reqType = X_/**/name;\
 	req->length = 1;\
-	dpy->bufptr += sizeof(xReq);\
+	dpy->bufptr += SIZEOF(xReq);\
 	dpy->request++
 #endif
+
 
 #define SyncHandle() \
 	if (dpy->synchandler) (*dpy->synchandler)(dpy)
@@ -195,6 +228,14 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
     ptr = (type) dpy->bufptr; \
     dpy->bufptr += (n);
 
+#ifndef WORD64
+#define Data16(dpy, data, len) Data((dpy), (data), (len))
+#define Data32(dpy, data, len) Data((dpy), (data), (len))
+#define _XRead16(dpy, data, len) _XRead((dpy), (data), (len))
+#define _XRead32(dpy, data, len) _XRead((dpy), (data), (len))
+#define Pack16(f, t, n)   bcopy(f, t, n)
+#endif
+
 #ifndef BIGSHORTS
 #define PackData(dpy, data, len) Data(dpy, data, len)
 #define PackShorts(f, t, n)  bcopy(f, t, n)
@@ -207,3 +248,176 @@ extern Visual *_XVIDtoVisual();		/* given visual id, find structure */
 				   a non-existant character with zero-value
 				   metrics, but requires drivers to output
 				   the default char in their place. */
+
+
+/*
+ * stuff to handle large architecture machines
+ */
+
+#ifdef WORD64
+
+#if (defined __STDC__) && (!defined UNIXCPP)
+#define SIZEOF(x) sizeof_##x
+#else
+#define SIZEOF(x) sizeof_/**/x
+#endif /* if ANSI C compiler else not */
+
+#define sizeof_xSegment 8
+#define sizeof_xPoint 4
+#define sizeof_xRectangle 8
+#define sizeof_xArc 12
+#define sizeof_xConnClientPrefix 12
+#define sizeof_xConnSetupPrefix 8
+#define sizeof_xConnSetup 32
+#define sizeof_xPixmapFormat 8
+#define sizeof_xDepth 8
+#define sizeof_xVisualType 24
+#define sizeof_xWindowRoot 40
+#define sizeof_xTimecoord 8
+#define sizeof_xHostEntry 4
+#define sizeof_xCharInfo 12
+#define sizeof_xFontProp 8
+#define sizeof_xTextElt 2
+#define sizeof_xColorItem 12
+#define sizeof_xrgb 8
+#define sizeof_xGenericReply 32
+#define sizeof_xGetWindowAttributesReply 44
+#define sizeof_xGetGeometryReply 32
+#define sizeof_xQueryTreeReply 32
+#define sizeof_xInternAtomReply 32
+#define sizeof_xGetAtomNameReply 32
+#define sizeof_xGetPropertyReply 32
+#define sizeof_xListPropertiesReply 32
+#define sizeof_xGetSelectionOwnerReply 32
+#define sizeof_xGrabPointerReply 32
+#define sizeof_xQueryPointerReply 32
+#define sizeof_xGetMotionEventsReply 32
+#define sizeof_xTranslateCoordsReply 32
+#define sizeof_xGetInputFocusReply 32
+#define sizeof_xQueryKeymapReply 40
+#define sizeof_xQueryFontReply 60
+#define sizeof_xQueryTextExtentsReply 32
+#define sizeof_xListFontsReply 32
+#define sizeof_xGetFontPathReply 32
+#define sizeof_xGetImageReply 32
+#define sizeof_xListInstalledColormapsReply 32
+#define sizeof_xAllocColorReply 32
+#define sizeof_xAllocNamedColorReply 32
+#define sizeof_xAllocColorCellsReply 32
+#define sizeof_xAllocColorPlanesReply 32
+#define sizeof_xQueryColorsReply 32
+#define sizeof_xLookupColorReply 32
+#define sizeof_xQueryBestSizeReply 32
+#define sizeof_xQueryExtensionReply 32
+#define sizeof_xListExtensionsReply 32
+#define sizeof_xSetMappingReply 32
+#define sizeof_xGetKeyboardControlReply 52
+#define sizeof_xGetPointerControlReply 32
+#define sizeof_xGetScreenSaverReply 32
+#define sizeof_xListHostsReply 32
+#define sizeof_xSetModifierMappingReply 32
+#define sizeof_xError 32
+#define sizeof_xEvent 32
+#define sizeof_xKeymapEvent 32
+#define sizeof_xReq 4
+#define sizeof_xResourceReq 8
+#define sizeof_xCreateWindowReq 32
+#define sizeof_xChangeWindowAttributesReq 12
+#define sizeof_xChangeSaveSetReq 8
+#define sizeof_xReparentWindowReq 16
+#define sizeof_xConfigureWindowReq 12
+#define sizeof_xCirculateWindowReq 8
+#define sizeof_xInternAtomReq 8
+#define sizeof_xChangePropertyReq 24
+#define sizeof_xDeletePropertyReq 12
+#define sizeof_xGetPropertyReq 24
+#define sizeof_xSetSelectionOwnerReq 16
+#define sizeof_xConvertSelectionReq 24
+#define sizeof_xSendEventReq 44
+#define sizeof_xGrabPointerReq 24
+#define sizeof_xGrabButtonReq 24
+#define sizeof_xUngrabButtonReq 12
+#define sizeof_xChangeActivePointerGrabReq 16
+#define sizeof_xGrabKeyboardReq 16
+#define sizeof_xGrabKeyReq 16
+#define sizeof_xUngrabKeyReq 12
+#define sizeof_xAllowEventsReq 8
+#define sizeof_xGetMotionEventsReq 16
+#define sizeof_xTranslateCoordsReq 16
+#define sizeof_xWarpPointerReq 24
+#define sizeof_xSetInputFocusReq 12
+#define sizeof_xOpenFontReq 12
+#define sizeof_xQueryTextExtentsReq 8
+#define sizeof_xListFontsReq 8
+#define sizeof_xSetFontPathReq 8
+#define sizeof_xCreatePixmapReq 16
+#define sizeof_xCreateGCReq 16
+#define sizeof_xChangeGCReq 12
+#define sizeof_xCopyGCReq 16
+#define sizeof_xSetDashesReq 12
+#define sizeof_xSetClipRectanglesReq 12
+#define sizeof_xCopyAreaReq 28
+#define sizeof_xCopyPlaneReq 32
+#define sizeof_xPolyPointReq 12
+#define sizeof_xPolySegmentReq 12
+#define sizeof_xFillPolyReq 16
+#define sizeof_xPutImageReq 24
+#define sizeof_xGetImageReq 20
+#define sizeof_xPolyTextReq 16
+#define sizeof_xImageTextReq 16
+#define sizeof_xCreateColormapReq 16
+#define sizeof_xCopyColormapAndFreeReq 12
+#define sizeof_xAllocColorReq 16
+#define sizeof_xAllocNamedColorReq 12
+#define sizeof_xAllocColorCellsReq 12
+#define sizeof_xAllocColorPlanesReq 16
+#define sizeof_xFreeColorsReq 12
+#define sizeof_xStoreColorsReq 8
+#define sizeof_xStoreNamedColorReq 16
+#define sizeof_xQueryColorsReq 8
+#define sizeof_xLookupColorReq 12
+#define sizeof_xCreateCursorReq 32
+#define sizeof_xCreateGlyphCursorReq 32
+#define sizeof_xRecolorCursorReq 20
+#define sizeof_xQueryBestSizeReq 12
+#define sizeof_xQueryExtensionReq 8
+#define sizeof_xChangeKeyboardControlReq 8
+#define sizeof_xBellReq 4
+#define sizeof_xChangePointerControlReq 12
+#define sizeof_xSetScreenSaverReq 12
+#define sizeof_xChangeHostsReq 8
+#define sizeof_xListHostsReq 4
+#define sizeof_xChangeModeReq 4
+#define sizeof_xRotatePropertiesReq 12
+#define sizeof_xReply 32
+#define sizeof_xGrabKeyboardReply 32
+#define sizeof_xListFontsWithInfoReply 60
+#define sizeof_xSetPointerMappingReply 32
+#define sizeof_xGetKeyboardMappingReply 32
+#define sizeof_xGetPointerMappingReply 32
+#define sizeof_xListFontsWithInfoReq 8
+#define sizeof_xPolyLineReq 12
+#define sizeof_xPolyArcReq 12
+#define sizeof_xPolyRectangleReq 12
+#define sizeof_xPolyFillRectangleReq 12
+#define sizeof_xPolyFillArcReq 12
+#define sizeof_xPolyText8Req 16
+#define sizeof_xPolyText16Req 16
+#define sizeof_xImageText8Req 16
+#define sizeof_xImageText16Req 16
+#define sizeof_xSetPointerMappingReq 4
+#define sizeof_xForceScreenSaverReq 4
+#define sizeof_xSetCloseDownModeReq 4
+#define sizeof_xClearAreaReq 16
+#define sizeof_xSetAccessControlReq 4
+#define sizeof_xGetKeyboardMappingReq 8
+#define sizeof_xSetModifierMappingReq 4
+#define sizeof_xPropIconSize 24
+#define sizeof_xChangeKeyboardMappingReq 8
+
+#else /* else not WORD64 */
+
+#define SIZEOF(x) sizeof(x)
+
+#endif /* WORD64 - used by CRAY */
+

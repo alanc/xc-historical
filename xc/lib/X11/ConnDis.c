@@ -1,5 +1,5 @@
 #include "copyright.h"
-/* $Header: XConnDis.c,v 11.27 88/05/18 18:23:13 rws Exp $ */
+/* $Header: XConnDis.c,v 11.28 88/07/04 10:46:58 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 #define NEED_EVENTS
 /*
@@ -300,16 +300,16 @@ _XWaitForWritable(dpy)
 
 	    /* must read at least one xEvent; if none is pending, then
 	       we'll just block waiting for it */
-	    if (pend < sizeof(xEvent)) pend = sizeof (xEvent);
+	    if (pend < SIZEOF(xEvent)) pend = SIZEOF(xEvent);
 		
 	    /* but we won't read more than the max buffer size */
 	    if (pend > BUFSIZE) pend = BUFSIZE;
 
 	    /* round down to an integral number of XReps */
-	    pend = (pend / sizeof (xEvent)) * sizeof (xEvent);
+	    pend = (pend / SIZEOF(xEvent)) * SIZEOF(xEvent);
 
 	    _XRead (dpy, buf, pend);
-	    for (ev = (xEvent *) buf; pend > 0; ev++, pend -= sizeof(xEvent))
+	    for (ev = (xEvent *) buf; pend > 0; ev++, pend -= SIZEOF(xEvent))
 	    {
 		if (ev->u.u.type == X_Error)
 		    _XError (dpy, (xError *) ev);
@@ -362,12 +362,12 @@ _XSendClientPrefix (dpy, client)
         client->nbytesAuthProto = auth_length;
 	client->nbytesAuthString = auth_strlen;
 
-	bytes = (sizeof(xConnClientPrefix) + 
+	bytes = (SIZEOF(xConnClientPrefix) + 
                        auth_length + padlength[auth_length & 3] +
                        auth_strlen + padlength[auth_strlen & 3]);
 
-	bcopy(client, buffer, sizeof(xConnClientPrefix));
-        bptr = buffer + sizeof(xConnClientPrefix);
+	bcopy(client, buffer, SIZEOF(xConnClientPrefix));
+        bptr = buffer + SIZEOF(xConnClientPrefix);
         if (auth_length)
 	{
 	    bcopy(auth_proto, bptr, auth_length);

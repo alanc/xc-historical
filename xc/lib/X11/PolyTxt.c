@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XPolyTxt.c,v 11.13 88/02/06 15:37:23 jim Locked $ */
+/* $Header: XPolyTxt.c,v 11.14 88/02/06 16:26:51 jim Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -34,17 +34,17 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
         {
 	    if (item->delta > 0)
 	    {
-	      length += sizeof(xTextElt) * ((item->delta + 126) / 127);
+	      length += SIZEOF(xTextElt) * ((item->delta + 126) / 127);
 	    }
             else
             {
-   	      length += sizeof(xTextElt) * ((abs(item->delta) + 127) / 128);
+   	      length += SIZEOF(xTextElt) * ((abs(item->delta) + 127) / 128);
  	    }
         }
 	if (item->nchars > 0)
 	{
-	    length += sizeof(xTextElt) * ((item->nchars + 253) / 254 - 1);
-	    if (!item->delta) length += sizeof(xTextElt);
+	    length += SIZEOF(xTextElt) * ((item->nchars + 253) / 254 - 1);
+	    if (!item->delta) length += SIZEOF(xTextElt);
 	    length += item->nchars;
      	}
 	item++;
@@ -83,7 +83,7 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 	    }
 
 	{
-	    int nbytes = sizeof (xTextElt);
+	    int nbytes = SIZEOF(xTextElt);
 	    int PartialNChars = item->nchars;
 	    int PartialDelta = item->delta;
             register xTextElt *elt;
@@ -92,7 +92,7 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 
 	    while((PartialDelta < -128) || (PartialDelta > 127))
             {
-	    	int nb = sizeof (xTextElt);
+	    	int nb = SIZEOF(xTextElt);
 
 	    	BufAlloc (xTextElt *, elt, nb); 
 	    	elt->len = 0;
@@ -121,7 +121,7 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 		    FirstTimeThrough = False;
 		    if (!item->delta)
  		    { 
-			nbytes += sizeof(xTextElt);
+			nbytes += SIZEOF(xTextElt);
 	   		BufAlloc (xTextElt *, elt, nbytes); 
 		        elt->delta = 0;
 		    }
@@ -136,7 +136,7 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 		}
 		else
 		{
- 		    nbytes += sizeof(xTextElt);
+ 		    nbytes += SIZEOF(xTextElt);
 	   	    BufAlloc (xTextElt *, elt, nbytes);
 		    elt->delta = 0;
 		}
@@ -154,7 +154,7 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 		    FirstTimeThrough = False;
 		    if (!item->delta)
  		    { 
-			nbytes += sizeof(xTextElt);
+			nbytes += SIZEOF(xTextElt);
 	   		BufAlloc (xTextElt *, elt, nbytes); 
 			elt->delta = 0;
 		    }
@@ -169,7 +169,7 @@ XDrawText(dpy, d, gc, x, y, items, nitems)
 		}
 		else
 		{
- 		    nbytes += sizeof(xTextElt);
+ 		    nbytes += SIZEOF(xTextElt);
 	   	    BufAlloc (xTextElt *, elt, nbytes); 
 		    elt->delta = 0;
 		}

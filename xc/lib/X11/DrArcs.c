@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XDrArcs.c,v 11.8 87/05/26 16:56:36 jg Exp $ */
+/* $Header: XDrArcs.c,v 11.8 87/09/11 08:10:11 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -20,10 +20,10 @@ int n_arcs;
     req->drawable = d;
     req->gc = gc->gid;
 
-    /* sizeof(xArc) will be a multiple of 4 */
-    req->length += n_arcs * (sizeof(xArc) / 4);
+    /* SIZEOF(xArc) will be a multiple of 4 */
+    req->length += n_arcs * (SIZEOF(xArc) / 4);
     
-    n_arcs *= sizeof(xArc);
+    n_arcs *= SIZEOF(xArc);
 
     PackData (dpy, (char *) arcs, (long)n_arcs);
     UnlockDisplay(dpy);

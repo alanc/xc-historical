@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFont.c,v 11.21 87/08/11 13:12:02 newman Locked $ */
+/* $Header: XFont.c,v 11.22 87/10/29 23:58:45 newman Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -77,7 +77,7 @@ XFontStruct *_XQueryFont (dpy, fid)	/* Internal-only entry point */
 
     GetResReq(QueryFont, fid, req);
     if (!_XReply (dpy, (xReply *) &reply,
-       ((sizeof (reply) - sizeof (xReply)) >> 2), xFalse))
+       ((sizeof (reply) - SIZEOF(xReply)) >> 2), xFalse))
 	   return (NULL);
     fs = (XFontStruct *) Xmalloc (sizeof (XFontStruct));
     fs->ext_data 		= NULL;

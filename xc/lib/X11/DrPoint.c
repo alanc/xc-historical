@@ -1,13 +1,13 @@
 #include "copyright.h"
 
-/* $Header: XDrPoint.c,v 11.8 87/05/29 14:27:43 jg Exp $ */
+/* $Header: XDrPoint.c,v 11.8 87/09/11 08:10:07 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
 /* precompute the maximum size of batching request allowed */
 
-static int size = sizeof(xPolyPointReq) + EPERBATCH * sizeof(xPoint);
+static int size = SIZEOF(xPolyPointReq) + EPERBATCH * SIZEOF(xPoint);
 
 XDrawPoint(dpy, d, gc, x, y)
     register Display *dpy;
@@ -26,11 +26,11 @@ XDrawPoint(dpy, d, gc, x, y)
        && (req->drawable == d)
        && (req->gc == gc->gid)
        && (req->coordMode == CoordModeOrigin)
-       && ((dpy->bufptr + sizeof (xPoint)) <= dpy->bufmax)
+       && ((dpy->bufptr + SIZEOF(xPoint)) <= dpy->bufmax)
        && (((char *)dpy->bufptr - (char *)req) < size) ) {
          point = (xPoint *) dpy->bufptr;
-	 req->length += sizeof (xPoint) >> 2;
-	 dpy->bufptr += sizeof (xPoint);
+	 req->length += SIZEOF(xPoint) >> 2;
+	 dpy->bufptr += SIZEOF(xPoint);
 	 }
 
     else {

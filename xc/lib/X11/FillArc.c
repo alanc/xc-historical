@@ -1,13 +1,13 @@
 #include "copyright.h"
 
-/* $Header: XFillArc.c,v 11.9 87/05/29 14:28:01 jg Exp $ */
+/* $Header: XFillArc.c,v 11.9 87/09/11 08:03:00 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
 
 /* precompute the maximum size of batching request allowed */
 
-static int size = sizeof(xPolyFillArcReq) + EPERBATCH * sizeof(xArc);
+static int size = SIZEOF(xPolyFillArcReq) + EPERBATCH * SIZEOF(xArc);
 
 XFillArc(dpy, d, gc, x, y, width, height, angle1, angle2)
     register Display *dpy;
@@ -28,15 +28,15 @@ XFillArc(dpy, d, gc, x, y, width, height, angle1, angle2)
           (req->reqType == X_PolyFillArc)
        && (req->drawable == d)
        && (req->gc == gc->gid)
-       && ((dpy->bufptr + sizeof (xArc)) <= dpy->bufmax)
+       && ((dpy->bufptr + SIZEOF(xArc)) <= dpy->bufmax)
        && (((char *)dpy->bufptr - (char *)req) < size) ) {
          arc = (xArc *) dpy->bufptr;
-	 req->length += sizeof (xArc) >> 2;
-	 dpy->bufptr += sizeof (xArc);
+	 req->length += SIZEOF(xArc) >> 2;
+	 dpy->bufptr += SIZEOF(xArc);
 	 }
 
     else {
-	GetReqExtra(PolyFillArc, sizeof(xArc), req);
+	GetReqExtra(PolyFillArc, SIZEOF(xArc), req);
 
 	req->drawable = d;
 	req->gc = gc->gid;

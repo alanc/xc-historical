@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XFillRects.c,v 11.8 87/05/26 16:57:43 jg Exp $ */
+/* $Header: XFillRects.c,v 11.8 87/09/11 08:03:13 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -21,10 +21,10 @@ int n_rects;
     req->drawable = d;
     req->gc = gc->gid;
 
-    /* sizeof(xRectangle) will be a multiple of 4 */
-    req->length += n_rects * (sizeof(xRectangle) / 4);
+    /* SIZEOF(xRectangle) will be a multiple of 4 */
+    req->length += n_rects * (SIZEOF(xRectangle) / 4);
 
-    nbytes = n_rects * sizeof(xRectangle);
+    nbytes = n_rects * SIZEOF(xRectangle);
 
     PackData (dpy, (char *) rectangles, nbytes);
     UnlockDisplay(dpy);

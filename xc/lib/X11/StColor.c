@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XStColor.c,v 11.5 87/05/24 21:39:53 jg Exp $ */
+/* $Header: XStColor.c,v 11.5 87/09/11 08:07:28 toddb Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #include "Xlibint.h"
@@ -14,7 +14,7 @@ XColor *def;
     register xStoreColorsReq *req;
 
     LockDisplay(dpy);
-    GetReqExtra(StoreColors, sizeof(xColorItem), req); /* assume size is 4*n */
+    GetReqExtra(StoreColors, SIZEOF(xColorItem), req); /* assume size is 4*n */
 
     req->cmap = cmap;
 
