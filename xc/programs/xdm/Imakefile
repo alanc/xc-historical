@@ -61,14 +61,14 @@ LOCAL_LIBRARIES = $(XAWLIB) $(XMULIB) $(XTOOLLIB) \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION)
 
-/**/#
-/**/# Special definitions for compiling default resources; these parameters
-/**/# should be set in util/imake.includes/site.def or the appropriate .macros
-/**/# file in that directory.  The lack of initial spaces is to prevent imake
-/**/# from accidently turning the lines into rules by putting a leading tab.
-/**/#
-/**/# Do NOT change these lines!
-/**/#
+XCOMM
+XCOMM Special definitions for compiling default resources; these parameters
+XCOMM should be set in util/imake.includes/site.def or the appropriate .macros
+XCOMM file in that directory.  The lack of initial spaces is to prevent imake
+XCOMM from accidently turning the lines into rules by putting a leading tab.
+XCOMM
+XCOMM Do NOT change these lines!
+XCOMM
 DEF_SERVER = $(BINDIR)/X
 DEF_USER_PATH = DefaultUserPath		/* no leading spaces or imake will */
 DEF_SYSTEM_PATH = DefaultSystemPath	/* indent as rule */

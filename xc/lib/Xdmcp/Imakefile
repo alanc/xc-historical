@@ -1,9 +1,9 @@
 #include <Library.tmpl>
 
-/**/#
-/**/# This library contains miscellaneous utility routines and is not part
-/**/# of the Xlib standard.
-/**/#
+XCOMM
+XCOMM This library contains miscellaneous utility routines and is not part
+XCOMM of the Xlib standard.
+XCOMM
 
        INCLUDES = -I. -I$(TOP) -I$(TOP)/X11
    INSTALLFLAGS = $(INSTINCFLAGS)
@@ -151,4 +151,4 @@ NormalLintTarget($(SRCS))
 NormalProgramTarget(verify,verify.o,libXdmcp.a,libXdmcp.a,/**/)
 
 saber_verify: verify.c $(SRCS)
-	#load $(INCLUDES) $(DEFINES) verify.c $(SRCS)
+	XCOMM load $(INCLUDES) $(DEFINES) verify.c $(SRCS)

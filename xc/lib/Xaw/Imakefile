@@ -199,7 +199,7 @@ DebuggedLibraryTarget(Xaw,$(OBJS))
 #endif
 
 #if defined(CrayArchitecture) && defined(CrayUsingSCC)
-/**/# Cray SCC optimizer is broken
+XCOMM Cray SCC optimizer is broken
 SpecialObjectRule(Paned.o,  ,-hnoopt)
 #endif
 BuildIncludes($(HEADERS),Xaw,..)

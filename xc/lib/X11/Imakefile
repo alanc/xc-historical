@@ -444,7 +444,7 @@ depend:: $(AUTHSRCS) $(DESSRCS)
 DependTarget()
 
 
-/**/# structure alignment errors can safely be ignored.
-/**/# complaints about qevent can be ignored too.
+XCOMM structure alignment errors can safely be ignored.
+XCOMM complaints about qevent can be ignored too.
 
 NormalLintTarget(*.c)

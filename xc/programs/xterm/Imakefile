@@ -1,13 +1,11 @@
-/**/###########################################################################
-/**/#                                                                         #
-/**/#                         Attention xterm porters                         #
-/**/#                                                                         #
-/**/#                                                                         #
-/**/# Xterm assumes that bcopy can handle overlapping arguments.  If your     #
-/**/# bcopy (or memcpy) cannot, write a routine called bcopy and link it in   #
-/**/# or add -Dbcopy=mybcopy to the DEFINES list below.                       #
-/**/#                                                                         #
-/**/###########################################################################
+XCOMM
+XCOMM                         Attention xterm porters
+XCOMM
+XCOMM
+XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
+XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
+XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
+XCOMM
 
 #ifdef BandAidCompiler
 #include BandAidCompiler

@@ -53,7 +53,7 @@ NormalLintTarget($(SRCS))
 
 #if HasSaberC
 saber_src:
-	/**/#load $(CFLAGS) $(SRCS)
+	XCOMM load $(CFLAGS) $(SRCS)
 #endif
 
 #ifdef MipsArchitecture

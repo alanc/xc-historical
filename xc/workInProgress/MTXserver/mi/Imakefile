@@ -34,7 +34,7 @@ SpecialObjectRule(miinitext.o, $(ICONFIGFILES), $(EXT_DEFINES))
 
 #if HasSaberC
 saber_src:
-	/**/#load $(CFLAGS) $(EXT_DEFINES) $(SRCS)
+	XCOMM load $(CFLAGS) $(EXT_DEFINES) $(SRCS)
 #endif
 
 DependTarget()

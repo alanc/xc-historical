@@ -1,9 +1,9 @@
 #include <Library.tmpl>
 
-/**/#
-/**/# This library contains miscellaneous utility routines and is not part
-/**/# of the Xlib standard.
-/**/#
+XCOMM
+XCOMM This library contains miscellaneous utility routines and is not part
+XCOMM of the Xlib standard.
+XCOMM
 
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB) 

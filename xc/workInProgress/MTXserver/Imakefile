@@ -33,11 +33,11 @@
         SYSLIBS = -lm -ldbm
            CBRT = ddx/mi/cbrt.o
 
-/**/#
-/**/# This turns off the default rule for compiling .c files because
-/**/# this makefile does not really know how to build it.  This is really
-/**/# just a hack because of the Sun version of make and nfs.
-/**/#
+XCOMM
+XCOMM This turns off the default rule for compiling .c files because
+XCOMM this makefile does not really know how to build it.  This is really
+XCOMM just a hack because of the Sun version of make and nfs.
+XCOMM
 .c.o:
 
 
@@ -153,9 +153,9 @@ all: $(ALL)
 
 
 #ifdef doqvssServer
-/**/#
-/**/# qvss server
-/**/#
+XCOMM
+XCOMM qvss server
+XCOMM
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
@@ -175,9 +175,9 @@ ServerTarget(Xqvss,$(EXTDIR) $(FONTUTILDIR) $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),
 
 
 #ifdef doqdssServer
-/**/#
-/**/# qdss server
-/**/#
+XCOMM
+XCOMM qdss server
+XCOMM
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
@@ -198,9 +198,9 @@ ServerTarget(Xqdss,$(EXTDIR) $(FONTUTILDIR) $(QDSSDIRS),$(QDSSOBJS),$(QDSSLIBS),
 #endif /* doqdssServer */
 
 #ifdef domfbpmaxServer
-/**/#
-/**/# mfbpmax server
-/**/#
+XCOMM
+XCOMM mfbpmax server
+XCOMM
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
@@ -218,9 +218,9 @@ ServerTarget(Xmfbpmax,$(EXTDIR) $(FONTUTILDIR) $(PMAXMFBDIRS),$(PMAXMFBOBJS),$(P
 #endif /* domfbpmaxServer */
 
 #ifdef docfbpmaxServer
-/**/#
-/**/# cfbpmax server
-/**/#
+XCOMM
+XCOMM cfbpmax server
+XCOMM
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
@@ -239,9 +239,9 @@ ServerTarget(Xcfbpmax,$(EXTDIR) $(FONTUTILDIR) $(PMAXCFBDIRS),$(PMAXCFBOBJS),$(P
 #endif /* docfbpmaxServer */
 
 #ifdef dosunServer
-/**/#
-/**/# sun server
-/**/#
+XCOMM
+XCOMM sun server
+XCOMM
 #if defined(UseSunWindowsInServer) && UseSunWindowsInServer
 SUNWINDOWSLIBS = -lsunwindow -lpixrect
 #endif
@@ -261,37 +261,37 @@ XsunDIRS = $(SUNDIRS)
 ServerTarget(Xsun,$(EXTDIR) $(FONTUTILDIR) $(SUNDIRS),$(SUNOBJS),$(SUNLIBS),$(SUNSYSLIBS))
 
 saber_src_sun:
-	#cd dix
-	#make saber_src
-	#cd ../ddx/snf
-	#make saber_src
-	#cd ../mi
-	#make saber_src
-	#cd ../mfb
-	#make saber_src
-	#cd ../cfb
-	#make saber_src
-	#cd ../sun
-	#make saber_src
-	#cd ../../os/4.2bsd
-	#make saber_src
-	#cd ../../../extensions/server
-	#make saber_src
-	#cd ../../fonts/mkfontdir
-	#make saber_src_server
-	#cd ../../lib/Xau
-	#make saber_src
-	#cd ../../server
-	#load /usr/lib/libm.a
-	#load /usr/lib/libdbm.a
+	XCOMM cd dix
+	XCOMM make saber_src
+	XCOMM cd ../ddx/snf
+	XCOMM make saber_src
+	XCOMM cd ../mi
+	XCOMM make saber_src
+	XCOMM cd ../mfb
+	XCOMM make saber_src
+	XCOMM cd ../cfb
+	XCOMM make saber_src
+	XCOMM cd ../sun
+	XCOMM make saber_src
+	XCOMM cd ../../os/4.2bsd
+	XCOMM make saber_src
+	XCOMM cd ../../../extensions/server
+	XCOMM make saber_src
+	XCOMM cd ../../fonts/mkfontdir
+	XCOMM make saber_src_server
+	XCOMM cd ../../lib/Xau
+	XCOMM make saber_src
+	XCOMM cd ../../server
+	XCOMM load /usr/lib/libm.a
+	XCOMM load /usr/lib/libdbm.a
 #endif /* dosunServer */
 
 
 
 #ifdef dohpServer
-/**/#
-/**/# HP server
-/**/#
+XCOMM
+XCOMM HP server
+XCOMM
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
@@ -319,9 +319,9 @@ ServerTarget(Xhp,$(EXTDIR) $(FONTUTILDIR) $(HPDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSL
 
 
 #ifdef dohpMitServer
-/**/#
-/**/# HP server
-/**/#
+XCOMM
+XCOMM HP server
+XCOMM
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
@@ -344,9 +344,9 @@ ServerTarget(XhpMit,$(EXTDIR) $(FONTUTILDIR) $(HPMITDIRS),$(HPMITOBJS),$(HPMITLI
 
 
 #ifdef doibmServer
-/**/#
-/**/# ibm server
-/**/#
+XCOMM
+XCOMM ibm server
+XCOMM
 #if SpecialMalloc
 IBMALLOCLIB = ddx/ibm/common/libibmalloc.a
 #else
@@ -372,9 +372,9 @@ ServerTarget(Xibm,$(EXTDIR) $(FONTUTILDIR) $(IBMDIRS),$(IBMOBJS),$(IBMLIBS),$(IB
 
 
 #ifdef doapolloServer
-/**/#
-/**/# apollo server
-/**/#
+XCOMM
+XCOMM apollo server
+XCOMM
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
@@ -393,9 +393,9 @@ ServerTarget(Xapollo,$(EXTDIR) $(FONTUTILDIR) $(APOLLODIRS),$(APOLLOOBJS),$(APOL
 
 
 #ifdef dotekServer
-/**/#
-/**/# tek server
-/**/#
+XCOMM
+XCOMM tek server
+XCOMM
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
@@ -414,9 +414,9 @@ ServerTarget(Xtek,$(EXTDIR) $(FONTUTILDIR) $(TEKDIRS),$(TEKOBJS),$(TEKLIBS),$(CB
 
 
 #ifdef domacIIServer
-/**/#
-/**/# macII server
-/**/#
+XCOMM
+XCOMM macII server
+XCOMM
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi
@@ -436,9 +436,9 @@ ServerTarget(XmacII,$(EXTDIR) $(FONTUTILDIR) $(MACIIDIRS),$(MACIIOBJS),$(MACIILI
 
 
 #ifdef dolunaServer
-/**/#
-/**/# luna server
-/**/#
+XCOMM
+XCOMM luna server
+XCOMM
 #define need_dix
 #define need_ddx_snf
 #define need_ddx_mi

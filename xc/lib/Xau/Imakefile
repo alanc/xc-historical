@@ -54,7 +54,7 @@ InstallManPage(Xau,$(MANDIR))
 
 #ifdef HasSaberC
 saber_src:
-	/**/#load $(CFLAGS) $(SRCS)
+	XCOMM load $(CFLAGS) $(SRCS)
 #endif
 
 DependTarget()

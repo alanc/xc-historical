@@ -54,7 +54,7 @@ SpecialObjectRule(globals.o, $(IRULESRC)/Imake.tmpl, $(SITE_DEFINES))
 
 #if HasSaberC
 saber_src:
-	/**/#load $(CFLAGS) $(SITE_DEFINES) $(SRCS)
+	XCOMM load $(CFLAGS) $(SITE_DEFINES) $(SRCS)
 #endif
 
 DependTarget()

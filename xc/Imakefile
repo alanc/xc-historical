@@ -5,11 +5,11 @@
      CHECKFNSRC = $(UTILSRC)/checkfn
         CHECKFN = $(CHECKFNSRC)/checkfn
 
-/**/#
-/**/# The order given here is necessary for some things to build; note that in
-/**/# R4beta, the "fonts" and "rgb" directories will become subdirectories of
-/**/# server so that BuildServer is no longer necessary.
-/**/#
+XCOMM
+XCOMM The order given here is necessary for some things to build; note that in
+XCOMM R4beta, the "fonts" and "rgb" directories will become subdirectories of
+XCOMM server so that BuildServer is no longer necessary.
+XCOMM
 #if BuildServer
 SERVERDIRSTOMAKE = server fonts rgb
 #endif
@@ -29,9 +29,9 @@ MakeLintSubdirs($(LNINSTALLDIRS),install.ln,install.ln)
 MakeLintSubdirs($(LNINSTALLDIRS),external.ln,lintlib)
 
 
-/**/#
-/**/# Watch out!!!  Make sure you do make includes after removing X11....
-/**/#
+XCOMM
+XCOMM Watch out!!!  Make sure you do make includes after removing X11....
+XCOMM
 clean::
 	$(RM) -r X11
 
@@ -39,17 +39,17 @@ includes::
 	$(RM) -r X11
 
 
-/**/#
-/**/# before depending, be sure to have run make includes
-/**/#
+XCOMM
+XCOMM before depending, be sure to have run make includes
+XCOMM
 /* depend::  includes */
 
 DependSubdirs($(SUBDIRS))
 
 
-/**/# 
-/**/# install stuff; create the directories that we are going to need
-/**/# 
+XCOMM 
+XCOMM install stuff; create the directories that we are going to need
+XCOMM 
 
 #if BuildServer
   DIRS_SERVER = $(FONTDIR) /* $(ADMDIR) */
@@ -78,7 +78,7 @@ InstallManPageLong(Consortium,$(MANDIR),XConsortium)
 InstallManPageLong(Standards,$(MANDIR),XStandards)
 
 
-/**/# do not name your log file make.log when you run this ...
+XCOMM do not name your log file make.log when you run this ...
 World::
 	@echo ""
 	@echo "Building Release 4 of the X Window System"
@@ -161,17 +161,17 @@ InstallSubdirs(config)
  * This section used for generating distributions will not be useful to most
  * people.
  */
-/**/# check all filenames for length, letters, and content
+XCOMM check all filenames for length, letters, and content
 checkfilenames::  $(CHECKFNSRC)/checkfn
 	@find . -type d \! -name RCS -exec $(CHECKFNSRC)/find.sh $(CHECKFN) {} \;
 
-/**/# clean out link tree looking for stuff that should get checked in
+XCOMM clean out link tree looking for stuff that should get checked in
 flushlinks::
 	make -k clean
 	find . -type l -exec rm {} \;
 	find . \( \! \( -type d -o -name Makefile \) \) -print
 
-/**/# rebuild the Makefiles in the master source tree
+XCOMM rebuild the Makefiles in the master source tree
 mastermakefiles::
 	cd $(IMAKESRC); $(MAKE) -f Makefile.ini clean; $(MAKE) -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 	-$(MV) Makefile Makefile.bak

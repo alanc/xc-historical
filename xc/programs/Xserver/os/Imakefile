@@ -73,14 +73,14 @@ connection.o: $(ICONFIGFILES)
 auth.o xdmcp.o: $(ICONFIGFILES)
 
 #ifdef HPArchitecture
-/**/#
-/**/# The following kludge is necessary because dbm already has a global 
-/**/# routine named "bcopy" that is implemented in a silly way.  So, we have to 
-/**/# extract the objects from the library, force the bcopy routine to be 
-/**/# local to the one file, put the result into a temporary file, rename the 
-/**/# temporary file to its proper name, and link it together with
-/**/# everything else to form the object file that we link into the server.
-/**/#
+XCOMM
+XCOMM The following kludge is necessary because dbm already has a global 
+XCOMM routine named "bcopy" that is implemented in a silly way.  So, we have to 
+XCOMM extract the objects from the library, force the bcopy routine to be 
+XCOMM local to the one file, put the result into a temporary file, rename the 
+XCOMM temporary file to its proper name, and link it together with
+XCOMM everything else to form the object file that we link into the server.
+XCOMM
 #ifdef hp9000s300
 dbm.o:  $(DBMLIB)
 	rm -f dbm.o
@@ -99,10 +99,10 @@ dbm.o:  $(DBMLIB)
 #endif /* HPArchitecture */
 
 #ifdef NEED_ALLOCA_FROM_LIBPW
-/**/#
-/**/# And this one is to get the version of alloca that lives in /lib/libPW.a
-/**/# without getting all of the rest of the stuff in there.
-/**/#
+XCOMM
+XCOMM And this one is to get the version of alloca that lives in /lib/libPW.a
+XCOMM without getting all of the rest of the stuff in there.
+XCOMM
 alloca.o:  $(PWLIB)
 	rm -f alloca.o
 	ar x $(PWLIB) alloca.o
@@ -115,7 +115,7 @@ SpecialObjectRule(oscolor.o, $(ICONFIGFILES), $(DBM_DEFINES))
 
 #if HasSaberC
 saber_src:
-	/**/#load $(CFLAGS) -DADMPATH=\"$(ADMDIR)/X\%smsgs\" $(EXT_DEFINES) \
+	XCOMM load $(CFLAGS) -DADMPATH=\"$(ADMDIR)/X\%smsgs\" $(EXT_DEFINES) \
 		$(FONT_DEFINES) $(SRCS)
 #endif
 
