@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibnet.h,v 1.19 92/10/21 10:22:55 rws Exp $ */
+/* $XConsortium: Xlibnet.h,v 1.20 93/03/29 18:14:30 rws Exp $ */
 
 /*
 Copyright 1991 Massachusetts Institute of Technology
@@ -32,7 +32,6 @@ without express or implied warranty.
  * UNIX System V Release 3.2
  */
 #define BytesReadable(fd,ptr) (_XBytesReadable ((fd), (ptr)))
-#define MALLOC_0_RETURNS_NULL
 #include <sys/ioctl.h>
 
 #endif /* SYSV */
