@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.47 89/05/16 10:11:30 jim Exp $
+ * $XConsortium: twm.c,v 1.48 89/05/31 16:09:14 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.47 89/05/16 10:11:30 jim Exp $";
+"$XConsortium: twm.c,v 1.48 89/05/31 16:09:14 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -69,7 +69,8 @@ int NumScreens;			/* number of screens in ScreenList */
 int HasShape;			/* server supports shape extension? */
 #endif
 ScreenInfo **ScreenList;	/* structures for each screen */
-ScreenInfo *Scr = NULL;	/* the current screen */
+ScreenInfo *Scr = NULL, *PrevScr = NULL;  /* the cur and prev screens */
+int PreviousScreen;		/* last screen that we were on */
 int FirstScreen;		/* TRUE ==> first screen of display */
 static int RedirectError;	/* TRUE ==> another window manager running */
 char Info[INFO_LINES][INFO_SIZE];		/* info strings to print */
@@ -240,6 +241,7 @@ main(argc, argv, environ)
     /* for simplicity, always allocate NumScreens ScreenInfo struct pointers */
     ScreenList = (ScreenInfo **) calloc (NumScreens, sizeof (ScreenInfo *));
     numManaged = 0;
+    PreviousScreen = DefaultScreen(dpy);
     FirstScreen = TRUE;
     for (scrnum = firstscrn ; scrnum <= lastscrn; scrnum++)
     {
@@ -304,6 +306,8 @@ main(argc, argv, environ)
 	Scr->CMap = DefaultColormap(dpy, scrnum);
 	Scr->MyDisplayWidth = DisplayWidth(dpy, scrnum);
 	Scr->MyDisplayHeight = DisplayHeight(dpy, scrnum);
+	Scr->last_x = Scr->MyDisplayWidth / 2;
+	Scr->last_y = Scr->MyDisplayHeight / 2;
 
 	/* setup default colors */
 	black = Scr->Black = BlackPixel(dpy, scrnum);

@@ -25,7 +25,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.46 89/06/08 17:42:56 jim Exp $
+ * $XConsortium: add_window.c,v 1.47 89/06/09 10:22:15 jim Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window
@@ -36,7 +36,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: add_window.c,v 1.46 89/06/08 17:42:56 jim Exp $";
+"$XConsortium: add_window.c,v 1.47 89/06/09 10:22:15 jim Exp $";
 #endif /* lint */
 
 #include <stdio.h>
@@ -271,6 +271,8 @@ IconMgr *iconp;
 	if (!(tmp_win->wmhints && tmp_win->wmhints->flags & StateHint &&
 	      tmp_win->wmhints->initial_state == IconicState))
 	{
+	    Bool firsttime = True;
+
 	    /* better wait until all the mouse buttons have been 
 	     * released.
 	     */
@@ -280,12 +282,36 @@ IconMgr *iconp;
 		XSync(dpy, 0);
 		XGrabServer(dpy);
 
-		XQueryPointer(dpy, Scr->Root, &JunkRoot, &JunkChild,
-		    &JunkX, &JunkY, &AddingX, &AddingY, &JunkMask);
+		(void) XQueryPointer (dpy, Scr->Root, &JunkRoot, 
+				      &JunkChild, &JunkX, &JunkY,
+				      &AddingX, &AddingY, &JunkMask);
+
+		/*
+		 * watch out for changing screens
+		 */
+		if (firsttime) {
+		    if (JunkRoot != Scr->Root) {
+			register int scrnum;
+
+			for (scrnum = 0; scrnum < NumScreens; scrnum++) {
+			    if (JunkRoot == RootWindow (dpy, scrnum)) break;
+			}
+
+			if (scrnum != NumScreens) {
+			    PreviousScreen = scrnum;
+			    ScreenList[scrnum]->last_x = JunkX;
+			    ScreenList[scrnum]->last_y = JunkY;
+			}
+		    }
+		    firsttime = False;
+		}
 
 		if (JunkMask != 0)
 		    continue;
 
+		/* 
+		 * this will cause a warp to the indicated root
+		 */
 		stat = XGrabPointer(dpy, Scr->Root, False,
 		    ButtonPressMask | ButtonReleaseMask,
 		    GrabModeAsync, GrabModeAsync,

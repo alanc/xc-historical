@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.38 89/05/16 10:11:22 jim Exp $
+ * $XConsortium: gram.y,v 1.39 89/05/17 16:10:17 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -35,9 +35,10 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.38 89/05/16 10:11:22 jim Exp $";
+"$XConsortium: gram.y,v 1.39 89/05/17 16:10:17 jim Exp $";
 
 #include <stdio.h>
+#include <ctype.h>
 #include "twm.h"
 #include "menus.h"
 #include "list.h"
@@ -52,6 +53,7 @@ static MenuRoot	*root,
 
 MenuRoot *GetRoot();
 
+static Bool CheckWarpScreenArg();
 static char *ptr;
 static int Button;
 static name_list **list;
@@ -103,6 +105,7 @@ extern int yylineno;
 %token <num> CUR_TITLE CUR_ICONMGR CUR_ICON NO_ICONMGRS F_SORTICONMGR
 %token <num> CUR_MOVE CUR_RESIZE CUR_WAIT CUR_SELECT CUR_KILL
 %token <num> ICON_REGION NORTH SOUTH EAST WEST RESTART_PREVIOUS_STATE
+%token <num> F_WARPSCREEN
 %token <ptr> STRING
 
 %type <ptr> string
@@ -658,6 +661,16 @@ action		: F_NOP			{ $$ = F_NOP; }
 		| F_EXEC string		{ Action = $2; $$ = F_EXEC; }
 		| F_CUT string		{ Action = $2; $$ = F_CUT; }
 		| F_FUNCTION string	{ Action = $2; $$ = F_FUNCTION; }
+		| F_WARPSCREEN string	{ Action = $2; 
+					  if (CheckWarpScreenArg (Action)) {
+					      $$ = F_WARPSCREEN;
+					  } else {
+					      fprintf (stderr, 
+	"twm: line %d:  ignoring invalid f.warpscreen argument \"%s\"\n", 
+						       yylineno, Action);
+					      $$ = F_NOP;
+					  }
+					}
 		;
 
 grav		: NORTH			{ $$ = NORTH; }
@@ -717,7 +730,8 @@ number		: NUMBER		{ $$ = $1; }
 %%
 yyerror(s) char *s;
 {
-    fprintf(stderr, "twm: syntax error, line %d\n", yylineno);
+    fprintf (stderr, "twm: line %d:  syntax error:  %s\n", yylineno,
+	     s ? s : "");
     ParseError = 1;
 }
 RemoveDQuote(str)
@@ -872,4 +886,16 @@ int func;
     pull = NULL;
     cont = 0;
     mods = 0;
+}
+
+
+static Bool CheckWarpScreenArg (s)
+    register char *s;
+{
+    XmuCopyISOLatin1Lowered (s, s);
+    if (strcmp (s, "forw") == 0 || strcmp (s, "back") == 0 ||
+	strcmp (s, "prev") == 0) return True;
+
+    for (; *s && isascii(*s) && isdigit(*s); s++) ;
+    return (*s ? False : True);
 }

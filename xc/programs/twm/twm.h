@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.27 89/05/16 10:11:32 jim Exp $
+ * $XConsortium: twm.h,v 1.28 89/05/31 12:18:05 jim Exp $
  *
  * twm include file
  *
@@ -217,6 +217,8 @@ extern Window ResizeWindow;	/* the window we are resizing */
 #ifdef SHAPE
 extern int HasShape;		/* this server supports Shape extension */
 #endif
+
+extern int PreviousScreen;
 
 extern Cursor UpperLeftCursor;
 extern Cursor RightButt;

@@ -47,7 +47,7 @@
 #endif
 
        PROGRAMS = twm
-LOCAL_LIBRARIES = $(EXTENSIONLIB) $(XLIB)
+LOCAL_LIBRARIES = $(EXTENSIONLIB) $(XMULIB) $(XLIB)
       OTHERSRCS = gram.y lex.l
          YFLAGS = -d
 #    OPTIONSDEF = -DNOFOCUS

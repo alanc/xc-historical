@@ -1,6 +1,6 @@
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.29 89/05/16 10:11:28 jim Exp $
+ * $XConsortium: screen.h,v 1.30 89/05/17 14:31:44 jim Exp $
  *
  * twm per-screen data include file
  *
@@ -26,6 +26,7 @@ typedef struct ScreenInfo
     int Monochrome;		/* is the display monochrome ? */
     int MyDisplayWidth;		/* my copy of DisplayWidth(dpy, screen) */
     int MyDisplayHeight;	/* my copy of DisplayHeight(dpy, screen) */
+    int last_x, last_y;		/* position last time was on screen */
 
     TwmWindow TwmRoot;		/* the head of the twm window list */
 
@@ -164,7 +165,7 @@ typedef struct ScreenInfo
 extern int MultiScreen;
 extern int NumScreens;
 extern ScreenInfo **ScreenList;
-extern ScreenInfo *Scr;
+extern ScreenInfo *Scr, *PrevScr;
 extern int FirstScreen;
 
 #endif /* _SCREEN_ */

@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.63 89/05/30 08:50:58 jim Exp $
+ * $XConsortium: events.c,v 1.64 89/05/31 12:18:01 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.63 89/05/30 08:50:58 jim Exp $";
+"$XConsortium: events.c,v 1.64 89/05/31 12:18:01 jim Exp $";
 #endif
 
 #include <stdio.h>

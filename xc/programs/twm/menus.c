@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.60 89/05/15 18:00:15 jim Exp $
+ * $XConsortium: menus.c,v 1.61 89/05/17 14:31:36 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.60 89/05/15 18:00:15 jim Exp $";
+"$XConsortium: menus.c,v 1.61 89/05/17 14:31:36 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1724,6 +1724,20 @@ ExecuteFunction(func, action, w, tmp_win, event, context, pulldown)
 	}
 	break;
 
+    case F_WARPSCREEN:
+	{
+	    if (strcmp (action, "forw") == 0) {
+		WarpToScreen (Scr->screen + 1, 1);
+	    } else if (strcmp (action, "back") == 0) {
+		WarpToScreen (Scr->screen - 1, -1);
+	    } else if (strcmp (action, "prev") == 0) {
+		WarpToScreen (PreviousScreen, 0);
+	    } else {
+		WarpToScreen (atoi (action), 0);
+	    }
+	}
+	break;
+
     case F_WARPTO:
 	{
 	    TwmWindow *t;
@@ -2412,4 +2426,43 @@ Bool GetWMState (w, statep, iwp)
 
     XFree ((char *) datap);
     return retval;
+}
+
+
+WarpToScreen (n, inc)
+    int n, inc;
+{
+    Window dumwin;
+    int dumint;
+    unsigned int dummask;
+    ScreenInfo *newscr = NULL;
+
+    while (!newscr) {
+					/* wrap around */
+	if (n < 0) 
+	  n = NumScreens - 1;
+	else if (n >= NumScreens)
+	  n = 0;
+
+	newscr = ScreenList[n];
+	if (!newscr) {			/* make sure screen is managed */
+	    if (inc) {			/* walk around the list */
+		n += inc;
+		continue;
+	    }
+	    fprintf (stderr, "twm:  can't warp to unmanaged screen %d\n", n);
+	    XBell (dpy, 0);
+	    return;
+	}
+    }
+
+    if (Scr->screen == n) return;	/* already on that screen */
+
+    PreviousScreen = Scr->screen;
+    XQueryPointer (dpy, Scr->Root, &dumwin, &dumwin, &Scr->last_x,
+		   &Scr->last_y, &dumint, &dumint, &dummask);
+
+    XWarpPointer (dpy, None, newscr->Root, 0, 0, 0, 0,
+		  newscr->last_x, newscr->last_y);
+    return;
 }
