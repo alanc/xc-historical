@@ -515,9 +515,11 @@ sunKbdProcessEvent (pKeyboard, fe)
     }
 
     key = (fe->id & 0x7F) + sysKbPriv.offset;
-    if ((keyModifiers = keyModifiersList[key]) == 0) {
+    keyModifiers = keyModifiersList[key];
+    if (autoRepeatKeyDown && (keyModifiers == 0) &&
+	((fe->value == VKEY_DOWN) || (key == autoRepeatEvent.u.u.detail))) {
 	/*
-	 * Kill AutoRepeater on any real non-modifier Kbd event.
+	 * Kill AutoRepeater on any real non-modifier key down, or auto key up
 	 */
 	autoRepeatKeyDown = 0;
 	if (autoRepeatDebug)
