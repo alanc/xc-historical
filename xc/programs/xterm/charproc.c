@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.143 91/04/16 17:00:38 converse Exp $
+ * $XConsortium: charproc.c,v 1.145 91/04/24 14:26:53 gildea Exp $
  */
 
 /*
@@ -38,6 +38,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/CharSet.h>
+#include <X11/Xmu/Converters.h>
 #include <X11/Xos.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
@@ -95,6 +96,7 @@ static void bitset(), bitclr();
 #define XtNmultiClickTime	"multiClickTime"
 #define	XtNmultiScroll		"multiScroll"
 #define	XtNnMarginBell		"nMarginBell"
+#define XtNresizeGravity	"resizeGravity"
 #define	XtNreverseWrap		"reverseWrap"
 #define XtNautoWrap		"autoWrap"
 #define	XtNsaveLines		"saveLines"
@@ -129,6 +131,7 @@ static void bitset(), bitclr();
 #define XtCMultiClickTime	"MultiClickTime"
 #define	XtCMultiScroll		"MultiScroll"
 #define	XtCColumn		"Column"
+#define XtCResizeGravity	"ResizeGravity"
 #define	XtCReverseWrap		"ReverseWrap"
 #define XtCAutoWrap		"AutoWrap"
 #define XtCSaveLines		"SaveLines"
@@ -375,6 +378,9 @@ static XtResource resources[] = {
 {XtNreverseVideo,XtCReverseVideo,XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.re_verse),
 	XtRBoolean, (caddr_t) &defaultFALSE},
+{XtNresizeGravity, XtCResizeGravity, XtRGravity, sizeof(XtGravity),
+	XtOffsetOf(XtermWidgetRec, misc.resizeGravity),
+	XtRImmediate, (XtPointer) SouthWestGravity},
 {XtNreverseWrap,XtCReverseWrap, XtRBoolean, sizeof(Boolean),
 	XtOffsetOf(XtermWidgetRec, misc.reverseWrap),
 	XtRBoolean, (caddr_t) &defaultFALSE},
@@ -431,8 +437,11 @@ static XtResource resources[] = {
 	XtRString, (caddr_t) NULL},
 };
 
-
-static void VTInitialize(), VTRealize(), VTExpose(), VTResize();
+static void VTClassInit();
+static void VTInitialize();
+static void VTRealize();
+static void VTExpose();
+static void VTResize();
 static void VTDestroy();
 
 static WidgetClassRec xtermClassRec = {
@@ -441,7 +450,7 @@ static WidgetClassRec xtermClassRec = {
     /* superclass	  */	(WidgetClass) &widgetClassRec,
     /* class_name	  */	"VT100",
     /* widget_size	  */	sizeof(XtermWidgetRec),
-    /* class_initialize   */    NULL,
+    /* class_initialize   */    VTClassInit,
     /* class_part_initialize */ NULL,
     /* class_inited       */	FALSE,
     /* initialize	  */	VTInitialize,
@@ -1220,10 +1229,9 @@ in_put()
 			*b &= (Char) 0x7f;
 		    }
 		}
-		if (screen->scrollWidget && screen->scrollttyoutput &&
-		   screen->topline < 0)
-		    /* Scroll to bottom */
-		    WindowScroll(screen, 0);
+		if ( screen->scrollWidget && screen->scrollttyoutput &&
+		     screen->topline < 0)
+		    WindowScroll(screen, 0);  /* Scroll to bottom */
 		pty_read_bytes += bcnt;
 		/* stop speed reading at some point to look for X stuff */
 		if (pty_read_bytes > 4096) /* random large number */
@@ -2064,6 +2072,13 @@ static void VTallocbuf ()
     return;
 }
 
+static void VTClassInit ()
+{
+    XtAddConverter(XtRString, XtRGravity, XmuCvtStringToGravity,
+		   (XtConvertArgList) NULL, (Cardinal) 0);
+}
+
+
 static void VTInitialize (request, new)
    XtermWidget request, new;
 {
@@ -2141,6 +2156,19 @@ static void VTInitialize (request, new)
 
    /* create it, but don't realize it */
    ScrollBarOn (new, TRUE, FALSE);
+
+   /* make sure that the resize gravity acceptable */
+   if ( new->misc.resizeGravity != NorthWestGravity &&
+        new->misc.resizeGravity != SouthWestGravity) {
+       extern XtAppContext app_con;
+       Cardinal nparams = 1;
+
+       XtAppWarningMsg(app_con, "rangeError", "resizeGravity", "XTermError",
+		       "unsupported resizeGravity resource value (%d)",
+		       (String *) &(new->misc.resizeGravity), &nparams);
+       new->misc.resizeGravity = SouthWestGravity;
+   }
+
    return;
 }
 
@@ -2270,7 +2298,10 @@ XSetWindowAttributes *values;
 			   &sizehints);
 	XFlush (XtDisplay(term));	/* get it out to window manager */
 
-	values->bit_gravity = NorthWestGravity;
+	/* use ForgetGravity instead of SouthWestGravity because translating
+	   the Expose events for ConfigureNotifys is too hard */
+	values->bit_gravity = term->misc.resizeGravity == NorthWestGravity ?
+	    NorthWestGravity : ForgetGravity;
 	term->screen.fullVwin.window = term->core.window =
 	  XCreateWindow(XtDisplay(term), XtWindow(term->core.parent),
 		term->core.x, term->core.y,
