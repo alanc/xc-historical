@@ -1,5 +1,5 @@
 /*
- *	$Header: data.h,v 1.11 87/12/19 10:02:21 newman Locked $
+ *	$Header: data.h,v 1.1 88/02/10 13:08:05 jim Exp $
  */
 
 
@@ -79,4 +79,4 @@ extern int TEKgcFontMask;
 extern int MenugcFontMask;
 
 extern XtermWidget term;
-extern Widget tekWidget;
+extern TekWidget tekWidget;

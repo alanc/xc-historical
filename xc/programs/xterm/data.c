@@ -1,5 +1,5 @@
 /*
- *	$Header: data.c,v 1.10 87/12/19 10:01:10 rws Exp $
+ *	$Header: data.c,v 1.1 88/02/10 13:08:05 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -34,7 +34,7 @@
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$Header: data.c,v 1.10 87/12/19 10:01:10 rws Exp $";
+static char rcs_id[] = "$Header: data.c,v 1.1 88/02/10 13:08:05 jim Exp $";
 #endif	/* lint */
 
 XPoint T_boxlarge[NBOX] = {
@@ -118,4 +118,4 @@ int VTgcFontMask = GCFont;
 int TEKgcFontMask = GCFont;
 int MenugcFontMask = GCFont;
 
-Widget tekWidget;
+TekWidget tekWidget;

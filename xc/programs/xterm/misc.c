@@ -1,5 +1,5 @@
 /*
- *	$Header: misc.c,v 1.2 88/02/11 18:32:11 jim Exp $
+ *	$Header: misc.c,v 1.3 88/02/12 10:14:49 jim Exp $
  */
 
 
@@ -52,7 +52,7 @@ extern void perror();
 extern void abort();
 
 #ifndef lint
-static char rcs_id[] = "$Header: misc.c,v 1.2 88/02/11 18:32:11 jim Exp $";
+static char rcs_id[] = "$Header: misc.c,v 1.3 88/02/12 10:14:49 jim Exp $";
 #endif	/* lint */
 
 xevents()
@@ -460,12 +460,12 @@ Redraw()
 	event.display = screen->display;
 	event.x = 0;
 	event.y = 0;
-	event.width = term->core.width;
-	event.height = term->core.height;
 	event.count = 0; 
 	
 	if(VWindow(screen)) {
 	        event.window = VWindow(screen);
+		event.width = term->core.width;
+		event.height = term->core.height;
 		(*term->core.widget_class->core_class.expose)(term, &event, NULL);
 		if(screen->scrollbar) 
 			(*screen->scrollWidget->core.widget_class->core_class.expose)(screen->scrollWidget, &event, NULL);
@@ -473,7 +473,9 @@ Redraw()
 
 	if(TWindow(screen) && screen->Tshow) {
 	        event.window = TWindow(screen);
-		TekExpose(&event);
+		event.width = tekWidget->core.width;
+		event.height = tekWidget->core.height;
+		TekExpose (tekWidget, &event, NULL);
 	}
 }
 

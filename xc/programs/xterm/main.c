@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.7 88/02/13 15:24:07 jim Exp $
+ *	$Header: main.c,v 1.8 88/02/14 21:30:03 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.7 88/02/13 15:24:07 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.8 88/02/14 21:30:03 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -299,7 +299,7 @@ static XtResource resources[] = {
 	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNtekInhibit, XtCTekInhibit, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, misc.tekInhibit),
-	XtRBoolean, (caddr_t) &defaultTRUE},
+	XtRBoolean, (caddr_t) &defaultFALSE},
 {XtNtekStartup, XtCTekStartup, XtRBoolean, sizeof(Boolean),
 	XtOffset(XtermWidget, screen.TekEmu),
 	XtRBoolean, (caddr_t) &defaultFALSE},
@@ -701,9 +701,7 @@ gettimeofday(&initT, &tz);
 	XSetIOErrorHandler(xioerror);
 	for( ; ; )
 		if(screen->TekEmu) {
-			Bell();
 			TekRun();
-			screen->TekEmu = FALSE;
 		} else
 			VTRun();
 }
@@ -1235,7 +1233,8 @@ spawn ()
 
         /* Realize the Tek or VT widget, depending on which mode we're in.
            If VT mode, this calls VTInit (the widget's Realize proc) */
-        XtRealizeWidget ((screen->TekEmu ? tekWidget : (Widget) term)->core.parent);
+        XtRealizeWidget (screen->TekEmu ? tekWidget->core.parent :
+			 term->core.parent);
 
 	if(screen->TekEmu) {
 		envnew = tekterm;

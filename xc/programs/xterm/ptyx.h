@@ -1,5 +1,5 @@
 /*
- *	$Header: ptyx.h,v 1.2 88/02/08 20:36:28 newman Locked $
+ *	$Header: ptyx.h,v 1.1 88/02/10 13:08:11 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -352,12 +352,17 @@ typedef struct _Misc {
     Boolean scrollbar;
 } Misc;
 
-typedef struct {int foo;} XtermClassPart;
+typedef struct {int foo;} XtermClassPart, TekClassPart;
 
 typedef struct _XtermClassRec {
     CoreClassPart  core_class;
     XtermClassPart xterm_class;
 } XtermClassRec;
+
+typedef struct _TekClassRec {
+    CoreClassPart core_class;
+    TekClassPart tek_class;
+} TekClassRec;
 
 /* define masks for flags */
 #define CAPS_LOCK	0x01
@@ -380,6 +385,10 @@ typedef struct _XtermWidgetRec {
     Tabs	tabs;		/* tabstops of the terminal	*/
     Misc	misc;		/* miscelaneous parameters	*/
 } XtermWidgetRec, *XtermWidget;
+
+typedef struct _TekWidgetRec {
+    CorePart core;
+} TekWidgetRec, *TekWidget;
 
 #define BUF_SIZE 4096
 

@@ -1,6 +1,6 @@
 
 /*
- *	$Header: charproc.c,v 1.6 88/02/12 10:04:59 jim Exp $
+ *	$Header: charproc.c,v 1.7 88/02/12 10:43:35 jim Exp $
  */
 
 
@@ -57,7 +57,7 @@ extern void exit(), bcopy();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$Header: charproc.c,v 1.6 88/02/12 10:04:59 jim Exp $";
+static char rcs_id[] = "$Header: charproc.c,v 1.7 88/02/12 10:43:35 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2296,12 +2296,10 @@ int item;
 		break;
 
 	case MMENU_HIDEVT:
-#ifdef notyet
 		XUnmapWindow(screen->display, VWindow(screen));
 		reselectwindow(screen);
 		SyncUnmap(VWindow(screen), WINDOWEVENTS);
 			/* drop through */
-#endif notyet
 	case MMENU_TEKMODE:
 		if(!screen->TekEmu) {
 			if(screen->logging) {
@@ -2315,7 +2313,6 @@ int item;
 		break;
 
 	case MMENU_TEKWIN:
-#ifdef notyet
 		if(screen->Tshow = !screen->Tshow) {
 			if(TWindow(screen) || TekInit()) {
 				XMapWindow(screen->display, TWindow(screen));
@@ -2333,7 +2330,6 @@ int item;
 				longjmp(Tekend, 1);
 			}
 		}
-#endif notyet
 		reselectwindow(screen);
 		break;
 	}
