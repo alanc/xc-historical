@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.9 91/02/06 19:25:07 rws Exp $
+XCOMM platform:  $XConsortium: sony.cf,v 1.10 91/02/06 20:39:31 rws Exp $
 XCOMM operating system:  OSName
 
 /*
@@ -22,6 +22,8 @@ XCOMM operating system:  OSName
 #define SystemV4		YES
 #define BootstrapCFlags		-Dsony
 #define CcCmd                   /usr/bin/cc
-#define ExtraLibraries		-lnsl
+#define ExtraLibraries		-lsocket -lnsl
 #define DefaultCCOptions        -Wf,-XNp5000,-XNd5000
+#define HasSecureRPC            YES
+#define ConnectionFlags    -DTCPCONN -DUNIXCONN
 #endif
