@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: error.c,v 1.13 94/01/14 15:07:15 gildea Exp $
+ * $XConsortium: error.c,v 1.14 94/01/18 10:26:49 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -29,6 +29,9 @@
 # include <stdio.h>
 #if NeedVarargsPrototypes
 # include <stdarg.h>
+#else
+/* this type needs to be big enough to contain int or pointer */
+typedef long Fmtarg_t;
 #endif
 
 /*VARARGS1*/
@@ -38,7 +41,7 @@ LogInfo(
 #else
     fmt, arg1, arg2, arg3, arg4, arg5, arg6)
     char *fmt;
-    int arg1, arg2, arg3, arg4, arg5, arg6;
+    Fmtarg_t arg1, arg2, arg3, arg4, arg5, arg6;
 #endif
 {
     fprintf (stderr, "xdm info (pid %d): ", getpid());
@@ -62,7 +65,7 @@ LogError (
 #else
     fmt, arg1, arg2, arg3, arg4, arg5, arg6)
     char *fmt;
-    int arg1, arg2, arg3, arg4, arg5, arg6;
+    Fmtarg_t arg1, arg2, arg3, arg4, arg5, arg6;
 #endif
 {
     fprintf (stderr, "xdm error (pid %d): ", getpid());
@@ -86,7 +89,7 @@ LogPanic (
 #else
     fmt, arg1, arg2, arg3, arg4, arg5, arg6)
     char *fmt;
-    int arg1, arg2, arg3, arg4, arg5, arg6;
+    Fmtarg_t arg1, arg2, arg3, arg4, arg5, arg6;
 #endif
 {
     fprintf (stderr, "xdm panic (pid %d): ", getpid());
@@ -111,7 +114,7 @@ LogOutOfMem (
 #else
     fmt, arg1, arg2, arg3, arg4, arg5, arg6)
     char *fmt;
-    int arg1, arg2, arg3, arg4, arg5, arg6;
+    Fmtarg_t arg1, arg2, arg3, arg4, arg5, arg6;
 #endif
 {
     fprintf (stderr, "xdm: out of memory in routine ");
@@ -147,7 +150,7 @@ Debug (
 #else
     fmt, arg1, arg2, arg3, arg4, arg5, arg6)
     char *fmt;
-    int arg1, arg2, arg3, arg4, arg5, arg6;
+    Fmtarg_t arg1, arg2, arg3, arg4, arg5, arg6;
 #endif
 {
     if (debugLevel > 0)
