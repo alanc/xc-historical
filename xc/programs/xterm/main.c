@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.183 91/05/08 21:27:49 gildea Exp $ */
+/* $XConsortium: main.c,v 1.185 91/05/09 16:52:47 gildea Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -411,9 +411,6 @@ static XtResource application_resources[] = {
 };
 #undef offset
 
-/* Command line options table.  Only resources are entered here...there is a
-   pass over the remaining options after XtParseCommand is let loose. */
-
 static char *fallback_resources[] = {
     "XTerm*SimpleMenu*menuLabel.vertSpace: 100",
     "XTerm*SimpleMenu*HorizontalMargins: 16",
@@ -425,6 +422,9 @@ static char *fallback_resources[] = {
     "XTerm*tekMenu.Label:  Tek Options (no app-defaults)",
     NULL
 };
+
+/* Command line options table.  Only resources are entered here...there is a
+   pass over the remaining options after XrmParseCommand is let loose. */
 
 static XrmOptionDescRec optionDescList[] = {
 {"-geometry",	"*vt100.geometry",XrmoptionSepArg,	(caddr_t) NULL},
@@ -530,6 +530,7 @@ static struct _options {
 { "-mc milliseconds",      "multiclick time in milliseconds" },
 { "-ms color",             "pointer color" },
 { "-nb number",            "margin bell in characters from right end" },
+{ "-/+aw",                 "turn on/off auto wraparound" },
 { "-/+rw",                 "turn on/off reverse wraparound" },
 { "-/+s",                  "turn on/off multiscroll" },
 { "-/+sb",                 "turn on/off scrollbar" },
@@ -540,9 +541,14 @@ static struct _options {
 { "-/+t",                  "turn on/off Tek emulation window" },
 { "-tm string",            "terminal mode keywords and characters" },
 { "-tn name",              "TERM environment variable name" },
+#ifdef UTMP
 { "-/+ut",                 "turn on/off utmp inhibit" },
+#else
+{ "-/+ut",                 "turn on/off utmp inhibit (not supported)" },
+#endif
 { "-/+vb",                 "turn on/off visual bell" },
-{ "-e command args",       "command to execute" },
+{ "-/+wf",                 "turn on/off wait for map before command exec" },
+{ "-e command args ...",   "command to execute" },
 { "%geom",                 "Tek window geometry" },
 { "#geom",                 "icon window geometry" },
 { "-T string",             "title name for window" },
