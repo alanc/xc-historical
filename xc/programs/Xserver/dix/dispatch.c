@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.69 88/11/22 16:29:45 keith Exp $ */
+/* $XConsortium: dispatch.c,v 1.70 89/01/03 08:23:38 rws Exp $ */
 /************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -217,12 +217,11 @@ Dispatch()
     nextFreeClientID = 1;
     InitSelections();
     nClients = 0;
-    clientsDoomed = FALSE;
 
     clientReady = (int *) ALLOCATE_LOCAL(sizeof(int) * MaxClients);
     request = (xReq *)NULL;
 
-    while (1) 
+    while (!clientsDoomed)
     {
         if (*checkForInput[0] != *checkForInput[1]) {
 	    ProcessInputEvents();
@@ -302,13 +301,10 @@ Dispatch()
 	    }
 	    FlushAllOutput();
 	}
-	/* Not an error, we just need to know to restart */
-	if((nClients == -1) || clientsDoomed)
-	    break;         /* so that DEALLOCATE_LOCALs happen */
     }
-    if (clientsDoomed)
-        KillAllClients();
+    KillAllClients();
     DEALLOCATE_LOCAL(clientReady);
+    clientsDoomed = FALSE;
 }
 
 /*ARGSUSED*/
@@ -3170,7 +3166,7 @@ CloseDownClient(client)
 	clients[client->index] = NullClient;
         xfree(client);
 	if(--nClients == 0)
-	    nClients = -1;
+	    clientsDoomed = TRUE;
     }
             /* really kill resources this time */
     else if (client->clientGone)
@@ -3196,21 +3192,6 @@ KillAllClients()
         if (clients[i])
             CloseDownClient(clients[i]);     
 }
-
-void
-KillServerResources()
-{
-    int i;
-
-    KillAllClients();
-    CloseDownExtensions();
-    /* Good thing we stashed these two in globals so we could get at them
-     * here. */
-    CloseDownDevices(argcGlobal, argvGlobal);
-    for (i = 0; i < screenInfo.numScreens; i++)
-	(*screenInfo.screen[i].CloseScreen)(i, &screenInfo.screen[i]);
-}
-
 
 /*********************
  * CloseDownRetainedResources
