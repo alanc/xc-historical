@@ -39,13 +39,15 @@ int InitLines(xp, p, reps)
     int xdir, ydir;	/* Which direction x, y are going		*/
     int bigxdir;	
     int x1, y1;		/* offsets to compute next point from current	*/
-    int x1inc, y1inc;   /* How to get to next x1, y1			*/
-    int minorphase;     /* # iterations left with current x1inc, y1inc  */
-    int majorphase;     /* count 0..3 for which type of x1inc, y1inc    */
+    int phase;		/* how far into 0..4*(size_1) we are		*/
+    float phasef;       /* how far we are in real numbers		*/
+    float phaseinc;     /* how much to increment phasef at each segment */
+    int size4;		/* 4 * size					*/
 
     pgc = xp->fggc;
 
     size = p->special;
+    size4 = 4 * (size+1);
     half = (size + 19) / 20;
 
     points = (XPoint *)malloc((p->objects+1) * sizeof(XPoint));
@@ -60,21 +62,44 @@ int InitLines(xp, p, reps)
 	(4) moves left or right at each bounce to make things less boring
     */
 
-    x     = half;  y     = half;
-    xdir  = 1;     ydir  = 1;
+    x     = half;
+    y     = half;
+    xdir  = 1;
+    ydir  = 1;
     bigxdir = 1;
-    x1    = size;  y1    = 0;
-    x1inc = 0;     y1inc = 1;
-    minorphase = size;
-    majorphase = 0;
-
+    phasef = 0.0;
+    phaseinc = ((float)size4) / ((float)p->objects);
+    if (phaseinc < 1.0) phaseinc = 1.0;
     rows = 0;
 
     points[0].x = x;
     points[0].y = y;
 
     for (i = 1; i != (p->objects+1); i++) {    
-	/* Move on down or up the screen */
+	phase = phasef;
+	switch (phase / (size+1)) {
+	case 0:
+	    x1 = size;			
+	    y1 = phase;
+	    break;
+
+	case 1:
+	    x1 = size - phase % (size+1);
+	    y1 = size;
+	    break;
+
+	case 2:
+	    x1 = phase % (size+1);
+	    y1 = size;
+	    break;
+
+	case 3:
+	    x1 = size;
+	    y1 = size - phase % (size+1);
+	    break;
+	} /* end switch */
+
+	/* Move down or up the screen */
 	y += (ydir * y1);
 
 	/* If off either top or bottom, backtrack to previous position and go
@@ -97,33 +122,41 @@ int InitLines(xp, p, reps)
 	    }
 	    ydir = -ydir;
 	    y += (2 * ydir * y1);
+	    /* If still off top or bottom, we can't do the line we want.
+	       This will happen infrequently if the window is not twice the
+	       length of the line.  So instead, let's draw a line that puts
+	       the line after this approximately through the center of the
+	       window.   Since it is very unlikely that both x and y will
+	       need such adjustment, line length (in pixels) should not
+	       change...we just can't get the slope we want for this line. */
+	    if (y < half) {
+		y = (HEIGHT - y1)/2;
+		ydir = 1;
+	    } else if (y > (HEIGHT - half)) {
+		y = (HEIGHT + y1)/2;
+		ydir = -1;
+	    }
 	}
-
-	/* Update y1 by 0 or 1 */
-	y1 += y1inc;
 
 	/* Move x left or right by x1 */
 	x += (xdir * x1);
 	xdir = -xdir;
-
-	/* Update x1 by 0 or 1 */
-	x1 += x1inc;
-
+	/* Again, if we are off the bottom then we can't really draw the line
+	   we want.  */
+	if (x < half) {
+	    x = (WIDTH - x1)/2;
+	    xdir = 1;
+	} else if (x > (WIDTH - half)) {
+	    x = (WIDTH + x1)/2;
+	    xdir = -1;
+	}
 	points[i].x = x;
 	points[i].y = y;
 
-	/* Change increments if needed */
-	minorphase--;
-	if (minorphase < 0) {
-	    minorphase = size;
-	    majorphase = (majorphase + 1) % 4;
-	    switch (majorphase) {
-		case 0: x1 = size; x1inc =  0; y1 =    0; y1inc =  1; break;
-		case 1: x1 = size; x1inc = -1; y1 = size; y1inc =  0; break;
-		case 2: x1 =    0; x1inc =  1; y1 = size; y1inc =  0; break;
-		case 3: x1 = size; x1inc =  0; y1 = size; y1inc = -1; break;
-	    }
-	}
+	/* Increment phasef */
+	phasef += phaseinc;
+	if (phasef >= size4) phasef -= size4;
+
     }
     return reps;
 }
