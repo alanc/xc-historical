@@ -20,6 +20,9 @@
 
 #ifdef XServerName
 all: XServerName
+
+install:: XServerName
+	  $(INSTALL) -c $(INSTALLFLAGS) XServerName $(BINDIR)
 #else XServerName
 all: servertype
 	@(s=`cat servertype`; \
@@ -30,6 +33,11 @@ servertype:
 	@echo "For the server, you must either supply a specific"; \
 	echo "target ($(ALL)) or put the name of that target in"; \
 	echo "the file server/$@"
+
+install:: servertype
+	@(s=`cat servertype`; \
+	  set -x; \
+	  $(INSTALL) -c $(INSTALLFLAGS) $$s $(BINDIR))
 #endif XServerName
 
 #
