@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: handler.c,v 1.14 91/01/09 17:45:51 gildea Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -50,6 +50,8 @@ void SetResourceString(), ActivateResourceWidgets();
 void ActivateWidgetsAndSetResourceString();
 static void SetOnlyMatchingWidgets();
 static void CreateSetValuesCommand();
+
+extern Widget toplevel;
 
 /*	Function Name: Quit
  *	Description: This function prints a message to stdout.
@@ -588,8 +590,9 @@ XtPointer res_box_ptr, filename_ptr;
     if ((fp = fopen(global_resources.save_resources_file, "a+")) == NULL) {
 	sprintf(buf, "Unable to open this file for writing, would %s",
 		"you like To try again?");
-	_PopupFileDialog(XtParent(w), buf,global_resources.save_resources_file,
-			 _AppendResourceString, res_box_ptr);
+	_PopupFileDialog(toplevel ,buf,
+			global_resources.save_resources_file,
+			_AppendResourceString, res_box_ptr);
 	return;
     }
 
@@ -649,7 +652,7 @@ XtPointer junk, filename_ptr;
     if (access(filename, W_OK) != 0) {
 	sprintf(buf, "Unable to open this file for writing, would %s",
 		"you like To try again?");
-	_PopupFileDialog(XtParent(w), buf, filename,
+	_PopupFileDialog(toplevel, buf, filename,
 			 _SetResourcesFile, NULL);
 	return;
     }
