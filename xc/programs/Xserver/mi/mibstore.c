@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.11 89/07/13 17:16:08 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.12 89/07/13 18:17:15 keith Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2852,16 +2852,19 @@ miBSSaveDoomedAreas(pWin, pObscured, dx, dy)
     pBackingStore = (miBSWindowPtr)pWin->backStorage;
     pScreen = pWin->drawable.pScreen;
 
-    pBackingStore->viewable = (char)pWin->viewable;
     /*
      * If the window isn't realized, it's being unmapped, thus we don't
      * want to save anything if backingStore isn't Always.
      */
-    if (!pWin->realized && pWin->backingStore != Always)
+    if (!pWin->realized)
     {
-	(* pScreen->RegionEmpty) (&pBackingStore->pSavedRegion);
-	miDestroyBSPixmap (pWin);
-	return;
+	pBackingStore->viewable = (char)pWin->viewable;
+	if (pWin->backingStore != Always)
+	{
+	    (* pScreen->RegionEmpty) (&pBackingStore->pSavedRegion);
+	    miDestroyBSPixmap (pWin);
+	    return;
+	}
     }
 
     /* Don't even pretend to save anything for a virtual background None */
