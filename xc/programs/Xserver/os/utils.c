@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.121 93/07/12 18:46:57 rws Exp $ */
+/* $XConsortium: utils.c,v 1.122 93/08/24 18:50:00 gildea Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"
@@ -729,7 +729,7 @@ AuditF(
 	autime = ctime(&tm);
 	if (s = index(autime, '\n'))
 	    *s = '\0';
-	if (s = rindex(argvGlobal[0], '/'))
+	if (s = strrchr(argvGlobal[0], '/'))
 	    s++;
 	else
 	    s = argvGlobal[0];
