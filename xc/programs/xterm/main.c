@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.115 89/05/26 14:25:47 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.116 89/05/26 14:36:10 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -866,6 +866,21 @@ int *pty;
 	/* got one! */
 	return(0);
 #else /* not (umips && SYSTYPE_SYSV) */
+#ifdef CRAY
+	for (; devindex < 256; devindex++) {
+	    sprintf (ttydev, "/dev/ttyp%3d", devindex);
+	    sprintf (ptydev, "/dev/pty/%3d", devindex);
+
+	    if ((*pty = open (ptydev, O_RDWR)) >= 0) {
+		/* We need to set things up for our next entry
+		 * into this function!
+		 */
+		(void) devindex++;
+		return(0);
+	    }
+	    devindex++;
+	}
+#else
 	while (PTYCHAR1[letter]) {
 	    ttydev [strlen(ttydev) - 2]  = ptydev [strlen(ptydev) - 2] =
 		    PTYCHAR1 [letter];
@@ -885,6 +900,7 @@ int *pty;
 	    devindex = 0;
 	    (void) letter++;
 	}
+#endif
 	/* We were unable to allocate a pty master!  Return an error
 	 * condition and let our caller terminate cleanly.
 	 */
