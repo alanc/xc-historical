@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XOpenDis.c,v 11.69 88/09/30 14:03:15 jim Exp $
+ * $XConsortium: XOpenDis.c,v 11.70 88/11/22 16:10:54 jim Exp $
  */
 
 #include "copyright.h"
@@ -113,7 +113,7 @@ Display *XOpenDisplay (display)
 		xVisualType *vp;
 	} u;
 	long setuplength;	/* number of bytes in setup message */
-	Xauth *authptr;
+	Xauth *authptr = NULL;
 	char *server_addr = NULL;
 	int server_addrlen = 0;
 	char *conn_auth_name, *conn_auth_data;
