@@ -1,4 +1,4 @@
-/* $XConsortium: bbox.h,v 2.10 89/10/06 14:48:32 converse Exp $ */
+/* $XConsortium: bbox.h,v 2.11 89/11/25 21:07:07 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -54,5 +54,9 @@ extern char *	 BBoxNameOfButton     (/*  Button  */);
 extern Widget	 BBoxMenuOfButton     (/*  Button  */);
 extern void	 BBoxLockSize	      (/*  ButtonBox  */);
 extern Boolean	 BBoxIsGrandparent    (/*  ButtonBox, Widget  */);
+
+	/* operations upon folder buttons */
+
+extern void	BBoxMailFlag	      (/*  ButtonBox, char*, int  */);
 
 #endif /* _bbox_h */

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bbox.c,v 2.33 89/12/10 20:20:04 converse Exp $
+ * $XConsortium: bbox.c,v 2.34 91/07/05 18:22:39 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -345,4 +345,29 @@ Boolean BBoxIsGrandparent(buttonbox, widget)
     Widget	widget;
 {
     return (XtParent(XtParent(widget)) == buttonbox->inner);
+}
+
+
+void BBoxMailFlag(buttonbox, name, up)
+    ButtonBox	buttonbox;
+    char*	name;
+    int		up;
+{
+    Arg		args[1];
+    Pixel	flag;
+    Button	button = BBoxFindButtonNamed(buttonbox, name);
+
+    if (button) {
+	/* avoid unnecessary exposures */
+	XtSetArg(args[0], XtNleftBitmap, &flag);
+	XtGetValues(button->widget, args, (Cardinal)1);
+	if (up && flag != app_resources.flag_up) {
+	    XtSetArg(args[0], XtNleftBitmap, app_resources.flag_up);
+	    XtSetValues(button->widget, args, (Cardinal)1);
+	}
+	else if (!up && flag != app_resources.flag_down) {
+	    XtSetArg(args[0], XtNleftBitmap, app_resources.flag_down);
+	    XtSetValues(button->widget, args, (Cardinal)1);
+	}
+    }
 }
