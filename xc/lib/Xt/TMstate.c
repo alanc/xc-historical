@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.139 91/04/08 19:30:27 converse Exp $ */
+/* $XConsortium: TMstate.c,v 1.140 91/04/11 16:06:14 converse Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -1214,8 +1214,7 @@ void _XtInstallTranslations(widget)
 			  );
     }
     _XtBindActions(widget, (XtTM)&widget->core.tm);
-    if (XtIsRealized(widget))
-      _XtRegisterGrabs(widget);
+    _XtRegisterGrabs(widget);
 }
 
 void _XtRemoveTranslations(widget)
