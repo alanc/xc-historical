@@ -1,4 +1,4 @@
-/* $XConsortium: svgaInit.c,v 1.2 93/09/18 18:06:59 rws Exp $ */
+/* $XConsortium: svgaInit.c,v 1.3 93/09/19 09:44:29 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.
@@ -41,11 +41,8 @@
 
 extern char *display;
 extern Bool mieqInit();
-extern int AddScreen();
 extern Bool OsInitColors();
-extern Bool OsInitAllocator();
 extern void ProcessInputEvents();
-extern Bool RegisterBlockAndWakeupHandlers();
 
 #ifndef PATH_MAX
 #define PATH_MAX 256
@@ -71,7 +68,7 @@ static int svgaVTNo = -1;
 static void
 svgaWakeup(
     pointer blockData,
-    ulong   err,
+    int     err,
     pointer pReadmask
 )
 {
