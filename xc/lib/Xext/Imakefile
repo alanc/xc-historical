@@ -1,4 +1,4 @@
-/* $XConsortium: Imakefile,v 1.16 89/10/06 11:53:06 jim Exp $ */
+/* $XConsortium: Imakefile,v 1.17 89/10/08 19:38:29 rws Exp $ */
   STD_DEFINES = LibraryDefines ExtensionDefines
   CDEBUGFLAGS = LibraryCDebugFlags
      INCLUDES = -I$(TOP) -I$(INCLUDESRC) -I$(XLIBSRC) -I../include
@@ -25,15 +25,27 @@ NormalLibraryObjectRule()
 NormalLibraryTarget(Xext,$(OBJS))
 LintLibraryTarget(Xext,$(SRCS))
 InstallLibrary(Xext,$(USRLIBDIR))
+
+#if DoInstallExtensionsIntoXlib
+MergeIntoInstalledLibrary($(USRLIBDIR)/libX11.a,libXext.a)
+#endif
+
 InstallLintLibrary(Xext,$(LINTLIBDIR))
 
 #if ProfileLibXext
 ProfiledLibraryTarget(Xext,$(OBJS))
 InstallLibrary(Xext_p,$(USRLIBDIR))
+#if DoInstallExtensionsIntoXlib
+MergeIntoInstalledLibrary($(USRLIBDIR)/libX11_p.a,libXext_p.a)
+#endif
 #endif
 
 #if DebugLibXext
 DebuggedLibraryTarget(Xext,$(OBJS))
+InstallLibrary(Xext_d,$(USRLIBDIR))
+#if DoInstallExtensionsIntoXlib
+MergeIntoInstalledLibrary($(USRLIBDIR)/libX11_d.a,libXext_d.a)
+#endif
 #endif
 
 DependTarget()
