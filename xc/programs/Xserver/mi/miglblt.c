@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 5.0 89/06/09 15:08:25 keith Exp $ */
+/* $XConsortium: miglblt.c,v 5.1 89/08/24 19:51:46 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -130,16 +130,23 @@ miPolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    nbyGlyphWidth = GLYPHWIDTHBYTESPADDED(pci);
 	    nbyPadGlyph = PixmapBytePad(gWidth, 1);
 
-	    for (i=0, pb = pbits; i<gHeight; i++, pb = pbits+(i*nbyPadGlyph))
-		for (j = 0; j < nbyGlyphWidth; j++)
-		    *pb++ = *pglyph++;
-
+	    if (nbyGlyphWidth == nbyPadGlyph)
+	    {
+		pb = pglyph;
+	    }
+	    else
+	    {
+		for (i=0, pb = pbits; i<gHeight; i++, pb = pbits+(i*nbyPadGlyph))
+		    for (j = 0; j < nbyGlyphWidth; j++)
+			*pb++ = *pglyph++;
+		pb = pbits;
+	    }
 
 	    if ((pGCtmp->serialNumber) != (pPixmap->drawable.serialNumber))
 		ValidateGC((DrawablePtr)pPixmap, pGCtmp);
 	    (*pGCtmp->ops->PutImage)(pPixmap, pGCtmp, pPixmap->drawable.depth,
 				0, 0, gWidth, gHeight, 
-				0, XYBitmap, pbits);
+				0, XYBitmap, pb);
 
 	    if ((pGC->serialNumber) != (pDrawable->serialNumber))
 		ValidateGC(pDrawable, pGC);
