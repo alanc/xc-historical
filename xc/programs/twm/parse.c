@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: parse.c,v 1.12 89/11/13 17:03:20 jim Exp $
+ * $XConsortium: parse.c,v 1.13 89/11/13 18:11:28 jim Exp $
  *
  * parse the .twmrc file
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: parse.c,v 1.12 89/11/13 17:03:20 jim Exp $";
+"$XConsortium: parse.c,v 1.13 89/11/13 18:11:28 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -344,7 +344,7 @@ static TwmKeyword keytable[] = {
     { "destroy",		KILL, 0 },
     { "donticonifybyunmapping",	DONT_ICONIFY_BY_UNMAPPING, 0 },
     { "dontmoveoff",		KEYWORD, kw0_DontMoveOff },
-    { "east",			EAST, 0 },
+    { "east",			DKEYWORD, D_EAST },
     { "f",			FRAME, 0 },
     { "f.autoraise",		FKEYWORD, F_AUTORAISE },
     { "f.backiconmgr",		FKEYWORD, F_BACKICONMGR },
@@ -454,7 +454,7 @@ static TwmKeyword keytable[] = {
     { "noraiseondeiconify",	KEYWORD, kw0_NoRaiseOnDeiconify },
     { "noraiseonmove",		KEYWORD, kw0_NoRaiseOnMove },
     { "noraiseonresize",	KEYWORD, kw0_NoRaiseOnResize },
-    { "north",			NORTH, 0 },
+    { "north",			DKEYWORD, D_NORTH },
     { "nosaveunders",		KEYWORD, kw0_NoSaveUnders },
     { "notitle",		NO_TITLE, 0 },
     { "notitlefocus",		KEYWORD, kw0_NoTitleFocus },
@@ -473,7 +473,7 @@ static TwmKeyword keytable[] = {
     { "select",			SELECT, 0 },
     { "showiconmanager",	KEYWORD, kw0_ShowIconManager },
     { "sorticonmanager",	KEYWORD, kw0_SortIconManager },
-    { "south",			SOUTH, 0 },
+    { "south",			DKEYWORD, D_SOUTH },
     { "squeezetitle",		KEYWORD, kw0_SqueezeTitle },
     { "starticonified",		START_ICONIFIED, 0 },
     { "t",			TITLE, 0 },
@@ -493,7 +493,7 @@ static TwmKeyword keytable[] = {
     { "w",			WINDOW, 0 },
     { "wait",			WAIT, 0 },
     { "warpcursor",		KEYWORD, kw0_WarpCursor },
-    { "west",			WEST, 0 },
+    { "west",			DKEYWORD, D_WEST },
     { "window",			WINDOW, 0 },
     { "windowfunction",		WINDOW_FUNCTION, 0 },
     { "xorvalue",		NKEYWORD, kwn_XorValue },

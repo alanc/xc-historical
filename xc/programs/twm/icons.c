@@ -21,7 +21,7 @@
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.7 89/05/24 16:44:24 jim Exp $
+ * $XConsortium: icons.c,v 1.8 89/07/18 17:15:58 jim Exp $
  *
  * Icon releated routines
  *
@@ -34,6 +34,7 @@
 #include "screen.h"
 #include "icons.h"
 #include "gram.h"
+#include "parse.h"
 
 #define iconWidth(w)	(Scr->IconBorderWidth * 2 + w->icon_w_width)
 #define iconHeight(w)	(Scr->IconBorderWidth * 2 + w->icon_w_height)
@@ -47,8 +48,8 @@ splitEntry (ie, grav1, grav2, w, h)
     IconEntry	*new;
 
     switch (grav1) {
-    case NORTH:
-    case SOUTH:
+    case D_NORTH:
+    case D_SOUTH:
 	if (w != ie->w)
 	    splitEntry (ie, grav2, grav1, w, ie->h);
 	if (h != ie->h) {
@@ -61,15 +62,15 @@ splitEntry (ie, grav1, grav2, w, h)
 	    new->h = (ie->h - h);
 	    new->w = ie->w;
 	    ie->h = h;
-	    if (grav1 == SOUTH) {
+	    if (grav1 == D_SOUTH) {
 		new->y = ie->y;
 		ie->y = new->y + new->h;
 	    } else
 		new->y = ie->y + ie->h;
 	}
 	break;
-    case EAST:
-    case WEST:
+    case D_EAST:
+    case D_WEST:
 	if (h != ie->h)
 	    splitEntry (ie, grav2, grav1, ie->w, h);
 	if (w != ie->w) {
@@ -82,7 +83,7 @@ splitEntry (ie, grav1, grav2, w, h)
 	    new->w = (ie->w - w);
 	    new->h = ie->h;
 	    ie->w = w;
-	    if (grav1 == EAST) {
+	    if (grav1 == D_EAST) {
 		new->x = ie->x;
 		ie->x = new->x + new->w;
 	    } else

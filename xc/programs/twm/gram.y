@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.69 89/11/13 17:03:17 jim Exp $
+ * $XConsortium: gram.y,v 1.70 89/11/13 18:11:18 jim Exp $
  *
  * .twmrc command grammer
  *
@@ -38,7 +38,7 @@
 
 %{
 static char RCSinfo[]=
-"$XConsortium: gram.y,v 1.69 89/11/13 17:03:17 jim Exp $";
+"$XConsortium: gram.y,v 1.70 89/11/13 18:11:18 jim Exp $";
 
 #include <stdio.h>
 #include <ctype.h>
@@ -82,17 +82,17 @@ extern int yylineno;
 %token <num> ICONMGR_SHOW ICONMGR WINDOW_FUNCTION ZOOM ICONMGRS
 %token <num> ICONMGR_GEOMETRY ICONMGR_NOSHOW MAKE_TITLE
 %token <num> ICONIFY_BY_UNMAPPING DONT_ICONIFY_BY_UNMAPPING 
-%token <num> NO_TITLE AUTO_RAISE NO_HILITE 
+%token <num> NO_TITLE AUTO_RAISE NO_HILITE ICON_REGION 
 %token <num> META SHIFT CONTROL WINDOW TITLE ICON ROOT FRAME 
 %token <num> COLON EQUALS 
 %token <num> START_ICONIFIED NO_TITLE_HILITE TITLE_HILITE
 %token <num> MOVE RESIZE WAIT SELECT KILL LEFT_TITLEBUTTON RIGHT_TITLEBUTTON 
-%token <num> NORTH SOUTH EAST WEST ICON_REGION 
 %token <num> NUMBER KEYWORD NKEYWORD CKEYWORD CLKEYWORD FKEYWORD FSKEYWORD 
+%token <num> DKEYWORD
 %token <ptr> STRING SKEYWORD
 
 %type <ptr> string
-%type <num> action button number tbutton full fullkey grav
+%type <num> action button number tbutton full fullkey 
 
 %start twmrc 
 
@@ -108,7 +108,7 @@ stmt		: error
 		| noarg
 		| sarg
 		| narg
-		| ICON_REGION string grav grav number number
+		| ICON_REGION string DKEYWORD DKEYWORD number number
 					{ AddIconRegion($2, $3, $4, $5, $6); }
 		| ICONMGR_GEOMETRY string number	{ if (Scr->FirstTime)
 						  {
@@ -553,12 +553,6 @@ action		: FKEYWORD	{ $$ = $1; }
 				   }
 		;
 
-
-grav		: NORTH		{ $$ = $1; }
-		| SOUTH		{ $$ = $1; }
-		| EAST		{ $$ = $1; }
-		| WEST		{ $$ = $1; }
-		;
 
 geometry	: plus_minus_number plus_minus_number {
 					printf("(%d, %d)\n", num[0], num[1]);
