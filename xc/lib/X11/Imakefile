@@ -378,6 +378,7 @@ LCSRCS = \
 	XOpenIM.c \
 	XParseCT.c \
 	XlcAccess.c \
+	XlcDefLd.c \
 	XlcLoad.c \
 	XmbDeGlyph.c \
 	XmbText.c \
@@ -408,6 +409,7 @@ LCOBJS = \
 	XOpenIM.o \
 	XParseCT.o \
 	XlcAccess.o \
+	XlcDefLd.o \
 	XlcLoad.o \
 	XmbDeGlyph.o \
 	XmbText.o \
@@ -447,6 +449,7 @@ LinkSourceFile(XInitCT.c,Xsi)						@@\
 LinkSourceFile(XOpenIM.c,Xsi)						@@\
 LinkSourceFile(XParseCT.c,Xsi)						@@\
 LinkSourceFile(XlcAccess.c,Xsi)						@@\
+LinkSourceFile(XlcDefLd.c,Xsi)						@@\
 LinkSourceFile(XlcLoad.c,Xsi)						@@\
 LinkSourceFile(XmbDeGlyph.c,Xsi)					@@\
 LinkSourceFile(XmbText.c,Xsi)						@@\
