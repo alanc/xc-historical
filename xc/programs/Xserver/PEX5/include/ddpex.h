@@ -1,4 +1,4 @@
-/* $XConsortium: ddpex.h,v 5.11 92/11/10 19:00:42 hersh Exp $ */
+/* $XConsortium: ddpex.h,v 5.12 92/11/17 17:26:04 hersh Exp $ */
 
 /***********************************************************
 Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
@@ -24,14 +24,14 @@ SOFTWARE.
 
 ******************************************************************/
 
+#ifndef DDPEX_H
+#define DDPEX_H
 
 #include "X.h"
 #include "PEX.h"
 #include "pixmapstr.h"
 #include "dix.h"
-
-#ifndef DDPEX_H
-#define DDPEX_H
+#include "Xprotostr.h"
 
 /* Basic data types */
 /* Many of the typdefs in this file look like the protocol structures 
@@ -127,10 +127,8 @@ typedef struct {
     ddLONG	y;
 } ddCoord2DL;
 
-typedef struct {
-    ddSHORT	x;
-    ddSHORT	y;
-} ddCoord2DS;
+typedef xPoint ddCoord2DS; /* must be the same type for compiler's sake */
+/* typedef struct { ddSHORT x; ddSHORT y; } ddCoord2DS; */
 
 typedef struct {
     ddFLOAT	x;
