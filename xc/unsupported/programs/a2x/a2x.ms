@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.27 92/09/30 19:08:02 rws Exp $
+.\" $XConsortium: a2x.ms,v 1.28 92/10/02 10:19:04 rws Exp $
 .de Ds
 .RS
 .nf
@@ -82,8 +82,8 @@ will automatically choose whichever extension is supported by the display.  If
 you dynamically switch among different displays supporting different
 extensions, you will probably want to compile more than one extension into
 \fBa2x\fP.  At the top of the Imakefile are #define's for BuildWithXTest,
-BuildWithXTrap, and BuildWithXTestExt1; simply comment out the ones you don't
-want, and uncomment the ones you do want.
+BuildWithXTrap, and BuildWithXTestExt1; simply set the ones you want to YES
+and the ones you don't want to NO.
 .LP
 The documentation provided here is for using DragonDictate and \fBa2x\fP solely
 for work under X; the assumption is that you do not use DragonDictate with

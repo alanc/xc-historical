@@ -1,11 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.8 92/09/09 20:41:42 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.9 92/09/29 10:39:36 rws Exp $
 
-/* define one or more of the following */
-#define BuildWithXTest
-/* #define BuildWithXTrap */
-/* #define BuildWithXTestExt1 */
+/* turn on one or more of the following */
+#define BuildWithXTest		YES
+#define BuildWithXTrap		NO
+#define BuildWithXTestExt1	NO
 
-#ifdef BuildWithXTest
+#if BuildWithXTest
 XTESTDEFS = -DXTEST
 #ifdef NormalLibXTest /* test if pre-R6 config files */
 XTESTGENLIB = $(XTESTLIB)
@@ -14,13 +14,13 @@ XTESTGENDEPLIB = $(DEPXTESTLIB)
 XTESTGENLIB = -lXtst
 #endif
 #endif
-#ifdef BuildWithXTrap
+#if BuildWithXTrap
 XTRAPDEFS = -DXTRAP
 XTRAPGENLIB = -lXTrap $(XTOOLLIB)
 XTRAPGENDEPLIB = $(DEPXTOOLLIB)
 INCLUDES = -I$(INCDIR)
 #endif
-#ifdef BuildWithXTestExt1
+#if BuildWithXTestExt1
 XTESTEXT1DEFS = -DXTESTEXT1
 #endif
 
