@@ -1,6 +1,6 @@
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System Build Parameters
-XCOMM $XConsortium: Project.tmpl,v 1.75 90/12/03 16:05:11 keith Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.76 90/12/11 13:23:09 rws Exp $
 
 /*****************************************************************************
  *                                                                           *
@@ -198,11 +198,14 @@ XCOMM $XConsortium: Project.tmpl,v 1.75 90/12/03 16:05:11 keith Exp $
 #ifndef LibmanDir
 #define LibmanDir Concat($(MANSOURCEPATH),LibManSuffix)
 #endif
+#ifndef XFileSearchPathBase
+#define XFileSearchPathBase $(LIBDIR)/%L/%T/%N%C%S:$(LIBDIR)/%l/%T/%N%C%S:$(LIBDIR)/%T/%N%C%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S
+#endif
 #ifndef XFileSearchPathDefault
 #ifdef XAppLoadDir
-#define XFileSearchPathDefault XAppLoadDir/%N%S:$(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S
+#define XFileSearchPathDefault XAppLoadDir/%N%C%S:XAppLoadDir/%N%S:XFileSearchPathBase
 #else
-#define XFileSearchPathDefault $(LIBDIR)/%L/%T/%N%S:$(LIBDIR)/%l/%T/%N%S:$(LIBDIR)/%T/%N%S
+#define XFileSearchPathDefault XFileSearchPathBase
 #endif
 #endif
 #ifndef XAppLoadDir
@@ -343,7 +346,7 @@ Berklib.c: sysV/Berklib.c					@@\
 
 XCOMM -------------------------------------------------------------------------
 XCOMM X Window System make variables; this need to be coordinated with rules
-XCOMM $XConsortium: Project.tmpl,v 1.75 90/12/03 16:05:11 keith Exp $
+XCOMM $XConsortium: Project.tmpl,v 1.76 90/12/11 13:23:09 rws Exp $
 
 /*
  * This list must be reflected in the DIRS_TO_BUILD list in the top-level
