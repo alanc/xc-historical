@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.13 89/07/31 19:01:16 keith Exp $ */
+/* $XConsortium: cfbgc.c,v 5.14 89/08/18 16:47:31 keith Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -67,7 +67,7 @@ static GCOps	cfbTEOps = {
     cfbPutImage,
     cfbCopyArea,
     miCopyPlane,
-    miPolyPoint,
+    cfbPolyPoint,
     cfbLineSS,
     miPolySegment,
     miPolyRectangle,
@@ -97,7 +97,7 @@ static GCOps	cfbNonTEOps = {
     cfbPutImage,
     cfbCopyArea,
     miCopyPlane,
-    miPolyPoint,
+    cfbPolyPoint,
     cfbLineSS,
     miPolySegment,
     miPolyRectangle,
