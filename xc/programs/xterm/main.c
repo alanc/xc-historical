@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.144 89/12/20 21:39:07 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.145 90/01/11 14:22:31 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -318,6 +318,7 @@ static struct _resource {
     Boolean utmpInhibit;
     Boolean sunFunctionKeys;	/* %%% should be widget resource? */
     Boolean wait_for_map;
+    Boolean useInsertMode;
 } resource;
 
 /* used by VT (charproc.c) */
@@ -343,6 +344,8 @@ static XtResource application_resources[] = {
 	offset(sunFunctionKeys), XtRString, "false"},
     {"waitForMap", "WaitForMap", XtRBoolean, sizeof (Boolean),
         offset(wait_for_map), XtRString, "false"},
+    {"useInsertMode", "UseInsertMode", XtRBoolean, sizeof (Boolean),
+        offset(useInsertMode), XtRString, "false"},
 };
 #undef offset
 
@@ -409,6 +412,8 @@ static XrmOptionDescRec optionDescList[] = {
 {"-tn",		"*termName",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+ut",		"*utmpInhibit",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-im",		"*useInsertMode", XrmoptionNoArg,	(caddr_t) "on"},
+{"+im",		"*useInsertMode", XrmoptionNoArg,	(caddr_t) "off"},
 {"-vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "on"},
 {"+vb",		"*visualBell",	XrmoptionNoArg,		(caddr_t) "off"},
 {"-wf",		"*waitForMap",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -452,6 +457,7 @@ static struct _options {
 { "-cr color",             "text cursor color" },
 { "-/+cu",                 "turn on/off curses emulation" },
 { "-fb fontname",          "bold text font" },
+{ "-/+im",		   "use insert mode for TERMCAP" },
 { "-/+j",                  "turn on/off jump scroll" },
 { "-/+l",                  "turn on/off logging" },
 { "-lf filename",          "logging filename" },
@@ -1911,6 +1917,26 @@ spawn ()
 		    remove_termcap_entry (newtc, ":ti=");
 		    remove_termcap_entry (newtc, ":te=");
 		}
+		/*
+		 * work around broken termcap entries */
+		/* match 'xterm' or 'xterms' */
+		if (strncmp(TermName, "xterm", 5) == 0)	{
+		    if (resource.useInsertMode)	{
+			remove_termcap_entry (newtc, ":ic=");
+			/* don't get duplicates */
+			remove_termcap_entry (newtc, ":im=");
+			remove_termcap_entry (newtc, ":ei=");
+			remove_termcap_entry (newtc, ":mi");
+			strcat (newtc, ":im=\\E[4h:ei=\\E[4l:mi:");
+		    } else	{
+			remove_termcap_entry (newtc, ":im=");
+			remove_termcap_entry (newtc, ":ei=");
+			remove_termcap_entry (newtc, ":mi");
+			/* don't get duplicates */
+			remove_termcap_entry (newtc, ":ic=");
+			strcat (newtc, ":ic=\\E[@:");
+		    }
+		}
 		Setenv ("TERMCAP=", newtc);
 #endif /* USE_SYSV_ENVVAR */
 
@@ -2384,4 +2410,3 @@ int GetBytesAvailable (fd)
     return poll (pollfds, 1, 0);
 #endif
 }
-
