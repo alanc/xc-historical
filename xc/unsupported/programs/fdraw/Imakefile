@@ -1,10 +1,10 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/23 10:51:11 matt Exp $
 
 /*
  * Fdraw -- Fresco drawing editor demonstration program
  */
 
-#include <fresco.cf>
+#include <Fresco.tmpl>
 
 SRCS = \
     commands.CCsuf fdraw.CCsuf figviewer.CCsuf globals.CCsuf \
@@ -19,7 +19,7 @@ OBJS = \
 ComplexCplusplusProgramTarget(fdraw)
 
 
-#include <ixx.cf>
+#include <Ixx.tmpl>
 
 I = $(INCLUDESRC)/Fresco/Interfaces
 
