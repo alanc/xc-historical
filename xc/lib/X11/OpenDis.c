@@ -1,6 +1,6 @@
 #include "copyright.h"
 #ifndef lint
-static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.62 88/08/18 11:58:41 jim Exp $";
+static char *rcsid_xopendisplay_c = "$Header: XOpenDis.c,v 11.63 88/08/24 21:05:10 jim Exp $";
 #endif
 /* Copyright    Massachusetts Institute of Technology    1985, 1986	*/
 
@@ -399,11 +399,9 @@ Display *XOpenDisplay (display)
 	if (prop_name[0] != '\0') {
 	    extern Status _XGetPseudoRoot();
 
-	    if (!_XGetPseudoRoot (dpy, prop_name)) {
-		/* XXX bad property name */
-		fprintf (stderr, 
-		 "XOpenDisplay (\"%s\"), no pseudoroot property \"%s\"\n",
-			 display, prop_name);
+	    if (!_XGetPseudoRoot (dpy, prop_name)) {	/* bad property name */
+		XCloseDisplay (dpy);
+		return (NULL);
 	    }
 	}
 
