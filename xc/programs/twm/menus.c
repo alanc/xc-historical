@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.68 89/06/12 15:32:31 jim Exp $
+ * $XConsortium: menus.c,v 1.69 89/06/13 08:55:34 jim Exp $
  *
  * twm menu code
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: menus.c,v 1.68 89/06/12 15:32:31 jim Exp $";
+"$XConsortium: menus.c,v 1.69 89/06/13 08:55:34 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -2072,7 +2072,7 @@ Execute(s)
     char oldDisplay[256];
     char *doisplay;
 
-    bzero(oldDisplay,256);
+    oldDisplay[0] = '\0';
     doisplay=getenv("DISPLAY");
     if (doisplay)
 	strcpy (oldDisplay, doisplay);
