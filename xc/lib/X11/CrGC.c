@@ -1,4 +1,4 @@
-/* $XConsortium: CrGC.c,v 11.39 92/12/31 15:41:26 rws Exp $ */
+/* $XConsortium: CrGC.c,v 11.40 93/09/22 21:25:12 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -294,7 +294,7 @@ _XUpdateGCCache (gc, mask, attr)
 	    gc->dirty |= GCDashList;
 	    gc->dashes = 0;
 	    }
-    return;
+    return 0;
     }
 
 /* can only call when display is already locked. */

@@ -1,4 +1,4 @@
-/* $XConsortium: ImUtil.c,v 11.57 93/09/13 10:07:50 rws Exp $ */
+/* $XConsortium: ImUtil.c,v 11.58 93/09/23 14:44:04 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -916,7 +916,7 @@ static _XAddPixel (ximage, value)
 	register int y;
 
 	if (!value)
-	    return;
+	    return 0;
 	if ((ximage->bits_per_pixel | ximage->depth) == 1) {
 	    /* The only value that we can add here to an XYBitmap
 	     * is one.  Since 1 + value = ~value for one bit wide
@@ -962,6 +962,7 @@ static _XAddPixel (ximage, value)
 		}
 	    }
 	}
+	return 0;
 }
 
 /*

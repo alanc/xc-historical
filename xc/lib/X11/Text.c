@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 11.22 93/09/07 21:32:44 rws Exp $ */
+/* $XConsortium: Text.c,v 11.23 93/09/18 12:32:32 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -38,7 +38,7 @@ XDrawString(dpy, d, gc, x, y, string, length)
     register xPolyText8Req *req;
 
     if (length <= 0)
-       return;
+       return 0;
 
     LockDisplay(dpy);
     FlushGC(dpy, gc);
@@ -130,5 +130,5 @@ XDrawString(dpy, d, gc, x, y, string, length)
        _XFlush (dpy);
     UnlockDisplay(dpy);
     SyncHandle();
-    return;
+    return 0;
 }

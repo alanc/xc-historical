@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XErrDes.c,v 11.48 93/07/09 15:24:52 gildea Exp $
+ * $XConsortium: ErrDes.c,v 11.49 93/07/22 13:45:05 gildea Exp $
  */
 
 /***********************************************************
@@ -77,7 +77,7 @@ XGetErrorText(dpy, code, buffer, nbytes)
     register _XExtension *ext;
     _XExtension *bext = (_XExtension *)NULL;
 
-    if (nbytes == 0) return;
+    if (nbytes == 0) return 0;
     if (code <= BadImplementation && code > 0) {
 	sprintf(buf, "%d", code);
 	XGetErrorDatabaseText(dpy, "XProtoError", buf, _XErrorList[code],
@@ -99,7 +99,7 @@ XGetErrorText(dpy, code, buffer, nbytes)
     }
     if (!buffer[0])
 	sprintf(buffer, "%d", code);
-    return;
+    return 0;
 }
 
 #if NeedFunctionPrototypes
@@ -127,7 +127,7 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
     XrmValue result;
     char temp[BUFSIZ];
 
-    if (nbytes == 0) return;
+    if (nbytes == 0) return 0;
 
     if (!db) {
 	/* the Xrm routines expect to be called with the global
@@ -163,4 +163,5 @@ XGetErrorDatabaseText(dpy, name, type, defaultp, buffer, nbytes)
     }
     (void) strncpy (buffer, (char *) result.addr, nbytes);
     if (result.size > nbytes) buffer[nbytes-1] = '\0';
+    return 0;
 }

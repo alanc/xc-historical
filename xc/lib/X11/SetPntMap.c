@@ -1,4 +1,4 @@
-/* $XConsortium: XSetPntMap.c,v 11.12 90/12/12 09:19:33 rws Exp $ */
+/* $XConsortium: SetPntMap.c,v 11.13 91/01/06 11:48:07 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -67,6 +67,6 @@ XChangeKeyboardMapping (dpy, first_keycode, keysyms_per_keycode,
     Data32 (dpy, (long *)keysyms, nbytes);
     UnlockDisplay(dpy);
     SyncHandle();
-    return;
+    return 0;
     }
     

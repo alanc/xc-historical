@@ -1,4 +1,4 @@
-/* $XConsortium: PutImage.c,v 11.67 93/08/14 16:53:20 rws Exp $ */
+/* $XConsortium: PutImage.c,v 11.68 93/09/07 21:32:13 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -110,7 +110,7 @@ _XReverse_Bytes (bpt, nb)
 	*bpt = _reverse_byte[*bpt];
 	bpt++;
     } while (--nb > 0);
-    return;
+    return 0;
 }
 
 
@@ -920,7 +920,7 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
     if ((req_yoffset + height) > image->height)
 	height = image->height - req_yoffset;
     if ((width <= 0) || (height <= 0))
-	return;
+	return 0;
 
     if ((image->bits_per_pixel == 1) || (image->format != ZPixmap)) {
 	dest_bits_per_pixel = 1;
@@ -954,7 +954,7 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 					 dest_scanline_pad) >> 3;
 	    img.data = Xmalloc((unsigned) (img.bytes_per_line * height));
 	    if (img.data == NULL)
-		return;
+		return 0;
 	    _XInitImageFuncPtrs(&img);
 	    for (j = height; --j >= 0; )
 		for (i = width; --i >= 0; )
@@ -968,7 +968,7 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 	    UnlockDisplay(dpy);
 	    SyncHandle();
 	    Xfree(img.data);
-	    return;
+	    return 0;
 	}
     }
 
@@ -981,4 +981,5 @@ XPutImage (dpy, d, gc, image, req_xoffset, req_yoffset, x, y, req_width,
 
     UnlockDisplay(dpy);
     SyncHandle();
+    return 0;
 }

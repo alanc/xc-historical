@@ -1,4 +1,4 @@
-/* $XConsortium: XStBytes.c,v 11.19 91/01/06 11:48:17 rws Exp $ */
+/* $XConsortium: StBytes.c,v 11.20 91/01/08 14:41:56 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -81,9 +81,10 @@ XStoreBuffer (dpy, bytes, nbytes, buffer)
     register int buffer;
 #endif
 {
-    if ((buffer < 0) || (buffer > 7)) return;
+    if ((buffer < 0) || (buffer > 7)) return 0;
     XChangeProperty(dpy, RootWindow(dpy, 0), n_to_atom[buffer], 
 	XA_STRING, 8, PropModeReplace, (unsigned char *) bytes, nbytes);
+    return 0;
 }
 
 #if NeedFunctionPrototypes

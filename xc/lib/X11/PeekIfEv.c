@@ -1,4 +1,4 @@
-/* $XConsortium: XPeekIfEv.c,v 11.13 91/01/06 11:47:15 rws Exp $ */
+/* $XConsortium: PeekIfEv.c,v 11.14 93/01/28 13:17:01 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -47,7 +47,7 @@ XPeekIfEvent (dpy, event, predicate, arg)
 		   && (*predicate)(dpy, &qelt->event, arg)) {
 		    *event = qelt->event;
 		    UnlockDisplay(dpy);
-		    return;
+		    return 0;
 		}
 	    }
 	    if (prev)

@@ -1,4 +1,4 @@
-/* $XConsortium: XFreeEData.c,v 11.12 88/09/06 16:07:30 jim Exp $ */
+/* $XConsortium: FreeEData.c,v 11.13 91/01/06 11:45:47 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -27,5 +27,5 @@ _XFreeExtData (extension)
 		Xfree ((char *)extension);
 		extension = temp;
 	}
-	return;
+	return 0;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: Region.c,v 11.36 92/10/21 10:05:54 rws Exp $ */
+/* $XConsortium: Region.c,v 11.37 93/09/07 21:32:31 rws Exp $ */
 /************************************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -103,7 +103,7 @@ XUnionRectWithRegion(rect, source, dest)
     REGION region;
 
     if (!rect->width || !rect->height)
-	return;
+	return 0;
     region.rects = &region.extents;
     region.numRects = 1;
     region.extents.x1 = rect->x;
@@ -113,6 +113,7 @@ XUnionRectWithRegion(rect, source, dest)
     region.size = 1;
 
     XUnionRegion(&region, source, dest);
+    return 0;
 }
 
 /*-
@@ -301,8 +302,8 @@ XShrinkRegion(r, dx, dy)
     Region s, t;
     int grow;
 
-    if (!dx && !dy) return;
-    if ((! (s = XCreateRegion()))  || (! (t = XCreateRegion()))) return;
+    if (!dx && !dy) return 0;
+    if ((! (s = XCreateRegion()))  || (! (t = XCreateRegion()))) return 0;
     if (grow = (dx < 0)) dx = -dx;
     if (dx) Compress(r, s, t, (unsigned) 2*dx, TRUE, grow);
     if (grow = (dy < 0)) dy = -dy;
@@ -310,6 +311,7 @@ XShrinkRegion(r, dx, dy)
     XOffsetRegion(r, dx, dy);
     XDestroyRegion(s);
     XDestroyRegion(t);
+    return 0;
 }
 
 #ifdef notdef
@@ -1488,12 +1490,13 @@ XXorRegion( sra, srb, dr )
     Region tra, trb;
 
     if ((! (tra = XCreateRegion())) || (! (trb = XCreateRegion())))
-	return;
+	return 0;
     (void) XSubtractRegion(sra,srb,tra);
     (void) XSubtractRegion(srb,sra,trb);
     (void) XUnionRegion(tra,trb,dr);
     XDestroyRegion(tra);
     XDestroyRegion(trb);
+    return 0;
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XConsortium: XIfEvent.c,v 11.12 91/01/06 11:46:30 rws Exp $ */
+/* $XConsortium: IfEvent.c,v 11.13 93/01/28 13:16:53 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -47,7 +47,7 @@ XIfEvent (dpy, event, predicate, arg)
 		    *event = qelt->event;
 		    _XDeq(dpy, prev, qelt);
 		    UnlockDisplay(dpy);
-		    return;
+		    return 0;
 		}
 	    }
 	    if (prev)

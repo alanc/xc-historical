@@ -1,4 +1,4 @@
-/* $XConsortium: XWinEvent.c,v 11.19 91/02/20 18:48:57 rws Exp $ */
+/* $XConsortium: WinEvent.c,v 11.20 93/01/28 13:17:02 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -59,7 +59,7 @@ XWindowEvent (dpy, w, mask, event)
 		    *event = qelt->event;
 		    _XDeq(dpy, prev, qelt);
 		    UnlockDisplay(dpy);
-		    return;
+		    return 0;
 		}
 	    }
 	    if (prev)

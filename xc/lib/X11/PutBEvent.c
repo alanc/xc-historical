@@ -1,5 +1,5 @@
 /* Copyright 	Massachusetts Institute of Technology  1986 */
-/* $XConsortium: XPutBEvent.c,v 11.11 91/01/06 11:47:23 rws Exp $ */
+/* $XConsortium: PutBEvent.c,v 11.12 93/01/28 13:16:56 gildea Exp $ */
 
 /*
 Permission to use, copy, modify, distribute, and sell this software and its
@@ -27,7 +27,7 @@ XPutBackEvent (dpy, event)
 	if (!dpy->qfree) {
     	    if ((dpy->qfree = (_XQEvent *) Xmalloc (sizeof (_XQEvent))) == NULL) {
 		UnlockDisplay(dpy);
-		return;
+		return 0;
 	    }
 	    dpy->qfree->next = NULL;
 	}
@@ -41,4 +41,5 @@ XPutBackEvent (dpy, event)
 	    dpy->tail = qelt;
 	dpy->qlen++;
 	UnlockDisplay(dpy);
+	return 0;
 	}

@@ -1,4 +1,4 @@
-/* $XConsortium: KeyBind.c,v 11.72 93/09/28 19:28:02 rws Exp $ */
+/* $XConsortium: KeyBind.c,v 11.73 93/09/29 20:29:01 rws Exp $ */
 /* Copyright 1985, 1987, Massachusetts Institute of Technology */
 
 /*
@@ -525,7 +525,7 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
     int nb;
 
     if ((! dpy->keysyms) && (! _XKeyInitialize(dpy)))
-	return;
+	return 0;
     LockDisplay(dpy);
     tmp = dpy->key_bindings;
     nb = sizeof(KeySym) * nm;
@@ -541,7 +541,7 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
 	    Xfree((char *) p);
 	}
 	UnlockDisplay(dpy);
-	return;
+	return 0;
     }
 
     dpy->key_bindings = p;
@@ -554,7 +554,7 @@ XRebindKeysym (dpy, keysym, mlist, nm, str, nbytes)
     p->mlen = nm;
     ComputeMaskFromKeytrans(dpy, p);
     UnlockDisplay(dpy);
-    return;
+    return 0;
 }
 
 unsigned
@@ -568,7 +568,7 @@ _XKeysymToModifiers(dpy,ks)
     register XModifierKeymap *m;
 
     if ((! dpy->keysyms) && (! _XKeyInitialize(dpy)))
-	return;
+	return 0;
     kmax = dpy->keysyms + 
 	   (dpy->max_keycode - dpy->min_keycode + 1) * dpy->keysyms_per_keycode;
     k = dpy->keysyms;

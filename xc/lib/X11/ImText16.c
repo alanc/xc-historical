@@ -1,4 +1,4 @@
-/* $XConsortium: XImText16.c,v 11.18 91/07/11 21:42:25 rws Exp $ */
+/* $XConsortium: ImText16.c,v 11.19 91/07/12 16:28:47 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -52,7 +52,7 @@ XDrawImageString16(dpy, d, gc, x, y, string, length)
 	! (buf = _XAllocScratch (dpy, (unsigned long) 512))) {
 	UnlockDisplay(dpy);
 	SyncHandle();
-	return;
+	return 0;
     }
 
     while (length > 0) 
@@ -99,5 +99,6 @@ XDrawImageString16(dpy, d, gc, x, y, string, length)
     }
     UnlockDisplay(dpy);
     SyncHandle();
+    return 0;
 }
 

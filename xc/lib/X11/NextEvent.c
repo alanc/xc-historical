@@ -1,4 +1,4 @@
-/* $XConsortium: XNextEvent.c,v 11.16 91/01/06 11:47:06 rws Exp $ */
+/* $XConsortium: NextEvent.c,v 11.17 93/01/28 13:16:38 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -35,6 +35,6 @@ XNextEvent (dpy, event)
 	*event = qelt->event;
 	_XDeq(dpy, NULL, qelt);
 	UnlockDisplay(dpy);
-	return;
+	return 0;
 }
 

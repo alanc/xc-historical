@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XTextExt16.c,v 11.20 91/01/06 11:48:30 rws Exp $
+ * $XConsortium: TextExt16.c,v 11.21 92/05/29 16:08:30 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  */
@@ -101,7 +101,7 @@ XTextExtents16 (fs, string, nchars, dir, font_ascent, font_descent, overall)
 	  overall->lbearing = overall->rbearing = 0;
     }
 
-    return;
+    return 0;
 }
 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XMaskEvent.c,v 11.22 91/02/20 18:48:54 rws Exp $ */
+/* $XConsortium: MaskEvent.c,v 11.23 93/01/28 13:16:58 gildea Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -55,7 +55,7 @@ XMaskEvent (dpy, mask, event)
 		    *event = qelt->event;
 		    _XDeq(dpy, prev, qelt);
 		    UnlockDisplay(dpy);
-		    return;
+		    return 0;
 		}
 	    }
 	    if (prev)

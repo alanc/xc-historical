@@ -1,4 +1,4 @@
-/* $XConsortium: XStNColor.c,v 11.22 91/07/22 22:35:01 rws Exp $ */
+/* $XConsortium: StNColor.c,v 11.23 93/07/05 11:43:56 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -51,7 +51,7 @@ int flags;  /* DoRed, DoGreen, DoBlue */
 	    scr_def.pixel = pixel;
 	    scr_def.flags = flags;
 	    XStoreColor(dpy, cmap, &scr_def);
-	    return;
+	    return 0;
 	}
 	/*
 	 * Otherwise we failed; or name was changed with yet another
@@ -75,6 +75,7 @@ int flags;  /* DoRed, DoGreen, DoBlue */
     Data(dpy, name, (long)nbytes);
     UnlockDisplay(dpy);
     SyncHandle();
+    return 0;
 }
 
 
