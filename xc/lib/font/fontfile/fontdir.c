@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontdir.c,v 1.4 91/07/16 18:06:19 keith Exp $
+ * $XConsortium: fontdir.c,v 1.5 91/07/16 20:13:27 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -49,6 +49,9 @@ FontFileFreeEntry (entry)
     FontEntryPtr    entry;
 {
     FontScalableExtraPtr   extra;
+
+    if (entry->name.name)
+	xfree(entry->name.name);
 
     switch (entry->type)
     {
@@ -122,6 +125,7 @@ FontFileFreeDir (dir)
 {
     FontFileFreeTable (&dir->scalable);
     FontFileFreeTable (&dir->nonScalable);
+    xfree(dir);
 }
 
 FontEntryPtr

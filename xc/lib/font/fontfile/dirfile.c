@@ -1,5 +1,5 @@
 #endif /* lint */
- * $XConsortium: dirfile.c,v 1.3 91/07/16 20:12:42 keith Exp $
+ * $XConsortium: dirfile.c,v 1.4 91/07/25 18:05:10 rws Exp $
  *
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -69,15 +69,21 @@ FontFileReadDirectory (directory, pdir)
 	    fclose(file);
 	    return BadFontPath;
 	}
+	dir = FontFileMakeDir(directory, i);
+	if (dir == NULL) {
+	    fclose(file);
+	    return BadFontPath;
 	}
 	dir->dir_mtime = statb.st_mtime;
 	while ((count = fscanf(file, "%s %[^\n]\n", file_name, font_name)) != EOF) {
+	    if (count != 2) {
 		FontFileFreeDir (dir);
 		fclose(file);
 		return BadFontPath;
 	    }
 	    if (!FontFileAddFontFile (dir, font_name, file_name))
 	    {
+		FontFileFreeDir (dir);
 		fclose(file);
 		return BadFontPath;
 	    }
