@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.11 91/02/16 16:28:42 converse Exp $ 
+/* $XConsortium: math.c,v 1.12 91/02/16 17:07:32 rws Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *
@@ -898,7 +898,6 @@ ResetCalc()
     rad2drg=180.0/PI;
 }
 
-
 #ifndef IEEE
 /******************/
 /* keep SVR4 compiler from complaining about scope of arg declaration below */
@@ -910,7 +909,7 @@ signal_t fperr(sig,code,scp)
 /******************/
 {
 #ifdef SYSV
-    signal(SIGFPE,fperr);
+    signal(SIGFPE,(signal_t (*)())fperr);
 #endif
     SignalCode = code;
     longjmp(env,1);
