@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.18 90/12/26 16:28:46 rws Exp $
+/* $XConsortium: CvtStdSel.c,v 1.19 90/12/26 16:50:05 rws Exp $
  *
  * Copyright 1988 by the Massachusetts Institute of Technology
  *
@@ -61,23 +61,18 @@ extern WidgetClass get_wmShellWidgetClass();
 #define get_wmShellWidgetClass() wmShellWidgetClass
 #endif
 
-static char *get_os_name ()
-{
-#ifdef OS_NAME
-	return XtNewString(OS_NAME);
-#else
-	FILE *f = NULL;
-
-#if !defined(X_OS_FILE)
+#ifndef OS_NAME
+#ifndef X_OS_FILE
 #ifdef SYSV			/* keep separate until makedepend fixed */
+#define USE_UNAME
+#endif
+#ifdef SVR4
 #define USE_UNAME
 #endif
 #ifdef ultrix
 #define USE_UNAME
 #endif
 #endif /*X_OS_FILE*/
-
-
 #ifdef USE_UNAME
 #ifdef ultrix
 #ifndef __STDC__
@@ -85,6 +80,17 @@ static char *get_os_name ()
 #endif
 #endif
 #include <sys/utsname.h>
+#endif
+#endif
+
+static char *get_os_name ()
+{
+#ifdef OS_NAME
+	return XtNewString(OS_NAME);
+#else
+	FILE *f = NULL;
+
+#ifdef USE_UNAME
 	struct utsname uts;
 
 	if (uname (&uts) == 0) {
