@@ -1,6 +1,5 @@
-/* $Header: Convert.c,v 1.6 88/01/29 17:05:35 asente Exp $ */
 #ifndef lint
-static char *sccsid = "@(#)XtConvert.c	1.6	2/25/87";
+static char rcsid[] = "$Header: Convert.c,v 1.7 88/02/02 20:00:54 swick Exp $";
 #endif lint
 
 /*
