@@ -34,7 +34,7 @@ IMPLIED.
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- * $XConsortium: macII.h,v 1.14 89/08/30 19:28:20 keith Exp $
+ * $XConsortium: macII.h,v 1.15 89/12/05 15:24:22 xguest Exp $
  */
 #ifndef _MACII_H_
 #define _MACII_H_
@@ -142,7 +142,7 @@ struct AuxDCE {
 #include    "screenint.h"
 #ifdef NEED_EVENTS
 #include    "inputstr.h"
-#endif NEED_EVENTS
+#endif /* NEED_EVENTS */
 #include    "input.h"
 #include    "cursorstr.h"
 #include    "cursor.h"
@@ -328,4 +328,4 @@ extern long 	autoRepeatDeltaTv;
 #define LookupKeyboardDevice()	pKeyboardDevice
 extern DevicePtr pPointerDevice, pKeyboardDevice;
 
-#endif _MACII_H_
+#endif /* _MACII_H_ */
