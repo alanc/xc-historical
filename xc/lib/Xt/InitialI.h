@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.20 89/09/22 17:48:58 swick Exp $ */
+/* $XConsortium: InitialI.h,v 1.21 89/09/26 17:54:01 swick Exp $ */
 /* $oHeader: InitializeI.h,v 1.8 88/09/01 11:25:04 asente Exp $ */
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -163,6 +163,7 @@ typedef struct _XtPerDisplayStruct {
 					  XtSetColormapWindows. */
     Time last_timestamp;	       /* from last event dispatched */
     int multi_click_time;	       /* for XtSetMultiClickTime */
+    struct _TMContext* tm_context;     /* for XtGetActionKeysym */
 } XtPerDisplayStruct, *XtPerDisplay;
 
 extern void _XtPerDisplayInitialize();
