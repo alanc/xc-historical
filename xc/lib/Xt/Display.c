@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.23 89/09/11 17:42:54 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.24 89/09/12 16:46:49 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -496,12 +496,5 @@ void _XtCloseDisplays()
 XtAppContext XtWidgetToApplicationContext(w)
 	Widget w;
 {
-	while (w != NULL && !XtIsWidget(w)) w = XtParent(w);
-	if (w == NULL) {
-	    XtErrorMsg("noAppContext", "widgetToApplicationContext",
-		    "XtToolkitError",
-		    "Couldn't find ancestor with display information",
-		    (String *) NULL, (Cardinal *)NULL);
-	}
-	return _XtGetPerDisplay(XtDisplay(w))->appContext;
+	return _XtGetPerDisplay(XtDisplayOfObject(w))->appContext;
 }
