@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.70 88/04/01 11:55:06 swick Exp $";
+static char rcsid[] = "$Header: Event.c,v 1.71 88/04/22 16:30:51 swick Exp $";
 #endif lint
 
 /***********************************************************
@@ -808,7 +808,7 @@ static Boolean RemoveGrab(widget, keyboard_focus)
 	    else
 		prev = &gl->next;
 	}
-	if (gl->exclusive) FocusTraceGood = False;
+	if (freeGrabs->exclusive) FocusTraceGood = False;
     }
     else /* if keyboard_focus */ {
 	focus_widget = gl->keyboard_focus;
