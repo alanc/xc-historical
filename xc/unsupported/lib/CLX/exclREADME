@@ -7,7 +7,7 @@ and 3.1.
      There are three steps to compile and install CLX.  The first is simply
 moving files around.  In this directory, execute (assuming you using csh):
 
-% foreach i (*.l)
+% foreach i (*.l */*.l)
 ? mv $i $i:r.cl
 ? end
 % mkdir MIT

@@ -5,6 +5,7 @@
 
 # *************************************************************************
 # * Change the next line to point to where you have Common Lisp installed *
+# *        (make sure the Lisp doesn't already have CLX loaded in)        *
 # *************************************************************************
 CL	= /usr/local/bin/cl
 
@@ -20,9 +21,9 @@ CLOPTS	= -qq
 
 # Use this one for Suns
 CFLAGS	= -O -DUNIXCONN
-# Use this one for Silicon Graphics Mips based machines
+# Use this one for Silicon Graphics & Mips Inc MIPS based machines
 # CFLAGS = -O -G 0 -I/usr/include/bsd
-# Use this one for DEC Mips based machines
+# Use this one for DEC MIPS based machines
 # CFLAGS = -O -G 0 -DUNIXCONN
 # Use this one for HP machines
 # CFLAGS = -O -DSYSV -DUNIXCONN
@@ -55,11 +56,11 @@ L_SRC	= defsystem.cl depdefs.cl clx.cl dependent.cl exclcmac.cl \
 	  resource.cl
 
 
-all : $(C_OBJS) compile-CLX cat
+all:	$(C_OBJS) compile-CLX cat
 
 clos:	$(C_OBJS) compile-closified-CLX cat
 
-CLX : $(C_OBJS) compile-CLX load-CLX
+CLX:	$(C_OBJS) compile-CLX load-CLX
 
 
 c:	$(C_OBJS)
@@ -68,10 +69,10 @@ c:	$(C_OBJS)
 lisp:	compile-CLX
 
 
-compile-CLX : $(C_OBJS)
+compile-CLX:	$(C_OBJS)
 	$(ECHO) " \
+		(set-case-mode :case-sensitive-lower) \
 		(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
-		(setq comp::*dynamic-extent* t) \
 		(compile-file-if-needed \"excldep\") \
 		(compile-file-if-needed \"defsystem\") \
 		(load \"defsystem\") \
@@ -83,8 +84,8 @@ compile-CLX : $(C_OBJS)
 
 compile-closified-CLX:	$(C_OBJS)
 	$(ECHO) " \
+		(set-case-mode :case-sensitive-lower) \
 		(proclaim '(optimize (speed $(SPEED)) (safety $(SAFETY)))) \
-		(setq comp::*dynamic-extent* t) \
 		(setq excl::*print-nickname* t) \
 		(unless (or (find-package 'clos) (find-package 'pcl)) \
 		  (let ((spread (sys:gsgc-parameter :generation-spread))) \
@@ -106,7 +107,7 @@ cat:
 	-cat $(L_NOMACROS_OBJS) > CLX.fasl
 
 
-load-CLX :
+load-CLX:
 	$(ECHO)  '(load "defsystem")' \
 		 "(let (#+allegro (spread (sys:gsgc-parameter :generation-spread)))" \
 		 "  #+allegro (setf (sys:gsgc-parameter :generation-spread) 1)" \
@@ -120,9 +121,14 @@ load-CLX :
 		 '(exit)' | $(CL) $(CLOPTS)
 
 
-clean :
-	$(RM) -f *.fasl $(CLX) core $(C_OBJS)
+clean:
+	$(RM) -f *.fasl debug/*.fasl $(CLX) core $(C_OBJS)
 
 
-tags :
+install:
+	mv CLX.fasl $(DEST)/clx.fasl
+	mv *.o $(DEST)
+
+
+tags:
 	$(TAGS) $(L_SRC) $(C_SRC)

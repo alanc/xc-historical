@@ -213,7 +213,7 @@
 (defun find-trace (display type sequence &optional (number 0))
   (dolist (history (display-trace-history display))
     (when (and (symbolp (car history))
-	       (= (aref (cdr history) 0) type)
+	       (= (logandc2 (aref (cdr history) 0) 128) type)
 	       (= (byte-ref16 (cdr history) 2) sequence)
 	       (minusp (decf number)))
       (return (cdr history)))))
@@ -298,9 +298,11 @@
       (format t "~%Reply not found"))))
 
 (defun event-number (name)
-  (if (and (typep name '(integer 0 63))
-	   (aref *event-key-vector* name))
-      name
+  (if (integerp name)
+      (let ((name (logandc2 name 128)))
+	(if (typep name '(integer 0 63))
+	    (aref *event-key-vector* name))
+	name)
     (position (string name) *event-key-vector* :test #'equalp :key #'string)))
 
 (defun describe-event (display name sequence &optional (number 0))

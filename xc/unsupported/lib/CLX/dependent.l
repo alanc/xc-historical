@@ -1538,22 +1538,16 @@
 	  
 	    ;; If the scheduler is running let it do timeouts.
 	    (mp::*scheduler-stack-group*
-	     (unwind-protect
-		 (progn
-		   (mp::mpwatchfor fd)
-		   (if (null timeout)
-		       ;; Timeout is infinity.
-		       (mp::process-wait *read-whostate* #'fd-char-avail-p fd)
-		     ;; Otherwise timeout in a number of seconds.
-		     #+allegro
-		     (if (not (mp::process-wait-with-timeout
-			       *read-whostate* timeout
-			       #'fd-char-avail-p fd))
-			 (return-from buffer-input-wait-default :timeout))
-		     #-allegro
-		     (mp::process-wait *read-whostate* #'fd-char-avail-p fd)))
-	       (mp::mpunwatchfor fd)))
-	  
+	     #+allegro
+	     (if (not
+		  (mp:wait-for-input-available fd :whostate *read-whostate*
+					       :wait-function #'fd-char-avail-p
+					       :timeout timeout))
+		 (return-from buffer-input-wait-default :timeout))
+	     #-allegro
+	     (mp::wait-for-input-available fd :whostate *read-whostate*
+					   :wait-function #'fd-char-avail-p))
+	    
 	    ;; Otherwise we have to handle timeouts by hand, and call select()
 	    ;; to block until input is available.  Note we don't really handle
 	    ;; the interaction of interrupts and (numberp timeout) here.  XX
