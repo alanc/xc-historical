@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.52 88/09/01 19:11:33 keith Exp $ */
+/* $XConsortium: mfbbitblt.c,v 1.53 88/09/06 14:53:55 jim Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 
@@ -181,7 +181,7 @@ int dstx, dsty;
 	DEALLOCATE_LOCAL(pptSrc);
     }
 
-    prgnExposed = 0;
+    prgnExposed = NULL;
     if (((mfbPrivGC *)(pGC->devPriv))->fExpose)
         prgnExposed =
  	  miHandleExposures(pSrcDrawable, pDstDrawable, pGC,
