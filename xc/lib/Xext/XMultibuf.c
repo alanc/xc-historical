@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.9 89/10/05 11:13:42 jim Exp $
+ * $XConsortium: XMultibuf.c,v 1.10 89/10/05 11:27:02 jim Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -26,9 +26,9 @@
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include <X11/Xlibint.h>
-#include "../include/Xext.h"
-#include "../include/extutil.h"
-#include "../include/multibufst.h"
+#include "Xext.h"			/* in ../include */
+#include "extutil.h"			/* in ../include */
+#include "multibufst.h"			/* in ../include */
 
 static XExtensionInfo *multibuf_info;	/* starts out NULL */
 static /* const */ char *multibuf_extension_name = MULTIBUFFER_PROTOCOL_NAME;
@@ -248,7 +248,7 @@ Bool XmbufQueryExtension (dpy, event_base_return, error_base_return)
 {
     XExtDisplayInfo *info = find_display (dpy);
     
-    if (info && info->codes) {
+    if (XextHasExtension (info)) {
 	*event_base_return = info->codes->first_event;
 	*error_base_return = info->codes->first_error;
 	return True;
