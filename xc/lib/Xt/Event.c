@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.125 90/12/30 12:40:51 rws Exp $ */
+/* $XConsortium: Event.c,v 1.126 90/12/31 08:11:32 rws Exp $ */
 /* $oHeader: Event.c,v 1.9 88/09/01 11:33:51 asente Exp $ */
 
 /***********************************************************
@@ -1030,8 +1030,6 @@ Boolean XtDispatchEvent (event)
     return was_dispatched;
 }
 
-static Boolean RemoveGrab();
-
 /* ARGSUSED */
 static void GrabDestroyCallback(widget, closure, call_data)
     Widget  widget;
@@ -1039,7 +1037,7 @@ static void GrabDestroyCallback(widget, closure, call_data)
     XtPointer call_data;
 {
     /* Remove widget from grab list if it destroyed */
-    (void)RemoveGrab(widget, False);
+    XtRemoveGrab(widget);
 }
 
 static XtGrabRec *NewGrabRec(widget, exclusive, spring_loaded)
@@ -1095,9 +1093,8 @@ void XtAddGrab(widget, exclusive, spring_loaded)
 	    GrabDestroyCallback, (XtPointer) NULL);
 }
 
-static Boolean RemoveGrab(widget)
+void XtRemoveGrab(widget)
     Widget  widget;
-    /* returns False if no grab entry was found, True otherwise */
 {
     register XtGrabList gl;
     register Boolean done;
@@ -1115,7 +1112,7 @@ static Boolean RemoveGrab(widget)
 		       "grabError","xtRemoveGrab",XtCXtToolkitError,
 		       "XtRemoveGrab asked to remove a widget not on the list",
 		       (String *)NULL, (Cardinal *)NULL);
-	    return False;
+	    return;
 	}	
 
     do {
@@ -1126,13 +1123,7 @@ static Boolean RemoveGrab(widget)
 		GrabDestroyCallback, (XtPointer)NULL);
 	XtFree((char *)gl);
     } while (! done);
-    return True;
-}
-
-void XtRemoveGrab(widget)
-    Widget  widget;
-{
-    (void)RemoveGrab(widget);
+    return;
 }
 
 void XtMainLoop()
