@@ -119,13 +119,13 @@ manual page, the real entries have to occupy just one line):
 .sp
 .nf
 	ttyv0 "/etc/xterm -L -geometry -1+1 -display :0" xterm on \\
-		secure window="/etc/Xvs100 0 -c -l"
+		secure window="/etc/X :0 -c -l"
 .fi
 .sp
 However, if you want the xterm to run on a different machine, you might have:
 .sp
 .nf
-	remote "/etc/X 0 -l -c" xterm on secure
+	remote "/etc/X :0 -l -c" xterm on secure
 .fi
 .sp
 on the server machine and
