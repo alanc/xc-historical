@@ -40,6 +40,9 @@ extern void GC_change_background();
 extern void GC_change_font();
 extern void close_file_if_recording();
 
+int fildes[2];			/* for pipe */
+FILE *outend;
+
 XStuff X;			/* GC stuff plus some global variables */
 char resultstring[80] = "";
 Boolean recording = FALSE;	/* Whether we're recording into a file */
@@ -122,6 +125,11 @@ main(argc,argv)
   };
 
   int i;			/* counter */
+
+  /* Open the pipe */
+
+  pipe(fildes);
+  outend = fdopen(fildes[0],"r");
 
   /* Initialize toolkit stuff */
 
@@ -325,7 +333,8 @@ fill_up_commandform(w)
   static Arg recordargs[] = {
     {XtNcallback,    (XtArgVal) NULL},
     {XtNfromVert,    (XtArgVal) NULL}, /* put it under clearbutton */
-    {XtNvertDistance,(XtArgVal) 10}
+    {XtNvertDistance,(XtArgVal) 10},
+    {XtNresizable,   (XtArgVal) True} /* so we can change the name */
   };
 
   static Arg playbackargs[] = {
