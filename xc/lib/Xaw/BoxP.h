@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: ButtonBoxP.h,v 1.2 87/09/11 21:18:41 haynes Rel $
 */
 
 /*
@@ -73,13 +73,6 @@ typedef struct _ButtonBoxRec {
     CompositePart   composite;
     ButtonBoxPart   button_box;
 } ButtonBoxRec;
-
-/* $Log:	ButtonBoxPrivate.h,v $
- * Revision 1.1  87/08/31  07:37:27  joel
- * Initial revision
- * 
- *  */
-
 
 #endif _XtButtonBoxPrivate_h
 /* DON'T ADD STUFF AFTER THIS #endif */
