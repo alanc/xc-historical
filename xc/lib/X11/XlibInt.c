@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.120 90/03/14 12:20:14 jim Exp $
+ * $XConsortium: XlibInt.c,v 11.121 90/03/28 11:37:13 rws Exp $
  */
 
 #include "copyright.h"
@@ -1254,19 +1254,58 @@ int _XPrintDefaultError (dpy, event, fp)
 	    buffer[0] = '\0';
     }
     (void) fprintf(fp, " (%s)\n  ", buffer);
-    XGetErrorDatabaseText(dpy, mtype, "MinorCode", "Request Minor code %d",
-	mesg, BUFSIZ);
-    (void) fprintf(fp, mesg, event->minor_code);
-    if (ext) {
-	sprintf(mesg, "%s.%d", ext->name, event->minor_code);
-	XGetErrorDatabaseText(dpy, "XRequest", mesg, "", buffer, BUFSIZ);
-	(void) fprintf(fp, " (%s)", buffer);
+    if (event->request_code >= 128) {
+	XGetErrorDatabaseText(dpy, mtype, "MinorCode", "Request Minor code %d",
+			      mesg, BUFSIZ);
+	(void) fprintf(fp, mesg, event->minor_code);
+	if (ext) {
+	    sprintf(mesg, "%s.%d", ext->name, event->minor_code);
+	    XGetErrorDatabaseText(dpy, "XRequest", mesg, "", buffer, BUFSIZ);
+	    (void) fprintf(fp, " (%s)", buffer);
+	}
+	fputs("\n  ", fp);
     }
-    fputs("\n  ", fp);
-    XGetErrorDatabaseText(dpy, mtype, "ResourceID", "ResourceID 0x%x",
-	mesg, BUFSIZ);
-    (void) fprintf(fp, mesg, event->resourceid);
-    fputs("\n  ", fp);
+    if (event->error_code >= 128) {
+	/* kludge, try to find the extension that caused it */
+	buffer[0] = '\0';
+	for (ext = dpy->ext_procs; ext; ext = ext->next) {
+	    if (ext->error_string) 
+		(*ext->error_string)(dpy, event->error_code, &ext->codes,
+				     buffer, BUFSIZ);
+	    if (buffer[0])
+		break;
+	}    
+	if (buffer[0])
+	    sprintf(buffer, "%s.%d", ext->name, event->error_code);
+	else
+	    strcpy(buffer, "Value");
+	XGetErrorDatabaseText(dpy, mtype, buffer, "Value 0x%x", mesg, BUFSIZ);
+	if (*mesg) {
+	    (void) fprintf(fp, mesg, event->resourceid);
+	    fputs("\n  ", fp);
+	}
+    } else if ((event->error_code == BadWindow) ||
+	       (event->error_code == BadPixmap) ||
+	       (event->error_code == BadCursor) ||
+	       (event->error_code == BadFont) ||
+	       (event->error_code == BadDrawable) ||
+	       (event->error_code == BadColor) ||
+	       (event->error_code == BadGC) ||
+	       (event->error_code == BadIDChoice) ||
+	       (event->error_code == BadValue) ||
+	       (event->error_code == BadAtom)) {
+	if (event->error_code == BadValue)
+	    XGetErrorDatabaseText(dpy, mtype, "Value", "Value 0x%x",
+				  mesg, BUFSIZ);
+	else if (event->error_code == BadAtom)
+	    XGetErrorDatabaseText(dpy, mtype, "AtomID", "AtomID 0x%x",
+				  mesg, BUFSIZ);
+	else
+	    XGetErrorDatabaseText(dpy, mtype, "ResourceID", "ResourceID 0x%x",
+				  mesg, BUFSIZ);
+	(void) fprintf(fp, mesg, event->resourceid);
+	fputs("\n  ", fp);
+    }
     XGetErrorDatabaseText(dpy, mtype, "ErrorSerial", "Error Serial #%d", 
 	mesg, BUFSIZ);
     (void) fprintf(fp, mesg, event->serial);
