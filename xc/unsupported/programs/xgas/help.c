@@ -54,7 +54,7 @@ createHelpWidgets( parent )
 				topLevelShellWidgetClass, parent,
 				 NULL);
   /* Now add callback for help button */
-  XtAddCallback(parent, XtNcallback, help_callback, helpShell);
+  XtAddCallback(parent, XtNcallback, help_callback, (XtPointer)helpShell);
   
   /* HELP FRAME */
   helpFrame = XtVaCreateManagedWidget("helpFrame",
@@ -65,7 +65,7 @@ createHelpWidgets( parent )
   helpQuit = XtVaCreateManagedWidget("helpQuit", commandWidgetClass,
 			helpFrame,
 			NULL);
-  XtAddCallback(helpQuit, XtNcallback, pop_down, helpShell);
+  XtAddCallback(helpQuit, XtNcallback, pop_down, (XtPointer)helpShell);
 
   /* HELP COMMAND BUTTON: QUICK */
   helpQuick = XtVaCreateManagedWidget("helpQuick", commandWidgetClass,

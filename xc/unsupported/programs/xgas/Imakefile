@@ -44,7 +44,7 @@ depend:: $(SRCS) $(DOCNS)
 
 $(DOCSRCS):: $(DOCNS)
 
-main.o:: xgas.icon
+#main.o:: xgas.icon
 
 %.c: %.n
 	$(RM) $@

@@ -89,7 +89,7 @@ main( argc, argv )
 			  0, &argc, argv);
   
   /* Get Resources */
-  XtGetApplicationResources( toplevel, &labData, resources,
+  XtGetApplicationResources( toplevel, (XtPointer) &labData, resources,
 			    XtNumber( resources), (ArgList)NULL, 0);
   
   /* Allocate dynamic arrays, now that we have maxMolecules */
@@ -114,20 +114,20 @@ main( argc, argv )
 			        XtNfromHoriz, (XtPointer)quit,
 			       XtNhorizDistance, 50,
 				NULL);
-  XtAddCallback(run, XtNcallback, run_callback, &labData);
+  XtAddCallback(run, XtNcallback, run_callback, (XtPointer)&labData);
   
   /* PAUSE BUTTON */
   pause = XtVaCreateManagedWidget("pause", toggleWidgetClass, frame, 
 				  XtNfromHoriz, (XtPointer)run,
 				  XtNradioGroup, (XtPointer)run,
 				  NULL);
-  XtAddCallback(pause, XtNcallback, pause_callback, &labData);
+  XtAddCallback(pause, XtNcallback, pause_callback, (XtPointer)&labData);
   
   /* STEP BUTTON */
   step = XtVaCreateManagedWidget("step", commandWidgetClass, frame,
 				 XtNfromHoriz, (XtPointer)pause,
 				 NULL);
-  XtAddCallback(step, XtNcallback, oneTimestep, &labData);
+  XtAddCallback(step, XtNcallback, oneTimestep, (XtPointer)&labData);
   
   /* HELP BUTTON */
   help = XtVaCreateManagedWidget("help", commandWidgetClass, frame,
@@ -147,7 +147,7 @@ main( argc, argv )
 			   XtNfromHoriz, (XtPointer)labData.chamber[0].control,
 			   XtNfromVert, (XtPointer)help,
 			   NULL);
-  XtAddCallback(lab, XtNresize, labResize, &labData);
+  XtAddCallback(lab, XtNresize, labResize, (XtPointer)&labData);
   
   labData.chamber[1].control = 
     XtVaCreateManagedWidget("tempControl1", scrollbarWidgetClass, frame, 
@@ -156,9 +156,9 @@ main( argc, argv )
 			    NULL);
 
   XtAddCallback( labData.chamber[0].control, XtNjumpProc, 
-		changeTemp, &labData.chamber[0]);
+		changeTemp, (XtPointer)&labData.chamber[0]);
   XtAddCallback( labData.chamber[1].control, XtNjumpProc, 
-		changeTemp, &labData.chamber[1]);
+		changeTemp, (XtPointer)&labData.chamber[1]);
 
 
   labData.chamber[0].display = 
@@ -185,14 +185,14 @@ main( argc, argv )
   
   /*   Need to create GC's before adding callbacks */
   labInit( lab, &labData);
-  XtAddEventHandler(lab, ExposureMask, False, labExpose, &labData);
+  XtAddEventHandler(lab, ExposureMask, False, labExpose, (XtPointer)&labData);
 
 
   /* resize is handled through the resize callback in the gas widget. */
-  XtCallCallbacks(lab, XtNresize, &labData);
+  XtCallCallbacks(lab, XtNresize, (XtPointer)&labData);
 
   XtAddEventHandler( lab, ButtonPressMask, FALSE,
-		    addMolecules, &labData);
+		    addMolecules, (XtPointer)&labData);
   
   XtRealizeWidget( toplevel);
 
@@ -210,8 +210,8 @@ main( argc, argv )
   /* Figure out lab dimensions, create walls */
 
   /* Initialize temperature */
-  XtCallCallbacks( labData.chamber[0].control, XtNscrollProc, 300);
-  XtCallCallbacks( labData.chamber[1].control, XtNscrollProc, 300);	   
+  XtCallCallbacks( labData.chamber[0].control, XtNscrollProc, (XtPointer)300);
+  XtCallCallbacks( labData.chamber[1].control, XtNscrollProc, (XtPointer)300);
   
   XtMainLoop();
 }
