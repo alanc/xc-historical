@@ -18,7 +18,7 @@ purpose.  It is provided "as is" without express or implied warranty.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.37 91/04/10 11:41:42 keith Exp $ */
+/* $XConsortium: cfbbitblt.c,v 5.38 91/05/03 18:08:46 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -679,10 +679,9 @@ RegionPtr cfbCopyPlane(pSrcDrawable, pDstDrawable,
 	/* no exposures here, scratch GC's don't get graphics expose */
 	(void) cfbCopyArea (pSrcDrawable, (DrawablePtr) pBitmap,
 			    pGC1, srcx, srcy, width, height, 0, 0);
-	fg = pGC->fgPixel & pGC->planemask;
-	bg = pGC->bgPixel & pGC->planemask;
-	if (!cfb8CheckPixels(fg, bg))
-	    cfb8SetPixels (fg, bg);
+	cfb8CheckOpaqueStipple (pGC->alu,
+				pGC->fgPixel, pGC->bgPixel,
+				pGC->planemask);
 	doBitBlt = cfbCopyPlane1to8;
 	bitBltPlane = 1;
 	/* no exposures here, copy bits from inside a pixmap */
