@@ -1,4 +1,4 @@
-/* $Header: Xos.h,v 1.2 87/12/16 14:22:56 rws Locked $ */
+/* $XHeader: Xos.h,v 1.3 87/12/16 16:45:16 rws Exp $ */
 /* 
  * Copyright 1987 by the Massachusetts Institute of Technology
  *
@@ -23,20 +23,52 @@
 #ifndef _XOS_H_
 #define _XOS_H_
 
+/*
+ * Get major data types (esp. caddr_t)
+ */
+
 #include <sys/types.h>
+
+
+/*
+ * Just about everyone needs the strings routines.  For uniformity, we use
+ * the BSD-style index() and rindex() in application code, so any systems that
+ * don't provide them need to have #defines here.  Unfortunately, we can't
+ * use #if defined() here since makedepend will get confused.
+ */
 
 #ifdef SYSV
 #include <string.h>
 #define index strchr
 #define rindex strrchr
 #else /* SYSV */
+/* 
+ * Apple A/UX is mostly like BSD (at least as far as X uses it), although it 
+ * uses SYSV string.h.
+ */
+#ifdef macII
+#include <string.h>
+#define index strchr
+#define rindex strrchr
+#else /* macII */
 #include <strings.h>
+#endif /* macII */
 #endif /* SYSV */
+
+
+/*
+ * Get open(2) constants
+ */
 
 #ifdef SYSV
 #include <fcntl.h>
 #endif /* SYSV */
 #include <sys/file.h>
+
+
+/*
+ * Get struct timeval
+ */
 
 #ifdef SYSV
 #include <time.h>
@@ -44,9 +76,19 @@
 #include <sys/time.h>
 #endif /* SYSV */
 
+
+/*
+ * More BSDisms
+ */
+
 #ifdef SYSV
 #define SIGCHLD SIGCLD
 #endif /* SYSV */
+
+
+/*
+ * Put system-specific definitions here
+ */
 
 #ifdef hpux
 #define sigvec sigvector
