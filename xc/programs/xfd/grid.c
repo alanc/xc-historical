@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fontgrid.c,v 1.21 91/02/20 18:48:12 dave Exp $
+ * $XConsortium: fontgrid.c,v 1.22 91/02/22 14:10:03 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -43,31 +43,31 @@ static char stupidString[] = {'-','1',0}; /* workaround scanf bug */
 
 static XtResource resources[] = {
     { XtNfont, XtCFont, XtRFontStruct, sizeof(XFontStruct *),
-	Offset(text_font), XtRString, (caddr_t) NULL },
+	Offset(text_font), XtRString, (XtPointer) NULL },
     { XtNcellColumns, XtCCellColumns, XtRInt, sizeof(int),
-	Offset(cell_cols), XtRString, (caddr_t) "0" },
+	Offset(cell_cols), XtRImmediate, (XtPointer) 0 },
     { XtNcellRows, XtCCellRows, XtRInt, sizeof(int),
-	Offset(cell_rows), XtRString, (caddr_t) "0" },
+	Offset(cell_rows), XtRImmediate, (XtPointer) 0 },
     { XtNcellWidth, XtCCellWidth, XtRInt, sizeof(int),
-	Offset(cell_width), XtRString, (caddr_t) "0" },
+	Offset(cell_width), XtRImmediate, (XtPointer) 0 },
     { XtNcellHeight, XtCCellHeight, XtRInt, sizeof(int),
-	Offset(cell_height), XtRString, (caddr_t) "0" },
+	Offset(cell_height), XtRImmediate, (XtPointer) 0 },
     { XtNstartChar, XtCStartChar, XtRLong, sizeof(long),
-	Offset(start_char), XtRString, (caddr_t) stupidString },
+	Offset(start_char), XtRString, (XtPointer) stupidString },
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
-	Offset(foreground_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
+	Offset(foreground_pixel), XtRString, (XtPointer) XtDefaultForeground },
     { XtNcenterChars, XtCCenterChars, XtRBoolean, sizeof(Boolean),
-	Offset(center_chars), XtRString, (caddr_t) "FALSE" },
+	Offset(center_chars), XtRImmediate, (XtPointer) FALSE },
     { XtNboxChars, XtCBoxChars, XtRBoolean, sizeof(Boolean),
-	Offset(box_chars), XtRString, (caddr_t) "FALSE" },
+	Offset(box_chars), XtRImmediate, (XtPointer) FALSE },
     { XtNboxColor, XtCForeground, XtRPixel, sizeof(Pixel),
-	Offset(box_pixel), XtRString, (caddr_t) "XtDefaultForeground" },
-    { XtNcallback, XtCCallback, XtRCallback, sizeof(caddr_t),
-	Offset(callbacks), XtRCallback, (caddr_t) NULL },
+	Offset(box_pixel), XtRString, (XtPointer) XtDefaultForeground },
+    { XtNcallback, XtCCallback, XtRCallback, sizeof(XtPointer),
+	Offset(callbacks), XtRCallback, (XtPointer) NULL },
     { XtNinternalPad, XtCInternalPad, XtRInt, sizeof(int),
-	Offset(internal_pad), XtRString, (caddr_t) "4" },
+	Offset(internal_pad), XtRImmediate, (XtPointer) 4 },
     { XtNgridWidth, XtCGridWidth, XtRInt, sizeof(int),
-	Offset(grid_width), XtRString, (caddr_t) "1" },
+	Offset(grid_width), XtRImmediate, (XtPointer) 1 },
 };
 
 #undef Offset
@@ -126,21 +126,24 @@ WidgetClass fontgridWidgetClass = (WidgetClass) &fontgridClassRec;
  * public routines
  */
 
-void GetFontGridCellDimensions (fgw, startp, ncolsp, nrowsp)
-    FontGridWidget fgw;
+void GetFontGridCellDimensions (w, startp, ncolsp, nrowsp)
+    Widget w;
     long *startp;
     int *ncolsp, *nrowsp;
 {
+    FontGridWidget fgw = (FontGridWidget) w;
     *startp = fgw->fontgrid.start_char;
     *ncolsp = fgw->fontgrid.cell_cols;
     *nrowsp = fgw->fontgrid.cell_rows;
 }
 
 
-void GetPrevNextStates (fgw, prevvalidp, nextvalidp)
-    FontGridWidget fgw;
+void GetPrevNextStates (w, prevvalidp, nextvalidp)
+    Widget w;
     Bool *prevvalidp, *nextvalidp;
 {
+    FontGridWidget fgw = (FontGridWidget) w;
+
     XFontStruct *fs = fgw->fontgrid.text_font;
     long minn = (long) ((fs->min_byte1 << 0) | fs->min_char_or_byte2);
     long maxn = (long) ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
@@ -411,9 +414,11 @@ static void paint_grid (fgw, col, row, ncols, nrows)
     return;
 }
 
-
-static Boolean SetValues (current, request, new)
+/*ARGSUSED*/
+static Boolean SetValues (current, request, new, args, num_args)
     Widget current, request, new;
+    ArgList args;
+    Cardinal *num_args;
 {
     FontGridWidget curfg = (FontGridWidget) current;
     FontGridWidget newfg = (FontGridWidget) new;
@@ -516,6 +521,6 @@ static void Notify (gw, event, params, nparams)
 	rec.thechar.byte2 = (n & 255);
     }
 
-    XtCallCallbacks (gw, XtNcallback, (caddr_t) &rec);
+    XtCallCallbacks (gw, XtNcallback, (XtPointer) &rec);
 }
 
