@@ -1,4 +1,4 @@
-/* $XConsortium: XChgKbd.c,v 1.4 89/12/06 20:31:29 rws Exp $ */
+/* $XConsortium: XChgKbd.c,v 1.5 90/05/18 11:22:49 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -41,7 +41,6 @@ XChangeKeyboardDevice (dpy, dev)
     register Display 	*dpy;
     XDevice		*dev;
     {       
-    int			rlen;
     xChangeKeyboardDeviceReq 	*req;
     xChangeKeyboardDeviceReply 	rep;
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);

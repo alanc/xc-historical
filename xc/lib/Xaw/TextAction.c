@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.41 91/07/01 18:59:01 converse Exp $ */
+/* $XConsortium: TextAction.c,v 1.42 91/07/16 16:48:39 converse Exp $ */
 
 /***********************************************************
 Copyright 1989 by the Massachusetts Institute of Technology,
@@ -1488,6 +1488,7 @@ Cardinal * num_params;
  *       this action will ring the bell.
  */
 
+/*ARGSUSED*/
 static void
 NoOp(w, event, params, num_params)
 Widget w;

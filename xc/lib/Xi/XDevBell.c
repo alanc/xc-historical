@@ -1,4 +1,4 @@
-/* $Header: XDevBell.c,v 1.1 90/09/26 16:36:35 gms Exp $ */
+/* $Header: XDevBell.c,v 1.1 91/01/24 15:59:39 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -43,7 +43,6 @@ XDeviceBell (dpy, dev, feedbackclass, feedbackid, percent)
     XID			feedbackclass, feedbackid;
     int			percent;
     {       
-    int			rlen;
     xDeviceBellReq 	*req;
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.197 91/07/12 12:35:14 rws Exp $ */
+/* $XConsortium: Initialize.c,v 1.198 91/07/12 13:45:25 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -804,7 +804,7 @@ ArgList args_in;
 {
     XtAppContext app_con;
     Display * dpy;
-    register int i, saved_argc = *argc_in_out;
+    register int saved_argc = *argc_in_out;
     Widget root;
     Arg args[3], *merged_args;
     Cardinal num = 0;

@@ -1,4 +1,4 @@
-/* $XConsortium: SmeLine.c,v 1.11 91/02/17 16:12:55 converse Exp $ */
+/* $XConsortium: SmeLine.c,v 1.12 91/02/19 16:09:57 converse Exp $ */
 
 /*
  * Copyright 1989 Massachusetts Institute of Technology
@@ -199,6 +199,7 @@ Widget w;
  *	Returns: none
  */
 
+/*ARGSUSED*/
 static void
 Redisplay(w, event, region)
 Widget w;

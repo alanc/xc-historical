@@ -1,4 +1,4 @@
-/* $Header: XListDev.c,v 1.15 91/01/26 13:35:47 rws Exp $ */
+/* $Header: XListDev.c,v 1.16 91/02/09 17:52:40 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -54,7 +54,7 @@ XDeviceInfo
     xAnyClassPtr 		any, sav_any;
     XAnyClassPtr 		Any;
     char			*nptr, *Nptr;
-    register int 		i,j,k,namelen;
+    register int 		i,j,k;
     register long 		rlen;
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 

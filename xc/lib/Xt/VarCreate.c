@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.21 91/07/12 12:36:46 rws Exp $ */
+/* $XConsortium: VarCreate.c,v 1.22 91/07/12 13:45:33 rws Exp $ */
 
 /*
 
@@ -300,7 +300,7 @@ Widget _XtVaAppInitialize(app_context_return, application_class, options,
     va_list var;
     XtAppContext app_con;
     Display * dpy;
-    register int i, saved_argc = *argc_in_out;
+    register int saved_argc = *argc_in_out;
     Widget root;
     String attr;
     int count = 0;

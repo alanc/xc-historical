@@ -1,4 +1,4 @@
-/* $Header: XExtInt.c,v 1.21 91/07/16 20:43:30 rws Exp $ */
+/* $Header: XExtInt.c,v 1.22 91/07/17 16:41:13 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -218,9 +218,7 @@ XInputWireToEvent (dpy, re, event)
     XEvent	*re;
     xEvent	*event;
     {
-    xEvent	nevent;
     unsigned	int	type, reltype;
-    unsigned	int	ret = 1;
     unsigned	int	i,j;
     XExtDisplayInfo 	*info = XInput_find_display (dpy);
     XEvent		*save = (XEvent *) info->data;
@@ -474,9 +472,6 @@ XInputWireToEvent (dpy, re, event)
 	    XDeviceStateNotifyEvent *stev = 
 		(XDeviceStateNotifyEvent *) save;
 	    deviceStateNotify *sev = (deviceStateNotify *) event;
-	    XKeyStatus *kstev;
-	    XButtonStatus *bev;
-	    XValuatorStatus *vev;
 	    char *data;
 
 	    stev->window 	= dpy->current;

@@ -1,4 +1,4 @@
-/* $Header: XGMotion.c,v 1.8 91/01/24 16:03:47 rws Exp $ */
+/* $Header: XGMotion.c,v 1.9 91/01/26 13:35:12 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -46,7 +46,6 @@ XDeviceTimeCoord
     int 		*mode;
     int 		*axis_count;
     {       
-    char **tmp;
     xGetDeviceMotionEventsReq 	*req;
     xGetDeviceMotionEventsReply 	rep;
     XDeviceTimeCoord *tc;

@@ -1,4 +1,4 @@
-/* $XConsortium: XChgPnt.c,v 1.4 89/12/06 20:31:30 rws Exp $ */
+/* $XConsortium: XChgPnt.c,v 1.5 90/05/18 11:23:12 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -43,7 +43,6 @@ XChangePointerDevice (dpy, dev, xaxis, yaxis)
     int			xaxis;
     int			yaxis;
     {       
-    int			rlen;
     xChangePointerDeviceReq 	*req;
     xChangePointerDeviceReply 	rep;
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);

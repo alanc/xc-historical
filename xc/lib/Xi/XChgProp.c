@@ -1,4 +1,4 @@
-/* $XConsortium: XChgProp.c,v 1.3 89/09/25 16:20:01 gms Exp $ */
+/* $XConsortium: XChgProp.c,v 1.4 89/12/06 20:31:32 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -45,7 +45,6 @@ XChangeDeviceDontPropagateList (dpy, window, count, events, mode)
     XEventClass		*events;
     int 		mode;
     {       
-    int			rlen;
     xChangeDeviceDontPropagateListReq 	*req;
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 

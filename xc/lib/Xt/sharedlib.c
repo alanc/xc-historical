@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sharedlib.c,v 1.10 91/05/03 15:33:42 rws Exp $
+ * $XConsortium: sharedlib.c,v 1.11 91/06/29 12:41:31 rws Exp $
  * 
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -124,7 +124,9 @@ Widget XtVaAppInitialize(app_context_return, application_class, options,
 
 #else
 
+#ifndef lint
 static int dummy;			/* avoid warning from ranlib */
+#endif
 
 #endif /* SUNSHLIB or AIXSHLIB */
 

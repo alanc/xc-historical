@@ -1,4 +1,4 @@
-/* $XConsortium: XAllowDv.c,v 1.3 89/09/25 16:19:32 gms Exp $ */
+/* $XConsortium: XAllowDv.c,v 1.4 89/12/06 20:31:24 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -43,7 +43,6 @@ XAllowDeviceEvents (dpy, dev, event_mode, time)
     int			event_mode;
     Time		time;
     {       
-    int				rlen;
     xAllowDeviceEventsReq 	*req;
     XExtDisplayInfo *info = (XExtDisplayInfo *) XInput_find_display (dpy);
 

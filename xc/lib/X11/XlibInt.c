@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XlibInt.c,v 11.153 91/07/21 00:08:41 rws Exp $
+ * $XConsortium: XlibInt.c,v 11.154 91/07/22 20:32:26 rws Exp $
  */
 
 /* Copyright    Massachusetts Institute of Technology    1985, 1986, 1987 */
@@ -1380,6 +1380,7 @@ int _XDefaultError(dpy, event)
     /*NOTREACHED*/
 }
 
+/*ARGSUSED*/
 Bool _XDefaultWireError(display, he, we)
     Display     *display;
     XErrorEvent *he;

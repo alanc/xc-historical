@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.c,v 1.62 91/07/19 14:57:14 rws Exp $ */
+/* $XConsortium: Clock.c,v 1.63 91/07/19 17:08:03 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -571,7 +571,7 @@ Dimension length;
 int tick_units;
 {
 	double dblank_length = (double)blank_length, dlength = (double)length;
-	double angle, cosangle, sinangle;
+	double cosangle, sinangle;
 	int cx = w->clock.centerX, cy = w->clock.centerY, x1, y1, x2, y2;
 
 	/*

@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.70 91/05/12 09:51:05 rws Exp $ */
+/* $XConsortium: Selection.c,v 1.71 91/06/13 18:57:21 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1256,7 +1256,9 @@ Boolean *cont;
     int format;
     Atom type;
     XtPointer *c;
+#ifdef DRAFT_ICCCM_COMPATIBILITY
     Atom *t;
+#endif
 
     if (event->type != SelectionNotify) return;
     if (!MATCH_SELECT(event, info)) return; /* not really for us */
@@ -1269,9 +1271,15 @@ Boolean *cont;
         (void) XGetWindowProperty(dpy, XtWindow(widget), info->property, 0L,
 			   10000000, True, AnyPropertyType, &type, &format,
 			   &length, &bytesafter, (unsigned char **) &pairs);
+#ifdef DRAFT_ICCCM_COMPATIBILITY
        for (length = length / IndirectPairWordSize, p = pairs, 
 		   c = info->req_closure, t = info->target+1;
 	           length; length--, p++, c++, t++) {
+#else
+       for (length = length / IndirectPairWordSize, p = pairs,
+		   c = info->req_closure;
+	           length; length--, p++, c++) {
+#endif
 	    if ((event->property == None) || (format != 32) || 
 		 (p->property == None)) {
 		HandleNone(widget, info->callback, *c, event->selection);

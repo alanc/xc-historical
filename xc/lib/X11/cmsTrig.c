@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsTrig.c,v 1.0 91/06/07 18:21:04 rws Exp $" */
+/* $XConsortium: XcmsTrig.c,v 1.1 91/06/27 16:39:59 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -368,10 +368,10 @@ register int order;
 double *coeffs;
 double x;
 {
-    auto double curr_coeff;
     auto double rtn_value;
 
 #if 0
+    auto double curr_coeff;
     if (order <= 0) {
 	rtn_value = *coeffs;
     } else {

@@ -1,4 +1,4 @@
-/* $XConsortium: XOpenDev.c,v 1.4 89/12/06 20:38:46 rws Exp $ */
+/* $XConsortium: XOpenDev.c,v 1.5 90/05/18 11:23:46 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -41,7 +41,6 @@ XDevice
     register Display 	*dpy;
     register XID	id;
     {	
-    int			i;
     register long	rlen;
     xOpenDeviceReq 	*req;
     xOpenDeviceReply 	rep;
