@@ -1,6 +1,6 @@
 /*
  * $Source: /usr/expo/X/src/clients/xterm.new/RCS/Tekproc.c,v $
- * $Header: Tekproc.c,v 1.5 88/02/16 17:48:05 jim Exp $
+ * $Header: Tekproc.c,v 1.6 88/02/16 17:59:09 jim Exp $
  *
  * Warning, there be crufty dragons here.  This is a good example of how to add
  * a trash bag on the side of a widget.  
@@ -117,7 +117,7 @@ char *curs_color;
 #define	unput(c)	*Tpushback++ = c
 
 #ifndef lint
-static char rcs_id[] = "$Header: Tekproc.c,v 1.5 88/02/16 17:48:05 jim Exp $";
+static char rcs_id[] = "$Header: Tekproc.c,v 1.6 88/02/16 17:59:09 jim Exp $";
 #endif	/* lint */
 
 static XPoint *T_box[TEKNUMFONTS] = {
@@ -216,8 +216,9 @@ TekWidget CreateTekWidget ()
     XtSetArg (Args[0], XtNallowShellResize, TRUE);
 
     /* this causes the Initialize method to be called */
-    tekshellwidget = XtCreatePopupShell ("Xterm Tek", topLevelShellWidgetClass,
-					 term, Args, XtNumber (Args));
+    tekshellwidget = XtCreateApplicationShell ("Xterm Tek",
+					       topLevelShellWidgetClass,
+					       Args, XtNumber (Args));
     /* this causes the Realize method to be called */
     tekWidget = (TekWidget) XtCreateManagedWidget (tek_name, tekWidgetClass,
 						   tekshellwidget, NULL, 0);

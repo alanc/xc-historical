@@ -1,5 +1,5 @@
 /*
- *	$Header: main.c,v 1.8 88/02/14 21:30:03 jim Exp $
+ *	$Header: main.c,v 1.9 88/02/16 14:59:51 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* main.c */
 
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.8 88/02/14 21:30:03 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.9 88/02/16 14:59:51 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xos.h>
@@ -624,6 +624,9 @@ gettimeofday(&initT, &tz);
 	if(inhibit & I_TEK)
 		screen->TekEmu = FALSE;
 
+	if(screen->TekEmu && !TekInit())
+		exit(ERROR_INIT);
+
 	/* set up stderr properly */
 	i = -1;
 #ifdef DEBUG
@@ -970,8 +973,6 @@ spawn ()
 	/* so that TIOCSWINSZ || TIOCSIZE doesn't block */
 	signal(SIGTTOU,SIG_IGN);
 #endif	/* !defined(SYSV) || defined(JOBCONTROL) */
-	if(screen->TekEmu && !TekInit())
-		exit(ERROR_INIT);
 
 	if (get_ty) {
 		screen->respond = loginpty;
