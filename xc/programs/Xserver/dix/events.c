@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.34 91/04/07 18:56:54 keith Exp $ */
+/* $XConsortium: events.c,v 5.35 91/04/11 16:51:30 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -1508,13 +1508,14 @@ ProcWarpPointer(client)
 	    return BadWindow;
 	winX = source->drawable.x;
 	winY = source->drawable.y;
-	if ((x < (winX + stuff->srcX)) ||
-	    (y < (winY + stuff->srcY)) ||
-	    ((stuff->srcWidth != 0) &&
-	     (winX + stuff->srcX + (int)stuff->srcWidth < x)) ||
-	    ((stuff->srcHeight != 0) &&
-	     (winY + stuff->srcY + (int)stuff->srcHeight < y)) ||
-	    (!PointInWindowIsVisible(source, x, y)))
+	if (source->drawable.pScreen != sprite.hotPhys.pScreen ||
+	    x < winX + stuff->srcX ||
+	    y < winY + stuff->srcY ||
+	    (stuff->srcWidth != 0 &&
+	     winX + stuff->srcX + (int)stuff->srcWidth < x) ||
+	    (stuff->srcHeight != 0 &&
+	     winY + stuff->srcY + (int)stuff->srcHeight < y) ||
+	    !PointInWindowIsVisible(source, x, y))
 	    return Success;
     }
     if (dest)
