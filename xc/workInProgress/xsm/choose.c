@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.6 94/07/15 14:14:01 mor Exp $ */
+/* $XConsortium: choose.c,v 1.7 94/07/15 15:02:38 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium
@@ -26,6 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ******************************************************************************/
 
 #include "xsm.h"
+#include "saveutil.h"
 #include <sys/types.h>
 #include <dirent.h>
 
@@ -266,6 +267,8 @@ XtPointer 	callData;
 
 	sprintf (filename, "%s/.SM-%s", dir, name);
 
+	ExecuteOldDiscardCommands (name);
+
 	if (remove (filename) != -1)
 	{
 	    for (i = 0; i < sessionNameCount; i++)
@@ -322,7 +325,7 @@ XtPointer 	callData;
     if (session_name)
 	XtFree (session_name);
 
-    session_name = XtNewString ("Fail Safe");
+    session_name = XtNewString (FAILSAFE_SESSION_NAME);
 
     FreeSessionNames (sessionNameCount, sessionNames);
 
