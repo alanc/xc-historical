@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.8 91/07/16 23:04:38 gildea Exp $
 #
 # Make file for font handling routines
 #
@@ -9,9 +9,13 @@ XCOMM $XConsortium$
             SRCS = fsconvert.c fserve.c fsio.c
             OBJS = fsconvert.o fserve.o fsio.o
          DEFINES = $(SIGNAL_DEFINES)
+    CONN_DEFINES = ConnectionFlags
 
 NormalLibraryObjectRule()
+SpecialObjectRule(fsio.o,$(ICONFIGFILES),$(CONN_DEFINES))
+
 all:: $(OBJS)
+
 NormalLintTarget($(SRCS))
 
 DependTarget()
