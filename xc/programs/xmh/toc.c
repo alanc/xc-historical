@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.35 89/12/16 19:19:54 rws Exp $
+ * $XConsortium: toc.c,v 2.36 90/01/22 17:37:59 swick Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -441,15 +441,17 @@ void TocRecheckValidity(toc)
 {
     int i;
     if (toc && toc->validity == valid && TUScanFileOutOfDate(toc)) {
-	if (app_resources.block_events_on_busy) ShowBusyCursor();
+	if (toc->source) {
+	    if (app_resources.block_events_on_busy) ShowBusyCursor();
 
-	TUScanFileForToc(toc);
-	if (toc->source)
+	    TUScanFileForToc(toc);
 	    TULoadTocFile(toc);
-	for (i=0 ; i<toc->num_scrns ; i++)
-	    TURedisplayToc(toc->scrn[i]);
+	    for (i=0 ; i<toc->num_scrns ; i++)
+		TURedisplayToc(toc->scrn[i]);
 
-	if (app_resources.block_events_on_busy) UnshowBusyCursor();
+	    if (app_resources.block_events_on_busy) UnshowBusyCursor();
+	}
+	else toc->validity = invalid;
     }
 }
 
@@ -548,6 +550,7 @@ void TocForceRescan(toc)
     } else {
 	TUGetFullFolderInfo(toc);
 	(void) unlink(toc->scanfile);
+	toc->lastreaddate = 0;
 	toc->validity = invalid;
     }
 }
@@ -705,7 +708,8 @@ Toc toc;
     msg = TUAppendToc(toc, "####  empty\n");
     if (FileExists(MsgFileName(msg))) {
 	if (looping++) Punt( "Cannot correct scan file" );
-        DEBUG1("**** FOLDER %s WAS INVALID!!!\n", toc->foldername)
+        DEBUG2( "**** FOLDER %s SCAN WAS INVALID; msg %d already existed!\n",
+		toc->foldername, msg->msgid)
 	TocForceRescan(toc);
 	return TocMakeNewMsg(toc); /* Try again.  Using recursion here is ugly,
 				      but what the hack ... */
