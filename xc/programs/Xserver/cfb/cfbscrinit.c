@@ -64,7 +64,6 @@ static DepthRec depths[] = {
     8,		1,		NULL,
 };
 
-static ColormapPtr cfbColorMaps[NUMVISUALS];	/* assume one per visual */
 #define NUMDEPTHS	((sizeof depths)/(sizeof depths[0]))
 
 /* dts * (inch/dot) * (25.4 mm / inch) = mm */
@@ -80,6 +79,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
     register PixmapPtr pPixmap;
     int	i;
     void cfbInitialize332Colormap();
+    ColormapPtr cmap;
 
     pScreen->myNum = index;
     pScreen->width = xsize;
@@ -171,25 +171,7 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 	visuals[i].screen = index;
 	AddResource(visuals[i].vid, RT_VISUALID, (pointer)&visuals[i],
 		    NoopDDA, RC_CORE);
-	switch (visuals[i].class) {
-	case StaticGray:
-	case StaticColor:
-	    CreateColormap(FakeClientID(0), pScreen, &visuals[i], 
-		&cfbColorMaps[i], AllocAll, 0);
-	    break;
-	case PseudoColor:
-	case GrayScale:
-	    CreateColormap(FakeClientID(0), pScreen, &visuals[i], 
-		&cfbColorMaps[i], AllocNone, 0);
-	    break;
-	case TrueColor:
-	case DirectColor:
-	    FatalError("Bad visual in cfbScreenInit\n");
-	}
-	if (!cfbColorMaps[i])
-	    FatalError("Can't create colormap in cfbScreenInit\n");
     }
-    pScreen->defColormap = cfbColorMaps[ROOTVISUAL]->mid;
     pScreen->rootVisual = visuals[ROOTVISUAL].vid;
 
     /*  Set up the remaining fields in the depths[] array */
@@ -201,6 +183,25 @@ cfbScreenInit(index, pScreen, pbits, xsize, ysize, dpi)
 	    pVids[0] = visuals[ROOTVISUAL].vid;
 	}
     }
+
+    pScreen->defColormap = FakeClientID(0);
+    switch (visuals[ROOTVISUAL].class) {
+    case StaticGray:
+    case StaticColor:
+	CreateColormap(pScreen->defColormap, pScreen, &visuals[ROOTVISUAL],
+		       &cmap, AllocAll, 0);
+	break;
+    case PseudoColor:
+    case GrayScale:
+	CreateColormap(pScreen->defColormap, pScreen, &visuals[ROOTVISUAL], 
+		       &cmap, AllocNone, 0);
+	break;
+    case TrueColor:
+    case DirectColor:
+	FatalError("Bad visual in cfbScreenInit\n");
+    }
+    if (!cmap)
+	FatalError("Can't create colormap in cfbScreenInit\n");
     return( TRUE );
 }
 
