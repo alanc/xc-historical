@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
 XCOMM
 XCOMM Here is an Imakefile for twm.  It depends on having TWMDIR defined
 XCOMM in Imake.tmpl.  I like to use Imakefiles for everything, and I am sure

@@ -1,3 +1,4 @@
+XCOMM $XConsortium$
           SRCS1 = xclipboard.c
           OBJS1 = xclipboard.o
           SRCS2 = xcutsel.c
