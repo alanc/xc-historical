@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.9 93/09/03 08:02:55 dpw Exp $ */
+/* $XConsortium: property.c,v 5.10 93/09/20 16:53:17 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -304,13 +304,15 @@ ChangeWindowProperty(pWin, property, type, format, mode, len, value, sendevent)
             pProp->size += len;
 	}
     }
-    event.u.u.type = PropertyNotify;
-    event.u.property.window = pWin->drawable.id;
-    event.u.property.state = PropertyNewValue;
-    event.u.property.atom = pProp->propertyName;
-    event.u.property.time = currentTime.milliseconds;
-    DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
-
+    if (sendevent)
+    {
+	event.u.u.type = PropertyNotify;
+	event.u.property.window = pWin->drawable.id;
+	event.u.property.state = PropertyNewValue;
+	event.u.property.atom = pProp->propertyName;
+	event.u.property.time = currentTime.milliseconds;
+	DeliverEvents(pWin, &event, 1, (WindowPtr)NULL);
+    }
     return(Success);
 }
 
