@@ -1,7 +1,7 @@
 /*
  * xman - X window system manual page display program.
  *
- * $XConsortium: man.c,v 1.11 89/08/30 18:24:25 kit Exp $
+ * $XConsortium: man.c,v 1.12 89/08/30 18:53:01 kit Exp $
  *
  * Copyright 1987, 1988 Massachusetts Institute of Technology
  *
@@ -24,9 +24,9 @@
 #endif
 
 #include "globals.h"
-#ifdef CRAY
+#ifdef USG
 #include <dirent.h>
-#endif CRAY
+#endif
 
 #ifdef DEBUG
 static char error_buf[BUFSIZ];		/* The buffer for error messages. */
@@ -437,7 +437,7 @@ char * path;
 {
   DIR * dir;
 
-#ifdef CRAY
+#ifdef USG
   register struct dirent *dp;
 #else
   register struct direct *dp;
