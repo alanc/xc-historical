@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.58 93/09/20 17:51:59 hersh Exp kaleb $
+ * $XConsortium: tocutil.c,v 2.59 94/12/01 17:15:50 kaleb Exp swick $
  *
  *
  *			COPYRIGHT 1987, 1989
@@ -514,21 +514,49 @@ void TUSaveTocFile(toc)
 }
 
 
-void TUEnsureScanIsValidAndOpen(toc)
+static Boolean UpdateScanFile(client_data)
+  XtPointer client_data;	/* Toc */
+{
+    Toc toc = (Toc)client_data;
+    int i;
+
+    if (app_resources.block_events_on_busy) ShowBusyCursor();
+
+    TUScanFileForToc(toc);
+    TULoadTocFile(toc);
+
+    for (i=0 ; i<toc->num_scrns ; i++)
+	TURedisplayToc(toc->scrn[i]);
+
+    if (app_resources.block_events_on_busy) UnshowBusyCursor();
+
+    return True;
+}
+
+
+void TUEnsureScanIsValidAndOpen(toc, delay)
   Toc toc;
+  Boolean delay;
 {
     if (toc) {
 	TUGetFullFolderInfo(toc);
 	if (TUScanFileOutOfDate(toc)) {
-	    if (toc->source) {
-		XtFree((char *) toc->source);
-		toc->source = NULL;
+	    if (!delay)
+		UpdateScanFile((XtPointer)toc);
+	    else {
+		/* this is a hack to get the screen mapped before
+		 * spawning the subprocess (and blocking).
+		 * Need to make sure the scanfile exists at this point.
+		 */
+		int fid = myopen(toc->scanfile, O_RDWR|O_CREAT, 0666);
+		(void) myclose(fid);
+		XtAppAddWorkProc(XtWidgetToApplicationContext(toplevel),
+				 UpdateScanFile,
+				 (XtPointer)toc);
 	    }
-	    TUScanFileForToc(toc);
 	}
 	if (toc->source == NULL)
 	    TULoadTocFile(toc);
-	toc->validity = valid;
     }
 }
 

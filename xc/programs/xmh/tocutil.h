@@ -1,4 +1,4 @@
-/* $XConsortium: tocutil.h,v 2.5 89/09/27 19:11:48 converse Exp $ */
+/* $XConsortium: tocutil.h,v 2.6 89/12/10 17:30:14 converse Exp swick $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -38,7 +38,7 @@ extern void	TULoadSeqLists			(/* Toc 	*/);
 extern void	TURefigureWhatsVisible		(/* Toc 	*/);
 extern void	TULoadTocFile			(/* Toc 	*/);
 extern void	TUSaveTocFile			(/* Toc 	*/);
-extern void	TUEnsureScanIsValidAndOpen	(/* Toc 	*/);
+extern void	TUEnsureScanIsValidAndOpen	(/* Toc, delay	*/);
 extern void	TURefigureTocPositions		(/* Toc 	*/);
 extern void	TUGetFullFolderInfo		(/* Toc 	*/);
 extern Msg	TUAppendToc			(/* Toc, char *	*/);

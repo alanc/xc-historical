@@ -1,4 +1,4 @@
-/* $XConsortium: toc.c,v 2.57 93/12/06 15:19:08 kaleb Exp swick $
+/* $XConsortium: toc.c,v 2.58 94/08/26 18:06:29 swick Exp swick $
  *
  *
  *			  COPYRIGHT 1987
@@ -438,7 +438,7 @@ Scrn scrn;
 	toc->scrn = (Scrn *) XtRealloc((char *) toc->scrn,
 				       (unsigned)toc->num_scrns*sizeof(Scrn));
 	toc->scrn[toc->num_scrns - 1] = scrn;
-	TUEnsureScanIsValidAndOpen(toc);
+	TUEnsureScanIsValidAndOpen(toc, True);
 	TUResetTocLabel(scrn);
 	if (app_resources.prefix_wm_and_icon_name) {
 	    char wm_name[64];
@@ -761,7 +761,7 @@ Toc toc;
 {
     Msg msg;
     static int looping = False;
-    TUEnsureScanIsValidAndOpen(toc);
+    TUEnsureScanIsValidAndOpen(toc, False);
     msg = TUAppendToc(toc, "####  empty\n");
     if (FileExists(MsgFileName(msg))) {
 	if (looping++) Punt( "Cannot correct scan file" );
