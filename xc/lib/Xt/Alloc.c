@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.41 91/02/18 16:39:41 rws Exp $ */
+/* $XConsortium: Alloc.c,v 1.42 91/03/11 15:24:34 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -259,7 +259,9 @@ char *_XtRealloc(ptr, size, file, line)
 
    newptr = _XtMalloc(size, file, line);
    if (ptr) {
-       bcopy(ptr, newptr, ToStats(ptr)->size);
+       unsigned copysize = ToStats(ptr)->size;
+       if (copysize > size) copysize = size;
+       bcopy(ptr, newptr, copysize);
        _XtFree(ptr);
    }
    return(newptr);
