@@ -1,4 +1,4 @@
-/* $Header: XRegion.c,v 11.17 88/02/06 15:22:46 jim Locked $ */
+/* $Header: XRegion.c,v 11.18 88/02/07 12:10:59 jim Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -123,14 +123,22 @@ XUnionRectWithRegion(rect, source, dest)
  *
  *-----------------------------------------------------------------------
  */
-/* static void*/
-static
+static void
 miSetExtents (pReg)
     Region	  	pReg;
 {
     register BoxPtr	pBox,
 			pBoxEnd,
 			pExtents;
+
+    if (pReg->numRects == 0)
+    {
+	pReg->extents.x1 = 0;
+	pReg->extents.y1 = 0;
+	pReg->extents.x2 = 0;
+	pReg->extents.y2 = 0;
+	return;
+    }
 
     pExtents = &pReg->extents;
     pBox = pReg->rects;
@@ -162,7 +170,6 @@ miSetExtents (pReg)
 	pBox++;
     }
     assert(pExtents->x1 < pExtents->x2);
-    return 0;	/* lint */
 }
 
 XSetRegion( dpy, gc, r )
@@ -382,25 +389,19 @@ XIntersectRegion(reg1, reg2, newReg)
    /* check for trivial reject */
     if ( (!(reg1->numRects)) || (!(reg2->numRects))  ||
 	(!EXTENTCHECK(&reg1->extents, &reg2->extents)))
-    {
         newReg->numRects = 0;
-        return(1);
-    }
-
-    miRegionOp (newReg, reg1, reg2, 
+    else
+	miRegionOp (newReg, reg1, reg2, 
     		(voidProcp) miIntersectO, (voidProcp) NULL, (voidProcp) NULL);
     
-    if (newReg->numRects != 0)
-    {
-	/*
-	 * Can't alter newReg's extents before we call miRegionOp because
-	 * it might be one of the source regions and miRegionOp depends
-	 * on the extents of those regions being the same. Besides, this
-	 * way there's no checking against rectangles that will be nuked
-	 * due to coalescing, so we have to examine fewer rectangles.
-	 */
-	miSetExtents(newReg);
-    }
+    /*
+     * Can't alter newReg's extents before we call miRegionOp because
+     * it might be one of the source regions and miRegionOp depends
+     * on the extents of those regions being the same. Besides, this
+     * way there's no checking against rectangles that will be nuked
+     * due to coalescing, so we have to examine fewer rectangles.
+     */
+    miSetExtents(newReg);
     return(1);
 }
 
@@ -1435,17 +1436,14 @@ XSubtractRegion(regM, regS, regD)
     miRegionOp (regD, regM, regS, (voidProcp) miSubtractO, 
     		(voidProcp) miSubtractNonO1, (voidProcp) NULL);
 
-    if (regD->numRects != 0)
-    {
-	/*
-	 * Can't alter newReg's extents before we call miRegionOp because
-	 * it might be one of the source regions and miRegionOp depends
-	 * on the extents of those regions being the unaltered. Besides, this
-	 * way there's no checking against rectangles that will be nuked
-	 * due to coalescing, so we have to examine fewer rectangles.
-	 */
-	miSetExtents (regD);
-    }
+    /*
+     * Can't alter newReg's extents before we call miRegionOp because
+     * it might be one of the source regions and miRegionOp depends
+     * on the extents of those regions being the unaltered. Besides, this
+     * way there's no checking against rectangles that will be nuked
+     * due to coalescing, so we have to examine fewer rectangles.
+     */
+    miSetExtents (regD);
     return(1);
 }
 
@@ -1471,8 +1469,7 @@ int
 XEmptyRegion( r )
     Region r;
 {
-    if( r->size == 0 && r->numRects == 0 && r->extents.x1 == 0 && 
-    	r->extents.x2 == 0 && r->extents.y1 == 0 && r->extents.y2 ==0 )
+    if( r->numRects == 0 )
     return( TRUE );
     else  return( FALSE );
 }
@@ -1486,8 +1483,8 @@ XEqualRegion( r1, r2 )
 {
     int i;
 
-    if ( r1->size != r2->size ) return( FALSE );
-    else if( r1->numRects != r2->numRects ) return( FALSE );
+    if( r1->numRects != r2->numRects ) return( FALSE );
+    else if( r1->numRects == 0 ) return( TRUE );
     else if ( r1->extents.x1 != r2->extents.x1 ) return( FALSE );
     else if ( r1->extents.x2 != r2->extents.x2 ) return( FALSE );
     else if ( r1->extents.y1 != r2->extents.y1 ) return( FALSE );
