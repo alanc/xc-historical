@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xfuncs.h,v 1.8 91/04/17 09:27:52 rws Exp $
+ * $XConsortium: Xfuncs.h,v 1.9 92/10/18 16:31:21 rws Exp $
  * 
  * Copyright 1990 by the Massachusetts Institute of Technology
  *
@@ -19,6 +19,8 @@
 #define _XFUNCS_H_
 
 #include <X11/Xosdefs.h>
+
+/* the old Xfuncs.h, for pre-R6 */
 
 #ifdef X_USEBFUNCS
 void bcopy();
@@ -51,5 +53,27 @@ int bcmp();
 #endif /* sgi */
 #endif /* __STDC__ and relatives */
 #endif /* X_USEBFUNCS */
+
+/* the new Xfuncs.h */
+
+#if !defined(X_NOT_STDC_ENV) && (!defined(sun) || defined(SVR4))
+/* the ANSI C way */
+#include <string.h>
+#undef bzero
+#define bzero(b,len) memset(b,0,len)
+#else /* else X_NOT_STDC_ENV or SunOS 4 */
+#if defined(SYSV) || defined(luna) || defined(sun)
+#include <memory.h>
+#define memmove(dst,src,len) bcopy(src,dst,len)
+#if defined(SYSV) && defined(_XBCOPYFUNC)
+#define memmove(dst,src,len) _XBCOPYFUNC(src,dst,len)
+#define _XNEEDBCOPYFUNC
+#endif
+#else /* else vanilla BSD */
+#define memmove(dst,src,len) bcopy(src,dst,len)
+#define memcpy(dst,src,len) bcopy(src,dst,len)
+#define memcmp(b1,b2,len) bcmp(b1,b2,len)
+#endif /* SYSV else */
+#endif /* ! X_NOT_STDC_ENV else */
 
 #endif /* _XFUNCS_H_ */
