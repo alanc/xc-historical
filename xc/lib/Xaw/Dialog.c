@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.22 89/02/10 19:11:53 kit Exp $";
-#endif lint
+static char Xrcsid[] = "$XConsortium: Dialog.c,v 1.23 89/02/14 13:27:21 kit Exp $";
+#endif /* lint */
 
 
 /***********************************************************
@@ -278,7 +278,7 @@ Widget w;
     XrmFreeClassList(classes);
     if (grabfocus) XSetInputFocus(dpy, data->value, RevertToParent,
 				  CurrentTime); /* !!! Hackish. |||*/
-#endif notdef
+#endif /* notdef */
 }
 
 void XtDialogAddButton(dialog, name, function, param)

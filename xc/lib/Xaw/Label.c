@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Label.c,v 1.63 89/02/22 09:19:41 swick Exp $";
-#endif lint
+static char Xrcsid[] = "$XConsortium: Label.c,v 1.64 89/03/16 12:58:17 swick Exp $";
+#endif /* lint */
 
 
 /***********************************************************
@@ -282,7 +282,7 @@ static void Redisplay(w, event, region)
    }
 #ifdef notdef
    if (region != NULL) XSetClipMask(XtDisplay(w), gc, (Pixmap)None);
-#endif notdef
+#endif /* notdef */
 }
 
 static void _Reposition(lw, width, height, dx, dy)

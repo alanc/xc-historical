@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.36 89/01/10 13:10:25 swick Exp $";
-#endif lint
+static char Xrcsid[] = "$XConsortium: Viewport.c,v 1.37 89/03/14 13:09:16 kit Exp $";
+#endif /* lint */
 
 
 /***********************************************************
@@ -316,7 +316,7 @@ static void ChangeManaged(widget)
 		    w->core.window = XtWindow(w->viewport.clip);
 		    XtRealizeWidget( child );
 		    w->core.window = window;
-#endif notdef
+#endif /* notdef */
 		    constraints->viewport.reparented = True;
 		}
 		else if (!constraints->viewport.reparented) {

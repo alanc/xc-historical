@@ -1,6 +1,6 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Command.c,v 1.47 89/01/12 18:45:48 kit Exp $";
-#endif lint
+static char Xrcsid[] = "$XConsortium: Command.c,v 1.48 89/03/29 13:15:24 kit Exp $";
+#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

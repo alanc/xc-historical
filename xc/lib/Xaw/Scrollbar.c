@@ -1,7 +1,7 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Scroll.c,v 1.44 88/09/26 13:35:29 swick Exp $";
-#endif lint
+    "$XConsortium: Scroll.c,v 1.45 88/09/27 16:58:47 swick Exp $";
+#endif /* lint */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
