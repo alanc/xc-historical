@@ -13,13 +13,6 @@
 
 #include "editresP.h"
 
-/*
- * Global variables. 
- */
-
-extern TreeInfo *global_tree_info;
-extern ScreenData global_screen_data;
-
 extern void SetMessage(), SetCommand(), GetAllActiveTreeEntries();
 extern void GetAllStrings(), AddString();
 extern WNode * IDToNode();

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.1 90/02/15 10:53:00 kit Exp $
+ * $XConsortium: editres.c,v 1.2 90/03/08 17:35:34 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -23,8 +23,12 @@
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
+#include <X11/StringDefs.h>
 
 #include <X11/Xaw/Cardinals.h>	
+
+#define THIS_IS_MAIN		/* Don't get extern definitions of global
+				   variables. */
 
 #include "editresP.h"
 
@@ -32,10 +36,12 @@
  * Global variables. 
  */
 
+
 TreeInfo *global_tree_info = NULL;
 CurrentClient global_client;
 ScreenData global_screen_data;
 Widget global_tree_parent;
+AppResources global_resources;
 
 /*
  * external function definitions.
@@ -46,6 +52,13 @@ extern void SetApplicationActions();
 
 String fallback_resources[] = { 
     NULL,
+};
+
+#define Offset(field) (XtOffsetOf(AppResources, field))
+
+static XtResource editres_resources[] = {
+  {"debug", "Debug", XtRBoolean, sizeof(Boolean),
+     Offset(debug), XtRImmediate, (XtPointer) FALSE},
 };
 
 void
@@ -64,6 +77,9 @@ char **argv;
 	Syntax(app_con, argv[0]);
 
     SetApplicationActions(app_con);
+    XtGetApplicationResources(toplevel, (caddr_t) &global_resources, 
+			      editres_resources, XtNumber(editres_resources),
+			      NULL, (Cardinal) 0);
 
     BuildWidgetTree(toplevel);
 

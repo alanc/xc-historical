@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: geometry.c,v 1.1 90/03/14 17:09:46 kit Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -29,15 +29,6 @@
 #include <X11/Xaw/Cardinals.h>	
 
 #include "editresP.h"
-
-/*
- * Global variables. 
- */
-
-extern TreeInfo *global_tree_info;
-extern CurrentClient global_client;
-extern ScreenData global_screen_data;
-extern Widget global_tree_parent;
 
 extern WNode * IDToNode();
 extern void SetMessage(), SetCommand(), SetAndCenterTreeNode();

@@ -3,8 +3,6 @@
  * being edited.
  */
 
-#define DEBUG			/* Turn on debugging */
-
 #include <stdio.h>
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>	/* Get standard string definitions. */
@@ -17,16 +15,6 @@
 #include "editresP.h"
 
 #define CURRENT_PROTOCOL_VERSION 2
-
-/*
- * Global variables. 
- */
-
-extern TreeInfo *global_tree_info;
-extern CurrentClient global_client;
-extern ScreenData global_screen_data;
-extern Widget global_tree_parent;
-extern AppResources global_resources;
 
 /*
  * static Globals.
@@ -329,7 +317,8 @@ int * format_ret;
 	    command_str, COMMAND_SEPARATOR, value);
 
 #ifdef DEBUG
-    printf("To Client:\n%s\n\n", command);
+    if (global_resources.debug)
+	printf("To Client:\n%s\n\n", command);
 #endif 
 
     *value_ret = (XtPointer) command;
@@ -401,7 +390,8 @@ int * format;
     string = (char *) value;
 
 #ifdef DEBUG
-    printf("FromClient:\n%s\n\n", string);
+    if (global_resources.debug)
+	printf("From Client:\n%s\n\n", string);
 #endif 
 
     if (!StripReturnValueFromString(string, &ident, &error, &local_value)) {
@@ -416,6 +406,7 @@ int * format;
 	
     if (ident != global_client.ident) {
 #ifdef DEBUG
+    if (global_resources.debug)
 	printf("Incorrect ident from client.\n");
 #endif 
 	if (!XtOwnSelection(w, *selection, CurrentTime, ConvertCommand, 

@@ -1,6 +1,8 @@
 
 #include <X11/Xaw/EditRes.h>
 
+#define DEBUG
+
 #ifdef DEBUG
 #  define CLIENT_TIME_OUT 60000	/* wait sixty seconds for the client. */
 #else
@@ -77,6 +79,22 @@ typedef struct _ScreenData {
     Widget val_text;		/* SetValues value text widget. */
     Widget info_label;	        /* The information label. */
 } ScreenData;
+
+typedef struct _AppResources {
+    Boolean debug;		/* Is debugging on? */
+} AppResources;
+
+/*
+ * Global variables. 
+ */
+
+#ifndef THIS_IS_MAIN
+    extern TreeInfo *global_tree_info;
+    extern CurrentClient global_client;
+    extern ScreenData global_screen_data;
+    extern Widget global_tree_parent;
+    extern AppResources global_resources;
+#endif
 
 /*
  * Macros.

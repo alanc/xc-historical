@@ -17,8 +17,6 @@ static Boolean IsActiveNode();
 static Cardinal ParseString();
 static void AddChild();
 
-extern TreeInfo *global_tree_info;
-
 extern void PrepareToLayoutTree(), LayoutTree();
 
 extern void _TreeSelectNode(), _TreeActivateNode(), _TreeRelabelNode();

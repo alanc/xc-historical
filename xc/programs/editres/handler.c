@@ -8,15 +8,6 @@
 
 #include "editresP.h"
 
-/*
- * Global variables. 
- */
-
-extern TreeInfo *global_tree_info;
-extern CurrentClient global_client;
-extern ScreenData global_screen_data;
-extern Widget global_tree_parent;
-
 /* 
  * Function Definitions.
  */
