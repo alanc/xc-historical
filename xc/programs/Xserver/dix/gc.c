@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: gc.c,v 1.92 87/09/03 09:46:17 toddb Locked $ */
+/* $Header: gc.c,v 1.93 87/09/03 13:37:14 toddb Locked $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -445,6 +445,10 @@ CreateGC(pDrawable, mask, pval, pStatus)
 	ChangeGC(pgcScratch, GCFunction | GCForeground | GCFillStyle, 
 		 tmpval);
 	ValidateGC(pTile, pgcScratch);
+	rect.x = 0;
+	rect.y = 0;
+	rect.width = w;
+	rect.height = h;
 	(*pgcScratch->PolyFillRect)(pTile, pgcScratch,
 					 1, &rect);
 	/* Always remember to free the scratch graphics context after use. */
