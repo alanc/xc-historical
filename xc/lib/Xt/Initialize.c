@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.125 88/09/26 13:51:36 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.126 88/09/26 14:40:11 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif lint
 
@@ -146,6 +146,7 @@ static XrmDatabase GetAppUserDefaults(classname)
 	char *classname;
 {
 	XrmDatabase rdb;
+	extern char *getenv();
 	char	filenamebuf[MAXPATHLEN];
 	char	*filename = &filenamebuf[0];
 
