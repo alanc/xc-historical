@@ -1,10 +1,10 @@
-XCOMM platform:  $XConsortium: att.cf,v 1.16 92/09/14 18:52:50 rws Exp $
+XCOMM platform:  $XConsortium: att.cf,v 1.17 92/11/21 16:58:56 rws Exp $
 
-#define OSName			AT&T Unix System V Release 4.2
+#define OSName			UNIX System V/386 Release 4.2 Version 1
 XCOMM operating system:  OSName
 #define OSMajorVersion		4
-#define OSMinorVersion		0
-#define OSTeenyVersion		2
+#define OSMinorVersion		2
+#define OSTeenyVersion		1
 
 #define SystemV4		YES
 /* The default here is to use the streams interface for Xlib, but various
