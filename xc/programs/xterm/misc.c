@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: misc.c,v 1.71 91/01/30 16:16:27 gildea Exp $
+ *	$XConsortium: misc.c,v 1.72 91/02/05 19:44:25 gildea Exp $
  */
 
 /*
@@ -432,7 +432,7 @@ register TScreen *screen;
 #ifdef SYSV
 			_bufend(stderr) = old_bufend;
 #endif	/* SYSV */
-			close(screen->display->fd);
+			close(ConnectionNumber(screen->display));
 			close(screen->respond);
 			if(!shell) {
 				register struct passwd *pw;
