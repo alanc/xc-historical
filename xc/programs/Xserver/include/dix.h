@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.63 93/07/12 09:44:55 dpw Exp $ */
+/* $XConsortium: dix.h,v 1.64 93/09/03 08:36:53 dpw Exp $ */
 
 #ifndef DIX_H
 #define DIX_H
@@ -152,6 +152,104 @@ extern ClientPtr serverClient;
 extern int currentMaxClients;
 extern long *checkForInput[2];
 
+/* dispatch.c */
+
+extern void SetInputCheck(
+#if NeedFunctionPrototypes
+    long */*c0*/,
+    long */*c1*/
+#endif
+);
+
+extern void CloseDownClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+extern void UpdateCurrentTime(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void UpdateCurrentTimeIf(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void InitSelections(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void FlushClientCaches(
+#if NeedFunctionPrototypes
+    XID /*id*/
+#endif
+);
+
+extern int dixDestroyPixmap(
+#if NeedFunctionPrototypes
+    pointer /*value*/,
+    XID /*pid*/
+#endif
+);
+
+extern void CloseDownRetainedResources(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void InitClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    int /*i*/,
+    pointer /*ospriv*/
+#endif
+);
+
+extern ClientPtr NextAvailableClient(
+#if NeedFunctionPrototypes
+    pointer /*ospriv*/
+#endif
+);
+
+extern void SendErrorToClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    unsigned int /*majorCode*/,
+    unsigned int /*minorCode*/,
+    XID /*resId*/,
+    int /*errorCode*/
+#endif
+);
+
+extern void DeleteWindowFromAnySelections(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern void MarkClientException(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/
+#endif
+);
+
+/* dixutils.c */
+
+extern void CopyISOLatin1Lowered(
+#if NeedFunctionPrototypes
+    unsigned char * /*dest*/,
+    unsigned char * /*source*/,
+    int /*length*/
+#endif
+);
+
 extern WindowPtr LookupWindow(
 #if NeedFunctionPrototypes
     XID /*rid*/,
@@ -179,22 +277,109 @@ extern void NoopDDA(
 #endif
 );
 
-extern void CloseDownClient(
+extern int AlterSaveSetForClient(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    WindowPtr /*pWin*/,
+    unsigned /*mode*/
+#endif
+);
+
+extern void DeleteWindowFromAnySaveSet(
+#if NeedFunctionPrototypes
+    WindowPtr /*pWin*/
+#endif
+);
+
+extern void BlockHandler(
+#if NeedFunctionPrototypes
+    pointer /*pTimeout*/,
+    pointer /*pReadmask*/
+#endif
+);
+
+extern void WakeupHandler(
+#if NeedFunctionPrototypes
+    unsigned long /*result*/,
+    pointer /*pReadmask*/
+#endif
+);
+
+typedef void (* BlockHandlerProcPtr)(
+#if NeedNestedPrototypes
+    pointer /* blockData */,
+    pointer /* pTimeout */,
+    pointer /* pReadmask */
+#endif
+);
+
+typedef void (* WakeupHandlerProcPtr)(
+#if NeedNestedPrototypes
+    pointer /* blockData */,
+    unsigned long /* result */,
+    pointer /* pReadmask */
+#endif
+);
+
+extern Bool RegisterBlockAndWakeupHandlers(
+#if NeedFunctionPrototypes
+    BlockHandlerProcPtr /*blockHandler*/,
+    WakeupHandlerProcPtr /*wakeupHandler*/,
+    pointer /*blockData*/
+#endif
+);
+
+extern void RemoveBlockAndWakeupHandlers(
+#if NeedFunctionPrototypes
+    BlockHandlerProcPtr /*blockHandler*/,
+    WakeupHandlerProcPtr /*wakeupHandler*/,
+    pointer /*blockData*/
+#endif
+);
+
+extern void InitBlockAndWakeupHandlers(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern void ProcessWorkQueue(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
+
+extern Bool QueueWorkProc(
+#if NeedFunctionPrototypes
+    Bool (* /*function*/)(),
+    ClientPtr /*client*/,
+    pointer /*closure*/
+#endif
+);
+
+extern Bool ClientSleep(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    Bool (* /*function*/)(),
+    pointer /*closure*/
+#endif
+);
+
+extern Bool ClientSignal(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
 #endif
 );
 
-extern void UpdateCurrentTime(
+extern void ClientWakeup(
 #if NeedFunctionPrototypes
-    void
+    ClientPtr /*client*/
 #endif
 );
 
-extern void UpdateCurrentTimeIf(
+extern Bool ClientIsAsleep(
 #if NeedFunctionPrototypes
-    void
+    ClientPtr /*client*/
 #endif
 );
-
 #endif /* DIX_H */
