@@ -1,0 +1,5 @@
+xkb_compatibility "misc" 
+
+// Interpretations miscellaneous other keys that might be usefule
+
+interpret Terminate_Server     { action = Terminate(); };

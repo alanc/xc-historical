@@ -1,0 +1,13 @@
+            SRCS = storage.c hash.c strtbl.c utils.c
+            OBJS = storage.o hash.o strtbl.o utils.o
+        INCLUDES = -I.
+#ifdef UtilsInstrumented
+    UTIL_DEFINES = UtilsInstrumentation
+#endif
+         DEFINES = $(STD_DEFINES) $(UTIL_DEFINES)
+#ifdef UtilsDebugged
+     CDEBUGFLAGS = -g
+#endif
+
+NormalLibraryTarget(utils,$(OBJS))
+DependTarget()

@@ -1,0 +1,32 @@
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+       SUBDIRS = utils
+
+          SRCS = xkbcomp.c xkbio.c xkbscan.c expr.c vmod.c misc.c \
+		 keymap.c keycodes.c keytypes.c compat.c action.c \
+		 symbols.c \
+		 xkmout.c xkbout.c cout.c
+          OBJS = xkbcomp.o xkbio.o xkbscan.o expr.o vmod.o misc.o \
+		 keymap.o keycodes.o keytypes.o compat.o action.o \
+		 symbols.o \
+		 xkmout.o xkbout.o cout.o \
+		 xkbparse.o
+      PROGRAMS = xkbcomp
+EXTRA_INCLUDES = -Iutils
+
+       XKBCOMP = xkbcomp
+
+MakeSubdirs($(SUBDIRS))
+
+all::	$(XKBCOMP)
+NormalProgramTarget($(XKBCOMP),$(OBJS),$(DEPXLIBONLY),$(XLIBONLY),utils/libutils.a)
+
+
+DependTarget()
+
+DependSubdirs($(SUBDIRS))
+
+clean::
+	$(RM) -f y.output test.h *.xkm
+

@@ -1,0 +1,7 @@
+xkb_compatibility "default" 
+
+include "basic"
+augment "iso9995"
+augment "mousekeys"
+augment "misc"
+
