@@ -1,4 +1,4 @@
-/* $XConsortium: miTriStrip.c,v 5.4 91/07/15 21:15:44 hersh Exp $ */
+/* $XConsortium: miTriStrip.c,v 5.5 91/11/15 19:57:53 hersh Exp $ */
 
 
 /***********************************************************
@@ -1948,20 +1948,17 @@ miCullTriStrip(pddc, input_vert, input_fct, output_vert, output_fct)
 	out_vert->numLists = 0,
 	pddilist = input_vert->ddList, pddolist = out_vert->ddList; 
 	i < input_vert->numLists; i++) {
-      MI_ALLOCLISTOFDDPOINT(pddolist,(pddilist->numPoints+1),point_size);
- 
-      in_pt.ptr = pddilist->pts.ptr;
-      out_pt.ptr = pddolist->pts.ptr; 
-      pddolist->numPoints = 0;
 
+      MI_ALLOCLISTOFDDPOINT(pddolist,(pddilist->numPoints+1),point_size);
+      if (!pddolist->pts.ptr) return(BadAlloc);
+ 
       for (j= 2, verts_in_list = 0, new_list = 1,
-	   in_pt.ptr = pddilist->pts.ptr,
+	   in_pt.ptr = pddilist->pts.ptr + (2 * point_size),
 	   out_pt.ptr = pddolist->pts.ptr,
 	   pddolist->numPoints = 0; 
 		j < pddilist->numPoints; j++) {
 
         accept = 0;
-
  
         if (pddc->Dynamic->pPCAttr->cullMode == PEXBackFaces) {
           if (DD_IsFacetColour(input_fct->type)) {
@@ -1977,8 +1974,7 @@ miCullTriStrip(pddc, input_vert, input_fct, output_vert, output_fct)
 
 	  if (new_list) { /* starting new list after facet(s) culled */
 	    /*initialize first points for the first facet */
-	    bcopy(in_pt.ptr, out_pt.ptr, (2*point_size));
-	    in_pt.ptr += 2 * point_size;
+	    bcopy(in_pt.ptr - (2 * point_size), out_pt.ptr, (2*point_size));
 	    out_pt.ptr += 2 * point_size;
 	    new_list = 0;
 	    verts_in_list += 2;
@@ -2007,11 +2003,13 @@ miCullTriStrip(pddc, input_vert, input_fct, output_vert, output_fct)
 	    /* create a new output vertex list; load first points */
 	    MI_ALLOCLISTHEADER(out_vert,
                         MI_ROUND_LISTHEADERCOUNT(out_listnum))
+	    if (!out_vert->ddList) return(BadAlloc);
   
 	    pddolist = out_vert->ddList + (out_listnum - 1);
 	    pddolist->numPoints = 0;
       	    MI_ALLOCLISTOFDDPOINT(pddolist,
 			(pddilist->numPoints - j + 2), point_size);
+	    if (!pddolist->pts.ptr) return(BadAlloc);
 	    out_pt.ptr =  pddolist->pts.ptr;
 	    verts_in_list = 0;
 	  } 
