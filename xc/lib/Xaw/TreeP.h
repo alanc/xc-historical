@@ -65,9 +65,13 @@ typedef struct {
     Dimension      v_min_space;
     Pixel          foreground;
     GC             gc;
-    TreeOffsetPtr  horizontal;
-    TreeOffsetPtr  vertical;
+    TreeOffsetPtr  horizontal;		/* doug */
+    TreeOffsetPtr  vertical;		/* doug */
     Widget         tree_root;
+#ifndef DOUG
+    TreeOffsetPtr  largest;
+    Boolean        horiz;
+#endif
 } TreePart;
 
 
@@ -83,8 +87,9 @@ typedef struct _TreeRec {
 typedef struct _TreeConstraintsPart {
   Widget        super_node;
   WidgetList    sub_nodes;
-  long          n_sub_nodes;
-  long          max_sub_nodes;
+  int           n_sub_nodes;
+  int           max_sub_nodes;
+  Dimension     bbwidth, bbheight;
   Position      x, y;
 } TreeConstraintsPart;
 

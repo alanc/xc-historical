@@ -183,6 +183,10 @@ static void Initialize(request, new)
    */
   new->tree.horizontal = create_offset(10);
   new->tree.vertical   = create_offset(10);
+#ifndef DOUG
+  new->tree.largest    = create_offset(10);
+  new->tree.horiz = TRUE;
+#endif
 } 
 
 static void ConstraintInitialize(request, new)
@@ -274,11 +278,11 @@ static void insert_new_node(super_node, node)
 {
   TreeConstraints super_const = TREE_CONSTRAINT(super_node);
   TreeConstraints node_const = TREE_CONSTRAINT(node);
-  int index = super_const->tree.n_sub_nodes;
+  int nindex = super_const->tree.n_sub_nodes;
   
   node_const->tree.super_node = super_node;
   /*
-   * If there is now more room in the sub_nodes array, 
+   * If there isn't more room in the sub_nodes array, 
    * allocate additional space.
    */  
   if(super_const->tree.n_sub_nodes ==
@@ -294,7 +298,7 @@ static void insert_new_node(super_node, node)
    * Add the sub_node in the next available slot and 
    * increment the counter.
    */
-  super_const->tree.sub_nodes[index] = node;
+  super_const->tree.sub_nodes[nindex] = node;
   super_const->tree.n_sub_nodes++;
 }
 
@@ -418,6 +422,7 @@ static void Redisplay (w, event, region)
     }
 }
 
+#ifdef DOUG
 static void new_layout(tw)
      TreeWidget   tw;
 {
@@ -441,10 +446,10 @@ static void new_layout(tw)
     XClearArea(XtDisplay(tw), XtWindow(tw), 0, 0, 0, 0, TRUE);
 }
 
- static int compute_positions(tw, w, level)
-     TreeWidget tw;
-     Widget       w;
-     long         level;
+static int compute_positions(tw, w, level)
+    TreeWidget tw;
+    Widget w;
+    int level;
 {
  Position       current_hpos, current_vpos;
  int             i, depth = 0;
@@ -540,6 +545,7 @@ static void shift_subtree(w, offset)
   for(i=0; i< tree_const->tree.n_sub_nodes; i++)
     shift_subtree(tree_const->tree.sub_nodes[i], offset);
 }
+#endif /* DOUG */
 
 static void set_positions(tw, w, level)
      TreeWidget tw;
@@ -556,8 +562,10 @@ static void set_positions(tw, w, level)
   * Add up the sum of the width's of all nodes to this 
   * depth, and use it as the x position.
   */
+#ifdef DOUG
   tree_const->tree.x = (level * tw->tree.h_min_space) + 
                 sum_of_positions(tw->tree.horizontal, level);
+#endif
  /*
   * Move the widget into position.
   */
@@ -592,7 +600,7 @@ static void set_positions(tw, w, level)
 }
 
 static TreeOffsetPtr create_offset(size)
-   long size;
+   int size;
 {
  TreeOffsetPtr  offset = 
                  (TreeOffsetPtr) XtMalloc(sizeof(TreeOffset));
@@ -605,45 +613,220 @@ static TreeOffsetPtr create_offset(size)
 static void reset(offset)
    TreeOffsetPtr offset;
 {
-  long i;
+  int i;
   for(i=0; i< offset->size; i++)
     offset->array[i] = 0;
 }
 
 static Position current_position(offset, position)
    TreeOffsetPtr  offset;
-   long          position;
+   int          position;
 {
   if(position >= offset->size)
     return (0);
   return (offset->array[position]);
  }
 
-static void set_current_position(offset, index, value)
+static void set_current_position(offset, nindex, value)
    TreeOffsetPtr offset;
-   int           index;
+   int           nindex;
    Dimension     value;
 {
- if(index >= offset->size){
-   offset->size = index + index / 2;
+ if(nindex >= offset->size){
+   offset->size = nindex + nindex / 2;
    offset->array =
     (Dimension *) XtRealloc(offset->array, 
                             offset->size * sizeof(Dimension));
  }
- offset->array[index] = value;
+ offset->array[nindex] = value;
 }
 
-static Position sum_of_positions(offset, index)
+static Position sum_of_positions(offset, nindex)
    TreeOffsetPtr  offset;
-   long           index;
+   int           nindex;
 {
   int    i;
   Position  sum  = 0;
-  long      stop = index;
-  if(index > offset->size) 
+  int      stop = nindex;
+  if(nindex > offset->size) 
     stop = offset->size;
   for (i=0;i < stop; i++)
     sum += offset->array[i];
   return (sum);
 }
 
+
+static void set_offset_to_max_value (offset, nindex, value)
+    TreeOffsetPtr offset;
+    int nindex;
+    Dimension value;
+{
+    if (nindex >= offset->size) {
+	int oldsize = offset->size;
+	register int i;
+
+	offset->size = nindex + nindex / 2;
+	offset->array = (Dimension *) 
+	  XtRealloc (offset->array, offset->size * sizeof(Dimension));
+	for (i = oldsize; i < offset->size; i++) offset->array[i] = 0;
+    }
+    if (offset->array[nindex] < value) offset->array[nindex] = value;
+}
+
+
+#ifndef DOUG
+static void compute_bounding_box_subtree (tree, w, depth)
+    TreeWidget tree;
+    Widget w;
+    int depth;
+{
+    TreeConstraints tc = TREE_CONSTRAINT(w);  /* info attached to all kids */
+    register int i;
+    Bool horiz = (Bool) tree->tree.horiz;
+    Dimension newwidth, newheight;
+
+    /*
+     * Set the max-size per level.
+     */
+    set_offset_to_max_value (tree->tree.largest, depth,
+			    (horiz ? w->core.width : w->core.height));
+    tc->tree.bbwidth = w->core.width;
+    tc->tree.bbheight = w->core.height;
+
+    if (tc->tree.n_sub_nodes == 0) return;
+
+    /*
+     * Figure the size of the opposite dimension (vertical if tree is 
+     * horizontal, else vice versa).  The other dimension will be set 
+     * in the second pass once we know the maximum dimensions.
+     */
+    newwidth = 0;
+    newheight = 0;
+    for (i = 0; i < tc->tree.n_sub_nodes; i++) {
+	Widget child = tc->tree.sub_nodes[i];
+	TreeConstraints cc = TREE_CONSTRAINT(child);
+	    
+	compute_bounding_box_subtree (tree, child, depth + 1);
+
+	if (horiz) {
+	    if (newwidth < cc->tree.bbwidth) newwidth = cc->tree.bbwidth;
+	    newheight += tree->tree.v_min_space + cc->tree.bbheight;
+	} else {
+	    if (newheight < cc->tree.bbheight) newheight = cc->tree.bbheight;
+	    newwidth += tree->tree.h_min_space + cc->tree.bbwidth;
+	}
+    }
+
+
+    /*
+     * Now fit parent onto side (or top) of bounding box and correct for
+     * extra padding.  Be careful of unsigned arithmetic.
+     */
+    if (horiz) {
+	tc->tree.bbwidth += tree->tree.h_min_space + newwidth;
+	newheight -= tree->tree.v_min_space;
+	if (newheight > tc->tree.bbheight) tc->tree.bbheight = newheight;
+    } else {
+	tc->tree.bbheight += tree->tree.v_min_space + newheight;
+	newwidth -= tree->tree.h_min_space;
+	if (newwidth > tc->tree.bbwidth) tc->tree.bbwidth = newwidth;
+    }
+}
+
+
+static void arrange_subtree (tree, w, depth, x, y)
+    TreeWidget tree;
+    Widget w;
+    int depth;
+    Position x, y;
+{
+    TreeConstraints tc = TREE_CONSTRAINT(w);  /* info attached to all kids */
+    TreeConstraints firstcc, lastcc;
+    register int i;
+    int newx, newy;
+    Bool horiz = (Bool) (tree->tree.horiz);
+
+    tc->tree.x = x;
+    tc->tree.y = y;
+    /*
+     * If no children, then just lay out where requested.
+     */
+    if (tc->tree.n_sub_nodes == 0) return;
+
+
+    /*
+     * Have children, so walk down tree laying out children, then laying
+     * out parents.
+     */
+    if (horiz) {
+	newx = x + tree->tree.largest->array[depth];
+	if (depth > 0) newx += tree->tree.h_min_space;
+	newy = y;
+    } else {
+	newx = x;
+	newy = y + tree->tree.largest->array[depth];
+	if (depth > 0) newy += tree->tree.v_min_space;
+    }
+
+    for (i = 0; i < tc->tree.n_sub_nodes; i++) {
+	Widget child = tc->tree.sub_nodes[i];
+	TreeConstraints cc = TREE_CONSTRAINT(child);
+
+	arrange_subtree (tree, child, depth + 1, newx, newy);
+	if (horiz) {
+	    newy += tree->tree.v_min_space + cc->tree.bbheight;
+	} else {
+	    newx += tree->tree.h_min_space + cc->tree.bbwidth;
+	}
+    }
+
+    /*
+     * now layout parent between first and last children
+     */
+    firstcc = TREE_CONSTRAINT (tc->tree.sub_nodes[0]);
+    lastcc = TREE_CONSTRAINT (tc->tree.sub_nodes[tc->tree.n_sub_nodes-1]);
+	
+    if (horiz) {
+	tc->tree.x = x;
+	tc->tree.y = (firstcc->tree.y +
+		      ((lastcc->tree.y - firstcc->tree.y) / 2));
+    } else {
+	tc->tree.x = (firstcc->tree.x +
+		      ((lastcc->tree.x - firstcc->tree.x) / 2));
+	tc->tree.y = y;
+    }
+}
+
+static void new_layout (tw)
+    TreeWidget tw;
+{
+    /*
+     * Do a depth-first search computing the width and height of the bounding
+     * box for the tree at that position (and below).  Then, walk again using
+     * this information to layout the children at each level.
+     */
+
+    reset (tw->tree.largest);
+    compute_bounding_box_subtree (tw, tw->tree.tree_root, 0);
+
+   /*
+    * Second pass to do final layout.  Each child's bounding box is stacked
+    * on top of (if horizontal, else next to) on top of its siblings.  The
+    * parent is centered between the first and last children.
+    */
+    arrange_subtree (tw, tw->tree.tree_root, 0, 0, 0);
+
+    /*
+     * Move each widget into place.
+     */
+    set_positions (tw, tw->tree.tree_root, 0, 0);
+
+    /*
+     * And redisplay.
+     */
+    if (XtIsRealized (tw))
+      XClearArea (XtDisplay(tw), XtWindow(tw), 0, 0, 0, 0, TRUE);
+
+}
+
+#endif /* not DOUG */
