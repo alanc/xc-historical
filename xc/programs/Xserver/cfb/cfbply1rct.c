@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbply1rct.c,v 1.5 91/04/09 19:23:20 keith Exp $
+ * $XConsortium: cfbply1rct.c,v 1.6 91/04/10 11:42:16 keith Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -98,6 +98,9 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	if (c > maxy)
 	    maxy = c;
     }
+    if (y == maxy)
+	return;
+
     if (clip & 0x80008000)
     {
 	miFillPolygon (pDrawable, pGC, shape, mode, vertex2p - (int *) ptsIn, ptsIn);
@@ -117,10 +120,10 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     x = intToX(vertex); \
     if (dy = intToY(c) - y) { \
     	dx = intToX(c) - x; \
-    	e = -dy; \
 	step = 0; \
     	if (dx >= 0) \
     	{ \
+	    e = 0; \
 	    sign = 1; \
 	    if (dx >= dy) {\
 	    	step = dx / dy; \
@@ -129,6 +132,7 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
     	} \
     	else \
     	{ \
+	    e = 1 - dy; \
 	    sign = -1; \
 	    dx = -dx; \
 	    if (dx >= dy) { \
@@ -149,21 +153,35 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	e -= dy; \
     } \
 }
-    while (y != maxy)
+    for (;;)
     {
-	while (y == intToY(vertex1))
+	if (y == intToY(vertex1))
 	{
-	    if (vertex1p == (int *) ptsIn)
-		vertex1p = endp;
-	    c = *--vertex1p;
-	    Setup (c,x1,vertex1,dx1,dy1,e1,sign1,step1)
+	    do
+	    {
+	    	if (vertex1p == (int *) ptsIn)
+		    vertex1p = endp;
+	    	c = *--vertex1p;
+	    	Setup (c,x1,vertex1,dx1,dy1,e1,sign1,step1)
+	    } while (y == intToY(vertex1));
 	}
-	while (y == intToY(vertex2))
+	else
 	{
-	    c = *vertex2p++;
-	    if (vertex2p == endp)
-		vertex2p = (int *) ptsIn;
-	    Setup (c,x2,vertex2,dx2,dy2,e2,sign2,step2)
+	    Step(x1,dx1,dy1,e1,sign1,step1)
+	}
+	if (y == intToY(vertex2))
+	{
+	    do
+	    {
+	    	c = *vertex2p++;
+	    	if (vertex2p == endp)
+		    vertex2p = (int *) ptsIn;
+	    	Setup (c,x2,vertex2,dx2,dy2,e2,sign2,step2)
+	    } while (y == intToY(vertex2));
+	}
+	else
+	{
+	    Step(x2,dx2,dy2,e2,sign2,step2)
 	}
 	/* fill spans for this segment */
 	h = dy1;
@@ -204,11 +222,14 @@ RROP_NAME(cfbFillPoly1Rect) (pDrawable, pGC, shape, mode, count, ptsIn)
 	    	if (mask = ~SCRRIGHT(bits, r & PIM))
 	    	    RROP_SOLID_MASK(addr,mask);
 	    }
-	    addrl = AddrYPlus (addrl, 1);
 	    if (!--h)
 		break;
+	    addrl = AddrYPlus (addrl, 1);
 	    Step(x1,dx1,dy1,e1,sign1,step1)
 	    Step(x2,dx2,dy2,e2,sign2,step2)
 	}
+	if (y == maxy)
+	    break;
+	addrl = AddrYPlus (addrl, 1);
     }
 }
