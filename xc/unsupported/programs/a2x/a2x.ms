@@ -1,4 +1,4 @@
-$XConsortium: a2x.doc,v 1.9 92/08/13 20:07:44 rws Exp $
+$XConsortium: a2x.doc,v 1.10 92/08/15 16:44:52 rws Exp $
 
 				Using a2x
 
@@ -909,9 +909,11 @@ important, once you have started DragonDictate in one DOS window, do not
 try to start up DragonDictate again, or your PC will hang.  You will have
 to reboot before starting up DragonDictate again.
 
-DESQview/X looks for the font "pc8x16" to use in the DOS window.  You will
-want to create an X font alias to map this name to whatever font you
-prefer.
+DESQview/X looks for the font "pc8x16" to use in the DOS window.  The
+BDF form of this font comes with DESQview/X, in \DVS\BDF\.  You may
+want to use pc8x14 or pc8x8 instead, to take up less space on your
+screen.  In that case, you will want to create an X font alias to map
+the name pc8x16 to the font you prefer.
 
 There is no good way through DESQview/X to control the initial size and
 position of the DOS window on your X display.  (Actually, you can control
