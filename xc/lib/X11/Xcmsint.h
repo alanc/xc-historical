@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.2 91/02/11 18:18:10 dave Exp $ */
+/* $XConsortium: Xcmsint.h,v 1.3 91/02/15 18:34:57 dave Exp $ */
 
 /*
  * (c) Copyright 1990 1991 Tektronix Inc.
@@ -21,22 +21,13 @@
  * software.
  *
  *
- *	NAME
- *		TekCMSP.h
- *
  *	DESCRIPTION
- *		Private include file for TekCMS color extension to X.
+ *		Private include file for Color Management System.
  *		(i.e., for API internal use only)
- *              This file used to be: TekCMSP.h
- *                                    XcmsSD.h
- *                                    XcmsGRAYSD.h
- *                                    XcmsLRGBSD.h
- *                                    XcmsMath.h
- *                                    XcmsStdIll.h
  *
  */
-#ifndef Xcmsint_H
-#define Xcmsint_H
+#ifndef _XCMSINT_H_
+#define _XCMSINT_H_
 
 #include <sys/types.h>
 #include <X11/Xcms.h>
@@ -126,13 +117,6 @@ typedef struct _XcmsPerDpyInfo {
 } XcmsPerDpyInfo, *XcmsPerDpyInfoPtr;
 
 /*
- *	DESCRIPTION
- *		Include file for TekCMS Color Extension when using the
- *		X Device Color Characterization Convention (XDCCC).
- *
- */
-
-/*
  *	DEFINES
  */
 
@@ -147,12 +131,6 @@ typedef struct _IntensityTbl {
     IntensityRec *pBase;
     unsigned int nEntries;
 } IntensityTbl;
-
-/*
- *	DESCRIPTION
- *		Include file for TekCMS Color Extension when using the
- *		X Device Color Characterization Convention (XDCCC).
- */
 
 /*
  *	DEFINES
@@ -172,17 +150,10 @@ typedef struct {
 } GRAY_SCCData;
 
 /*
- *	DESCRIPTION
- *		Include file for TekCMS Color Extension when using the
- *		X Device Color Characterization Convention (XDCCC).
- *
- */
-
-/*
  *	DEFINES
  */
 
-#define XDCCC_NUMBER	0x8000000	/* 2**27 per XDCCC */
+#define XDCCC_NUMBER	0x8000000L	/* 2**27 per XDCCC */
 
 #define XDCCC_MATRIX_ATOM_NAME	"XDCCC_LINEAR_RGB_MATRICES"
 #define XDCCC_CORRECT_ATOM_NAME "XDCCC_LINEAR_RGB_CORRECTION"
@@ -198,8 +169,8 @@ typedef struct {
 /*
  *	DESCRIPTION
  *		Include file for defining the math macros used in the
- *		TekCMS source.  Instead of using math library routines
- *		directly, TekCMS uses macros so that based on the
+ *		XCMS source.  Instead of using math library routines
+ *		directly, XCMS uses macros so that based on the
  *		definitions here, vendors and sites can specify exactly
  *		what routine will be called (those from libm.a or their
  *		custom routines).  If not defined to math library routines
@@ -259,4 +230,4 @@ double XcmsSquareRoot();
 #define WP_9300K_v	0.4463
 #define WP_9300K_Y	1.0000
 
-#endif /* Xcmsint_H */
+#endif /* _XCMSINT_H_ */
