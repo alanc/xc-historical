@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.48 91/04/15 13:53:13 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.48 91/04/15 17:30:16 gildea Exp $
  */
 
 /*
@@ -423,30 +423,42 @@ typedef struct _TekWidgetRec {
 
 #define BUF_SIZE 4096
 
-/* masks for terminal flags */
+/*
+ * terminal flags
+ * There are actually two namespaces mixed together here.
+ * One is the set of flags that can go in screen->buf attributes
+ * and which must fit in a char.
+ * The other is the global setting stored in
+ * term->flags and screen->save_modes.  This need only fit in an unsigned.
+ */
 
+#define	ATTRIBUTES	0x07	/* mask: user-visible attributes */
+/* global flags and character flags (visible character attributes) */
 #define INVERSE		0x01	/* invert the characters to be output */
 #define UNDERLINE	0x02	/* true if underlining */
 #define BOLD		0x04
-#define WRAPAROUND	0x08	/* true if auto wraparound mode */
-#define REVERSE_VIDEO	0x10	/* true if screen white on black */
-#define ORIGIN		0x20	/* true if in origin mode */
-#define INSERT		0x40	/* true if in insert mode */
-#define ENDLINE		0x80	/*
-				 * always false in term->flags, used to
-				 * indicate the end of a line in the
-				 * screen->buf attributes so we can tell the
-				 * difference between lines that have wrapped
-				 * around and lines that have ended naturally
-				 * with a CR at column max_col.
+/* character flags (internal attributes) */
+#define LINEWRAPPED	0x08	/* used on the first character in a
+				 * line to indicate that it wraps onto
+				 * the next line so we can tell the
+				 * difference between lines that have
+				 * wrapped around and lines that have
+				 * ended naturally with a CR at column
+				 * max_col.
 				 */
-#define SMOOTHSCROLL	0x100	/* true if in smooth scroll mode */
-#define IN132COLUMNS	0x200	/* true if in 132 column mode */
-#define LINEFEED	0x400	/* true if in auto linefeed mode */
+#define CHARDRAWN	0x10    /* a character has been drawn here on the
+				   screen.  Used to distinguish blanks from
+				   empty parts of the screen when selecting */
+/* global flags */
+#define WRAPAROUND	0x400	/* true if auto wraparound mode */
 #define	REVERSEWRAP	0x800	/* true if reverse wraparound mode */
+#define REVERSE_VIDEO	0x1000	/* true if screen white on black */
+#define LINEFEED	0x2000	/* true if in auto linefeed mode */
+#define ORIGIN		0x4000	/* true if in origin mode */
+#define INSERT		0x8000	/* true if in insert mode */
+#define SMOOTHSCROLL	0x10000	/* true if in smooth scroll mode */
+#define IN132COLUMNS	0x20000	/* true if in 132 column mode */
 
-#define	ATTRIBUTES	0x07	/* attributes mask */
-#define CHAR		0177
 
 #define VWindow(screen)		(screen->fullVwin.window)
 #define VShellWindow		term->core.parent->core.window
