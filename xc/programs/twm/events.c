@@ -25,7 +25,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.59 89/05/11 16:17:46 jim Exp $
+ * $XConsortium: events.c,v 1.60 89/05/11 19:13:59 jim Exp $
  *
  * twm event handling
  *
@@ -35,7 +35,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.59 89/05/11 16:17:46 jim Exp $";
+"$XConsortium: events.c,v 1.60 89/05/11 19:13:59 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -990,9 +990,11 @@ HandleMapNotify()
 void
 HandleUnmapNotify()
 {
-    int dstx, dsty;
-    Window dummy;
+    int dstx, dsty, dumint;
+    unsigned int dumuint, bw;
+    Window dumwin;
     XDestroyWindowEvent dev;
+    Bool reborder = False;
 
 #ifdef DEBUG_EVENTS
     fprintf(stderr, "UnmapNotify\n");
@@ -1029,12 +1031,23 @@ HandleUnmapNotify()
     SetMapStateProp(Tmp_win, WithdrawnState);
     if (!XTranslateCoordinates (dpy, Event.xunmap.window, 
 				Tmp_win->attr.root, 0, 0,
-				&dstx, &dsty, &dummy)) {
+				&dstx, &dsty, &dumwin)) {
 	dstx = dsty = 0;
     }
     XUnmapWindow (dpy, Event.xunmap.window);
+    /*
+     * XXX - what if we are running in don't-reparent mode?
+     */
+    if (XGetGeometry (dpy, Event.xunmap.window, &dumwin, &dumint, &dumint,
+		      &dumuint, &dumuint, &bw, &dumuint) &&
+	bw != Tmp_win->old_bw) {
+	reborder = True;			/* need to restore border */
+	dstx -= Tmp_win->old_bw;		/* current border is 0 */
+	dsty -= Tmp_win->old_bw;
+    }
     XReparentWindow (dpy, Event.xunmap.window, Tmp_win->attr.root, dstx, dsty);
     XRemoveFromSaveSet (dpy, Event.xunmap.window);
+    XSetWindowBorderWidth (dpy, Event.xunmap.window, Tmp_win->old_bw);
     dev.type = DestroyNotify;
     dev.serial = Event.xunmap.serial;
     dev.send_event = False;
