@@ -1034,6 +1034,12 @@ FreeWindowResources(pWin)
     (* proc)(pWin->borderSize);
     (* proc)(pWin->exposed);
     (* proc)(pWin->borderExposed);
+#ifdef SHAPE
+    if (pWin->windowShape)
+	(* proc)(pWin->windowShape);
+    if (pWin->borderShape)
+	(* proc)(pWin->borderShape);
+#endif
     if (pWin->backStorage)
     {
         (* proc)(pWin->backStorage->obscured);
@@ -1660,6 +1666,7 @@ WindowPtr   pWin;
 	    	(pWin->borderSize, pWin->borderSize, pWin->borderShape);
 	    (*pScreen->TranslateRegion)
 	    	(pWin->borderSize, pWin->absCorner.x, pWin->absCorner.y);
+	    (*pScreen->Union) (pWin->borderSize, pWin->borderSize, pWin->winSize);
     	}
 #endif
     } else {
@@ -1715,6 +1722,7 @@ MoveWindow(pWin, x, y, pNextSib)
     windowToValidate = MoveWindowInStack(pWin, pNextSib);
 
     ResizeChildrenWinSize(pWin, 0, 0, 0, 0);
+
     if (WasViewable)
     {
 
@@ -2300,6 +2308,69 @@ WindowExtents(pWin, pBox)
 	return(pBox);
 }
 
+#ifdef SHAPE
+#define IS_SHAPED(pWin)\
+    (((pWin)->borderWidth != 0 && (pWin)->borderShape) || (pWin)->windowShape)
+
+static RegionPtr
+MakeWindowRegion (pWin, pBox)
+    WindowPtr	pWin;
+    BoxPtr	pBox;
+{
+    RegionPtr	pRgn, pShape;
+    ScreenPtr	pScreen = pWin->drawable.pScreen;
+    BoxRec	shapeBox;
+
+    pRgn = (*pScreen->RegionCreate) (pBox, 1);
+    if (pWin->borderWidth) {
+	if (pWin->borderShape) {
+	    (*pScreen->TranslateRegion) (pRgn, -(pWin->clientWinSize.x - pWin->borderWidth),
+					       -(pWin->clientWinSize.y - pWin->borderWidth));
+	    shapeBox.x1 = 0;
+	    shapeBox.y1 = 0;
+	    shapeBox.x2 = pWin->clientWinSize.width;
+	    shapeBox.y2 = pWin->clientWinSize.height;
+	    pShape = (*pScreen->RegionCreate) (&shapeBox, 1);
+	    if (pWin->windowShape)
+		(*pScreen->Union) (pShape, pWin->windowShape, pWin->borderShape);
+	    else
+		(*pScreen->Union) (pShape, pShape, pWin->borderShape);
+	    (*pScreen->Intersect) (pRgn, pRgn, pShape);
+	    (*pScreen->RegionDestroy) (pShape);
+	    (*pScreen->TranslateRegion) (pRgn, pWin->clientWinSize.x - pWin->borderWidth,
+					       pWin->clientWinSize.y - pWin->borderWidth);
+	}
+    } else if (pWin->windowShape) {
+	    (*pScreen->TranslateRegion) (pRgn, -pWin->clientWinSize.x,
+					          -pWin->clientWinSize.y);
+	    (*pScreen->Intersect) (pRgn, pRgn, pWin->windowShape);
+	    (*pScreen->TranslateRegion) (pRgn, pWin->clientWinSize.x,
+					          pWin->clientWinSize.y);
+    }
+    return pRgn;
+}
+
+static Bool
+ShapeOverlap (pWin, pWinBox, pSib, pSibBox)
+    WindowPtr	pWin, pSib;
+    BoxPtr	pWinBox, pSibBox;
+{
+    RegionPtr	pWinRgn, pSibRgn;
+    ScreenPtr	pScreen;
+    Bool	ret;
+
+    if (!IS_SHAPED(pWin) && !IS_SHAPED(pSib))
+	return TRUE;
+    pScreen = pWin->drawable.pScreen;
+    pWinRgn = MakeWindowRegion (pWin, pWinBox);
+    pSibRgn = MakeWindowRegion (pSib, pSibBox);
+    (*pScreen->Intersect) (pWinRgn, pWinRgn, pSibRgn);
+    ret = (*pScreen->RegionNotEmpty) (pWinRgn);
+    (*pScreen->RegionDestroy) (pWinRgn);
+    (*pScreen->RegionDestroy) (pSibRgn);
+    return ret;
+}
+#endif
 
 static Bool
 AnyWindowOverlapsMe(pWin, pHead, box)
@@ -2315,7 +2386,11 @@ AnyWindowOverlapsMe(pWin, pHead, box)
 	if (pSib->mapped)
 	{
 	    sbox = WindowExtents(pSib, &sboxrec);
-	    if BOXES_OVERLAP(sbox, box)
+	    if (BOXES_OVERLAP(sbox, box)
+#ifdef SHAPE
+	    && ShapeOverlap (pWin, box, pSib, sbox)
+#endif
+	    )
 		return(TRUE);
 	}
     }
@@ -2336,7 +2411,11 @@ IOverlapAnyWindow(pWin, box)
 	if (pSib->mapped)
 	{
 	    sbox = WindowExtents(pSib, &sboxrec);
-	    if BOXES_OVERLAP(sbox, box)
+	    if (BOXES_OVERLAP(sbox, box)
+#ifdef SHAPE
+	    && ShapeOverlap (pWin, box, pSib, sbox)
+#endif
+	    )
 		return(TRUE);
 	}
     }
@@ -2765,23 +2844,67 @@ ActuallyDoSomething:
 SetShape(pWin)
     WindowPtr	pWin;
 {
-    int	x, y, bw;
+    Bool    WasViewable = (Bool)(pWin->viewable);
+    BoxPtr	pBox;
+    ScreenPtr	pScreen = pWin->drawable.pScreen;
+    Bool	anyMarked;
+    WindowPtr	pParent = pWin->parent;
+    RegionPtr	oldBorder, newBorder;
 
-    bw = pWin->borderWidth;
-    if (pWin->parent)
+    if (WasViewable)
     {
-        x = pWin->absCorner.x - pWin->parent->absCorner.x - (int)bw;
-        y = pWin->absCorner.y - pWin->parent->absCorner.y - (int)bw;
+        pBox = (* pScreen->RegionExtents)(pWin->borderSize);
+	anyMarked = MarkSiblingsBelowMe(pWin, pBox);
     }
-    else
+
+    oldBorder = (*pScreen->RegionCreate) ((BoxPtr) 0, 0);
+    (*pScreen->RegionCopy) (oldBorder, pWin->borderSize);
+    (*pScreen->Subtract) (oldBorder, oldBorder, pWin->winSize);
+    SetWinSize (pWin);
+    SetBorderSize (pWin);
+  
+    newBorder = (*pScreen->RegionCreate) ((BoxPtr) 0, 0);
+    (*pScreen->RegionCopy) (newBorder, pWin->borderSize);
+    (*pScreen->Subtract) (newBorder, newBorder, pWin->winSize);
+    (*pScreen->Subtract) (newBorder, newBorder, oldBorder);
+    (*pScreen->RegionDestroy) (oldBorder);
+
+    ResizeChildrenWinSize(pWin, 0, 0, 0, 0);
+
+    if (WasViewable)
     {
-        x = pWin->absCorner.x;
-        y = pWin->absCorner.y;
-    }
-    /*
-     * use MoveWindow to avoid the dirty work.  A cheap hack...
-     */
-    MoveWindow(pWin, x, y, pWin->nextSib);
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    if (pWin->saveUnder)
+	    {
+		ChangeSaveUnder(pWin, pWin);
+	    }
+	    else
+	    {
+		CheckSaveUnder(pWin);
+	    }
+	}
+#endif /* DO_SAVE_UNDERS */
+
+        (* pScreen->ValidateTree)(pParent, (WindowPtr)NULL, TRUE, anyMarked);
+	
+	DoObscures(pParent); 
+
+	(*pScreen->Intersect) (newBorder, newBorder, pWin->borderClip);
+	(*pScreen->Union) (pWin->borderExposed, pWin->borderExposed, newBorder);
+	(*pScreen->RegionDestroy) (newBorder);
+
+	HandleExposures(pParent); 
+#ifdef DO_SAVE_UNDERS
+	if (DO_SAVE_UNDERS(pWin))
+	{
+	    DoChangeSaveUnder(pWin);
+	}
+#endif /* DO_SAVE_UNDERS */
+    } 
+    if (pWin->realized)
+	WindowsRestructured ();
 }
 #endif
 
