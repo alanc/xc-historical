@@ -1,6 +1,6 @@
 #include "copyright.h"
 
-/* $Header: XGetProp.c,v 11.10 87/09/11 08:04:23 toddb Exp $ */
+/* $Header: XGetProp.c,v 11.11 88/01/30 15:11:20 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 #define NEED_REPLIES
@@ -21,7 +21,6 @@ XGetWindowProperty(dpy, w, property, offset, length, delete,
     unsigned long *bytesafter;
     unsigned char **prop;
     {
-    int errorstatus;
     xGetPropertyReply reply;
     register xGetPropertyReq *req;
     LockDisplay(dpy);
@@ -33,9 +32,9 @@ XGetWindowProperty(dpy, w, property, offset, length, delete,
     req->longOffset = offset;
     req->longLength = length;
     
-    if (!(errorstatus = _XReply (dpy, (xReply *) &reply, 0, xFalse))) {
+    if (!_XReply (dpy, (xReply *) &reply, 0, xFalse)) {
 	UnlockDisplay(dpy);
-	return (errorstatus);
+	return (1);
 	}	
     *actual_type = reply.propertyType;
     *actual_format = reply.format;
