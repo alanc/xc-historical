@@ -799,5 +799,11 @@ Telephone and Telegraph Company or of the Regents of the
 University of California.
 .SH AUTHORS
 .PP
-A cast of thousands.  See the file \fIdoc/contributors\fP in the standard
-sources for some of the names.
+A cast of thousands, literally.  The staff members at MIT responsible
+for this release are:
+Donna Converse (MIT X Consortium),
+Jim Fulton (MIT X Consortium),
+Keith Packard (MIT X Consortium),
+Chris Peterson (MIT X Consortium),
+Bob Scheifler (MIT X Consortium), and
+Ralph Swick (Digital/MIT Project Athena).
