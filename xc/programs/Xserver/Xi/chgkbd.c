@@ -1,4 +1,4 @@
-/* $XConsortium: xchgkbd.c,v 1.7 89/12/02 15:20:31 rws Exp $ */
+/* $XConsortium: xchgkbd.c,v 1.8 90/05/18 11:33:45 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -117,6 +117,11 @@ ProcXChangeKeyboardDevice (client)
 	     ((dev->sync.state >= FROZEN) &&
 	      !SameClient(dev->grab, client))))
 	rep.status = GrabFrozen;
+    else if (!dev->focus)
+	{
+	SendErrorToClient(client, IReqCode, X_ChangeKeyboardDevice, 0, 
+		BadDevice);
+	}
     else
 	{
 	if (ChangeKeyboardDevice (inputInfo.keyboard, dev) != Success)

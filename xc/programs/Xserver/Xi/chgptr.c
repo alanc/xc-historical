@@ -1,4 +1,4 @@
-/* $XConsortium: xchgptr.c,v 1.7 89/12/02 15:20:38 rws Exp $ */
+/* $XConsortium: xchgptr.c,v 1.8 90/05/18 11:33:52 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -119,10 +119,13 @@ ProcXChangePointerDevice (client)
 	     ((dev->sync.state >= FROZEN) &&
 	      !SameClient(dev->grab, client))))
 	rep.status = GrabFrozen;
+    else if (!dev->focus)
+	{
+	SendErrorToClient(client, IReqCode, X_ChangePointerDevice, 0, 
+		BadDevice);
+	}
     else
 	{
-	if (inputInfo.pointer->focus == NULL)
-	    InitFocusClassDeviceStruct (inputInfo.pointer);
 	if (ChangePointerDevice (inputInfo.pointer, dev) != Success)
 	    {
 	    SendErrorToClient(client, IReqCode, X_ChangePointerDevice, 0, 

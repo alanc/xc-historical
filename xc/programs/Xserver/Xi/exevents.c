@@ -1,4 +1,4 @@
-/* $XConsortium: xexevents.c,v 1.13 90/05/18 11:38:09 rws Exp $ */
+/* $XConsortium: xexevents.c,v 1.14 90/05/18 11:45:21 rws Exp $ */
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
 Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -226,8 +226,11 @@ ProcessOtherEvent (xE, other, count)
 
     if (grab)
 	DeliverGrabbedEvent(xE, other, deactivateDeviceGrab, count);
-    else
+    else if (other->focus)
 	DeliverFocusedEvent(other, xE, GetSpriteWindow(), count);
+    else
+	DeliverDeviceEvents(GetSpriteWindow(), xE, NullGrab, NullWindow,
+			    other, count);
 
     if (deactivateDeviceGrab == TRUE)
 	{
@@ -767,7 +770,12 @@ SendEvent (client, d, dest, propagate, ev, mask, count)
 	pWin = spriteWin;
     else if (dest == InputFocus)
     {
-	WindowPtr inputFocus = d->focus->win;
+	WindowPtr inputFocus;
+	
+	if (!d->focus)
+	    inputFocus = spriteWin;
+	else
+	    inputFocus = d->focus->win;
 
 	if (inputFocus == FollowKeyboardWin)
 	    inputFocus = inputInfo.keyboard->focus->win;
@@ -1032,7 +1040,7 @@ DeleteDeviceFromAnyExtEvents(pWin, dev)
     /* If the focus window is a root window (ie. has no parent) 
 	then don't delete the focus from it. */
     
-    if ((pWin == dev->focus->win) && (pWin->parent != NullWindow))
+    if (dev->focus && (pWin==dev->focus->win) && (pWin->parent != NullWindow))
 	{
 	int focusEventMode = NotifyNormal;
 

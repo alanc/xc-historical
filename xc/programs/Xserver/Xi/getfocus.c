@@ -1,4 +1,4 @@
-/* $XConsortium: xgetfocus.c,v 1.3 89/10/10 16:10:04 gms Exp $ */
+/* $XConsortium: xgetfocus.c,v 1.4 89/12/02 15:20:58 rws Exp $ */
 
 /************************************************************
 Copyright (c) 1989 by Hewlett-Packard Company, Palo Alto, California, and the 
@@ -79,7 +79,7 @@ ProcXGetDeviceFocus(client)
     REQUEST_SIZE_MATCH(xGetDeviceFocusReq);
 
     dev = LookupDeviceIntRec (stuff->deviceid);
-    if (dev == NULL)
+    if (dev == NULL || !dev->focus)
 	{
 	SendErrorToClient(client, IReqCode, X_GetDeviceFocus, 0, BadDevice);
 	return Success;
