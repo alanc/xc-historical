@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 1.172 91/03/12 10:23:39 converse Exp $ */
+/* $XConsortium: Text.c,v 1.173 91/03/22 18:15:09 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2709,22 +2709,29 @@ Cardinal *num_args;
     redisplay = TRUE;
   }
 
-  if (oldtw->core.ancestor_sensitive != newtw->core.ancestor_sensitive ||
-      oldtw->core.sensitive != newtw->core.sensitive) {
-      Arg args[1];
-      XtSetArg(args[0], XtNancestorSensitive, 
-	       (newtw->core.ancestor_sensitive && newtw->core.sensitive));
-      if (newtw->text.vbar)
-	  XtSetValues(newtw->text.vbar, args, ONE);
-      if (newtw->text.hbar)
-	  XtSetValues(newtw->text.hbar, args, ONE);
-  }
-
   _XawTextExecuteUpdate(newtw);
   if (redisplay)
     _XawTextSetScrollBars(newtw);
 
   return redisplay;
+}
+
+/* invoked by the Simple widget's SetValues */
+static Boolean ChangeSensitive(w)
+    Widget w;	/* the new widget */
+{
+    Arg args[1];
+    TextWidget tw = (TextWidget) w;
+
+    (*(&simpleClassRec)->simple_class.change_sensitive)(w);
+
+    XtSetArg(args[0], XtNancestorSensitive, 
+	       (tw->core.ancestor_sensitive && tw->core.sensitive));
+    if (tw->text.vbar)
+	XtSetValues(tw->text.vbar, args, ONE);
+    if (tw->text.hbar)
+	XtSetValues(tw->text.hbar, args, ONE);
+    return False;
 }
 
 /*	Function Name: GetValuesHook
@@ -3243,7 +3250,7 @@ TextClassRec textClassRec = {
     /* extension	*/	NULL
   },
   { /* Simple fields */
-    /* change_sensitive	*/	XtInheritChangeSensitive
+    /* change_sensitive	*/	ChangeSensitive
   },
   { /* text fields */
     /* empty            */	0
