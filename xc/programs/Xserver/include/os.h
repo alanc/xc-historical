@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: os.h,v 1.17 87/08/31 12:22:24 toddb Locked $ */
+/* $Header: os.h,v 1.18 87/09/10 18:00:15 rws Locked $ */
 
 #ifndef OS_H
 #define OS_H
@@ -51,30 +51,40 @@ typedef struct _NewClientRec *NewClientPtr;
  */
 #if defined(ibm032) && !defined(_pcc_)
 
-#define ALLOCATE_LOCAL(size) (alloca(size))
+char *alloca();
+
+#define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)
 pragma on(alloca);
 
 #else /* everyone else */
 
+char *malloc();
+void free();
+
 # ifdef MALLOC_0_RETURNS_NULL
-# define ALLOCATE_LOCAL(size) (malloc(max(size,1)))
+# define ALLOCATE_LOCAL(size) malloc((unsigned)((size) > 0 ? (size) : 1))
 # else
-# define ALLOCATE_LOCAL(size) (malloc(size))
+# define ALLOCATE_LOCAL(size) malloc((unsigned)(size))
 # endif
 
-#define DEALLOCATE_LOCAL(ptr) (free(ptr))
+#define DEALLOCATE_LOCAL(ptr) free((char *)(ptr))
 
 #endif
 
-extern WaitForSomething();
-extern char *ReadRequestFromClient();   /* should be xReq but then 
-					   include Xproto.h */
-extern Bool CloseDownConnection();
-extern void CreateWellKnownSockets();
-extern FontPathPtr GetFontPath();
-extern FontPathPtr ExpandFontNamePattern();
-extern FID FiOpenForRead();
-extern int FiClose();
+char *ReadRequestFromClient();   /* should be xReq but then include Xproto.h */
+Bool CloseDownConnection();
+void CreateWellKnownSockets();
+void SetDefaultFontPath();
+void FreeFontRecord();
+void SetFontPath();
+FontPathPtr GetFontPath();
+FontPathPtr ExpandFontNamePattern();
+FID FiOpenForRead();
+void AbortServer();
+void ErrorF();
+unsigned long *Xalloc();
+unsigned long *Xrealloc();
+void Xfree();
 
 #endif /* OS_H */
