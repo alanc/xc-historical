@@ -1,0 +1,28 @@
+XCOMM
+XCOMM Fresco Xt library
+XCOMM
+
+#ifdef InObjectCodeDir
+
+LIB = Xtf
+VERSION = 1.0
+
+#if !defined(UseDebug)
+APP_CCFLAGS = $(OPTIMIZE_CCFLAGS)
+#endif
+
+APP_CCINCLUDES = -I$(SRC)
+
+#if defined(SGIArchitecture) && OSMajorVersion < 5
+APP_CCDEFINES = -DFUNCPROTO -D__STDC__
+#endif
+
+MakeLibrary($(LIB),$(VERSION))
+
+MakeObjectFromSrc(Xtf)
+
+#else
+
+MakeInObjectCodeDir()
+
+#endif
