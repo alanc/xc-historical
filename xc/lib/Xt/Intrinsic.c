@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.163 91/04/01 16:32:36 gildea Exp $ */
+/* $XConsortium: Intrinsic.c,v 1.164 91/04/08 16:28:17 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -984,6 +984,7 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
     XrmValue value;
     XrmName name_list[3];
     XrmClass class_list[3];
+    Boolean pathMallocd = False;
 
     if (path == NULL) {
 #ifndef VMS
@@ -1003,7 +1004,7 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
 
     bytesAllocd = bytesLeft = 1000;
     massagedPath = ALLOCATE_LOCAL(bytesAllocd);
-    if (massagedPath == NULL) _XtAllocError("alloca");
+    if (massagedPath == NULL) _XtAllocError(NULL);
 
     if (path[0] == ':') {
 	strcpy(massagedPath, "%N%S");
@@ -1016,11 +1017,16 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
     while (*path != '\0') {
 	if (bytesLeft < 8) {
 	    int bytesUsed = bytesAllocd - bytesLeft;
-	    char *new = (bytesAllocd += 1000, ALLOCATE_LOCAL(bytesAllocd));
-	    if (new == NULL) _XtAllocError("alloca");
-	    strncpy( massagedPath, new, bytesUsed );
+	    char *new;
+	    bytesAllocd +=1000;
+	    new = XtMalloc((Cardinal) bytesAllocd);
+	    strncpy( new, massagedPath, bytesUsed );
 	    ch = new + bytesUsed;
-	    DEALLOCATE_LOCAL(massagedPath);
+	    if (pathMallocd)
+		XtFree(massagedPath);
+	    else
+		DEALLOCATE_LOCAL(massagedPath);
+	    pathMallocd = True;
 	    massagedPath = new;
 	    bytesLeft = bytesAllocd - bytesUsed;
 	}
@@ -1084,7 +1090,10 @@ String XtResolvePathname(dpy, type, filename, suffix, path, substitutions,
     if (merged_substitutions != defaultSubs) 
 	DEALLOCATE_LOCAL(merged_substitutions);
 
-    DEALLOCATE_LOCAL(massagedPath);
+    if (pathMallocd)
+	XtFree(massagedPath);
+    else
+	DEALLOCATE_LOCAL(massagedPath);
 
     return result;
 }
