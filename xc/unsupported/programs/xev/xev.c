@@ -1,7 +1,7 @@
 /*
  * xev - event diagnostics
  *
- * $XConsortium: xev.c,v 1.10 89/12/12 14:50:23 rws Exp $
+ * $XConsortium: xev.c,v 1.11 90/03/12 11:06:00 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -871,6 +871,7 @@ do_MappingNotify (eventp)
 
     printf ("    request %s, first_keycode %d, count %d\n",
 	    r, e->first_keycode, e->count);
+    XRefreshKeyboardMapping(e);
     return;
 }
 
