@@ -23,7 +23,7 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
- /* $XConsortium:$ */
+ /* $XConsortium: init.c,v 1.3 94/02/10 20:08:49 dpw Exp $ */
 
 /* Hook up to an X server and set up a multiplexing LBX encoded connection */
 
@@ -49,15 +49,17 @@ InitMux (dpy_name, requestp, eventp, errorp, sequencep)
     if (!XLbxQueryVersion (dpy, &lbxMajor, &lbxMinor))
 	return -1;
     /* yuck.  Guess at the request number; 1 XFreeGC per screen and 1 XSync */
-    *sequencep = NextRequest (dpy) + XScreenCount (dpy);
-#if 0
-    /*  XXX on some systems, closing the display renders even the dup'ed
-     *  fd invalid.  For now, just leave the display open.  Note that
-     *  dpy is being leaked.
+#if R5Xlib
+    /*  XXX This works for R5 Xlib.  The else block works for R6 Xlib.
+     *  R6 Xlib calls shutdown() on the socket when you close the display;
+     *  that apparently renders the dup'ed fd invalid.
      */
+    *sequencep = NextRequest (dpy) + XScreenCount (dpy);
     fd = dup (ConnectionNumber (dpy));
     XCloseDisplay (dpy);
-#endif
+#else /* R6Xlib */
+    *sequencep = NextRequest (dpy)  - 1;
     fd = ConnectionNumber (dpy);
+#endif
     return fd;
 }
