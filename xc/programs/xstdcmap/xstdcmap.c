@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcmap.c,v 1.1 89/03/27 13:44:33 converse Exp $
+ * $XConsortium: xcmap.c,v 1.2 89/05/02 18:40:08 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -24,14 +24,18 @@
  */
 
 #include <stdio.h>
-#include <strings.h>
+#include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
 #include <X11/Xatom.h>
 
+extern void exit();
+
 #define REPLACE		1
 #define DO_NOT_REPLACE  0
+#define RETAIN		1
+#define DO_NOT_RETAIN	0
 
 static char		*display_name = NULL;
 static char		*program_name = NULL;
@@ -42,7 +46,8 @@ static Display		*dpy = NULL;
 
 typedef struct
 {
-    Bool	flag;
+    Bool	create;
+    Bool	delete;
     Atom	property;
     char	*name;
     char	*nickname;
@@ -50,13 +55,15 @@ typedef struct
 
 static colormap_property propertyTable[]=
 {
-{0,	XA_RGB_DEFAULT_MAP,	"RGB_DEFAULT_MAP",	"default"},
-{0,	XA_RGB_BEST_MAP,	"RGB_BEST_MAP",		"best"},
-{0,	XA_RGB_GRAY_MAP,	"RGB_GRAY_MAP",		"gray"},
-{0,	XA_RGB_RED_MAP,		"RGB_RED_MAP",		"red"},
-{0,	XA_RGB_GREEN_MAP,	"RGB_GREEN_MAP",	"green"},
-{0,	XA_RGB_BLUE_MAP,	"RGB_BLUE_MAP",		"blue"},
+{0,	0,	XA_RGB_DEFAULT_MAP,	"RGB_DEFAULT_MAP",	"default"},
+{0,	0,	XA_RGB_BEST_MAP,	"RGB_BEST_MAP",		"best"},
+{0,	0,	XA_RGB_GRAY_MAP,	"RGB_GRAY_MAP",		"gray"},
+{0,	0,	XA_RGB_RED_MAP,		"RGB_RED_MAP",		"red"},
+{0,	0,	XA_RGB_GREEN_MAP,	"RGB_GREEN_MAP",	"green"},
+{0,	0,	XA_RGB_BLUE_MAP,	"RGB_BLUE_MAP",		"blue"},
 };
+#define NPROPERTIES (sizeof propertyTable / sizeof propertyTable[0])
+
 #define DEFAULT	0
 #define BEST	1
 #define GRAY	2
@@ -70,6 +77,7 @@ static char	*usage_message[]=
 "    -best              make the RGB_BEST_MAP",
 "    -blue              make the RGB_BLUE_MAP",
 "    -default           make the RGB_DEFAULT_MAP",
+"    -delete map        remove a standard colormap",
 "    -display host:n.n  X server to use",
 "    -gray              make the RGB_GRAY_MAP",
 "    -green             make the RGB_GREEN_MAP",
@@ -84,6 +92,7 @@ static XrmOptionDescRec optionTable[]=
 {"-best",	".best",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-blue",	".blue",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-default",	".default",	XrmoptionNoArg,		(caddr_t) "on"},
+{"-delete",	".delete",	XrmoptionSepArg,	(caddr_t) NULL},
 {"-display",	".display", 	XrmoptionSepArg,	(caddr_t) NULL},
 {"-gray",	".gray",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-green",	".green",	XrmoptionNoArg,		(caddr_t) "on"},
@@ -111,34 +120,54 @@ static void parse(argc, argv)
     if (--argc)
 	usage(1);
 
-    sprintf(option, "%s%s", program_name, ".all");
+    (void) sprintf(option, "%s%s", program_name, ".all");
     if (XrmGetResource(database, option, (char *) NULL, &type, &value))
     	all++;
-    sprintf(option, "%s%s", program_name, ".best");
+
+    (void) sprintf(option, "%s%s", program_name, ".best");
     if (XrmGetResource(database, option, (char *) NULL, &type, &value))
-    	propertyTable[BEST].flag++;
-    sprintf(option, "%s%s", program_name, ".blue");
+    	propertyTable[BEST].create++;
+
+    (void) sprintf(option, "%s%s", program_name, ".blue");
     if (XrmGetResource(database, option, (char *) NULL, &type, &value))
-	propertyTable[BLUE].flag++;
-    sprintf(option, "%s%s", program_name, ".default");
+	propertyTable[BLUE].create++;
+
+    (void) sprintf(option, "%s%s", program_name, ".default");
     if (XrmGetResource(database, option, (char *) NULL, &type, &value))
-	propertyTable[DEFAULT].flag++;
-    sprintf(option, "%s%s", program_name, ".display");
+	propertyTable[DEFAULT].create++;
+
+    (void) sprintf(option, "%s%s", program_name, ".delete");
+    if (XrmGetResource(database, option, (char *) NULL, &type, &value)) {
+	register int i;
+	for (i=0; i < NPROPERTIES; i++) 
+	    if (strncmp((char *) value.addr, propertyTable[i].nickname,
+			(int) value.size) == 0) {
+		propertyTable[i].delete++;
+		break;
+	    }
+    }
+		
+    (void) sprintf(option, "%s%s", program_name, ".display");
     if (XrmGetResource(database, option, (char *) NULL, &type, &value))
 	display_name = value.addr;
-    sprintf(option, "%s%s", program_name, ".gray");
+
+    (void) sprintf(option, "%s%s", program_name, ".gray");
     if (XrmGetResource(database, option, (char *) NULL, &type, &value))
-	propertyTable[GRAY].flag++;
-    sprintf(option, "%s%s", program_name, ".green");
+	propertyTable[GRAY].create++;
+
+    (void) sprintf(option, "%s%s", program_name, ".green");
     if (XrmGetResource(database, option, (char *) NULL, &type, &value))
-	propertyTable[GREEN].flag++;
-    sprintf(option, "%s%s", program_name, ".help");
+	propertyTable[GREEN].create++;
+
+    (void) sprintf(option, "%s%s", program_name, ".help");
     if (XrmGetResource(database, option, (char *) NULL, &type, &value))
 	help++;
-    sprintf(option, "%s%s", program_name, ".red");
+
+    (void) sprintf(option, "%s%s", program_name, ".red");
     if (XrmGetResource(database, option, (char *) NULL, &type, &value))
-	propertyTable[RED].flag++;
-    sprintf(option, "%s%s", program_name, ".verbose");
+	propertyTable[RED].create++;
+
+    (void) sprintf(option, "%s%s", program_name, ".verbose");
     if (XrmGetResource(database, option, (char *) NULL, &type, &value))
 	verbose++;
 }
@@ -155,9 +184,10 @@ usage(status)
     Status		status;
 {
     register char	**i;
-    fprintf(stderr, "%s accepts the following options:\n\n", program_name);
+    (void) fprintf(stderr,
+		   "%s accepts the following options:\n\n", program_name);
     for (i = usage_message; *i != NULL; i++)
-	fprintf(stderr, "%s\n", *i);
+	(void) fprintf(stderr, "%s\n", *i);
     Exit(status);
 }
 
@@ -216,8 +246,7 @@ static XVisualInfo *getBestVisual(property, vinfo, nvisuals)
 static char *visualStringFromClass(class)
     int	class;
 {
-    switch (class)
-    {
+    switch (class) {
       case PseudoColor: return "PseudoColor";
       case DirectColor: return "DirectColor";
       case GrayScale: return "GrayScale";
@@ -232,53 +261,52 @@ static int doIndividualColormaps()
 {
     int			i, screen, nvisuals;
     Status		status;
-    unsigned long	red_max, green_max, blue_max;
-    XVisualInfo		*vinfo, *v, template;
+    XVisualInfo		*vinfo = NULL, *v = NULL, template;
     
     screen = DefaultScreen(dpy);
     template.screen = screen;
     vinfo = XGetVisualInfo(dpy, VisualScreenMask, &template, &nvisuals);
 
     /* check for individual standard colormap requests */
-    for (i=0; i <= 5; i++)
-    {
-	if (! propertyTable[i].flag)	
+    for (i=0; i < NPROPERTIES; i++) {
+
+	if (propertyTable[i].delete) {
+	    XmuDeleteStandardColormap(dpy, screen, propertyTable[i].property);
+	    if (verbose)
+		fprintf(stderr, "%s: %s was deleted or did not exist.\n",
+			program_name, propertyTable[i].name);
+	}
+
+	if (! propertyTable[i].create)	
 	    continue;
 	
 	/* which visual is best for this property? */
 	v = getBestVisual(propertyTable[i].property, vinfo, nvisuals);
-	if (v == NULL)
-	{
+	if (v == NULL) {
 	    if (verbose)
-		printf("%s: no visual appropriate for %s on screen %d.\n",
-		       program_name, propertyTable[i].name, screen);
+		(void) fprintf(stderr,
+		       "%s: no visual appropriate for %s on screen %d.\n",
+			program_name, propertyTable[i].name, screen);
 	    continue;
 	}
 
-	/* what is the best allocation for this property and visual? */
-	XmuGetColormapAllocation(propertyTable[i].property , v,
-				 &red_max, &green_max, &blue_max);
 
 	if (verbose)
-	{
-	    printf("%s: making %s on a %s visual of depth %u.\n",
-		   program_name, propertyTable[i].name,
-		   visualStringFromClass(v->class), v->depth);
-	    printf("    maximum red=%lu,", red_max);
-	    printf(" maximum green=%lu,", green_max);
-	    printf(" maximum blue=%lu.\n", blue_max);
-	}
+	    (void) fprintf(stderr,
+			   "%s: making %s on a %s visual of depth %u.\n",
+			   program_name, propertyTable[i].name,
+			   visualStringFromClass(v->class), v->depth);
 	
-	status = XmuStandardColormap(dpy, screen, v->visualid,
-				     v->depth,
-				     red_max, green_max, blue_max,
-				     propertyTable[i].property,
-				     DO_NOT_REPLACE);
+	status = XmuLookupStandardColormap(dpy, screen, v->visualid,
+					   v->depth,
+					   propertyTable[i].property,
+					   DO_NOT_REPLACE, RETAIN);
 	if (verbose)
-	    printf("%s: %s standard colormap %s.\n", program_name,
-		   propertyTable[i].name, (status)
-		   ? "was created or already exists"
-		   : "cannot be defined");
+	    (void) fprintf(stderr,
+			   "%s: %s standard colormap %s.\n", program_name,
+			   propertyTable[i].name, (status)
+			   ? "was created or already exists"
+			   : "cannot be defined");
 	if (!status)
 	    break;
     }
@@ -291,7 +319,7 @@ main(argc, argv)
     int		argc;
     char	**argv;
 {
-    Status	status;
+    Status	status = 0;
 
     if (program_name = rindex(*argv, '/'))
 	program_name++;
@@ -300,32 +328,32 @@ main(argc, argv)
 
     parse(argc, argv);
 
-    if ((dpy = XOpenDisplay(display_name)) == NULL)
-    {
+    if ((dpy = XOpenDisplay(display_name)) == NULL) {
 	(void) fprintf(stderr, "%s: cannot open display \"%s\".\n",
 		       program_name, XDisplayName(display_name));
 	exit(1);
     }
 
-    if (help)
+    if (help) {
 	usage(0);
-    else if (all)
-    {
-	if (verbose)
-	    fprintf(stderr, "%s: making all appropriate standard colormaps...",
-		    program_name);
-	status = XmuAllStandardColormaps(dpy);
-	if (verbose)
-	    fprintf(stderr, "\n%s!\n", (status) ? "success" : "failure");
-    }
-    else
-    {
-	status = doIndividualColormaps();
-	if (!status && verbose)
-	    fprintf("No new colormap definitions will be retained.\n");
+	Exit(0);
     }
 
-    if (status)
-	XSetCloseDownMode(dpy, RetainPermanent);
+    if (all) {
+	if (verbose)
+	    (void) fprintf(stderr,
+			   "%s: making all appropriate standard colormaps...",
+			   program_name);
+	status = XmuAllStandardColormaps(dpy);
+	if (verbose)
+	    (void) fprintf(stderr,
+			   "\n%s!\n", (status) ? "success" : "failure");
+    }
+    else {
+	status = doIndividualColormaps();
+	if (!status && verbose)
+	    (void) fprintf(stderr, 
+		    "Not all new colormap definitions will be retained.\n");
+    }
     Exit((status == 0) ? 1 : 0);
 }
