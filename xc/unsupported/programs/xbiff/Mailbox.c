@@ -1,5 +1,5 @@
 /*
- * $XHeader: Mailbox.c,v 1.7 88/03/07 14:45:47 swick Exp $
+ * $XHeader: Mailbox.c,v 1.8 88/07/05 12:12:54 jim Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -59,11 +59,13 @@ static XtActionsRec actionsList[] = {
 #define offset(field) XtOffset(MailboxWidget,mailbox.field)
 #define goffset(field) XtOffset(Widget,core.field)
 
+static Dimension defDim = 48;
+
 static XtResource resources[] = {
-    { XtNwidth, XtCWidth, XtRInt, sizeof (int), 
-	goffset (width), XtRString, "48" },
-    { XtNheight, XtCHeight, XtRInt, sizeof (int),
-	goffset (height), XtRString, "48" },
+    { XtNwidth, XtCWidth, XtRDimension, sizeof (Dimension), 
+	goffset (width), XtRDimension, (caddr_t)&defDim },
+    { XtNheight, XtCHeight, XtRDimension, sizeof (Dimension),
+	goffset (height), XtRDimension, (caddr_t)&defDim },
     { XtNupdate, XtCInterval, XtRInt, sizeof (int),
 	offset (update), XtRString, "30" },
     { XtNforeground, XtCForeground, XtRPixel, sizeof (Pixel),
@@ -118,6 +120,8 @@ MailboxClassRec mailboxClassRec = {
     /* callback_private		*/	NULL,
     /* tm_table			*/	defaultTranslations,
     /* query_geometry		*/	XtInheritQueryGeometry,
+    /* display_accelerator	*/	XtInheritDisplayAccelerator,
+    /* extension		*/	NULL
     }
 };
 
@@ -128,12 +132,11 @@ WidgetClass mailboxWidgetClass = (WidgetClass) &mailboxClassRec;
  * widget initialization
  */
 
+/* ARGSUSED */
 static void Initialize (request, new)
     Widget request, new;
 {
     MailboxWidget w = (MailboxWidget) new;
-    XtGCMask valuemask;
-    XGCValues xgcv;
 
     if (!w->mailbox.filename) GetMailFile (w);
 
@@ -215,7 +218,7 @@ static void Check (gw, event, params, nparams)
 }
 
 
-
+/* ARGSUSED */
 static void clock_tic (client_data, id)
     caddr_t client_data;
     XtIntervalId *id;
@@ -372,7 +375,6 @@ static void GetMailFile (w)
 {
     char *getlogin();
     char *username;
-    int len;
 
     username = getlogin ();
     if (!username) {
@@ -405,6 +407,7 @@ static void CloseDown (w, status)
 }
 
 
+/* ARGSUSED */
 static Boolean SetValues (gcurrent, grequest, gnew)
     Widget gcurrent, grequest, gnew;
 {
@@ -467,9 +470,6 @@ static void redraw_mailbox (w)
 static void beep (w)
     MailboxWidget w;
 {
-    register Display *dpy = XtDisplay (w);
-    register Window win = XtWindow (w);
-
-    XBell (dpy, MAILBOX_VOLUME);
+    XBell (XtDisplay (w), MAILBOX_VOLUME);
     return;
 }

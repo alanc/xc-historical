@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Logo.c,v 1.2 88/02/26 12:13:44 swick Exp $";
+static char rcsid[] = "$Header: Logo.c,v 1.9 88/08/18 16:49:36 swick Exp $";
 #endif
 
 /*
@@ -23,11 +23,15 @@ without express or implied warranty.
 #include <X11/IntrinsicP.h>
 #include <X11/LogoP.h>
 
+static Dimension defDim = 100;
+
 static XtResource resources[] = {
-    {XtNwidth, XtCWidth, XtRInt, sizeof(int),
-	XtOffset(Widget,core.width), XtRString, "100"},
-    {XtNheight, XtCHeight, XtRInt, sizeof(int),
-	XtOffset(Widget,core.height), XtRString, "100"},
+    {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
+	XtOffset(Widget,core.width), XtRDimension, (caddr_t)&defDim},
+    {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
+	XtOffset(Widget,core.height), XtRDimension, (caddr_t)&defDim},
+    {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
+	XtOffset(Widget,core.background_pixel), XtRString, "White"},
     {XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
         XtOffset(LogoWidget,logo.fgpixel), XtRString, "Black"},
     {XtNreverseVideo, XtCReverseVideo, XtRBoolean, sizeof (Boolean),
@@ -69,6 +73,8 @@ LogoClassRec logoClassRec = {
     /* callback_private		*/	NULL,
     /* tm_table			*/	NULL,
     /* query_geometry		*/	XtInheritQueryGeometry,
+    /* display_accelerator	*/	XtInheritDisplayAccelerator,
+    /* extension		*/	NULL
     }
 };
 
@@ -121,11 +127,9 @@ static void Redisplay (gw, event, region)
     Region region;		/* unused */
 {
     LogoWidget w = (LogoWidget) gw;
-    register Display *dpy = XtDisplay(w);
-    register Window win = XtWindow(w);
 
     XDrawLogo(XtDisplay(w), XtWindow(w), w->logo.foreGC, w->logo.backGC,
-	      0, 0, w->core.width, w->core.height);
+	      0, 0, (unsigned int)w->core.width, (unsigned int)w->core.height);
 }
 
 /* ARGSUSED */

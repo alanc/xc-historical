@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Label.c,v 1.44 88/02/26 12:12:36 swick Exp $";
+static char rcsid[] = "$Header: Label.c,v 1.48 88/08/25 15:26:08 swick Exp $";
 #endif lint
 
 
@@ -49,8 +49,8 @@ SOFTWARE.
 
 /* Private Data */
 
-static int defIWidth = 4;
-static int defIHeight = 2;
+static Dimension defIWidth = 4;
+static Dimension defIHeight = 2;
 static XtJustify defJustify = XtJustifyCenter;
 
 #define offset(field) XtOffset(LabelWidget, field)
@@ -63,10 +63,10 @@ static XtResource resources[] = {
 	offset(label.label), XtRString, NULL},
     {XtNjustify, XtCJustify, XtRJustify, sizeof(XtJustify),
 	offset(label.justify), XtRJustify, (caddr_t)&defJustify},
-    {XtNinternalWidth, XtCWidth, XtRInt,  sizeof(Dimension),
-	offset(label.internal_width), XtRInt, (caddr_t)&defIWidth},
-    {XtNinternalHeight, XtCHeight, XtRInt, sizeof(Dimension),
-	offset(label.internal_height), XtRInt, (caddr_t)&defIHeight},
+    {XtNinternalWidth, XtCWidth, XtRDimension,  sizeof(Dimension),
+	offset(label.internal_width), XtRDimension, (caddr_t)&defIWidth},
+    {XtNinternalHeight, XtCHeight, XtRDimension, sizeof(Dimension),
+	offset(label.internal_height), XtRDimension, (caddr_t)&defIHeight},
 };
 
 static void Initialize();
@@ -110,6 +110,8 @@ LabelClassRec labelClassRec = {
     /* callback_private   	*/	NULL,
     /* tm_table		   	*/	NULL,
     /* query_geometry		*/	XtInheritQueryGeometry,
+    /* display_accelerator	*/	XtInheritDisplayAccelerator,
+    /* extension		*/	NULL
   }
 };
 WidgetClass labelWidgetClass = (WidgetClass)&labelClassRec;

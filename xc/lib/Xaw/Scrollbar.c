@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.34 88/07/29 15:52:01 jim Exp $";
+static char rcsid[] = "$XHeader: Scroll.c,v 1.35 88/08/27 17:25:50 jim Exp $";
 #endif lint
 
 /***********************************************************
@@ -51,18 +51,20 @@ static char defaultTranslations[] =
 #endif
 
 static float floatZero = 0.0;
-static int DEFAULTVALUE = ~0;
+static Dimension DEFAULTVALUE = (Dimension)~0;
 
 #define Offset(field) XtOffset(ScrollbarWidget, field)
 
 static XtResource resources[] = {
-  {XtNwidth, XtCWidth, XtRInt, sizeof(int),
-	     Offset(core.width), XtRInt, (caddr_t)&DEFAULTVALUE},
-  {XtNheight, XtCHeight, XtRInt, sizeof(int),
-	     Offset(core.height), XtRInt, (caddr_t)&DEFAULTVALUE},
-  {XtNlength, XtCLength, XtRInt, sizeof(int),
+  {XtNwidth, XtCWidth, XtRDimension, sizeof(Dimension),
+	     Offset(core.width), XtRDimension, (caddr_t)&DEFAULTVALUE},
+  {XtNheight, XtCHeight, XtRDimension, sizeof(Dimension),
+	     Offset(core.height), XtRDimension, (caddr_t)&DEFAULTVALUE},
+  {XtNbackground, XtCBackground, XtRPixel, sizeof(Pixel),
+	     Offset(core.background_pixel), XtRString, "white"},
+  {XtNlength, XtCLength, XtRDimension, sizeof(Dimension),
 	     Offset(scrollbar.length), XtRString, "1"},
-  {XtNthickness, XtCThickness, XtRInt, sizeof(int),
+  {XtNthickness, XtCThickness, XtRDimension, sizeof(Dimension),
 	     Offset(scrollbar.thickness), XtRString, "14"},
   {XtNorientation, XtCOrientation, XtROrientation, sizeof(XtOrientation),
 	     Offset(scrollbar.orientation), XtRString, "vertical"},
@@ -149,6 +151,8 @@ ScrollbarClassRec scrollbarClassRec = {
     /* callback_private */      NULL,
     /* tm_table         */      defaultTranslations,
     /* query_geometry	*/	XtInheritQueryGeometry,
+    /* display_accelerator*/	XtInheritDisplayAccelerator,
+    /* extension        */	NULL
 };
 
 WidgetClass scrollbarWidgetClass = (WidgetClass)&scrollbarClassRec;
@@ -283,7 +287,7 @@ static FillArea(w, top, bottom, thumb)
 static void PaintThumb( w )
   ScrollbarWidget w;
 {
-    int oldtop, oldbot, newtop, newbot;
+    Position oldtop, oldbot, newtop, newbot;
 
     oldtop = w->scrollbar.topLoc;
     oldbot = oldtop + w->scrollbar.shownLength;
@@ -565,7 +569,7 @@ static Boolean LookAhead( w, event )
 
 static void ExtractPosition( event, x, y )
     XEvent *event;
-    int *x, *y;			/* RETURN */
+    Position *x, *y;		/* RETURN */
 {
     switch( event->type ) {
       case MotionNotify:
@@ -593,7 +597,7 @@ static void NotifyScroll( gw, event, params, num_params   )
     ScrollbarWidget w = (ScrollbarWidget) gw;
     int call_data;
     char style;
-    int x, y;
+    Position x, y;
 
     if (w->scrollbar.direction == 0) return; /* if no StartScroll */
 
@@ -607,7 +611,7 @@ static void NotifyScroll( gw, event, params, num_params   )
         case 'p':    ExtractPosition( event, &x, &y );
 		     call_data = InRange( PICKLENGTH( w, x, y ),
 					  0,
-					  w->scrollbar.length); break;
+					  (int) w->scrollbar.length); break;
 
         case 'F':    /* FullLength */
         case 'f':    call_data = w->scrollbar.length; break;
