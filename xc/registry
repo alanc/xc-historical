@@ -1,4 +1,4 @@
-/* $XConsortium: Xregistry,v 1.54 91/12/17 09:30:56 rws Exp $ */
+/* $XConsortium: Xregistry,v 1.55 91/12/17 18:49:05 rws Exp $ */
 
 1. ORGANIZATION NAMES
 
@@ -261,7 +261,7 @@ Name						Reference
 "ESLayersExtension"				[75]
 "ESCursorAttrExtension"				[75]
 "ESPickExtension"				[75]
-"fujitsu-Control-Modifiers"			[87]
+"FUJITSU-Control-Modifiers"			[87]
 "FUJITSU-VX-VideoControl"			[87]
 "FUJITSU-VX-DeviceControl"			[87]
 "MIT-SHM"					[8]
