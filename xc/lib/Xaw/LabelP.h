@@ -1,5 +1,5 @@
 /*
-* $Header: LabelP.h,v 1.8 87/12/04 10:56:40 swick Locked $
+* $Header: LabelP.h,v 1.10 88/01/27 07:40:52 swick Locked $
 */
 
 /*
@@ -38,6 +38,9 @@
  *
  ***********************************************************************/
 
+#include <X/Label.h>
+#include "SimpleP.h"
+
 /* New fields for the Label widget class record */
 
 typedef struct {int foo;} LabelClassPart;
@@ -45,6 +48,7 @@ typedef struct {int foo;} LabelClassPart;
 /* Full class record declaration */
 typedef struct _LabelClassRec {
     CoreClassPart	core_class;
+    SimpleClassPart	simple_class;
     LabelClassPart	label_class;
 } LabelClassRec;
 
@@ -63,7 +67,6 @@ typedef struct {
     /* private state */
     GC		normal_GC;
     GC          gray_GC;
-    Pixmap      gray_pixmap;
     Position	label_x;
     Position	label_y;
     Dimension	label_width;
@@ -80,6 +83,7 @@ typedef struct {
 
 typedef struct _LabelRec {
     CorePart	core;
+    SimplePart	simple;
     LabelPart	label;
 } LabelRec;
 
