@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.98 89/11/03 14:59:08 jim Exp $
+ * $XConsortium: events.c,v 1.99 89/11/03 19:03:28 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.98 89/11/03 14:59:08 jim Exp $";
+"$XConsortium: events.c,v 1.99 89/11/03 19:03:28 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -850,8 +850,10 @@ HandleExpose()
 		Scr->TitleBarFont.font->fid);
 
 	    XDrawString (dpy, Tmp_win->title_w, Scr->NormalGC,
-		TitleBarX, Scr->TitleBarFont.y,
-		Tmp_win->name, strlen(Tmp_win->name));
+			 (Scr->FramePadding + Scr->TBInfo.border * 2 +
+			  Scr->TBInfo.width + Scr->TitlePadding), 
+			 Scr->TitleBarFont.y,
+			 Tmp_win->name, strlen(Tmp_win->name));
 	    flush_expose (Event.xany.window);
 	}
 	else if (Event.xany.window == Tmp_win->icon_w)

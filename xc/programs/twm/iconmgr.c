@@ -21,7 +21,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.c,v 1.27 89/07/27 17:41:55 jim Exp $
+ * $XConsortium: iconmgr.c,v 1.28 89/07/28 17:22:39 jim Exp $
  *
  * Icon Manager routines
  *
@@ -284,9 +284,11 @@ int dir;
 	XWarpPointer(dpy, None, tmp->icon, 0,0,0,0, 5, 5);
     } else {
 	if (tmp->twm->title_height) {
-	    int x = (TitleBarX + tmp->twm->name_width + Scr->TitlePadding);
+	    int tbx = (Scr->FramePadding + Scr->TBInfo.width + 
+		       Scr->TBInfo.border * 2 + Scr->TitlePadding);
+	    int x = tbx + tmp->twm->name_width + Scr->TitlePadding;
 	    XWarpPointer (dpy, None, tmp->twm->title_w, 0, 0, 0, 0,
-			  x + (tmp->twm->attr.width - TitleBarX - x) / 2,
+			  x + (tmp->twm->attr.width - tbx - x) / 2,
 			  Scr->TitleHeight / 4);
 	} else {
 	    XWarpPointer (dpy, None, tmp->twm->w, 0, 0, 0, 0, 5, 5);

@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.41 89/11/01 19:21:12 jim Exp $
+ * $XConsortium: twm.h,v 1.42 89/11/03 19:03:47 jim Exp $
  *
  * twm include file
  *
@@ -260,7 +260,6 @@ extern char *Home;
 extern int HomeLen;
 extern int ParseError;
 
-extern int TitleBarX;
 extern int HandlingEvents;
 
 extern Window JunkRoot;

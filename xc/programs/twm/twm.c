@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.75 89/11/03 14:59:23 jim Exp $
+ * $XConsortium: twm.c,v 1.76 89/11/03 16:15:33 jim Exp $
  *
  * twm - "Tom's Window Manager"
  *
@@ -38,7 +38,7 @@
 
 #ifndef lint
 static char RCSinfo[] =
-"$XConsortium: twm.c,v 1.75 89/11/03 14:59:23 jim Exp $";
+"$XConsortium: twm.c,v 1.76 89/11/03 16:15:33 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -98,7 +98,6 @@ char *Home;			/* the HOME environment variable */
 int HomeLen;			/* length of Home */
 int ParseError;			/* error parsing the .twmrc file */
 
-int TitleBarX;			/* x coordinate ditto */
 int HandlingEvents = FALSE;	/* are we handling events yet? */
 
 Window JunkRoot;		/* junk window */
@@ -391,8 +390,6 @@ main(argc, argv, environ)
 	CreateGCs();
 	MakeMenus();
 
-	TitleBarX = (Scr->FramePadding + Scr->TitleBarFont.height + 
-		     Scr->TitlePadding);
 	Scr->TitleBarFont.y += Scr->FramePadding;
 	Scr->TitleHeight = Scr->TitleBarFont.height + Scr->FramePadding * 2;
 	/* make title height be odd so buttons look nice and centered */
