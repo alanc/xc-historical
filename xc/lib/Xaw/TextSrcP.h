@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.6 89/06/29 13:43:24 kit Exp $
+* $XConsortium: TextSrcP.h,v 1.7 89/07/06 16:00:48 kit Exp $
 */
 
 
@@ -39,20 +39,18 @@ typedef enum {XawstPositions, XawstWhiteSpace, XawstEOL, XawstParagraph,
 typedef struct _XawTextSource {
     XawTextPosition	(*Read)();
     int			(*Replace)();
-    XawTextPosition	(*GetLastPos)();
-    int			(*SetLastPos)();
     XawTextPosition	(*Scan)();
-    void		(*AddWidget)( /* source, widget */ );
-    void		(*RemoveWidget)( /* source, widget */ );
-    Boolean		(*GetSelection)( /* source, left, right, selection */);
     void		(*SetSelection)( /* source, left, right, selection */);
     Boolean		(*ConvertSelection)( /* Display*, source, ... */ );
+    Boolean             (*SetValuesHook)(); /* source, ArgList, NumArgs */
+    void                (*GetValuesHook)(); /* source, ArgList, NumArgs */
+    Widget              widget;	/* Parent of this text source. */
     XawTextEditType	edit_mode;
     caddr_t		data;	
-    Widget              widget;	/* Parent of this text source. */
-    Boolean             (*SetValuesHook)(); /* Widget, ArgList, NumArgs */
-    void                (*GetValuesHook)(); /* Widget, ArgList, NumArgs */
-  
+/* 
+ * For Compatability only.
+ */
+    int			(*SetLastPos)();
     };
 
 typedef struct _XawTextSink {

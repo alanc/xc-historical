@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: Text.c,v 1.90 89/06/29 13:43:12 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Text.c,v 1.91 89/07/06 16:00:38 kit Exp $";
 #endif /* lint && SABER */
 
 
@@ -1755,7 +1755,8 @@ Cardinal * num_args;
   Boolean ret = FALSE;
 
   if (ctx->text.source->SetValuesHook != NULL) 
-    ret = (*ctx->text.source->SetValuesHook) (w, args, num_args);
+    ret = (*ctx->text.source->SetValuesHook) (ctx->text.source,
+					      args, num_args);
 
 #ifdef notdef
   if (ctx->text.sink->SetValuesHook != NULL) 
@@ -1782,7 +1783,8 @@ Cardinal * num_args;
   TextWidget ctx = (TextWidget) w;
 
   if (ctx->text.source->GetValuesHook != NULL) 
-    (void) (*ctx->text.source->GetValuesHook) (w, args, num_args);
+    (void) (*ctx->text.source->GetValuesHook) (ctx->text.source,
+					       args, num_args);
 
 #ifdef notdef
   if (ctx->text.sink->GetValuesHook != NULL) 
@@ -1818,6 +1820,12 @@ void XawTextSetSelectionArray(w, sarray)
 {
     ((TextWidget)w)->text.sarray = sarray;
 }
+
+
+/*
+ * This function is no longer needed, and is left only for
+ * compatability with the String source.
+ */
 
 void XawTextSetLastPos (w, lastPos)
     Widget w;

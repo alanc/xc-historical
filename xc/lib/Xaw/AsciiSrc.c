@@ -1,5 +1,5 @@
 #if (!defined(lint) && !defined(SABER))
-static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.1 89/06/29 13:43:06 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSrc.c,v 1.2 89/07/06 16:00:50 kit Exp $";
 #endif /* lint && SABER */
 
 /*
@@ -400,37 +400,37 @@ Boolean	              include;
 
 /*	Function Name: SetValuesHook
  *	Description: Sets the values for the AsciiSource.
- *	Arguments: w - the text widget.
+ *	Arguments: src - the text source.
  *                 args - the arg list.
  *                 num_args - the number of args in the list.
  *	Returns: True if redisplay is needed.
  */
 
 static Boolean
-SetValuesHook(w, args, num_args)
-Widget w;
+SetValuesHook(src, args, num_args)
+XawTextSource src;
 ArgList args;
 Cardinal * num_args;
 {
-  TextWidget tw = (TextWidget)w;
   Boolean total_reset = FALSE;
-  AsciiSourcePtr data = (AsciiSourcePtr) tw->text.source->data;
+  AsciiSourcePtr data = (AsciiSourcePtr) src;
   AsciiSourcePtr old_data = XtNew(AsciiSourceData);
   XawTextEditType old_mode;
   register int i;
 
   bcopy( (char *) data, (char *) old_data, sizeof(AsciiSourceData));
   
-  XtSetSubvalues(tw->text.source->data,
-		 resources, XtNumber(resources), args, * num_args);
+  XtSetSubvalues( (caddr_t) data, resources, XtNumber(resources),
+		  args, * num_args);
 
   for (i = 0; i < *num_args ; i++ ) 
     if (streq(args[i].name, XtNstring) || streq(args[i].name, XtNtype) ) {
-      RemoveOldStringOrFile(old_data);          /* remove old info. */
-      InitStringOrFile(tw->text.source);	/* Init new info. */
+      RemoveOldStringOrFile(old_data);        /* remove old info. */
+      data->allocated_string = FALSE;
+      InitStringOrFile(src);	              /* Init new info. */
       LoadPieces(data, NULL);	     /* load new info into internal buffers. */
-      XawTextSetSource(w, tw->text.source, 0);  /* tell text widget
-						   what happened. */
+      XawTextSetSource(src->widget, src, 0);   /* tell text widget 
+						 what happened. */
       total_reset = TRUE;
       break;
     }
@@ -444,19 +444,19 @@ Cardinal * num_args;
 
   XtFree(old_data);
 
-  old_mode = tw->text.source->edit_mode;
+  old_mode = src->edit_mode;
 
-  XtSetSubvalues((caddr_t) tw->text.source,
-		 sourceResources, XtNumber(sourceResources), args, * num_args);
+  XtSetSubvalues((caddr_t) src, sourceResources, XtNumber(sourceResources),
+		 args, * num_args);
 
 /*
  * If the mode has changed we need to open the file in a new mode.
  */
 
   if ( (data->type == XawAsciiFile) && 
-       (old_mode != tw->text.source->edit_mode) ) {
+       (old_mode != src->edit_mode) ) {
     fclose(data->file);
-    InitStringOrFile(tw->text.source);
+    InitStringOrFile(src);
   }
 
   return(FALSE);
@@ -465,21 +465,20 @@ Cardinal * num_args;
 /*	Function Name: GetValuesHook
  *	Description: This is a get values hook routine that sets the
  *                   values specific to the ascii source.
- *	Arguments: w - the ascii text widget.
+ *	Arguments: src - the text source.
  *                 args - the argument list.
  *                 num_args - the number of args.
  *	Returns: none.
  */
 
 static void
-GetValuesHook(w, args, num_args)
-Widget w;
+GetValuesHook(src, args, num_args)
+XawTextSource src;
 ArgList args;
 Cardinal * num_args;
 {
   register int i;
-  TextWidget tw = (TextWidget)w;
-  AsciiSourcePtr data = (AsciiSourcePtr) tw->text.source->data;
+  AsciiSourcePtr data = (AsciiSourcePtr) src;
 
 #ifdef ASCII_STRING
   if (!data->ascii_string)
@@ -487,16 +486,16 @@ Cardinal * num_args;
     if (data->type == XawAsciiString) {
       for (i = 0; i < *num_args ; i++ ) 
 	if (streq(args[i].name, XtNstring)) {
-	  XawAsciiSave(w);
+	  XawAsciiSave(src->widget);
 	  break;
 	}
     }
 
-  XtGetSubvalues(tw->text.source->data,
-		 resources, XtNumber(resources), args, * num_args);
+  XtGetSubvalues((caddr_t) data, resources, XtNumber(resources),
+		 args, *num_args);
 
-  XtGetSubvalues((caddr_t) tw->text.source,
-		 sourceResources, XtNumber(sourceResources), args, * num_args);
+  XtGetSubvalues((caddr_t) src, sourceResources, XtNumber(sourceResources),
+		 args, * num_args);
 }
 
 /************************************************************
@@ -561,9 +560,9 @@ Cardinal num_args;
   src->Scan = Scan;
   src->SetSelection = NULL;
   src->ConvertSelection = NULL;
-  src->data = (caddr_t) (data = XtNew(AsciiSourceData));
   src->SetValuesHook = SetValuesHook;
   src->GetValuesHook = GetValuesHook;
+  src->data = (caddr_t) (data = XtNew(AsciiSourceData));
 
   XtGetSubresources (parent, (caddr_t)data, XtNtextSource, XtCTextSource,
 		     resources, XtNumber(resources),
@@ -729,6 +728,7 @@ AsciiSourcePtr data;
 
   if (data->allocated_string) 
     XtFree(data->string);
+
 }
 
 /*	Function Name: WriteToFile
@@ -848,10 +848,11 @@ XawTextSource src;
       data->string = tmpnam (XtMalloc((unsigned)TMPSIZ));
       data->is_tempfile = TRUE;
     } 
-    else {
-      data->allocated_string = TRUE;
-      data->string = XtNewString(data->string);
-    }
+    else 
+      if (!data->allocated_string) {
+	data->allocated_string = TRUE;
+	data->string = XtNewString(data->string);
+      }
 
     open_mode = "r+";
 
