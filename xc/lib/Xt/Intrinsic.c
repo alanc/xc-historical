@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Intrinsic.c,v 1.101 88/01/06 14:58:26 swick Locked $";
+static char rcsid[] = "$Header: Intrinsic.c,v 1.102 88/01/07 13:37:18 swick Locked $";
 #endif lint
 
 /*
@@ -429,7 +429,7 @@ static void _XtCreate2(widget,args,num_args)
     RecurseInitialize (reqWidget, widget, args, num_args, wClass);
 
     if ((widget->core.parent != (Widget)NULL) &&
-	XtIsSubclass(widget->core.parent, (WidgetClass)constraintWidgetClass)) 
+	XtIsSubclass(widget->core.parent, constraintWidgetClass)) 
        RecurseConstraintInitialize(reqWidget, widget, args, num_args,
                        widget->core.parent->core.widget_class);
 
@@ -449,7 +449,7 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
 
 /*||| this will go away with later changes to resource management|||*/
    widget =  _XtCreate1(name,widgetClass,parent);
-   if (XtIsSubclass(widget->core.parent, (WidgetClass)constraintWidgetClass)) {
+   if (XtIsSubclass(widget->core.parent, constraintWidgetClass)) {
    ConstraintWidgetClass cwc =(ConstraintWidgetClass) widget->core.parent->core.widget_class;
      widget->core.constraints = 
        (caddr_t)XtMalloc ((unsigned)cwc->constraint_class.constraint_size); 
@@ -464,7 +464,7 @@ Widget XtCreateWidget(name,widgetClass,parent,args,num_args)
           widget->core.parent->core.sensitive);
      _XtCreate2(widget,args,num_args);
 
-    if (XtIsSubclass(widget->core.parent, (WidgetClass)compositeWidgetClass))
+    if (XtIsComposite(widget->core.parent))
       (*(((CompositeWidgetClass)(widget->core.parent->core.widget_class))
 	 ->composite_class.insert_child))(widget, args, &num_args);
 
@@ -1211,8 +1211,7 @@ static void XtPhase2Destroy (widget, closure, call_data)
     Window	    window;
     XtWidgetProc    delete_child;
 
-    if (widget->core.parent != NULL
-	&& XtIsSubclass(widget->core.parent, compositeWidgetClass)) {
+    if (widget->core.parent != NULL && XtIsComposite(widget->core.parent)) {
 	XtUnmanageChild(widget);
 	delete_child =
 	    (((CompositeWidgetClass)widget->core.parent->core.widget_class)
