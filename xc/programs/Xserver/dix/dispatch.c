@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.28 91/04/27 17:55:53 keith Exp $ */
+/* $XConsortium: dispatch.c,v 5.29 91/05/10 17:39:54 keith Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -53,6 +53,7 @@ extern void QueryFont();
 extern void NotImplemented();
 extern WindowPtr RealChildHead();
 extern Bool InitClientResources();
+extern unsigned char *GetFontPath();
 
 Selection *CurrentSelections;
 int NumCurrentSelections;
