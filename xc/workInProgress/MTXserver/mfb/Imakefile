@@ -179,5 +179,6 @@ clean::
 	$(RM) mfbpawhite.c
 	$(RM) mfbpablack.c
 	$(RM) mfbpainv.c
+	$(RM) mfbseg.c
 	$(RM) mfbtewhite.c
 	$(RM) mfbteblack.c
