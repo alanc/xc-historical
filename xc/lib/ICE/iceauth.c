@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.5 93/11/18 11:45:34 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.6 93/11/22 17:43:20 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -55,9 +55,8 @@ char    	**errorStringRet;
 	 * ICE-MAGIC-COOKIE-1 that matches connectionString.
 	 */
 
-	IceAuthFileEntry *entry = IceGetAuthFileEntry (3, "ICE",
-            strlen (connectionString), connectionString,
-	    18, "ICE-MAGIC-COOKIE-1");
+	IceAuthFileEntry *entry = IceGetAuthFileEntry (
+	    "ICE", connectionString, "ICE-MAGIC-COOKIE-1");
 
 	if (!entry)
 	{
@@ -98,11 +97,11 @@ char    	**errorStringRet;
 
 
 IcePaAuthStatus
-_IcePaMagicCookie1Proc (authStatePtr, connectionString, swap,
+_IcePaMagicCookie1Proc (authStatePtr, listenObj, swap,
     replyDataLen, replyData, authDataLenRet, authDataRet, errorStringRet)
 
 IcePointer	*authStatePtr;
-char		*connectionString;
+IceListenObj	listenObj;
 Bool		swap;
 int     	replyDataLen;
 IcePointer	replyData;
@@ -123,16 +122,14 @@ char    	**errorStringRet;
 	 * This is the first time we're being called.  Check the
 	 * authentication data set by IceSetAuthenticationData()
 	 * for the first occurence of ICE-MAGIC-COOKIE-1 that
-	 * matches connectionString.  The reason we don't check the
+	 * matches listenObj->network_id.  The reason we don't check the
 	 * .ICEauthority file is because this would be a security
 	 * hole.  The client could just write an entry into the
-	 * .ICEauthority file knowing the accepting side would use
+	 * .ICEauthority file knowing that the accepting side would use
 	 * it in authentication.
 	 */
 
-	entry = _IceGetAuthDataEntry (3, "ICE",
-            strlen (connectionString), connectionString,
-	    18, "ICE-MAGIC-COOKIE-1");
+	entry = IceGetAuthDataEntry (listenObj, "ICE", "ICE-MAGIC-COOKIE-1");
 
 	if (!entry)
 	{
@@ -159,7 +156,7 @@ char    	**errorStringRet;
     }
     else
     {
-	entry = (IceAuthFileEntry *) *authStatePtr;
+	entry = (IceAuthDataEntry *) *authStatePtr;
 
 	if (replyDataLen == entry->auth_data_length &&
 	    binaryEqual (replyData, entry->auth_data, replyDataLen))
