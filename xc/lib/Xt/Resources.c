@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.75 89/10/11 13:18:50 swick Exp $";
+    "$XConsortium: Resources.c,v 1.76 89/11/08 17:45:05 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -832,7 +832,7 @@ XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
     register 	Widget	  	w;
     		ArgList	  	args;
     		Cardinal  	num_args;
-		XtVarArgsList	typed_args;
+		XtTypedArgList	typed_args;
 		Cardinal	num_typed_args;
 {
     XrmName	    names[100];
