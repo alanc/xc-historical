@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.c,v 1.20 91/02/16 20:33:18 dave Exp $
+ * $XConsortium: Clock.c,v 1.21 91/02/20 19:28:10 converse Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -97,7 +97,7 @@ ClockClassRec clockClassRec = {
     /* num_actions		*/	0,
     /* resources		*/	resources,
     /* num_resources		*/	XtNumber(resources),
-    /* xrm_class		*/	NULL,
+    /* xrm_class		*/	NULLQUARK,
     /* compress_motion		*/	TRUE,
     /* compress_exposure	*/	TRUE,
     /* compress_enterleave	*/	TRUE,
@@ -216,7 +216,7 @@ static void Resize (w)
 	     w->clock.shape_height != w->core.height))
 	{
 	    XFreePixmap (XtDisplay (w), w->clock.shape_mask);
-	    w->clock.shape_mask = NULL;
+	    w->clock.shape_mask = None;
 	}
 	
 	if (!w->clock.shape_mask)
