@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.148 90/03/22 18:52:48 jim Exp $
+ * $XConsortium: events.c,v 1.149 90/04/12 14:29:35 jim Exp $
  *
  * twm event handling
  *
@@ -38,7 +38,7 @@
 
 #if !defined(lint) && !defined(SABER)
 static char RCSinfo[]=
-"$XConsortium: events.c,v 1.148 90/03/22 18:52:48 jim Exp $";
+"$XConsortium: events.c,v 1.149 90/04/12 14:29:35 jim Exp $";
 #endif
 
 #include <stdio.h>
@@ -1362,17 +1362,9 @@ HandleUnmapNotify()
     XGrabServer (dpy);
     if (XTranslateCoordinates (dpy, Event.xunmap.window, Tmp_win->attr.root,
 			       0, 0, &dstx, &dsty, &dumwin)) {
-	Bool reparented = False;
-
-	if (XPending (dpy) > 0) {	/* just did a round trip: all here */
-	    XEvent ev;
-	    XPeekEvent (dpy, &ev);	/* see if next event is reparent */
-	    if (ev.type == ReparentNotify &&
-		ev.xreparent.window == Event.xunmap.window) {
-		XNextEvent (dpy, &ev);	/* remove reparent notify */
-		reparented = True;
-	    }
-	}
+	XEvent ev;
+	Bool reparented = XCheckTypedWindowEvent (dpy, Event.xunmap.window, 
+						  ReparentNotify, &ev);
 	SetMapStateProp (Tmp_win, WithdrawnState);
 	if (reparented) {
 	    if (Tmp_win->old_bw) XSetWindowBorderWidth (dpy,
