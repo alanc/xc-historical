@@ -1,0 +1,11 @@
+XCOMM $XConsortium: Imakefile,v 1.2 94/02/10 17:36:54 rws Exp $
+
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+SUBDIRS = PEXlib
+
+all::
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
