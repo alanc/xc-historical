@@ -1,0 +1,16 @@
+#
+# Make file for font handling routines
+#
+#include <Server.tmpl>
+
+#define	IHaveSubdirs
+
+SUBDIRS = bitmap fontfile fs speedo util
+OBJS = bitmap/?*.o fontfile/?*.o fs/?*.o speedo/?*.o util/?*.o
+
+MakeSubdirs($(SUBDIRS))
+
+NormalLibraryTarget(font,$(OBJS))
+
+DependSubdirs($(SUBDIRS))
+
