@@ -1,5 +1,5 @@
 XCOMM! /bin/sh
-XCOMM $XConsortium: client.cpp,v 1.3 94/02/06 16:32:37 mor Exp $
+XCOMM $XConsortium: client.cpp,v 1.4 94/02/06 19:51:50 mor Exp $
 XCOMM
 
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
@@ -26,12 +26,22 @@ XCOMM OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 context=X
 verbose=DETACH
+name=
+kind=CMD
 
 while :
 do
 	case $1 in
 	-c)
 		context=$2
+		shift; shift
+		;;
+	-g)
+		kind=GENERIC-CMD
+		shift
+		;;
+	-l)
+		name="-l $2"
 		shift; shift
 		;;
 	-v)
@@ -64,9 +74,9 @@ esac
 cat << /
 CONTEXT $context
 MISC X DISPLAY=$disp
-CMD $*
+$kind $*
 $verbose
 /
 xauth list $disp | sed 's/^/AUTH X11 /'
 echo ""
-) | RSHCMD $host SERVERNAME
+) | RSHCMD $host $name SERVERNAME
