@@ -362,7 +362,7 @@ int InitShmPutImage (xp, p, reps)
 
     if (!XShmQueryExtension(xp->d))
 	return False;
-    (void) InitGetImage(xp, p);
+    (void) InitGetImage(xp, p, reps);
     XClearWindow(xp->d, xp->w);
     shm_image = *image;
     image_size = image->bytes_per_line * image->height;
