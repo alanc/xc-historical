@@ -22,7 +22,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpolypnt.c,v 5.1 89/07/09 16:02:07 rws Exp $ */
+/* $XConsortium: mfbpolypnt.c,v 5.2 89/09/04 10:02:52 rws Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"
@@ -48,7 +48,6 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     register BoxPtr pbox;
     register int nbox;
 
-    int *addrlBase;
     register int *addrl;
     int nlwidth;
 
@@ -68,14 +67,14 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 
     if (pDrawable->type == DRAWABLE_WINDOW)
     {
-	addrlBase = (int *)
-		   (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
+	addrl = (int *)
+	        (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devPrivate.ptr);
 	nlwidth = (int)
 		  (((PixmapPtr)(pDrawable->pScreen->devPrivate))->devKind) >> 2;
     }
     else
     {
-	addrlBase = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
+	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind) >> 2;
     }
 
@@ -92,20 +91,37 @@ mfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
     pbox = REGION_RECTS(pGCPriv->pCompositeClip);
     for (; --nbox >= 0; pbox++)
     {
-	for (ppt = pptInit, nptTmp = npt; --nptTmp >= 0; ppt++)
+	if (rop == RROP_BLACK)
 	{
-	    x = ppt->x + pDrawable->x;
-	    y = ppt->y + pDrawable->y;
-	    if ((x >= pbox->x1) && (x < pbox->x2) &&
-		(y >= pbox->y1) && (y < pbox->y2))
+	    for (ppt = pptInit, nptTmp = npt; --nptTmp >= 0; ppt++)
 	    {
-	        addrl = addrlBase + (y * nlwidth) + (x >> 5);
-	        if (rop == RROP_BLACK)
-		    *addrl &= rmask[x & 0x1f];
-	        else if (rop == RROP_WHITE)
-		    *addrl |= mask[x & 0x1f];
-	        else if (rop == RROP_INVERT)
-		    *addrl ^= mask[x & 0x1f];
+		x = ppt->x + pDrawable->x;
+		y = ppt->y + pDrawable->y;
+		if ((x >= pbox->x1) && (x < pbox->x2) &&
+		    (y >= pbox->y1) && (y < pbox->y2))
+		    *(addrl + (y * nlwidth) + (x >> 5)) &= rmask[x & 0x1f];
+	    }
+	}
+	else if (rop == RROP_WHITE)
+	{
+	    for (ppt = pptInit, nptTmp = npt; --nptTmp >= 0; ppt++)
+	    {
+		x = ppt->x + pDrawable->x;
+		y = ppt->y + pDrawable->y;
+		if ((x >= pbox->x1) && (x < pbox->x2) &&
+		    (y >= pbox->y1) && (y < pbox->y2))
+		    *(addrl + (y * nlwidth) + (x >> 5)) |= mask[x & 0x1f];
+	    }
+	}
+	else if (rop == RROP_INVERT)
+	{
+	    for (ppt = pptInit, nptTmp = npt; --nptTmp >= 0; ppt++)
+	    {
+		x = ppt->x + pDrawable->x;
+		y = ppt->y + pDrawable->y;
+		if ((x >= pbox->x1) && (x < pbox->x2) &&
+		    (y >= pbox->y1) && (y < pbox->y2))
+		    *(addrl + (y * nlwidth) + (x >> 5)) ^= mask[x & 0x1f];
 	    }
 	}
     }
