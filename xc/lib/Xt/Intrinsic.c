@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.138 89/10/08 18:23:06 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Intrinsic.c,v 1.139 89/10/09 18:37:17 swick Exp $";
 /* $oHeader: Intrinsic.c,v 1.4 88/08/18 15:40:35 asente Exp $ */
 #endif /* lint */
 
@@ -198,9 +198,10 @@ static void RealizeWidget(widget)
     ComputeWindowAttributes (widget, &value_mask, &values);
     realize = widget->core.widget_class->core_class.realize;
     if (realize == NULL)
-	XtErrorMsg("invalidProcedure","realizeProc","XtToolkitError",
-	    "No realize class procedure defined",
-	      (String *)NULL, (Cardinal *)NULL);
+	XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		      "invalidProcedure","realizeProc","XtToolkitError",
+		      "No realize class procedure defined",
+		      (String *)NULL, (Cardinal *)NULL);
     else (*realize) (widget, &value_mask, &values);
     window = XtWindow(widget);
 #ifndef NO_IDENTIFY_WINDOWS
@@ -260,7 +261,7 @@ static void UnrealizeWidget(widget)
     register Cardinal		i;
     register WidgetList		children;
 
-    if (! XtIsRealized(widget)) return;
+    if (!XtIsWidget(widget) || !XtIsRealized(widget)) return;
 
     /* If this is the application's popup shell, unmap it? */
     /* no, the window is being destroyed */
@@ -321,7 +322,8 @@ void XtCreateWindow(widget, window_class, visual, value_mask, attributes)
     if (widget->core.window == None) {
 	if (widget->core.width == 0 || widget->core.height == 0) {
 	    Cardinal count = 1;
-	    XtErrorMsg("invalidDimension", "xtCreateWindow", "XtToolkitError",
+	    XtAppErrorMsg(XtWidgetToApplicationContext(widget),
+		       "invalidDimension", "xtCreateWindow", "XtToolkitError",
 		       "Widget %s has zero width and/or height",
 		       &widget->core.name, &count);
 	}
@@ -475,7 +477,8 @@ Widget _XtWindowedAncestor(object)
     if (object == NULL) {
 	String params = XtName(object);
 	Cardinal num_params = 1;
-	XtErrorMsg("noWidgetAncestor", "windowedAncestor", "XtToolkitError",
+	XtAppErrorMsg(XtWidgetToApplicationContext(object),
+		   "noWidgetAncestor", "windowedAncestor", "XtToolkitError",
 		   "Object \"%s\" does not have windowed ancestor",
 		   &params, &num_params);
     }
@@ -839,4 +842,15 @@ String XtResolvePathname(dpy, type, filename, suffix, path, predicate)
     DEALLOCATE_LOCAL(massagedPath);
 
     return result;
+}
+
+
+Boolean XtCallAcceptFocus(widget, time)
+    Widget widget;
+    Time *time;
+{
+    XtAcceptFocusProc ac = XtClass(widget)->core_class.accept_focus;
+
+    if (ac != NULL) return (*ac) (widget, time);
+    else return FALSE;
 }
