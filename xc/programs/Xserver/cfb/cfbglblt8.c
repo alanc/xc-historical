@@ -16,7 +16,7 @@ without specific, written prior permission.  M.I.T. makes no
 representations about the suitability of this software for any
 purpose.  It is provided "as is" without express or implied warranty.
 */
-/* $XConsortium: cfbglblt8.c,v 5.21 91/06/12 15:15:22 rws Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.22 91/06/12 17:03:34 keith Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"
@@ -206,7 +206,8 @@ cfbPolyGlyphBlt8 (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    (*stipple)(dstLine,glyphBits,pixel,bwidthDst,hTmp,xoff);
 #else
 #ifdef USE_LEFTBITS
-	    widthGlyph = GLYPHWIDTHBYTESPADDED (pci);
+	    w = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
+	    widthGlyph = PADGLYPHWIDTHBYTES(w);
 	    widthMask = endtab[w];
 #endif
 	    do {
@@ -318,7 +319,8 @@ cfbPolyGlyphBlt8Clipped (pDrawable, pGC, x, y, nglyph, ppci, pglyphBase)
 	    dstLine = pdstBase + yG * widthDst + (xG >> 2);
 	    xoff = xG & 0x3;
 #ifdef USE_LEFTBITS
-	    widthGlyph = GLYPHWIDTHBYTESPADDED (pci);
+	    w = pci->metrics.rightSideBearing - pci->metrics.leftSideBearing;
+	    widthGlyph = PADGLYPHWIDTHBYTES(w);
 	    widthMask = endtab[w];
 #endif
 	    switch (cfb8ComputeClipMasks32 (pBox, numRects, xG, yG, w, hTmp, clips))
