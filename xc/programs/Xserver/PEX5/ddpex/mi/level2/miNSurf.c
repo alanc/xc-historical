@@ -1,4 +1,4 @@
-/* $XConsortium: miNSurf.c,v 5.3 91/03/15 18:24:01 hersh Exp $ */
+/* $XConsortium: miNSurf.c,v 5.4 91/05/01 14:46:26 hersh Exp $ */
 
 #define TRIMING 1
 
@@ -38,6 +38,11 @@ SOFTWARE.
 #include "miNurbs.h"
 
 #include <stdio.h>
+
+static ddpex3rtn       build_surf_reps();
+static int             add_grid();
+static int             uniform_isocurves();
+static int             nonuniform_isocurves();
 
 /* 
  * This convention is established in the trimming code.
