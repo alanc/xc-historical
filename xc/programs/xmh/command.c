@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.38 91/03/20 11:47:14 gildea Exp $ */
+/* $XConsortium: command.c,v 2.38 91/03/27 16:15:38 gildea Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -160,14 +160,12 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
     if (inputfd != -1) {
 	old_stdin = dup(fileno(stdin));
 	(void) dup2(inputfd, fileno(stdin));
+	close(inputfd);
     }
 
     if (outputfd == -1) {
 	if (!app_resources.debug) { /* Throw away stdout. */
 	    outputfd = open( "/dev/null", O_WRONLY, 0 );
-	    old_stdout = dup(fileno(stdout));
-	    (void) dup2(outputfd, fileno(stdout));
-	    close(outputfd);
 	}
     }
     else if (outputfd == -2) {	/* make pipe */
@@ -177,8 +175,6 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	}
 	else {
 	    outputfd = status->output_pipe[1];
-	    old_stdout = dup(fileno(stdout));
-	    (void) dup2(status->output_pipe[1], fileno(stdout));
 	    FD_SET(status->output_pipe[0], &fds);
 	    status->output_inputId =
 		XtAppAddInput( appCtx,
@@ -190,10 +186,6 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 	    output_to_pipe = True;
 	}
     }
-    else {
-	old_stdout = dup(fileno(stdout));
-	(void) dup2(outputfd, fileno(stdout));
-    }
 
     if (pipe(status->error_pipe) /*failed*/) {
 	SystemError( "couldn't re-direct standard error" );
@@ -202,6 +194,7 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
     else {
 	old_stderr = dup(fileno(stderr));
 	(void) dup2(status->error_pipe[1], fileno(stderr));
+	close(status->error_pipe[1]);
 	FD_SET(status->error_pipe[0], &fds);
 	status->error_inputId =
 	    XtAppAddInput( appCtx,
@@ -209,7 +202,11 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 			   ReadStderr, (XtPointer)status
 			  );
     }
-
+    if (outputfd != -1) {
+	old_stdout = dup(fileno(stdout));
+	(void) dup2(outputfd, fileno(stdout));
+	close(outputfd);
+    }
     childdone = FALSE;
     status->popup = (Widget)NULL;
     status->lastInput = lastInput;
@@ -335,7 +332,6 @@ DEBUG("read.\n")}
 	    *bufP = status->output_buffer;
 	    *lenP = status->output_buf_size;
 	    close( status->output_pipe[0] );
-	    close( status->output_pipe[1] );
 	    XtRemoveInput( status->output_inputId );
 	}
 	if (status->error_pipe[0]) {
@@ -345,7 +341,6 @@ DEBUG("read.\n")}
 			       True
 			      );
 	    close( status->error_pipe[0] );
-	    close( status->error_pipe[1] );
 	    XtRemoveInput( status->error_inputId );
 	}
 	if (status->error_buffer != NULL) {
@@ -400,9 +395,9 @@ CheckReadFromPipe( fd, bufP, lenP, waitEOF )
     }
 #endif
     do {
-	char buf[BUFSIZ];
+	char buf[512];
 	int old_end = *lenP;
-	nread = read( fd, buf, BUFSIZ );
+	nread = read( fd, buf, 512 );
 	if (nread <= 0)
 	    break;
 	*bufP = XtRealloc( *bufP, (Cardinal) ((*lenP += nread) + 1) );
@@ -456,8 +451,6 @@ DoCommand(argv, inputfile, outputfile)
 
     status = _DoCommandToFileOrPipe( argv, fd_in, fd_out, (char **) NULL,
 				    (int *) NULL );
-    if (fd_in != -1) close(fd_in);
-    if (fd_out != -1) close(fd_out);
     return status;
 }
 
@@ -490,7 +483,6 @@ char *DoCommandToFile(argv)
     fd = dup(fileno(file));
     myfclose(file);
     _DoCommandToFileOrPipe(argv, -1, fd, (char **) NULL, (int *) NULL);
-    close(fd);
     return name;
 }
 
