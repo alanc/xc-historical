@@ -1,4 +1,4 @@
-/* $Header: Xlib.h,v 11.135 88/01/30 18:44:50 rws Exp $ */
+/* $Header: Xlib.h,v 11.135 88/01/30 18:58:13 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -33,6 +33,10 @@
 #define Status int
 #define True 1
 #define False 0
+
+#define QueuedAlready 0
+#define QueuedAfterReading 1
+#define QueuedAfterFlush 2
 
 #define ConnectionNumber(dpy) 	((dpy)->fd)
 #define RootWindow(dpy, scr) 	(((dpy)->screens[(scr)]).root)
@@ -1004,7 +1008,7 @@ Font XLoadFont();
 GC XCreateGC();
 GContext XGContextFromGC();
 Pixmap XCreatePixmap();
-Pixmap XCreateBitmapFromData();
+Pixmap XCreateBitmapFromData(), XCreatePixmapFromBitmapData();
 Window XCreateSimpleWindow(), XGetSelectionOwner(), XGetIconWindow();
 Window XCreateWindow(); 
 Colormap *XListInstalledColormaps();
@@ -1029,6 +1033,7 @@ Visual *XDefaultVisual(), *XDefaultVisualOfScreen();
 GC XDefaultGC(), XDefaultGCofScreen();
 unsigned long XBlackPixel(), XWhitePixel(), XAllPlanes();
 unsigned long XBlackPixelOfScreen(), XWhitePixelOfScreen();
+unsigned long XNextRequest(), XLastKnownRequestProcessed();
 char *XServerVendor(), *XDisplayString();
 Colormap XDefaultColormap(), XDefaultColormapOfScreen();
 Display *XDisplayOfScreen();
