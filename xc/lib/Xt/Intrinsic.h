@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.119 89/12/12 20:07:40 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.120 89/12/12 20:14:55 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -182,7 +182,8 @@ typedef enum {
     XtImmediate,	/* constant		    */
     XtResourceString,	/* resource name string	    */
     XtResourceQuark,	/* resource name quark	    */
-    XtWidgetBaseOffset	/* offset from ancestor	    */
+    XtWidgetBaseOffset,	/* offset from ancestor	    */
+    XtProcedureArg	/* procedure to invoke	    */
 } XtAddressMode;
 
 typedef struct {
@@ -190,6 +191,14 @@ typedef struct {
     XtPointer	    address_id;
     Cardinal	    size;
 } XtConvertArgRec, *XtConvertArgList;
+
+typedef void (*XtConvertArgProc)(
+#if BrokenNeedFunctionPrototypes
+    Widget 		/* widget */,
+    Cardinal*		/* size */,
+    XrmValue*		/* value */
+#endif
+);
 
 typedef struct {
     XtGeometryMask request_mode;
@@ -632,6 +641,16 @@ extern void XtConvert(
     XrmValue*		/* from */,
     CONST String 	/* to_type */,
     XrmValue*		/* to_return */
+#endif
+);
+
+extern Boolean XtConvertAndStore(
+#if NeedFunctionPrototypes
+    Widget 		/* widget */,
+    CONST String 	/* from_type */,
+    XrmValue*		/* from */,
+    CONST String 	/* to_type */,
+    XrmValue*		/* to_in_out */
 #endif
 );
 
