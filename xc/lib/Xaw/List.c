@@ -1,5 +1,5 @@
 #if ( !defined(lint) && !defined(SABER))
-  static char Xrcs_id[] = "$XConsortium: List.c,v 1.19 89/05/17 17:31:34 kit Exp $";
+  static char Xrcs_id[] = "$XConsortium: List.c,v 1.20 89/07/16 14:44:23 jim Exp $";
 #endif
 
 /***********************************************************
@@ -172,25 +172,21 @@ Widget w;
 
     values.foreground	= lw->list.foreground;
     values.font		= lw->list.font->fid;
-
     lw->list.normgc = XtGetGC(w, (unsigned) GCForeground | GCFont,
 				 &values);
 
     values.foreground	= lw->core.background_pixel;
-
     lw->list.revgc = XtGetGC(w, (unsigned) GCForeground | GCFont,
 				 &values);
 
-    values.foreground = lw->list.foreground;
     values.tile       = XmuCreateStippledPixmap(XtScreen(w), 
 						lw->list.foreground,
 						lw->core.background_pixel,
 						lw->core.depth);
-
     values.fill_style = FillTiled;
 
-    lw->list.graygc = XtGetGC(w, (unsigned) GCForeground | GCFont |
-			      GCTile | GCFillStyle, &values);
+    lw->list.graygc = XtGetGC(w, (unsigned) GCFont | GCTile | GCFillStyle,
+			      &values);
 }
 
 /*	Function Name: ResetList
@@ -208,24 +204,20 @@ Boolean changex, changey;
     ListWidget lw = (ListWidget) w;
     Dimension width = w->core.width;
     Dimension height = w->core.height;
+    register int i, len;
 
     if (lw->list.nitems == 0)	/* Get number of items. */
-        while (lw->list.list[lw->list.nitems] != NULL)
-	    lw->list.nitems++;
+        for ( ; lw->list.list[lw->list.nitems] != NULL ; lw->list.nitems++);
 
-    if (lw->list.longest == 0) { /* Get column width. */
-        int i, len, max;
-        for ( i = 0, max = 0; i < lw->list.nitems; i++) {
+    if (lw->list.longest == 0) /* Get column width. */
+        for ( i = 0 ; i < lw->list.nitems; i++) {
 	    len = XTextWidth(lw->list.font, lw->list.list[i],
 			     strlen(lw->list.list[i]));
-	    if (len > max)
-	        max = len;
+	    if (len > lw->list.longest)
+	        lw->list.longest = len;
 	}
-        lw->list.col_width = max;
-    }
-    else 
-        lw->list.col_width = lw->list.longest;
-    lw->list.col_width += lw->list.column_space;
+
+    lw->list.col_width = lw->list.longest + lw->list.column_space;
 
     if (Layout(w, changex, changey, &width, &height))
       ChangeSize(w, width, height);
@@ -248,8 +240,6 @@ Dimension width, height;
     request.width = width;
     request.height = height;
     
-/*    (void) Layout(w, FALSE, FALSE, &width, &height); */
-
     switch ( XtMakeGeometryRequest(w, &request, &reply) ) {
     case XtGeometryYes:
     case XtGeometryNo:
