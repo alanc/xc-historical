@@ -1,7 +1,7 @@
 /*
  * xdm - display manager daemon
  *
- * $XConsortium: auth.c,v 1.23 90/09/20 19:27:07 keith Exp $
+ * $XConsortium: auth.c,v 1.24 90/09/29 09:56:46 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -451,8 +451,6 @@ Xauth	*auth;
 	char		*malloc ();
 	static		checkEntry ();
 
-	if (checkEntry (auth))
-		return;
 	new = (struct addrList *) malloc (sizeof (struct addrList));
 	if (!new) {
 		LogOutOfMem ("saveEntry");
@@ -524,7 +522,7 @@ writeAuth (file, auth)
 FILE	*file;
 Xauth	*auth;
 {
-	saveEntry (auth);
+	dumpAuth (auth);
 	if (doWrite)
 	    XauWriteAuth (file, auth);
 }
@@ -537,12 +535,12 @@ char	*addr;
 FILE	*file;
 Xauth	*auth;
 {
-	Debug ("writeAddr\n");
 	auth->family = (unsigned short) family;
 	auth->address_length = addr_length;
 	auth->address = addr;
-	dumpAuth (auth);
+	Debug ("Writing and saving an entry\n");
 	writeAuth (file, auth);
+	saveEntry (auth);
 }
 
 static
@@ -915,8 +913,7 @@ struct verify_info	*verify;
 	    while (entry = XauReadAuth (old)) {
 		if (!checkEntry (entry))
 		{
-		    Debug ("Saving an entry\n");
-		    dumpAuth (entry);
+		    Debug ("Writing an entry\n");
 		    writeAuth (new, entry);
 		}
 		XauDisposeAuth (entry);
@@ -1002,8 +999,7 @@ RemoveUserAuthorization (d, verify)
 	    while (entry = XauReadAuth (old)) {
 		if (!checkEntry (entry))
 		{
-		    Debug ("Saving an entry\n");
-		    dumpAuth (entry);
+		    Debug ("Writing an entry\n");
 		    writeAuth (new, entry);
 		}
 		XauDisposeAuth (entry);
