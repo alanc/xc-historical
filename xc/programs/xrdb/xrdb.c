@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.67 93/02/06 17:10:24 rws Exp $
+ * $XConsortium: xrdb.c,v 11.68 93/02/08 13:32:35 rws Exp $
  */
 
 /*
@@ -47,6 +47,14 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
+
+#if NeedVarargsPrototypes
+# include <stdarg.h>
+# define Va_start(a,b) va_start(a,b)
+#else
+# include <varargs.h>
+# define Va_start(a,b) va_start(a)
+#endif
 
 #define SCREEN_RESOURCES "SCREEN_RESOURCES"
 
@@ -111,6 +119,10 @@ Entries newDB;
 
 #ifndef sgi
 extern FILE *popen();
+#endif
+
+#if NeedVarargsPrototypes
+extern fatal(char *, ...);
 #endif
 
 #if defined(USG) && !defined(CRAY) && !defined(MOTOROLA)
@@ -1176,14 +1188,27 @@ ReProcess(scrno, doScreen)
     FreeEntries(&newDB);
 }
 
-fatal(msg, prog, x1, x2, x3, x4, x5)
+#if NeedVarargsPrototypes
+fatal(char *msg, ...)
+#else
+fatal(msg, x1, x2, x3, x4, x5, x6)
     char *msg, *prog;
-    int x1, x2, x3, x4, x5;
+    int x1, x2, x3, x4, x5, x6;
+#endif
 {
     extern int errno;
+#if NeedVarargsPrototypes
+    va_list args;
+#endif
 
     if (errno)
-	perror(prog);
-    (void) fprintf(stderr, msg, prog, x1, x2, x3, x4, x5);
+	perror(ProgramName);
+#if NeedVarargsPrototypes
+    Va_start(args, msg);
+    vfprintf(stderr, msg, args);
+    va_end(args);
+#else
+    (void) fprintf(stderr, msg, x1, x2, x3, x4, x5, x6);
+#endif
     exit(1);
 }
