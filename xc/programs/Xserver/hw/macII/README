@@ -1,0 +1,59 @@
+These Apple X11 drivers uses ../mi and ../mfb to support a 
+single monochrome (1 bit deep) screen on the Macintosh II running A/UX.
+
+The code in ../mfb is largely untuned, and has inferior performance.  
+We recommend applying the so-called "PURDUE" enhancements to ../mfb to
+obtain more satisfactory performance (these enhancements have been widely
+published on the comp.windows.x Usenet mailing list and reside at many
+archive sites, including expo.lcs.mit.edu, where they may be obtained by
+anonymous ftp). 
+
+Build the system by:
+
+1)	As super-user, run the script X11R3setup.sh located in this directory.
+	Now leave super-user mode.
+
+2)	In the top-level directory, type:
+
+	alias make "make SHELL=/bin/sh"
+	make -k World >>& MakeLog
+
+	This takes several hours.
+
+3)	As super-user, in the top-level directory, type:
+
+	make -k install
+
+4)	Copy the file /usr/lib/X11/.x11start to your home directory 
+	(.x11start invokes the initial clients and determines their
+	positions on the screen.) .x11start attempts to use the "twm"
+	window manager. twm appears in the contrib directory. You
+	may choose to run another window manager (e.g. uwm) by simply
+	adjusting .x11start.
+
+5)	On the console put /usr/bin/X11, (or whatever else you may have
+	chosen for BINDIR in Imake.tmpl) in your search path, and then
+	start the server:
+
+	    X11R3
+
+6)	X11R3 should start up an xterm window named .x11start that acts as a
+	console.  When this xterm terminates, the xinit will kill the server.  
+	You can also start up client programs from a terminal or rlogin, 
+	but be sure the DISPLAY environment variable is set:
+
+	    setenv DISPLAY unix:0.0
+	    xterm &
+
+
+Many X clients assume the mouse has three buttons. The A/UX X server simulates
+the middle and right mouse buttons with keystrokes -- the left-arrow key
+generates middle button events, and the left-arrow key generates left button
+events. -- the real mouse button generates left button events. The 
+open-apple or cloverleaf key is the "Meta" modifier, Meta can also be obtained
+by pressing the up-arrow key. The down-arrow key duplicates the Control key.
+Meta, Control, and Shift are often used in combination with other keystrokes
+or mouse clicks. For example, the terminal emulator xterm pops up menus in
+response to control-left and control-middle. The original function of the
+arrow keys may be obtained by holding down the Option key while pressing
+one of the arrow keys.
