@@ -22,7 +22,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.49 91/05/14 12:16:21 rws Exp $ */
+/* $XConsortium: globals.c,v 1.50 91/05/14 12:25:28 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -86,6 +86,7 @@ CursorPtr rootCursor;
 ClientPtr requestingClient;	/* XXX this should be obsolete now, remove? */
 
 TimeStamp currentTime;
+TimeStamp lastDeviceEventTime;
 
 Bool permitOldBugs = FALSE; /* turn off some error checking, to permit certain
 			     * old broken clients (like R2/R3 xterms) to work
