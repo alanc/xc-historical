@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: globals.h,v 1.1 93/09/03 13:25:11 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -22,8 +22,8 @@ extern IceACLauthStatus _SmACLauth1proc ();
 extern IceOCLauthStatus _SmOCLauth2proc ();
 extern IceACLauthStatus _SmACLauth2proc ();
 
-extern Bool _SmcProcessMessage();
-extern void _SmsProcessMessage();
+extern Bool _SmcProcessMessage ();
+extern void _SmsProcessMessage ();
 
 SmcConn _SmcConnectionObjs[256];
 int     _SmcConnectionCount = 0;
@@ -44,12 +44,12 @@ IceACLversionRec _SmsVersions[] = {
 int	      _SmAuthCount = 2;
 
 IceOCLauthRec _SmcAuthRecs[] = {
-		    {"SM-AUTH-1", _SmOCLauth1proc},
-		    {"SM-AUTH-2", _SmOCLauth2proc}};
+		    {"SM-AUTH-TEST-1", _SmOCLauth1proc},
+		    {"SM-AUTH-TEST-2", _SmOCLauth2proc}};
 
 IceACLauthRec _SmsAuthRecs[] = {
-		    {"SM-AUTH-1", _SmACLauth1proc},
-		    {"SM-AUTH-2", _SmACLauth2proc}};
+		    {"SM-AUTH-TEST-1", _SmACLauth1proc},
+		    {"SM-AUTH-TEST-2", _SmACLauth2proc}};
 
 SmcCallbacks	_SmcCallbacks;
 SmsCallbacks	_SmsCallbacks;
