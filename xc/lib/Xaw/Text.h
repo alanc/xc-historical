@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: Text.h,v 1.2 87/09/11 21:24:44 swick Locked $
 */
 
 /*
@@ -51,6 +51,7 @@
 /* Class record constants */
 
 extern WidgetClass textWidgetClass;
+extern Atom FMT8BIT;
 
 typedef struct _TextClassRec *TextWidgetClass;
 typedef struct _TextRec      *TextWidget;
@@ -58,6 +59,8 @@ typedef struct _TextRec      *TextWidget;
 /* other stuff */
 
 typedef long XtTextPosition;
+typedef struct _XtTextSource XtTextSourceRec, *XtTextSource;
+typedef struct _XtTextSink XtTextSinkRec, *XtTextSink;
 
 extern Widget XtTextDiskCreate(); /* parent, args, argCount */
     /* Widget   parent;     */
@@ -94,8 +97,8 @@ extern void XtTextGetSelectionPos(); /* dpy, w, left, right */
     /* XtTextPosition *left, *right;    */
 
 extern void XtTextNewSource(); /* dpy, w, source, startPos */
-    /* Widget        w;		*/
-    /* XtTextSource   *source;      */
+    /* Widget         w;	    */
+    /* XtTextSource   source;       */
     /* XtTextPosition startPos;     */
 
 extern int XtTextReplace(); /* w, startPos, endPos, text */
@@ -133,7 +136,7 @@ extern void XtTextInvalidate(); /* w, from, to */
 
 extern Window XtTextGetInnerWindow(); /* w */
     /* Widget        w;		*/
-    /* Window w; */
+
 
 /*
  * Stuff from AsciiSink
@@ -145,7 +148,7 @@ extern caddr_t XtAsciiSinkCreate(); /* dpy, font, ink, background */
     /* int	    ink, background */
 
 extern void XtAsciiSinkDestroy(); /* sink */
-    /* XtTextSink *sink */
+    /* XtTextSink  sink */
 
 #endif _XtText_h
 /* DON'T ADD STUFF AFTER THIS #endif */
