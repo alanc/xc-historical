@@ -31,14 +31,10 @@
           MACII = ddx/macII/libmacII.a
             PLX = ddx/plx/libplx.a
         SYSLIBS = -lm -ldbm
-    ALLPOSSIBLE = Xqvss Xsm Xqdss Xsun Xibm Xapollo Xhp Xpeg XmacII Xplx
+    ALLPOSSIBLE = Xqvss Xqdss Xsun Xibm Xapollo Xhp Xpeg XmacII Xplx
 
 #ifndef	XqvssServer
 #define	XqvssServer /* as nothing */
-#endif
-
-#ifndef XsmServer
-#define	XsmServer /* as nothing */
 #endif
 
 #ifndef	XqdssServer
@@ -78,7 +74,7 @@
 #endif
 
 # don't split this across lines, because imake will keep a trailing slash
-ALL = XqvssServer XsmServer XqdssServer XsunServer XapolloServer XibmServer XHPServer XndxServer XpegServer XmacIIServer XplxServer
+ALL = XqvssServer XqdssServer XsunServer XapolloServer XibmServer XHPServer XndxServer XpegServer XmacIIServer XplxServer
 
 #
 # This turns off the default rule for compiling .c files because
@@ -99,17 +95,6 @@ QVSSLIBS = $(DIX) $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
 XqvssDIRS = $(QVSSDIRS)
 
 ServerTarget(Xqvss,$(EXTDIR) $(FONTUTILDIR) $(QVSSDIRS),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
-
-#
-# sm server
-#
-SMDIRS = dix ddx/snf ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/sm os/4.2bsd
-SMOBJS = ddx/dec/sm/init.o ddx/dec/sm/sm_io.o ddx/dec/lk201/lk201.o\
-	ddx/dec/sm/queue.o $(FONTUTIL)
-SMLIBS = $(DIX) $(UNIX) $(SNF) $(MFB) $(MI) $(EXTENSIONS)
-XsmDIRS = $(SMDIRS)
-
-ServerTarget(Xsm,$(EXTDIR) $(FONTUTILDIR) $(SMDIRS),$(SMOBJS),$(SMLIBS),$(SYSLIBS))
 
 #
 # qdss server
