@@ -14,8 +14,8 @@
  * this software for any purpose.  It is provided "as is"
  * without express or implied warranty.
  * 
- * $Header: imake.c,v 1.26 88/07/13 17:06:10 rws Exp $
- * $Locker: rws $
+ * $Header: imake.c,v 1.28 88/07/19 16:06:45 xguest Locked $
+ * $Locker: xguest $
  *
  * Author:
  *	Todd Brunhoff
@@ -105,7 +105,7 @@
 #define	FALSE		0
 #define	ARGUMENTS	50
 
-#if defined(sun) || defined(hpux)
+#if defined(sun) || defined(hpux) || defined(macII)
 #define REDUCED_TO_ASCII_SPACE
 #endif
 #ifdef REDUCED_TO_ASCII_SPACE
@@ -145,6 +145,9 @@ char	*cpp_argv[ ARGUMENTS ] = {
 #ifdef M4310
 	"-DM4310",
 #endif /* M4310 (Tektronix) */
+#ifdef macII
+	"-DmacII",
+#endif /* macII (Apple) */
 };
 int	make_argindex;
 int	cpp_argindex;
