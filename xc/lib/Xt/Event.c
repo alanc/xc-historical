@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Event.c,v 1.45 88/01/20 19:47:21 swick Locked $";
+static char rcsid[] = "$Header: Event.c,v 6.12 88/01/29 17:05:35 asente Exp $";
 #endif lint
 
 /*
@@ -24,10 +24,10 @@ static char rcsid[] = "$Header: Event.c,v 1.45 88/01/20 19:47:21 swick Locked $"
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-
-#include <X/Intrinsic.h>
-#include <X/Xutil.h>
-#include <X/Atoms.h>
+#include "IntrinsicI.h"
+#include "Event.h"
+#include "Atoms.h"
+extern void bzero();
 
 EventMask _XtBuildEventMask(widget)
     Widget widget;
@@ -36,7 +36,7 @@ EventMask _XtBuildEventMask(widget)
     EventMask	mask = 0;
 
     for (ev = widget->core.event_table; ev != NULL; ev = ev->next)
-	mask |= ev->mask;
+	if (ev->select) mask |= ev->mask;
     if (widget->core.widget_class->core_class.expose != NULL)
 	mask |= ExposureMask;
     if (widget->core.widget_class->core_class.visible_interest) 
@@ -45,12 +45,13 @@ EventMask _XtBuildEventMask(widget)
     return mask;
 }
 
-void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
+static void RemoveEventHandler(widget, eventMask, other, proc, closure, raw)
     Widget	widget;
     EventMask   eventMask;
     Boolean	other;
     XtEventHandler proc;
     Opaque	closure;
+    Boolean	raw;
 {
     XtEventRec *p, **pp;
     EventMask oldMask = _XtBuildEventMask(widget);
@@ -64,6 +65,8 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
 	p = *pp;
     }
     if (p == NULL) return; /* couldn't find it */
+    if (raw) p->raw = FALSE; else p->select = FALSE;
+    if (p->raw || p->select) return;
 
     /* un-register it */
     p->mask &= ~eventMask;
@@ -84,19 +87,20 @@ void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
     }
 }
 
-void XtAddEventHandler(widget, eventMask, other, proc, closure)
+static void AddEventHandler(widget, eventMask, other, proc, closure, raw)
     Widget	    widget;
     EventMask   eventMask;
     Boolean         other;
     XtEventHandler  proc;
     Opaque	closure;
+    Boolean	raw;
 {
    register XtEventRec *p,**pp;
    EventMask oldMask;
 
    if (eventMask == 0 && other == FALSE) return;
 
-   if (XtIsRealized(widget)) oldMask = _XtBuildEventMask(widget);
+   if (XtIsRealized(widget) && ! raw) oldMask = _XtBuildEventMask(widget);
 
    pp = & widget->core.event_table;
    p = *pp;
@@ -112,6 +116,8 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
 	p->closure = closure;
 	p->mask = eventMask;
 	p->non_filter = other;
+	p->select = ! raw;
+	p->raw = raw;
 
 	p->next = widget->core.event_table;
 	widget->core.event_table = p;
@@ -120,9 +126,11 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
 	/* update existing proc */
 	p->mask |= eventMask;
 	p->non_filter = p->non_filter || other;
+	p->select |= ! raw;
+	p->raw |= raw;
     }
 
-    if (XtIsRealized(widget)) {
+    if (XtIsRealized(widget) && ! raw) {
 	EventMask mask = _XtBuildEventMask(widget);
 
 	if (oldMask != mask)
@@ -131,19 +139,61 @@ void XtAddEventHandler(widget, eventMask, other, proc, closure)
 
 }
 
+
+void XtRemoveEventHandler(widget, eventMask, other, proc, closure)
+    Widget	widget;
+    EventMask   eventMask;
+    Boolean	other;
+    XtEventHandler proc;
+    Opaque	closure;
+{
+    RemoveEventHandler(widget, eventMask, other, proc, closure, FALSE);
+}
+
+
+void XtAddEventHandler(widget, eventMask, other, proc, closure)
+    Widget	    widget;
+    EventMask   eventMask;
+    Boolean         other;
+    XtEventHandler  proc;
+    Opaque	closure;
+{
+    AddEventHandler(widget, eventMask, other, proc, closure, FALSE);
+}
+
+
+void XtRemoveRawEventHandler(widget, eventMask, other, proc, closure)
+    Widget	widget;
+    EventMask   eventMask;
+    Boolean	other;
+    XtEventHandler proc;
+    Opaque	closure;
+{
+    RemoveEventHandler(widget, eventMask, other, proc, closure, TRUE);
+}
+
+
+void XtAddRawEventHandler(widget, eventMask, other, proc, closure)
+    Widget	    widget;
+    EventMask   eventMask;
+    Boolean         other;
+    XtEventHandler  proc;
+    Opaque	closure;
+{
+    AddEventHandler(widget, eventMask, other, proc, closure, FALSE);
+}
+
+
 typedef struct _HashRec *HashPtr;
 
 typedef struct _HashRec {
+    Display	*display;
     Window	window;
     Widget	widget;
     HashPtr	next;
 } HashRec;
 
-int sizes[] = {1009, 2003, 4007, 8017, 16033, 32063, 64151, 128257};
-#define NUMSIZES 8
-
 typedef struct {
-    unsigned int	sizeIndex;
     unsigned int	size;
     unsigned int	count;
     HashPtr		entries[1];
@@ -157,11 +207,11 @@ void _XtRegisterWindow(window, widget)
     Window window;
     Widget widget;
 {
-    HashPtr hp, *hpp;
+    register HashPtr hp, *hpp;
 
-    if ((table->count + (table->count / 5)) >= table->size) ExpandTable();
+    if ((table->count + (table->count / 4)) >= table->size) ExpandTable();
 
-    hpp = &table->entries[(unsigned int)window % table->size];
+    hpp = &table->entries[(unsigned int)window & (table->size-1)];
     hp = *hpp;
 
     while (hp != NULL) {
@@ -188,7 +238,7 @@ void _XtUnregisterWindow(window, widget)
 {
     HashPtr hp, *hpp;
 
-    hpp = &table->entries[(unsigned int)window % table->size];
+    hpp = &table->entries[(unsigned int)window  & (table->size-1)];
     hp = *hpp;
 
     while (hp != NULL) {
@@ -214,13 +264,10 @@ static void ExpandTable()
     HashTable	oldTable = table;
     unsigned int i;
 
-    if (oldTable->sizeIndex == NUMSIZES) return;
-
+    i = oldTable->size * 2;
     table = (HashTable) XtMalloc(
-	(unsigned) sizeof(HashTableRec)
-	+sizes[oldTable->sizeIndex+1]*sizeof(HashRec));
-    table->sizeIndex = oldTable->sizeIndex+1;
-    table->size = sizes[table->sizeIndex];
+	(unsigned) sizeof(HashTableRec)+i*sizeof(HashRec));
+    table->size = i;
     table->count = oldTable->count;
     for (i = 0; i<oldTable->size; i++) {
 	HashPtr hp;
@@ -236,13 +283,18 @@ static void ExpandTable()
 }
 
 
-Widget XtWindowToWidget(window)
+/*ARGSUSED*/
+Widget XtWindowToWidget(display, window)
+    Display *display;
     Window window;
 {
-    HashPtr hp;
+    register HashPtr hp;
+
+/* display is ignored for now; will be used when multiple displays
+   are supported */
 
     for (
-        hp = table->entries[(unsigned int)window % table->size];
+        hp = table->entries[(unsigned int)window & (table->size-1)];
         hp != NULL;
 	hp = hp->next)
 	if (hp->window == window) return hp->widget;
@@ -252,204 +304,153 @@ Widget XtWindowToWidget(window)
 
 static void InitializeHash()
 {
-    int i;
+    int size = sizeof(HashTableRec)+1024*sizeof(HashPtr);
 
-    table = (HashTable) XtMalloc(
-        (unsigned) sizeof(HashTableRec)+sizes[0]*sizeof(HashPtr));
+    table = (HashTable) XtMalloc((unsigned) size);
+    bzero((char *) table, size);
 
-    table->sizeIndex = 0;
-    table->size = sizes[0];
+    table->size = 1024;
     table->count = 0;
-    for (i=0; i<table->size; i++) table->entries[i] = NULL;
-}
-
-
-/* %%% the following typedefs are lifted from X/lib/X/region.h;
- * that file is too big to be included here.  XRectToRegion should
- * become a standard part of Xlib anyway...
- */
-
-typedef struct {
-    short x1, x2, y1, y2;
-} BOX, Box;
-
-typedef struct _XRegion {
-    short size;
-    short numRects;
-    BOX *rects;
-    BOX extents;
-} REGION;
-
-
-XUnionRectWithRegion(rect, source, dest)
-    register XRectangle *rect;
-    Region source, dest;
-{
-    REGION region;
-
-    region.rects = &region.extents;
-    region.numRects = 1;
-    region.extents.x1 = rect->x;
-    region.extents.y1 = rect->y;
-    region.extents.x2 = rect->x + rect->width;
-    region.extents.y2 = rect->y + rect->height;
-    region.size = 1;
-
-    XUnionRegion(&region, source, dest);
-}
-
-
-XtAddExposureToRegion(event, region)
-    XEvent   *event;
-    Region   region;
-{
-    XRectangle rect;
-
-    switch (event->type) {
-	case Expose:
-		rect.x = event->xexpose.x;
-		rect.y = event->xexpose.y;
-		rect.width = event->xexpose.width;
-		rect.height = event->xexpose.height;
-		break;
-	case GraphicsExpose:
-		rect.x = event->xgraphicsexpose.x;
-		rect.y = event->xgraphicsexpose.y;
-		rect.width = event->xgraphicsexpose.width;
-		rect.height = event->xgraphicsexpose.height;
-		break;
-	default:
-		return;
-    }
-
-    XUnionRectWithRegion(&rect, region, region);
 }
 
 
 static void DispatchEvent(event, widget, mask)
-    XEvent    *event;
+    register XEvent    *event;
     Widget    widget;
     unsigned long mask;
-
-
 {
     XtEventRec *p;   
     XtEventHandler proc[100];
     Opaque closure[100];
     int numprocs, i;
-    static Region exposeRegion = NULL;
+    XEvent nextEvent;
 
     if (mask == ExposureMask) {
-      if (widget->core.widget_class->core_class.compress_exposure) {
-	if ((event->type == Expose && event->xexpose.count != 0) ||
-	    (event->type == GraphicsExpose && event->xgraphicsexpose.count != 0)) {
-	  /* %%% this code will need to be fixed to support multiple displays*/
-	  if (exposeRegion == NULL) exposeRegion = XCreateRegion();
-	  XtAddExposureToRegion(event, exposeRegion);
-	  return;
+	if (widget->core.widget_class->core_class.compress_exposure) {
+	    if (event->xexpose.count != 0) return;
+	    else {
+		/* Patch event to make it look like everything was exposed */
+		event->xexpose.x = event->xexpose.y = 0;
+		event->xexpose.width = widget->core.width;
+		event->xexpose.height = widget->core.height;
+	    }
 	}
-	if (exposeRegion != NULL) {
-	  XRectangle rect;
-	  XtAddExposureToRegion(event, exposeRegion);
-	  XClipBox(exposeRegion, &rect);
-	  switch (event->type) {
-	    case Expose:
-		      event->xexpose.x = rect.x;
-		      event->xexpose.y = rect.y;
-		      event->xexpose.width = rect.width;
-		      event->xexpose.height = rect.height;
-		      break;
-	    case GraphicsExpose:
-		      event->xgraphicsexpose.x = rect.x;
-		      event->xgraphicsexpose.y = rect.y;
-		      event->xgraphicsexpose.width = rect.width;
-		      event->xgraphicsexpose.height = rect.height;
-		      break;
-	    default:
-		      XtError("DispatchEvent got NoExposure with non-empty region");
-	  }
-	  XDestroyRegion(exposeRegion);
-	  exposeRegion = NULL;
+	if (widget->core.widget_class->core_class.expose != NULL) {
+	    (*widget->core.widget_class->core_class.expose)(widget,event);
 	}
-      }
-      if(widget->core.widget_class->core_class.expose != NULL)
-         (*(widget->core.widget_class->core_class.expose))(widget,event);
     }
-    if ((mask == VisibilityNotify) &&
-            !(widget->core.widget_class->core_class.visible_interest)) return;
+
+    if (mask == EnterWindowMask &&
+	    widget->core.widget_class->core_class.compress_enterleave) {
+	if (XPending(event->xcrossing.display)) {
+	    XPeekEvent(event->xcrossing.display, &nextEvent);
+	    if (nextEvent.type == LeaveNotify &&
+		    event->xcrossing.window == nextEvent.xcrossing.window &&
+		    event->xcrossing.subwindow == nextEvent.xcrossing.subwindow) {
+		/* skip the enter/leave pair */
+		XNextEvent(event->xcrossing.display, &nextEvent);
+		return;
+	    }
+	}
+    }
+
+    if (event->type == MotionNotify &&
+	    widget->core.widget_class->core_class.compress_motion) {
+	while (XPending(event->xmotion.display)) {
+	    XPeekEvent(event->xmotion.display, &nextEvent);
+	    if (nextEvent.type == MotionNotify &&
+		    event->xcrossing.window == nextEvent.xcrossing.window &&
+		    event->xcrossing.subwindow == nextEvent.xcrossing.subwindow) {
+		/* replace the current event with the next one */
+		XNextEvent(event->xmotion.display, event);
+	    } else break;
+	}
+    }
+
+    if (mask == VisibilityChangeMask &&
+            ! widget->core.widget_class->core_class.visible_interest) return;
 
     /* Have to copy the procs into an array, because calling one of them */
     /* might call XtRemoveEventHandler, which would break our linked list.*/
+
     numprocs = 0;
-    for (p=widget->core.event_table; p != NULL; p = p->next)
+
+    for (p=widget->core.event_table; p != NULL; p = p->next) {
 	if ((mask & p->mask) != 0 || (mask == 0 && p->non_filter)) {
 	    proc[numprocs] = p->proc;
 	    closure[numprocs++] = p->closure;
 	}
+    }
 
-    for (i=0 ; i<numprocs ; i++)
-	 /* use VMS bindings for parameters ???*/
-	(*(proc[i]))(widget, closure[i], event);
+    for (i=0 ; i<numprocs ; i++) (*(proc[i]))(widget, closure[i], event);
 }
 
 
-static void ConvertTypeToMask (eventType,mask,grabType,sensitive)
-    int eventType;
-    EventMask *mask;
-    GrabType *grabType;
-    Boolean *sensitive;
-    
+typedef enum {pass, ignore, remap} GrabType;
+
+static void ConvertTypeToMask (eventType, mask, grabType)
+    int		eventType;
+    EventMask   *mask;
+    GrabType    *grabType;
 {
 
-static MaskRec masks[] = {
-    {0,			pass,   not_sensitive}, /* shouldn't see 0      */
-    {0,			pass,   not_sensitive}, /* shouldn't see 1      */
-    {KeyPressMask,      remap,  is_sensitive},  /* KeyPress		*/
-    {KeyReleaseMask,    remap,  is_sensitive},  /* KeyRelease		*/
-    {ButtonPressMask,   remap,  is_sensitive},  /* ButtonPress		*/
-    {ButtonReleaseMask, remap,  is_sensitive},  /* ButtonRelease	*/
-    {PointerMotionMask | 
-     Button1MotionMask | 
-     Button2MotionMask |
-     Button3MotionMask | 
-     Button4MotionMask | 
-     Button5MotionMask | 
-     ButtonMotionMask,  ignore, is_sensitive},  /* MotionNotify		*/
-    {EnterWindowMask,   ignore, is_sensitive},  /* EnterNotify		*/
-    {LeaveWindowMask,   ignore, is_sensitive},  /* LeaveNotify		*/
-    {FocusChangeMask,   ignore, is_sensitive},  /* FocusIn		*/
-    {FocusChangeMask,   ignore, is_sensitive},  /* FocusOut		*/
-    {KeymapStateMask,   ignore, not_sensitive}, /* KeymapNotify		*/
-    {ExposureMask,      pass,   not_sensitive}, /* Expose		*/
-    {ExposureMask,	pass,   not_sensitive}, /* GraphicsExpose       */
-    {ExposureMask,	pass,   not_sensitive}, /* NoExpose		*/
-    {VisibilityChangeMask,pass, not_sensitive}, /* VisibilityNotify     */
-    {0,			pass,   not_sensitive}, /* shouldn't see CreateNotify */
-    {StructureNotifyMask,pass,  not_sensitive}, /* DestroyNotify	*/
-    {StructureNotifyMask,pass,  not_sensitive}, /* UnmapNotify		*/
-    {StructureNotifyMask,pass,  not_sensitive}, /* MapNotify		*/
-    {0,			pass,   not_sensitive},	/* MapRequest		*/
-    {StructureNotifyMask,pass,  not_sensitive}, /* ReparentNotify       */
-    {StructureNotifyMask,pass,  not_sensitive}, /* ConfigureNotify      */
-    {0,			pass,   not_sensitive},	/* ConfigureRequest     */
-    {StructureNotifyMask,pass,  not_sensitive}, /* GravityNotify	*/
-    {0,			pass,   not_sensitive},	/* ResizeRequest	*/
-    {StructureNotifyMask,pass,  not_sensitive}, /* CirculateNotify      */
-    {0,			pass,   not_sensitive},	/* CirculateRequest     */
-    {PropertyChangeMask,ignore, not_sensitive}, /* PropertyNotify       */
-    {0,			ignore, not_sensitive},	/* SelectionClear       */
-    {0,			ignore, not_sensitive},	/* SelectionRequest     */
-    {StructureNotifyMask,pass,  not_sensitive}, /* SelectionNotify      */
-    {ColormapChangeMask,ignore, not_sensitive}, /* ColormapNotify       */
-    {0,			ignore, not_sensitive},	/* ClientMessage	*/
-    {StructureNotifyMask,ignore,not_sensitive}, /* MappingNotify	*/
+static struct {
+    EventMask   mask;
+    GrabType    grabType;
+} masks[] = {
+    {0,				pass},      /* shouldn't see 0  */
+    {0,				pass},      /* shouldn't see 1  */
+    {KeyPressMask,		remap},     /* KeyPress		*/
+    {KeyReleaseMask,		remap},     /* KeyRelease       */
+    {ButtonPressMask,		remap},     /* ButtonPress      */
+    {ButtonReleaseMask,		remap},     /* ButtonRelease    */
+    {PointerMotionMask
+     | Button1MotionMask
+     | Button2MotionMask
+     | Button3MotionMask
+     | Button4MotionMask
+     | Button5MotionMask
+     | ButtonMotionMask,	ignore},    /* MotionNotify	*/
+    {EnterWindowMask,		ignore},    /* EnterNotify	*/
+    {LeaveWindowMask,		ignore},    /* LeaveNotify	*/
+    {FocusChangeMask,		pass},      /* FocusIn		*/
+    {FocusChangeMask,		pass},      /* FocusOut		*/
+    {KeymapStateMask,		pass},      /* KeymapNotify	*/
+    {ExposureMask,		pass},      /* Expose		*/
+    {0,				pass},      /* GraphicsExpose   */
+    {0,				pass},      /* NoExpose		*/
+    {VisibilityChangeMask,      pass},      /* VisibilityNotify */
+    {SubstructureNotifyMask,    pass},      /* CreateNotify	*/
+    {StructureNotifyMask
+     | SubstructureNotifyMask,  pass},      /* DestroyNotify	*/
+    {StructureNotifyMask
+     | SubstructureNotifyMask,  pass},      /* UnmapNotify	*/
+    {StructureNotifyMask
+     | SubstructureNotifyMask,  pass},      /* MapNotify	*/
+    {SubstructureRedirectMask,  pass},      /* MapRequest	*/
+    {StructureNotifyMask
+     | SubstructureNotifyMask,  pass},      /* ReparentNotify   */
+    {StructureNotifyMask
+     | SubstructureNotifyMask,  pass},      /* ConfigureNotify  */
+    {SubstructureRedirectMask,  pass},      /* ConfigureRequest */
+    {StructureNotifyMask
+     | SubstructureNotifyMask,  pass},      /* GravityNotify	*/
+    {ResizeRedirectMask,	pass},      /* ResizeRequest	*/
+    {StructureNotifyMask
+     | SubstructureNotifyMask,  pass},      /* CirculateNotify	*/
+    {SubstructureRedirectMask,  pass},      /* CirculateRequest */
+    {PropertyChangeMask,	pass},      /* PropertyNotify   */
+    {0,				pass},      /* SelectionClear   */
+    {0,				pass},      /* SelectionRequest */
+    {0,				pass},      /* SelectionNotify  */
+    {ColormapChangeMask,	pass},      /* ColormapNotify   */
+    {0,				pass},      /* ClientMessage	*/
+    {0,				pass},      /* MappingNotify ???*/
   };
 
     eventType &= 0x7f;	/* Events sent with XSendEvent have high bit set. */
     (*mask)      = masks[eventType].mask;
     (*grabType)  = masks[eventType].grabType;
-    (*sensitive) = masks[eventType].sensitive;
-    return;
 };
 
 
@@ -469,31 +470,34 @@ static Boolean OnGrabList (widget)
 
 void XtDispatchEvent (event)
     XEvent  *event;
-
 {
-    register Widget widget;
+    register    Widget widget;
     EventMask   mask;
     GrabType    grabType;
-    Boolean     sensitivity;
-    register GrabList gl;
+    register    GrabList gl;
 
-#define IsSensitive ((!sensitivity) || (widget->core.sensitive && widget->core.ancestor_sensitive))
+#define ShouldDispatch \
+    (   (grabType == pass) \
+     || (widget->core.sensitive && widget->core.ancestor_sensitive))
 
-    widget = XtWindowToWidget (event->xany.window);
+    widget = XtWindowToWidget (event->xany.display, event->xany.window);
     if (widget == NULL) return;
 
-    ConvertTypeToMask(event->xany.type, &mask, &grabType, &sensitivity);
+    /* Lint complains about &grabType not matching the declaration.
+       Don't bother trying to fix it, it won't work */
+
+    ConvertTypeToMask(event->xany.type, &mask, &grabType);
 
     if (grabType == pass) {
 	DispatchEvent(event, widget, mask);
 
     } else if (grabList == NULL) {
-	if IsSensitive {
+	if ShouldDispatch {
 	    DispatchEvent(event, widget, mask);
 	}
 
     } else if (grabType == remap) {
-        if (OnGrabList(widget) && IsSensitive) {
+        if (OnGrabList(widget) && ShouldDispatch) {
 	    DispatchEvent(event, widget, mask);
 	}
 	/* Also dispatch to nearest accessible spring_loaded */
@@ -515,12 +519,13 @@ void XtDispatchEvent (event)
 	} 
 
     }  else if (OnGrabList(widget)) {
-	if IsSensitive {
+	if ShouldDispatch {
 	    DispatchEvent(event, widget, mask);
 	}
     }
 }
 
+/* ARGSUSED */
 static void GrabDestroyCallback(widget, closure, call_data)
     Widget  widget;
     caddr_t closure;
@@ -549,15 +554,17 @@ void XtAddGrab(widget, exclusive, spring_loaded)
     gl->exclusive     = exclusive;
     gl->spring_loaded = spring_loaded;
 
-    XtAddCallback(widget, XtNdestroyCallback, GrabDestroyCallback, NULL);
+    XtAddCallback(
+	widget, XtNdestroyCallback, GrabDestroyCallback, (Opaque)NULL);
 }
 
 void XtRemoveGrab(widget)
     Widget  widget;
 {
-    register GrabList gl, prev, next;
+    register GrabList gl;
+    register Boolean done;
 
-    for (prev = NULL, gl = grabList; gl != NULL; prev = gl, gl = gl->next) {
+    for (gl = grabList; gl != NULL; gl = gl->next) {
 	if (gl->widget == widget) {
 	    break;
 	}
@@ -568,22 +575,15 @@ void XtRemoveGrab(widget)
 	return;
     }
 
-    while (gl) {
-	if (gl->widget == widget) {
-	    if (prev)
-		prev->next = next = gl->next;
-	    else
-		grabList = next = gl->next;
-	    XtFree(gl);
-	    gl = next;
-	}
-	else {
-	    prev = gl;
-	    gl = gl->next;
-	}
-    }
+    do {
+	gl = grabList;
+	done = (gl->widget == widget);
+	grabList = gl->next;
+	XtFree((char *)gl);
+    } while (! done);
 
-    XtRemoveCallback(widget, XtNdestroyCallback, GrabDestroyCallback, NULL);
+    XtRemoveCallback(
+	widget, XtNdestroyCallback, GrabDestroyCallback, (Opaque)NULL);
 }
 
 
