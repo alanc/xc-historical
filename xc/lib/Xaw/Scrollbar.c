@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcsid[] = "$Header: Scroll.c,v 1.8 87/12/02 15:59:40 swick Locked $";
+static char rcsid[] = "$Header: Scroll.c,v 1.9 87/12/08 10:53:43 swick Locked $";
 #endif lint
 
 /*
@@ -510,7 +510,7 @@ static void DoThumb( gw, event, params, num_params )
     PaintThumb(w);
     XFlush(XtDisplay(w));
 
-    XtCallCallbacks( gw, XtNthumbProc, (caddr_t)w->scrollbar.top);
+    XtCallCallbacks( gw, XtNthumbProc, w->scrollbar.top);
 }
 
 
