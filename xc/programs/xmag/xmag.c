@@ -18,6 +18,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * xmag.c -- toolkit version.
+ *
  * 11-27-90 Dave Sternlicht --  Creation.
  */
 
@@ -34,12 +35,17 @@
 #include "Scale.h"
 #include <X11/cursorfont.h>
 
-
-
 #define min(a, b) a < b ? a : b
 
-#define HLINTERVAL  10
-typedef enum { drag, resize, done } hlMode;
+
+
+/* highlight interval */
+#define HLINTERVAL  10		
+
+/* highlight mode */
+typedef enum { drag, resize, done } hlMode; 
+
+/* highlight data structure */
 typedef struct { 
   Boolean   newScale;
   hlMode    selectMode;
@@ -50,10 +56,12 @@ typedef struct {
   Dimension width, height;
   Widget    scaleShell, scaleInstance, pixShell, pixLabel, cmapWinList [2];
   } hlStruct, *hlPtr;
+
 static XtIntervalId hlId;
 
 
 
+/* global variables */
 XtAppContext app;
 static Cursor ulAngle, urAngle, lrAngle, llAngle;
 static Display *dpy;
@@ -62,6 +70,12 @@ static GC selectGC;
 static XGCValues selectGCV;
 static Widget toplevel, root;
 static Atom wm_delete_window;
+static int numXmags = 0;
+static int srcStat, srcX, srcY;
+static unsigned int srcWidth, srcHeight;
+
+/* forward declarations */
+
 static void 
   CloseAP(), 
   SetCmapPropsAP(),
@@ -75,38 +89,45 @@ static void
   CheckPoints(), 
   HighlightTO(),
   CloseCB(), 
-  ReplaceCB(), 
+  ReplaceCB(),
   NewCB(), 
   SetupGC(), 
-  ResizeEH(), DragEH(), 
+  ResizeEH(), 
+  DragEH(), 
   StartRootPtrGrab(), 
   CreateRoot(), 
-  InitCursors(), 
   GetImageAndAttributes(),
   PopupNewScale(), 
   RedoOldScale(),
+  InitCursors(), 
   ParseSourceGeom();
 
-static int numXmags = 0;
-static int srcStat, srcX, srcY;
-static unsigned int srcWidth, srcHeight;
+static Window
+  FindWindow();
+
+static int
+  Error(),
+  Get_XColors();
+
+static Pixel
+  GetMaxIntensity(),
+  GetMinIntensity();
 
 
 
-typedef struct 
-{ String source, mag; } OptionsRec;
+/* application resources */
+
+typedef struct { String source, mag; } OptionsRec;
 
 static OptionsRec options;
 
 #define Offset(field) XtOffsetOf(OptionsRec, field)
-
 static XtResource resources[] = {
   {"source", "Source", XtRString, sizeof(String),
      Offset(source), XtRString, (XtPointer)"64x64"},
   {"mag", "Mag", XtRString, sizeof(String),
      Offset(mag), XtRString, (XtPointer)"5.0"},
 };
-
 #undef Offset
 
 static XrmOptionDescRec optionDesc[] = {
@@ -115,6 +136,8 @@ static XrmOptionDescRec optionDesc[] = {
 };
 
 
+
+/* action table */
 
 static XtActionsRec actions_table[] = {
   {"close", CloseAP},
@@ -129,6 +152,19 @@ static XtActionsRec actions_table[] = {
 };
 
 
+
+/*
+ * Error() -- Error handler:  Catch a bad match in magnifing an
+ *            area that contains bits of different depths.
+ */
+static int 
+Error(dpy, err)
+     Display *dpy; XErrorEvent *err;
+{
+  fprintf(stderr, "Protocol Error!!!\n");
+  return 0;
+}
+
 
 /*
  * CloseAP() -- Close this dialog.  If its the last one exit the program.
@@ -208,7 +244,7 @@ NewAP(w, event)
 
 
 /*
- * ReplaceCB() -- Replace this particular xmag dialog.
+ * ReplaceAP() -- Replace this particular xmag dialog.
  */
 static void                     /* ARGSUSED */
 ReplaceAP(w, event)
@@ -311,7 +347,7 @@ UpdatePixelAP(w, event)
 
 
 /*
- * PopdownPixel() -- Remove pixel info.
+ * PopdownPixelAP() -- Remove pixel info.
  */
 static void 
 PopdownPixelAP(w)
@@ -354,10 +390,11 @@ SelectRegionAP(w)
  * CheckPoints() -- Change the cursor for the correct quadrant.
  *                  Make sure the first point is less than the second 
  *                  for drawing the selection rectangle.
+ *
  */
 static void 
 CheckPoints(x1, x2, y1, y2)
-     Position *x1, *x2, *y1, *y2;
+     Position *x1, *x2, *y1, *y2; /* Coordinates */
 {
   Position tmp; 
   Boolean above, left;
@@ -467,10 +504,11 @@ SetupGC()
 
 /*
  * FindWindow() -- Determin window the pointer is over.
+ *
  */
-Window 
+static Window 
 FindWindow(x, y)
-     int x, y;
+     int x, y;			/* Locatation of cursor */
 {
   Window findW = DefaultRootWindow(dpy), stopW, childW;
   XTranslateCoordinates(dpy, findW, findW,
@@ -591,7 +629,7 @@ DragEH(w, closure, event, continue_to_dispatch) /* ARGSUSED */
 static void
 StartRootPtrGrab(new, data)
      Boolean new;		/* do we cretate a new scale instance? */
-     hlPtr data;
+     hlPtr data;		/* highligh data */
 {
   Window    rootR, childR;
   int       rootX, rootY, winX, winY;
@@ -624,8 +662,9 @@ StartRootPtrGrab(new, data)
 
 
 /*
- * CreateRoot() -- Make it. If the user specified x and y in his source
- *                 geometry then use this to directly get the image.
+ * CreateRoot() -- Create a root window widget. If the user specified x and y
+ *                 in his source geometry then use this to directly get the
+ *                 image.
  */
 static void
 CreateRoot()
@@ -702,10 +741,11 @@ GetImageAndAttributes(w, x, y, width, height, data)
 
 /*
  * Get_XColors() Get the XColors of all pixels in image - returns # of colors
- *               This function was taken from the xwd (thanks Bob...)
+ *               This function was taken from xwd (thanks Bob...)
  */
 #define lowbit(x) ((x) & (~(x) + 1))
-int Get_XColors(win_info, colors)
+static int 
+Get_XColors(win_info, colors)
      XWindowAttributes *win_info;
      XColor **colors;
 {
@@ -777,8 +817,6 @@ GetMaxIntensity(data)
   return mptr->pixel;
 }
 
-
-
 /*
  * GetMinIntensity() -- Find the minimum intensity pixel value for a colormap.
  */
@@ -802,6 +840,7 @@ GetMinIntensity(data)
 }
 
 
+
 
 static Widget pane1, pane2, pane3, cclose, replace, new, label;
 
@@ -882,9 +921,9 @@ PopupNewScale(data)
 
 
 /*
- * RedoOldScale() -- If visual or depth has changed, unrealize the scale
- *                   widget, change its colormap/depth/visual.  Then
- *                   re-realize it.  Also do this for the pixel display
+ * RedoOldScale() -- If the visual, depth, or colormap has changed, unrealize
+ *                   the scale widget and change its colormap/depth/visual.
+ *                   Then re-realize it.  Also do this for the pixel display
  *                   widget.
  */
 static void
@@ -958,6 +997,8 @@ main(argc, argv)
      int argc;
      char **argv;
 {
+  XSetErrorHandler(Error);
+
 				/* SUPPRESS 594 */
   toplevel = XtAppInitialize(&app, "Xmag", optionDesc, XtNumber(optionDesc),
 			     &argc, argv, NULL,
