@@ -28,7 +28,7 @@
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.47 89/11/16 18:09:48 jim Exp $
+ * $XConsortium: twm.h,v 1.47 89/11/16 18:40:45 jim Exp $
  *
  * twm include file
  *
@@ -294,8 +294,6 @@ extern char **Argv;
 extern char **Environ;
 
 extern void Done();
-extern int Error();
-extern int Other();
 
 extern Bool ErrorOccurred;
 extern XErrorEvent LastErrorEvent;
