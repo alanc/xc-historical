@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.197 91/04/10 10:32:54 rws Exp $ */
+/* $XConsortium: Xlib.h,v 11.198 91/04/10 10:44:22 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987 by the Massachusetts Institute of Technology
  *
@@ -2644,7 +2644,7 @@ extern XForceScreenSaver(
 
 extern XFree(
 #if NeedFunctionPrototypes
-    char*		/* data */
+    XPointer		/* data */
 #endif
 );
 
