@@ -1,4 +1,4 @@
-/* $XConsortium: Manage.c,v 1.30 94/02/10 18:08:32 converse Exp $ */
+/* $XConsortium: Manage.c,v 1.31 94/04/01 20:51:28 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -434,8 +434,8 @@ void XtChangeManagedSet(unmanage_children, num_unmanage, do_change_proc,
     }
 
     if (do_change_proc) 
-	(*do_change_proc)(parent, unmanage_children, num_unmanage,
-			  manage_children, num_manage, client_data);
+	(*do_change_proc)(parent, unmanage_children, &num_unmanage,
+			  manage_children, &num_manage, client_data);
 
     call_out = (some_unmanaged && !call_out);
     ManageChildren(manage_children, num_manage, parent, call_out,
