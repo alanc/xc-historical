@@ -42,7 +42,6 @@ XTerm*vtMenu*vthide*Label:  Hide VT Window
 
 XTerm*fontMenu.Label:  VT Fonts
 XTerm*fontMenu*fontdefault*Label:	Default
-!font0 is overridden to control the normal font
 XTerm*fontMenu*font1*Label:	Tiny
 XTerm*VT100*font1:		nil2
 XTerm*fontMenu*font2*Label:	Small
@@ -52,7 +51,8 @@ XTerm*VT100*font3:		8x13
 XTerm*fontMenu*font4*Label:	Large
 XTerm*VT100*font4:		9x15
 XTerm*fontMenu*fontescape*Label:	Escape Sequence
-!fontother is overridden to control the escape sequence font
+XTerm*fontMenu*fontsel*Label:		Selection
+!fontescape and fontsel overridden by application
 
 XTerm*tekMenu.Label:  Tek Options
 XTerm*tekMenu*tektextlarge*Label:  Large Characters

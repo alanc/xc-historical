@@ -72,13 +72,12 @@ MenuEntry vtMenuEntries[] = {
 
 MenuEntry fontMenuEntries[] = {
     { "fontdefault",	do_vtfont, NULL },		/*  0 */
-    { "line1",		NULL, NULL },			/*  1 */
-    { "font1",		do_vtfont, NULL },		/*  2 */
-    { "font2",		do_vtfont, NULL },		/*  3 */
-    { "font3",		do_vtfont, NULL },		/*  4 */
-    { "font4",		do_vtfont, NULL },		/*  5 */
-    { "line2",		NULL, NULL },			/*  6 */
-    { "fontescape",	do_vtfont, NULL }};		/*  7 */
+    { "font1",		do_vtfont, NULL },		/*  1 */
+    { "font2",		do_vtfont, NULL },		/*  2 */
+    { "font3",		do_vtfont, NULL },		/*  3 */
+    { "font4",		do_vtfont, NULL },		/*  4 */
+    { "fontescape",	do_vtfont, NULL },		/*  5 */
+    { "fontsel",	do_vtfont, NULL }};		/*  6 */
     /* this should match NMENUFONTS in ptyx.h */
 
 MenuEntry tekMenuEntries[] = {
@@ -121,11 +120,10 @@ void HandleCreateMenu (w, event, params, param_count)
     Cardinal *param_count;      /* 0 or 1 */
 {
     TScreen *screen = &term->screen;
-    static int gotmenus = 0;
 
     if (*param_count != 1) {
 	XBell (XtDisplay(w), 0);
-    } else if (gotmenus < 4) {		/* Number of menus [optimization] */
+    } else {
 	switch (params[0][0]) {
 	  case 'm':
 	    if (!screen->mainMenu) {
@@ -136,7 +134,6 @@ void HandleCreateMenu (w, event, params, param_count)
 		update_allowsends();
 		update_visualbell();
 		update_logging();
-		gotmenus++;
 	    }
 	    break;
 	  case 'v':
@@ -159,7 +156,6 @@ void HandleCreateMenu (w, event, params, param_count)
 		update_allow132();
 		update_cursesemul();
 		update_marginbell();
-		gotmenus++;
 	    }
 	    break;
 	  case 'f':
@@ -172,8 +168,12 @@ void HandleCreateMenu (w, event, params, param_count)
 				 fontMenuEntries[fontMenu_fontescape].widget,
 				 (screen->menu_font_names[fontMenu_fontescape]
 				  ? TRUE : FALSE));
-		gotmenus++;
 	    }
+	    get_selected_font ();
+	    set_sensitivity (screen->fontMenu,
+			     fontMenuEntries[fontMenu_fontsel].widget,
+			     (screen->menu_font_names[fontMenu_fontsel]
+			      ? TRUE : FALSE));
 	    break;
 	  case 't':
 	    if (!screen->tekMenu) {
@@ -181,7 +181,6 @@ void HandleCreateMenu (w, event, params, param_count)
 					       tekMenuEntries,
 					       XtNumber(tekMenuEntries));
 		set_tekfont_menu_item (screen->cur.fontsize, TRUE);
-		gotmenus++;
 	    }
 	    break;
 	  default:

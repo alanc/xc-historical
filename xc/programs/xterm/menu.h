@@ -75,13 +75,12 @@ extern void HandleAllowSends(), HandleVisualBell(),
  * items in vt100 font menu
  */
 #define fontMenu_fontdefault 0
-#define fontMenu_line1 1
-#define fontMenu_font1 2
-#define fontMenu_font2 3
-#define fontMenu_font3 4
-#define fontMenu_font4 5
-#define fontMenu_line2 6
-#define fontMenu_fontescape 7
+#define fontMenu_font1 1
+#define fontMenu_font2 2
+#define fontMenu_font3 3
+#define fontMenu_font4 4
+#define fontMenu_fontescape 5
+#define fontMenu_fontsel 6
 /* number of non-line items should match NMENUFONTS in ptyx.h */
 
 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.35 89/10/27 18:35:47 jim Exp $
+ *	$XConsortium: ptyx.h,v 1.36 89/10/30 14:50:38 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -138,7 +138,7 @@ typedef Char **ScrnBuf;
 #define	APC	0x9F
 #define	RDEL	0xFF
 
-#define NMENUFONTS 8			/* entries in fontMenu */
+#define NMENUFONTS 7			/* entries in fontMenu */
 
 #define	NBOX	5			/* Number of Points in box	*/
 #define	NPARAM	10			/* Max. parameters		*/

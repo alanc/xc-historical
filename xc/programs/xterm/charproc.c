@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.110 89/11/09 13:57:40 swick Exp $
+ * $XConsortium: charproc.c,v 1.111 89/11/13 11:58:49 jim Exp $
  */
 
 
@@ -143,7 +143,7 @@ static void VTallocbuf();
 #define	doinput()		(bcnt-- > 0 ? *bptr++ : in_put())
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: charproc.c,v 1.110 89/11/09 13:57:40 swick Exp $";
+static char rcs_id[] = "$XConsortium: charproc.c,v 1.111 89/11/13 11:58:49 jim Exp $";
 #endif	/* lint */
 
 static long arg;
@@ -2010,6 +2010,7 @@ static void VTInitialize (request, new)
    /* set default in realize proc */
    new->screen.menu_font_names[fontMenu_fontdefault] = NULL;
    new->screen.menu_font_names[fontMenu_fontescape] = NULL;
+   new->screen.menu_font_names[fontMenu_fontsel] = NULL;
    new->screen.menu_font_number = fontMenu_fontdefault;
 
     /*
@@ -2618,6 +2619,48 @@ void DoSetSelectedFont(w, client_data, selection, type, value, length, format)
 	Bell();
 }
 
+static void got_font_selection (w, client_data, selection, type, value,
+				length, format)
+    Widget w;
+    XtPointer client_data;
+    Atom *selection, *type;
+    XtPointer value;
+    unsigned long *length;
+    int *format;
+{
+    if (*type != XA_STRING || *format != 8) return;
+    if (term->screen.menu_font_names[fontMenu_fontsel]) {
+	free (term->screen.menu_font_names[fontMenu_fontsel]);
+    }
+    term->screen.menu_font_names[fontMenu_fontsel] = value;
+}
+
+static void find_font_selection (atom_name, func)
+    char *atom_name;
+    void (*func)();
+{
+    static AtomPtr *atoms;
+    static int atomCount = 0;
+    AtomPtr *pAtom;
+    int a;
+
+    if (!atom_name) atom_name = "PRIMARY_FONT";
+
+    for (pAtom = atoms, a = atomCount; a; a--, pAtom++) {
+	if (strcmp(atom_name, XmuNameOfAtom(*pAtom)) == 0) break;
+    }
+    if (!a) {
+	atoms = (AtomPtr*) XtRealloc (atoms, sizeof(AtomPtr)*(atomCount+1));
+	*(pAtom = &atoms[atomCount++]) = XmuMakeAtom(atom_name);
+    }
+
+#define XA_PRIMARY_FONT XmuInternAtom(XtDisplay(term), *pAtom)
+
+    XtGetSelectionValue(term, XA_PRIMARY_FONT, XA_STRING, func,
+			NULL, XtLastTimestampProcessed(XtDisplay(term)));
+}
+
+
 /* ARGSUSED */
 void HandleSetSelectedFont(w, event, params, param_count)
     Widget w;
@@ -2625,30 +2668,15 @@ void HandleSetSelectedFont(w, event, params, param_count)
     String *params;		/* unused */
     Cardinal *param_count;	/* unused */
 {
-    static AtomPtr *atoms;
-    static int atomCount = 0;
-    AtomPtr *pAtom;
-    int a;
-    String atomName;
-
-    switch (*param_count) {
-      case 0:	atomName = "PRIMARY_FONT"; break;
-      case 1:	atomName = params[0]; break;
-      default:	Bell(); return;
-    }
-    for (pAtom = atoms, a = atomCount; a; a--, pAtom++) {
-	if (strcmp(atomName, XmuNameOfAtom(*pAtom)) == 0) break;
-    }
-    if (!a) {
-	atoms = (AtomPtr*)XtRealloc( atoms, sizeof(AtomPtr)*(atomCount+1) );
-	*(pAtom = &atoms[atomCount++]) = XmuMakeAtom(atomName);
-    }
-
-#define XA_PRIMARY_FONT XmuInternAtom(XtDisplay(w), *pAtom)
-
-    XtGetSelectionValue(w, XA_PRIMARY_FONT, XA_STRING, DoSetSelectedFont,
-			NULL, XtLastTimestampProcessed(XtDisplay(w)));
+    find_font_selection ((*param_count == 1 ? params[0] : NULL),
+			 DoSetSelectedFont);
 }
+
+get_selected_font ()
+{
+    find_font_selection (NULL, got_font_selection);
+}
+
 
 /* ARGSUSED */
 void HandleSetMenuFont(w, event, params, param_count)
@@ -2678,6 +2706,8 @@ void HandleSetMenuFont(w, event, params, param_count)
 	    fontnum = fontMenu_font4; break;
 	  case 'e': case 'E':
 	    fontnum = fontMenu_fontescape; break;
+	  case 's': case 'S':
+	    fontnum = fontMenu_fontsel; break;
 	  default:
 	    Bell();
 	    return;
@@ -2698,12 +2728,17 @@ void set_vt_font (i, doresize)
     Bool doresize;
 {
     TScreen *screen = &term->screen;
+    char *name;
 
-    if (i < 0 || i > fontMenu_fontescape) {
+    if (i < 0 || i >= NMENUFONTS) {
 	Bell();
 	return;
     }
-    if (!try_new_font(screen, screen->menu_font_names[i], NULL, doresize, i)) {
+    name = screen->menu_font_names[i];
+    if (i == fontMenu_fontsel) {	/* pretend that is an escape */
+	i = fontMenu_fontescape;
+    }
+    if (!try_new_font(screen, name, NULL, doresize, i)) {
 	Bell();
     }
     return;
@@ -2789,12 +2824,15 @@ int try_new_font (screen, nfontname, bfontname, doresize, fontnum)
     set_menu_font (False);
     screen->menu_font_number = fontnum;
     set_menu_font (True);
-    if (tmpname) {			/* if setting escape */
+    if (tmpname) {			/* if setting escape or sel */
 	if (screen->menu_font_names[fontnum])
 	  free (screen->menu_font_names[fontnum]);
 	screen->menu_font_names[fontnum] = tmpname;
-	set_sensitivity (term->screen.fontMenu,
-			 fontMenuEntries[fontMenu_fontescape].widget, TRUE);
+	if (fontnum == fontMenu_fontescape) {
+	    set_sensitivity (term->screen.fontMenu,
+			     fontMenuEntries[fontMenu_fontescape].widget,
+			     TRUE);
+	}
     }
     set_cursor_gcs (screen);
     update_font_info (screen, doresize);
