@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/09/18 16:08:15 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/09/19 09:39:53 rws Exp $
 XCOMM
 XCOMM Copyright 1993,94 by Thomas Roell, Germany.
 XCOMM Copyright 1993,94 by SGCS (Snitily Graphics Consulting Services), USA.
@@ -26,6 +26,9 @@ XCOMM $SGCSId$
 XCOMM
 
 #include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = config
 
 SRCS =	svgaBank.c svgaColor.c svgaFb.c svgaInit.c svgaIo.c svgaKbd.c \
 	svgaSVPMI.c svgaVT.c
@@ -33,6 +36,18 @@ SRCS =	svgaBank.c svgaColor.c svgaFb.c svgaInit.c svgaIo.c svgaKbd.c \
 #if NeedSvga386
 ASOBJ = svga398.o
 #endif
+
+#ifndef SvgaDir
+#define SvgaDir $(LIBDIR)/svga
+#endif
+VGADIR = SvgaDir
+
+#ifndef SvgaConfig
+#define SvgaConfig vga.pmi:640x480
+#endif
+
+SVGACONFIG = SvgaConfig
+CONF_DEFINES = -DSVGACONFIG=\"$(VGADIR)/$(SVGACONFIG)\"
 
 OBJS =	svgaBank.o svgaColor.o svgaFb.o svgaInit.o svgaIo.o svgaKbd.o \
 	svgaSVPMI.o svgaVT.o $(ASOBJ)
@@ -43,5 +58,7 @@ INCLUDES = -I. -I../../mi -I../../mfb -I../../cfb -I../../include -I../../os \
 
 NormalRelocatableTarget(svga,$(OBJS))
 NormalLintTarget($(SRCS))
+SpecialCObjectRule(svgaInit,$(ICONFIGFILES),$(CONF_DEFINES))
 DependTarget()
 
+DependSubdirs($(SUBDIRS))
