@@ -1,4 +1,7 @@
-         PROGRAMS = xmkmf makedepend mergelib
+#if UseCCMakeDepend
+MDEP_DIR = makedepend
+#endif
+         PROGRAMS = xmkmf $(MDEP_DIR) mergelib
 
 all:: $(PROGRAMS)
 
