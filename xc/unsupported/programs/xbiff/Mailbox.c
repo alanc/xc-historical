@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Mailbox.c,v 1.16 88/09/26 18:49:58 jim Exp $
+ * $XConsortium: Mailbox.c,v 1.17 88/09/30 08:45:06 swick Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -324,14 +324,21 @@ static void check_mailbox (w, force_redraw, reset)
     MailboxWidget w;
     Boolean force_redraw, reset;
 {
-    struct stat st;
     long mailboxsize = 0;
 
     if (w->mailbox.check_command != NULL) {
-	if (system (w->mailbox.check_command) == 0)
+	switch (system(w->mailbox.check_command)) {
+	  case 0:
 	    mailboxsize = w->mailbox.last_size + 1;
+	  /* case 1 is no change */
+	  case 2:
+	    mailboxsize = 0;
+	  /* treat everything else as no change */
+	}
     }
     else {
+	struct stat st;
+
 	if (stat (w->mailbox.filename, &st) == 0) {
 	    mailboxsize = st.st_size;
 	}
