@@ -1,4 +1,4 @@
-/* $XConsortium: Xlib.h,v 11.225 93/09/14 17:14:30 gildea Exp $ */
+/* $XConsortium: Xlib.h,v 11.226 93/09/17 14:46:47 rws Exp $ */
 /* 
  * Copyright 1985, 1986, 1987, 1991 by the Massachusetts Institute of Technology
  *
@@ -1326,6 +1326,14 @@ extern char *XGetAtomName(
     Atom		/* atom */
 #endif
 );
+extern void XGetAtomNames(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    Atom*		/* atoms */,
+    int			/* count */,
+    char**		/* names_return */
+#endif
+);
 extern char *XGetDefault(
 #if NeedFunctionPrototypes
     Display*		/* display */,
@@ -1365,6 +1373,15 @@ extern Atom XInternAtom(
     Display*		/* display */,
     _Xconst char*	/* atom_name */,
     Bool		/* only_if_exists */		 
+#endif
+);
+extern void XInternAtoms(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    char**		/* names */,
+    int			/* count */,
+    Bool		/* onlyIfExists */,
+    Atom*		/* atoms_return */
 #endif
 );
 extern Colormap XCopyColormapAndFree(
