@@ -31,6 +31,7 @@
          XAULIB = $(TOP)/lib/Xau/libXau.a
        XDMCPLIB = $(TOP)/lib/Xdmcp/libXdmcp.a
         SYSLIBS = -lm -ldbm
+           CBRT = ddx/mi/cbrt.o
 
 /**/#
 /**/# This turns off the default rule for compiling .c files because
@@ -407,7 +408,7 @@ TEKOBJS = ddx/tek/pegInit.o $(FONTUTIL)
 TEKLIBS = $(DIX) $(BSD) $(SNF) $(TEK) $(MFB) $(CFB) $(MI) $(EXTENSIONS)
 XtekDIRS = $(TEKDIRS)
 
-ServerTarget(Xtek,$(EXTDIR) $(FONTUTILDIR) $(TEKDIRS),$(TEKOBJS),$(TEKLIBS),$(SYSLIBS))
+ServerTarget(Xtek,$(EXTDIR) $(FONTUTILDIR) $(TEKDIRS),$(TEKOBJS),$(TEKLIBS),$(CBRT) $(SYSLIBS))
 #endif /* dotekServer */
 
 
