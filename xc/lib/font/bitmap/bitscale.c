@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bitscale.c,v 1.6 91/06/21 15:17:33 keith Exp $
+ * $XConsortium: bitscale.c,v 1.7 91/06/21 18:13:46 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -125,7 +125,10 @@ ComputeScaleFactors(from, to, dx, dy)
                *dy;
 {
     /* compute scale factors */
-    *dy = ((double) to->point * to->y) / (from->point * from->y);
+    if (to->pixel == from->pixel)
+	*dy = 1.0;
+    else
+	*dy = ((double) to->point * to->y) / (from->point * from->y);
     *dx = (((double) (to->x * from->y)) / (to->y * from->x)) * *dy;
     if (to->width > 0)
 	*dx = to->width / (from->width * *dx);
@@ -133,7 +136,9 @@ ComputeScaleFactors(from, to, dx, dy)
 
 #define SCORE(m,s) \
 if (m >= 1.0) { \
-    if ((m == 1.0) || (m == 2.0)) \
+    if (m == 1.0) \
+	score += (16 * s); \
+    else if (m == 2.0) \
 	score += (4 * s); \
     else if (m < minfrac) \
 	score += (1 * s); \
@@ -541,48 +546,75 @@ ScaleFont(opf, widthMult, heightMult, props, propCount, isStringProp)
      * check per-font minbounds and maxbounds character information.
      */
 
-    /* Allocate the scratch space for the glyph scaling routine. */
-    scratch = (int *)
-	xalloc((int) ((opfi->maxbounds.rightSideBearing -
-		       opfi->minbounds.leftSideBearing)
-		      * widthMult * sizeof(int)));
-    if (!scratch)
-	goto bail;
-
-    pink = bitmapFont->ink_metrics;
-    if (pink) {
-	pfi->ink_minbounds.leftSideBearing = MAXSHORT;
-	pfi->ink_minbounds.rightSideBearing = MAXSHORT;
-	pfi->ink_minbounds.ascent = MAXSHORT;
-	pfi->ink_minbounds.descent = MAXSHORT;
-	pfi->ink_minbounds.characterWidth = MAXSHORT;
-	pfi->ink_maxbounds.leftSideBearing = MINSHORT;
-	pfi->ink_maxbounds.rightSideBearing = MINSHORT;
-	pfi->ink_maxbounds.ascent = MINSHORT;
-	pfi->ink_maxbounds.descent = MINSHORT;
-	pfi->ink_maxbounds.characterWidth = MINSHORT;
-    } else {
-	pfi->ink_minbounds = pfi->minbounds;
-	pfi->ink_maxbounds = pfi->maxbounds;
-    }
-
     glyphBytes = bitmapFont->bitmaps;
     pci = bitmapFont->metrics;
-    for (i = 0; i < nchars; i++)
+    if (widthMult == 1 && heightMult == 1)
     {
-	if (opci = obitmapFont->encoding[i])
+	for (i = 0; i < nchars; i++)
 	{
-	    pci = bitmapFont->encoding[i];
-	    if (pink = bitmapFont->ink_metrics)
+	    if (opci = obitmapFont->encoding[i])
 	    {
-		pink = pink + (pci - bitmapFont->metrics);
+		int size;
+		xCharInfo   *opink;
+
+	    	pci = bitmapFont->encoding[i];
+	    	if (pink = bitmapFont->ink_metrics)
+	    	{
+		    pink = pink + (pci - bitmapFont->metrics);
+		    opink = obitmapFont->ink_metrics;
+		    opink = opink + (opci - obitmapFont->metrics);
+		    *pink = *opink;
+	    	}
+	    	pci->bits = glyphBytes;
+		size = BYTES_FOR_GLYPH(pci, glyph);
+		bcopy (opci->bits, pci->bits, size);
+	    	glyphBytes += size;
 	    }
-	    pci->bits = glyphBytes;
-	    ScaleBitmap (pf, opci, pci, scratch, pink);
-	    glyphBytes += BYTES_FOR_GLYPH(pci, glyph);
 	}
     }
-    xfree(scratch);
+    else
+    {
+    	/* Allocate the scratch space for the glyph scaling routine. */
+    	scratch = (int *)
+	    xalloc((int) ((opfi->maxbounds.rightSideBearing -
+		       	   opfi->minbounds.leftSideBearing)
+		      	  * widthMult * sizeof(int)));
+    	if (!scratch)
+	    goto bail;
+    
+    	pink = bitmapFont->ink_metrics;
+    	if (pink) {
+	    pfi->ink_minbounds.leftSideBearing = MAXSHORT;
+	    pfi->ink_minbounds.rightSideBearing = MAXSHORT;
+	    pfi->ink_minbounds.ascent = MAXSHORT;
+	    pfi->ink_minbounds.descent = MAXSHORT;
+	    pfi->ink_minbounds.characterWidth = MAXSHORT;
+	    pfi->ink_maxbounds.leftSideBearing = MINSHORT;
+	    pfi->ink_maxbounds.rightSideBearing = MINSHORT;
+	    pfi->ink_maxbounds.ascent = MINSHORT;
+	    pfi->ink_maxbounds.descent = MINSHORT;
+	    pfi->ink_maxbounds.characterWidth = MINSHORT;
+    	} else {
+	    pfi->ink_minbounds = pfi->minbounds;
+	    pfi->ink_maxbounds = pfi->maxbounds;
+    	}
+    
+    	for (i = 0; i < nchars; i++)
+    	{
+	    if (opci = obitmapFont->encoding[i])
+	    {
+	    	pci = bitmapFont->encoding[i];
+	    	if (pink = bitmapFont->ink_metrics)
+	    	{
+		    pink = pink + (pci - bitmapFont->metrics);
+	    	}
+	    	pci->bits = glyphBytes;
+	    	ScaleBitmap (pf, opci, pci, scratch, pink);
+	    	glyphBytes += BYTES_FOR_GLYPH(pci, glyph);
+	    }
+    	}
+    	xfree(scratch);
+    }
 
     if (pfi->defaultCh != (unsigned short) NO_SUCH_CHAR) {
 	int         r,
