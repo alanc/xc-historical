@@ -23,7 +23,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.17 89/11/10 11:10:22 rws Exp $ */
+/* $XConsortium: events.c,v 5.18 89/11/21 14:31:03 rws Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -2450,7 +2450,7 @@ SetInputFocus(client, dev, focusID, revertTo, ctime, followOK)
     Time ctime;
     Bool followOK;
 {
-    register FocusClassPtr focus = dev->focus;
+    register FocusClassPtr focus;
     register WindowPtr focusWin;
     int mode;
     TimeStamp time;
@@ -2479,6 +2479,7 @@ SetInputFocus(client, dev, focusID, revertTo, ctime, followOK)
 	if(!focusWin->realized)
 	    return(BadMatch);
     }
+    focus = dev->focus;
     if ((CompareTimeStamps(time, currentTime) == LATER) ||
 	(CompareTimeStamps(time, focus->time) == EARLIER))
 	return Success;
@@ -2556,7 +2557,7 @@ ProcGrabPointer(client)
 {
     xGrabPointerReply rep;
     DeviceIntPtr device = inputInfo.pointer;
-    GrabPtr grab = device->grab;
+    GrabPtr grab;
     WindowPtr pWin, confineTo;
     CursorPtr cursor;
     REQUEST(xGrabPointerReq);
@@ -2613,6 +2614,7 @@ ProcGrabPointer(client)
     rep.type = X_Reply;
     rep.sequenceNumber = client->sequence;
     rep.length = 0;
+    grab = device->grab;
     if ((grab) && !SameClient(grab, client))
 	rep.status = AlreadyGrabbed;
     else if ((!pWin->realized) ||
@@ -2622,14 +2624,10 @@ ProcGrabPointer(client)
 			(&confineTo->borderSize))))
 	rep.status = GrabNotViewable;
     else if (device->sync.frozen &&
-	     ((device->sync.other &&
-	       !SameClient(device->sync.other, client)) ||
-	     ((device->sync.state >= FROZEN) &&
-	      !SameClient(device->grab, client))))
+	     device->sync.other && !SameClient(device->sync.other, client))
 	rep.status = GrabFrozen;
     else if ((CompareTimeStamps(time, currentTime) == LATER) ||
-	     (device->grab &&
-	     (CompareTimeStamps(time, device->grabTime) == EARLIER)))
+	     (grab && (CompareTimeStamps(time, device->grabTime) == EARLIER)))
 	rep.status = GrabInvalidTime;
     else
     {
@@ -2645,9 +2643,8 @@ ProcGrabPointer(client)
 	tempGrab.window = pWin;
 	tempGrab.keyboardMode = stuff->keyboardMode;
 	tempGrab.pointerMode = stuff->pointerMode;
-	tempGrab.device = inputInfo.pointer;
-	(*inputInfo.pointer->ActivateGrab)(inputInfo.pointer, &tempGrab,
-					   time, FALSE);
+	tempGrab.device = device;
+	(*device->ActivateGrab)(device, &tempGrab, time, FALSE);
 	rep.status = GrabSuccess;
     }
     WriteReplyToClient(client, sizeof(xGrabPointerReply), &rep);
@@ -2704,17 +2701,18 @@ ProcUngrabPointer(client)
     ClientPtr client;
 {
     DeviceIntPtr device = inputInfo.pointer;
-    GrabPtr grab = device->grab;
+    GrabPtr grab;
     TimeStamp time;
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
     UpdateCurrentTime();
+    grab = device->grab;
     time = ClientTimeToServerTime(stuff->id);
     if ((CompareTimeStamps(time, currentTime) != LATER) &&
 	    (CompareTimeStamps(time, device->grabTime) != EARLIER) &&
 	    (grab) && SameClient(grab, client))
-	(*inputInfo.pointer->DeactivateGrab)(inputInfo.pointer);
+	(*device->DeactivateGrab)(device);
     return Success;
 }
 
@@ -2732,7 +2730,7 @@ GrabDevice(client, dev, this_mode, other_mode, grabWindow, ownerEvents, ctime,
     CARD8 *status;
 {
     register WindowPtr pWin;
-    register GrabPtr grab = dev->grab;
+    register GrabPtr grab;
     TimeStamp time;
 
     UpdateCurrentTime();
@@ -2755,19 +2753,16 @@ GrabDevice(client, dev, this_mode, other_mode, grabWindow, ownerEvents, ctime,
     if (!pWin)
 	return BadWindow;
     time = ClientTimeToServerTime(ctime);
+    grab = dev->grab;
     if (grab && !SameClient(grab, client))
 	*status = AlreadyGrabbed;
     else if (!pWin->realized)
 	*status = GrabNotViewable;
     else if ((CompareTimeStamps(time, currentTime) == LATER) ||
-	     (dev->grab &&
-	      (CompareTimeStamps(time, dev->grabTime) == EARLIER)))
+	     (grab && (CompareTimeStamps(time, dev->grabTime) == EARLIER)))
 	*status = GrabInvalidTime;
     else if (dev->sync.frozen &&
-	     ((dev->sync.other &&
-	       !SameClient(dev->sync.other, client)) ||
-	     ((dev->sync.state >= FROZEN) &&
-	      !SameClient(dev->grab, client))))
+	     dev->sync.other && !SameClient(dev->sync.other, client))
 	*status = GrabFrozen;
     else
     {
@@ -2813,12 +2808,13 @@ ProcUngrabKeyboard(client)
     ClientPtr client;
 {
     DeviceIntPtr device = inputInfo.keyboard;
-    GrabPtr grab = device->grab;
+    GrabPtr grab;
     TimeStamp time;
     REQUEST(xResourceReq);
 
     REQUEST_SIZE_MATCH(xResourceReq);
     UpdateCurrentTime();
+    grab = device->grab;
     time = ClientTimeToServerTime(stuff->id);
     if ((CompareTimeStamps(time, currentTime) != LATER) &&
 	(CompareTimeStamps(time, device->grabTime) != EARLIER) &&
