@@ -1,4 +1,4 @@
-/* $XConsortium: snfstr.h,v 1.2 91/05/13 16:38:06 gildea Exp $ */
+/* $XConsortium: snfstr.h,v 1.3 91/07/17 22:12:31 keith Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -98,7 +98,7 @@ typedef struct _snfFontInfo *snfFontInfoPtr;
 typedef struct _snfCharInfo {
     xCharInfo   metrics;	/* info preformatted for Queries */
     unsigned    byteOffset:24;	/* byte offset of the raster from pGlyphs */
-    Bool        exists:1;	/* true iff glyph exists for this char */
+    unsigned    exists:1;	/* true iff glyph exists for this char */
     unsigned    pad:7;		/* must be zero for now */
 }           snfCharInfoRec;
 
