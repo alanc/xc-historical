@@ -344,10 +344,17 @@ ddxProcessArgument (argc, argv, i)
     char *argv[];
     int	i;
 {
+    extern void UseMsg();
+
+    if (strcmp (argv[i], "-dev") == 0) {	/* -dev /dev/mumble */
+	if (++i >= argc) UseMsg ();
+	return 2;
+    }
     return 0;
 }
 
 void
 ddxUseMsg()
 {
+    ErrorF("-dev filename          name of device to open\n");
 }
