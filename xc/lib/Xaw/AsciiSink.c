@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.27 89/01/19 15:30:18 kit Exp $";
+static char Xrcsid[] = "$XConsortium: AsciiSink.c,v 1.28 89/03/30 16:53:08 jim Exp $";
 #endif /* lint */
 
 
@@ -41,9 +41,13 @@ SOFTWARE.
 static unsigned bufferSize = 200;
 
 typedef struct _AsciiSinkData {
+      /* public resources */
     Pixel foreground;
-    GC normgc, invgc, xorgc;
     XFontStruct *font;
+    Boolean echo;
+    Boolean display_nonprinting;
+      /* private state */
+    GC normgc, invgc, xorgc;
     int em;
     Pixmap insertCursorOn;
     XtTextInsertState laststate;
@@ -58,6 +62,11 @@ static XtResource SinkResources[] = {
         XtOffset(AsciiSinkPtr, font), XtRString, "Fixed"},
     {XtNforeground, XtCForeground, XtRPixel, sizeof (int),
         XtOffset(AsciiSinkPtr, foreground), XtRString, "XtDefaultForeground"}, 
+    {XtNecho, XtCOutput, XtRBoolean, sizeof(Boolean),
+	XtOffset(AsciiSinkPtr, echo), XtRImmediate, (caddr_t)True},
+    {XtNdisplayNonPrinting, XtCOutput, XtRBoolean, sizeof(Boolean),
+	XtOffset(AsciiSinkPtr, display_nonprinting), XtRImmediate,
+	(caddr_t)True},
 };
 
 /* Utilities */
@@ -88,7 +97,14 @@ static int CharWidth (w, x, c)
     if (c == LF)
 	c = SP;
     nonPrinting = (c < SP);
-    if (nonPrinting) c += '@';
+    if (nonPrinting) {
+	if (data->display_nonprinting)
+	    c += '@';
+	else {
+	    c = SP;
+	    nonPrinting = False;
+	}
+    }
 
     if (font->per_char &&
 	    (c >= font->min_char_or_byte2 && c <= font->max_char_or_byte2))
@@ -104,7 +120,7 @@ static int CharWidth (w, x, c)
 
 /* Sink Object Functions */
 
-static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
+static /*void*/ AsciiDisplayText (w, x, y, pos1, pos2, highlight)
   Widget w;
   Position x, y;
   int highlight;
@@ -120,6 +136,8 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
     XtTextBlock blk;
     GC gc = highlight ? data->invgc : data->normgc;
     GC invgc = highlight ? data->normgc : data->invgc;
+
+    if (!data->echo) return;
 
     y += font->ascent;
     j = 0;
@@ -148,9 +166,13 @@ static int AsciiDisplayText (w, x, y, pos1, pos2, highlight)
 	    }
 	    else
 		if (buf[j] < ' ') {
-		    buf[j + 1] = buf[j] + '@';
-		    buf[j] = '^';
-		    j++;
+		    if (data->display_nonprinting) {
+			buf[j + 1] = buf[j] + '@';
+			buf[j] = '^';
+			j++;
+		    }
+		    else
+			buf[j] = ' ';
 		}
 	    j++;
 	}
