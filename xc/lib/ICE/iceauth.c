@@ -1,4 +1,4 @@
-/* $XConsortium: iceauth.c,v 1.9 93/12/06 19:53:35 mor Exp $ */
+/* $XConsortium: iceauth.c,v 1.10 93/12/07 11:04:09 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -57,19 +57,19 @@ char    	**errorStringRet;
 	/*
 	 * This is the first time we're being called.  Search the
 	 * authentication data for the first occurence of
-	 * ICE-MAGIC-COOKIE-1 that matches address.
+	 * MIT-MAGIC-COOKIE-1 that matches address.
 	 */
 
 	unsigned short  length;
 	char		*data;
 
-	IceGetPoAuthData ("ICE", address, "ICE-MAGIC-COOKIE-1",
+	IceGetPoAuthData ("ICE", address, "MIT-MAGIC-COOKIE-1",
 	    &length, &data);
 
 	if (!data)
 	{
 	    char *tempstr =
-		"Could not find correct ICE-MAGIC-COOKIE-1 authentication";
+		"Could not find correct MIT-MAGIC-COOKIE-1 authentication";
 
 	    *errorStringRet = (char *) malloc (strlen (tempstr) + 1);
 	    if (*errorStringRet)
@@ -90,11 +90,11 @@ char    	**errorStringRet;
     else
     {
 	/*
-	 * We should never get here for ICE-MAGIC-COOKIE-1 since it is
+	 * We should never get here for MIT-MAGIC-COOKIE-1 since it is
 	 * a single pass authentication method.
 	 */
 
-	char *tempstr = "ICE-MAGIC-COOKIE-1 authentication internal error";
+	char *tempstr = "MIT-MAGIC-COOKIE-1 authentication internal error";
 
 	*errorStringRet = (char *) malloc (strlen (tempstr) + 1);
 	if (*errorStringRet)
@@ -141,13 +141,13 @@ char    	**errorStringRet;
     {
 	/*
 	 * Search the authentication data for the first occurence of
-	 * ICE-MAGIC-COOKIE-1 that matches address.
+	 * MIT-MAGIC-COOKIE-1 that matches address.
 	 */
 
 	unsigned short  length;
 	char		*data;
 
-	IceGetPaAuthData ("ICE", address, "ICE-MAGIC-COOKIE-1",
+	IceGetPaAuthData ("ICE", address, "MIT-MAGIC-COOKIE-1",
 	    &length, &data);
 
 	if (data)
@@ -161,7 +161,7 @@ char    	**errorStringRet;
 	    }
 	    else
 	    {
-		char *tempstr = "ICE-MAGIC-COOKIE-1 authentication rejected";
+		char *tempstr = "MIT-MAGIC-COOKIE-1 authentication rejected";
 
 		*errorStringRet = (char *) malloc (strlen (tempstr) + 1);
 		if (*errorStringRet)
@@ -182,7 +182,7 @@ char    	**errorStringRet;
 	     */
 
 	    char *tempstr =
-		"ICE-MAGIC-COOKIE-1 authentication internal error";
+		"MIT-MAGIC-COOKIE-1 authentication internal error";
 
 	    *errorStringRet = (char *) malloc (strlen (tempstr) + 1);
 	    if (*errorStringRet)

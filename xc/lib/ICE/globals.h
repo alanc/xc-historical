@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.9 93/12/06 18:36:45 mor Exp $ */
+/* $XConsortium: globals.h,v 1.10 93/12/07 11:04:09 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -33,7 +33,7 @@ _IceProtocol 	_IceProtocols[255];
 int         	_IceLastMajorOpcode = 0;
 
 int		_IceAuthCount = 1;
-char		*_IceAuthNames[] = {"ICE-MAGIC-COOKIE-1"};
+char		*_IceAuthNames[] = {"MIT-MAGIC-COOKIE-1"};
 IcePoAuthProc	_IcePoAuthProcs[] = {_IcePoMagicCookie1Proc};
 IcePaAuthProc	_IcePaAuthProcs[] = {_IcePaMagicCookie1Proc};
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.17 94/02/06 22:02:03 rws Exp $ */
+/* $XConsortium: xsm.c,v 1.18 94/02/07 18:51:04 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -1799,13 +1799,13 @@ IceListenObj	*listenObjs;
 	return (0);
 
     authDataEntry[0].protocol_name = "ICE";
-    authDataEntry[0].auth_name = "ICE-MAGIC-COOKIE-1";
+    authDataEntry[0].auth_name = "MIT-MAGIC-COOKIE-1";
 
     GenerateMagicCookie (&authDataEntry[0].auth_data,
 	&authDataEntry[0].auth_data_length);
 
     authDataEntry[1].protocol_name = "XSMP";
-    authDataEntry[1].auth_name = "ICE-MAGIC-COOKIE-1";
+    authDataEntry[1].auth_name = "MIT-MAGIC-COOKIE-1";
 
     GenerateMagicCookie (&authDataEntry[1].auth_data,
 	&authDataEntry[1].auth_data_length);
