@@ -1,4 +1,4 @@
-! $XConsortium: string.list,v 1.4 94/01/07 14:01:17 kaleb Exp $
+! $XConsortium: string.list,v 1.5 94/01/19 17:09:16 converse Exp $
 ! NOTE: To maintain binary compatibility, you can only APPEND items within
 !	a given list!!!!
 
@@ -225,31 +225,6 @@ NgeometryHook
 NdestroyHook
 Nshells
 NnumShells
-NcancelCallback
-NcloneCommand
-Nconnection
-NcurrentDirectory
-NdieCallback
-NdiscardCommand
-Nenvironment
-NresignCommand
-NrestartCommand
-NrestartStyle
-NsaveCallback
-NsessionID
-NshutdownCommand
-CCloneCommand
-CConnection
-CCurrentDirectory
-CDiscardCommand
-CEnvironment
-CResignCommand
-CRestartCommand
-CRestartStyle
-CSessionID
-CShutdownCommand
-RRestartStyle
-RSmcConn
 
 :ShellStr.h XtShellStrings
 
@@ -332,9 +307,33 @@ NwaitForWm waitforwm
 CWaitForWm Waitforwm
 NclientLeader
 CClientLeader
-Nsession
-CSession
 NwindowRole
 CWindowRole
 Nvisible
 CVisible
+NcancelCallback
+NcloneCommand
+Nconnection
+NcurrentDirectory
+NdieCallback
+NdiscardCommand
+Nenvironment
+NinteractCallback
+NresignCommand
+NrestartCommand
+NrestartStyle
+NsaveCallback
+NsessionID
+NshutdownCommand
+CCloneCommand
+CConnection
+CCurrentDirectory
+CDiscardCommand
+CEnvironment
+CResignCommand
+CRestartCommand
+CRestartStyle
+CSessionID
+CShutdownCommand
+RRestartStyle
+RSmcConn
