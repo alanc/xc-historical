@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$Header: main.c,v 1.77 88/08/31 22:04:01 jim Exp $";
+static char rcs_id[] = "$Header: main.c,v 1.78 88/09/02 20:22:13 swick Exp $";
 #endif	/* lint */
 
 /*
@@ -42,21 +42,22 @@ SOFTWARE.
 #include <pwd.h>
 
 /*
- * The macII uses System V terminal control, but bsd for a lot of other things.
- * That is why it is doesn't use SYSV....
+ * The macII claims not to be SYSV, but it uses System V terminal control,
+ * process groups, and signals.  If it walks like a duck and talks like duck,
+ * ....  But, we still want to keep things separate for when other hybrids
+ * become supported.
  */
 #ifdef macII
 #include <sys/ioctl.h>
 #include <sys/termio.h>
 #include <sys/stat.h>
 #include <sys/ttychars.h>
-#include <compat.h>
-
 #define vhangup() ;
 #define setpgrp2 setpgrp
 #define USE_SYSV_TERMIO
 #define USE_SYSV_UTMP
-/* do not use System V signals since we change to 4.2bsd compatibility mode */
+#define USE_SYSV_PGRP
+#define USE_SYSV_SIGNALS
 #endif /* macII */
 
 #ifdef SYSV				/* note that macII is *not* SYSV */
@@ -397,14 +398,6 @@ char **argv;
 	int fd3 = -1;
 
 	ProgramName = argv[0];
-
-#ifdef macII
-	/*
-	 * The following sets us to use BSD-style signals, process group, and
-	 * tty handling.
-	 */
-	set42sig ();
-#endif /* macII */
 
 	ttydev = (char *) malloc (strlen (TTYDEV) + 1);
 	ptydev = (char *) malloc (strlen (PTYDEV) + 1);
