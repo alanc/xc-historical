@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.63 91/05/01 20:16:48 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.64 91/05/02 20:09:16 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -861,11 +861,7 @@ Boolean *cont;
 
     if (ev->type == SelectionNotify) {
 	XSelectionEvent *event = (XSelectionEvent *) ev;
-#ifdef DRAFT_ICCCM_COMPATIBILITY
-	if (!DRAFT_ICCCM_MATCH_SELECT(event, info)) return;
-#else
 	if (!MATCH_SELECT(event, info)) return; /* not really for us */
-#endif
          XtRemoveEventHandler(widget, (EventMask)0, TRUE,
 			   ReqCleanup, (XtPointer) info );
 	if (IsINCRtype(info, XtWindow(widget), event->property)
@@ -1180,11 +1176,7 @@ Boolean *cont;
     Atom *t;
 
     if (event->type != SelectionNotify) return;
-#ifdef DRAFT_ICCCM_COMPATIBILITY
-    if (!DRAFT_ICCCM_MATCH_SELECT(event, info)) return; /* not really for us */
-#else
     if (!MATCH_SELECT(event, info)) return; /* not really for us */
-#endif
 #ifndef DEBUG_WO_TIMERS
     XtRemoveTimeOut(info->timeout); 
 #endif 
