@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.53 89/03/14 09:11:35 rws Exp $ */
+/* $XConsortium: io.c,v 1.54 89/03/14 15:46:14 rws Exp $ */
 /*****************************************************************
  * i/o functions
  *
@@ -45,6 +45,7 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "misc.h"
 
+extern void MarkClientException();
 extern long ClientsWithInput[];
 extern long ClientsWriteBlocked[];
 extern long OutputPending[];

@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.88 89/03/15 10:46:01 rws Exp $ */
+/* $XConsortium: dispatch.c,v 1.89 89/03/18 16:21:09 rws Exp $ */
 /************************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -3485,7 +3485,8 @@ ProcEstablishConnection(client)
     if (client->swapped)
     {
 	WriteSConnSetupPrefix(client, &connSetupPrefix);
-	WriteSConnectionInfo(client, connSetupPrefix.length << 2,
+	WriteSConnectionInfo(client,
+			     (unsigned long)(connSetupPrefix.length << 2),
 			     ConnectionInfo);
     }
     else
