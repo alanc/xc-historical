@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: StringDefs.c,v 1.1 91/01/04 19:10:43 converse Exp $ */
 
 /*
  * Copyright 1991 Massachusetts Institute of Technology
@@ -49,6 +49,7 @@ Const char XtNdestroyCallback[] = "destroyCallback";
 Const char XtNeditType[] = "editType";
 Const char XtNfile[] = "file";
 Const char XtNfont[] = "font";
+Const char XtNfontSet[] = "fontSet";
 Const char XtNforceBars[] = "forceBars";
 Const char XtNforeground[] = "foreground";
 Const char XtNfunction[] = "function";
@@ -134,6 +135,7 @@ Const char XtCEditType[] = "EditType";
 Const char XtCEventBindings[] = "EventBindings";
 Const char XtCFile[] = "File";
 Const char XtCFont[] = "Font";
+Const char XtCFontSet[] = "FontSet";
 Const char XtCForeground[] = "Foreground";
 Const char XtCFraction[] = "Fraction";
 Const char XtCFunction[] = "Function";
@@ -206,6 +208,7 @@ Const char XtREnum[] = "Enum";
 Const char XtRFile[] = "File";
 Const char XtRFloat[] = "Float";
 Const char XtRFont[] = "Font";
+Const char XtRFontSet[] = "FontSet";
 Const char XtRFontStruct[] = "FontStruct";
 Const char XtRFunction[] = "Function";
 Const char XtRGeometry[] = "Geometry";

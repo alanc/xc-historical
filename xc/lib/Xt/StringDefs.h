@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StringDefs.h,v 1.49 89/12/12 19:24:02 swick Exp $
+* $XConsortium: StringDefs.h,v 1.50 91/01/04 19:11:50 converse Exp $
 */
 
 /***********************************************************
@@ -59,6 +59,7 @@ SOFTWARE.
 #define XtNeditType "editType"
 #define XtNfile "file"
 #define XtNfont "font"
+#define XtNfontSet "fontSet"
 #define XtNforceBars "forceBars"
 #define XtNforeground "foreground"
 #define XtNfunction "function"
@@ -146,6 +147,7 @@ extern char XtNdestroyCallback[];
 extern char XtNeditType[];
 extern char XtNfile[];
 extern char XtNfont[];
+extern char XtNfontSet[];
 extern char XtNforceBars[];
 extern char XtNforeground[];
 extern char XtNfunction[];
@@ -233,6 +235,7 @@ extern char XtNy[];
 #define XtCEventBindings "EventBindings"
 #define XtCFile "File"
 #define XtCFont "Font"
+#define XtCFontSet "FontSet"
 #define XtCForeground "Foreground"
 #define XtCFraction "Fraction"
 #define XtCFunction "Function"
@@ -300,6 +303,7 @@ extern char XtCEditType[];
 extern char XtCEventBindings[];
 extern char XtCFile[];
 extern char XtCFont[];
+extern char XtCFontSet[];
 extern char XtCForeground[];
 extern char XtCFraction[];
 extern char XtCFunction[];
@@ -374,6 +378,7 @@ extern char XtCY[];
 #define XtRFile "File"
 #define XtRFloat "Float"
 #define XtRFont "Font"
+#define XtRFontSet "FontSet"
 #define XtRFontStruct "FontStruct"
 #define XtRFunction "Function"
 #define XtRGeometry "Geometry"
@@ -419,6 +424,7 @@ extern char XtREnum[];
 extern char XtRFile[];
 extern char XtRFloat[];
 extern char XtRFont[];
+extern char XtRFontSet[];
 extern char XtRFontStruct[];
 extern char XtRFunction[];
 extern char XtRGeometry[];
