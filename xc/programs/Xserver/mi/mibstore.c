@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.25 89/10/06 17:28:10 keith Exp $ */
+/* $XConsortium: mibstore.c,v 5.26 89/10/08 15:50:42 rws Exp $ */
 /***********************************************************
 Copyright 1987 by the Regents of the University of California
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -2896,6 +2896,12 @@ miBSTranslateBackingStore(pWin, dx, dy, oldClip)
     /* finally install new SavedRegion */
     (* pScreen->RegionCopy) (pSavedRegion, newSaved);
     (* pScreen->RegionDestroy) (newSaved);
+    /*
+     * an unrealized window will not get validate-tree'd, mash
+     * the serial number so GC's get revalidated for drawing
+     */
+    if (!pWin->realized)
+	pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
     return exposed;
 }
 
