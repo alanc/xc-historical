@@ -1,5 +1,5 @@
 /*
- * $XConsortium: imakemdep.h,v 1.9 89/12/12 11:09:31 jim Exp $
+ * $XConsortium: imakemdep.h,v 1.10 89/12/18 16:56:38 jim Exp $
  * 
  * This file contains machine-dependent constants for the imake utility.  When
  * porting imake, read each of the steps below and add in any necessary
@@ -41,6 +41,10 @@
 #ifdef SYSTYPE_SYSV
 #define imake_ccflags "-DSYSV -I../../lib/X/mips -I/usr/include/bsd ../../lib/X/mips/mipssysvc.c -lbsd"
 #endif
+#endif
+
+#ifdef luna
+#define imake_ccflags "-Dluna"
 #endif
 
 #else /* not CCIMAKE */
@@ -126,6 +130,9 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef ibm
 	"-Dibm",	/* IBM PS/2 and RT under both AOS and AIX */
 #endif
+#ifdef luna
+	"-Dluna",	/* OMRON luna 68K and 88K */
+#endif
 };
 #else /* else MAKEDEPEND */
 /*
@@ -194,6 +201,15 @@ struct symtab	predefs[] = {
 #endif
 #ifdef CMU
 	{"CMU", "1"},
+#endif
+#ifdef luna
+	{"luna", "1"},
+#endif
+#ifdef ieeep754
+	{"ieeep754", "1"},
+#endif
+#ifdef is68k
+	{"is68k", "1"},
 #endif
 	/* add any additional symbols before this line */
 	{NULL, NULL}
