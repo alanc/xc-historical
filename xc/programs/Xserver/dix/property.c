@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Header: property.c,v 1.51 87/08/07 11:26:56 ham Exp $ */
+/* $Header: property.c,v 1.3 87/08/14 12:19:52 newman Locked $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -31,7 +31,7 @@ SOFTWARE.
 #include "propertyst.h"
 #include "dixstruct.h"
 
-extern int (*ReplySwapVector[]) ();
+extern void (*ReplySwapVector[]) ();
 
 /*****************************************************************
  * Property Stuff
@@ -379,7 +379,7 @@ ProcGetProperty(client)
 		reply.nItems = len / (pProp->format / 8 );
 		reply.propertyType = pProp->type;
 		WriteReplyToClient(client, sizeof(xGenericReply), &reply);
-		WriteReplyToClient(client, len, pProp->data + ind);
+		WriteSwappedDataToClient(client, len, pProp->data + ind);
 
                 if (stuff->delete && (reply.bytesAfter == 0))
                 { /* delete the Property */
@@ -458,7 +458,7 @@ ProcListProperties(client)
     WriteReplyToClient(client, sizeof(xGenericReply), &xlpr);
     if (numProps)
     {
-        WriteReplyToClient(client, numProps * sizeof(Atom), pAtoms);
+        WriteSwappedDataToClient(client, numProps * sizeof(Atom), pAtoms);
         DEALLOCATE_LOCAL(pAtoms);
     }
     return(client->noClientException);
