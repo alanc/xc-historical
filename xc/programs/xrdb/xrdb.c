@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.63 92/09/17 17:17:21 rws Exp $
+ * $XConsortium: xrdb.c,v 11.64 92/11/05 14:32:27 rws Exp $
  */
 
 /*
@@ -358,7 +358,13 @@ AddDef(buff, title, value)
 	return;
     }
 #endif
-    strcat(buff, " -D");
+    if (buff[0]) {
+	if (oper == OPSYMBOLS)
+	    strcat(buff, "\n-D");
+	else
+	    strcat(buff, " -D");
+    } else
+	strcat(buff, "-D");
     strcat(buff, title);
     if (value && (value[0] != '\0')) {
 	strcat(buff, "=");
@@ -369,25 +375,12 @@ AddDef(buff, title, value)
 AddDefQ(buff, title, value)
     char *buff, *title, *value;
 {
-#ifdef PATHETICCPP
-    if (need_real_defines) {
-	strcat(buff, "\n#define ");
-	strcat(buff, title);
-	if (value && (value[0] != '\0')) {
-	    strcat(buff, " \"");
-	    strcat(buff, value);
-	    strcat(buff, "\"");
-	}
-	return;
-    }
-#endif
-    strcat(buff, " -D");
-    strcat(buff, title);
     if (value && (value[0] != '\0')) {
-	strcat(buff, "=\"");
+	AddDef(buff, title, "\"");
 	strcat(buff, value);
 	strcat(buff, "\"");
-    }
+    } else
+	AddDef(buff, title, NULL);
 }
 
 AddNum(buff, title, value)
