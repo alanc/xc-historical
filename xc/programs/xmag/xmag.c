@@ -52,7 +52,7 @@ static XtIntervalId hlId;
 
 
 
-static XtAppContext app;
+XtAppContext app;
 static Cursor ulAngle, urAngle, lrAngle, llAngle;
 static Display *dpy;
 static int scr;
@@ -124,7 +124,7 @@ CloseAP(w, event)
   }
   XtPopdown(w);
   XtDestroyWidget(w);
-};
+}
 
 
 
@@ -314,10 +314,11 @@ CheckPoints(x1, x2, y1, y2)
 /*
  * HighlightTO() -- Timer to highlight the selection box
  */
-static void 
-HighlightTO(data, id)	/* ARGSUSED */
-     hlPtr data; XtIntervalId *id;
+static void
+HighlightTO(closure, id)	/* ARGSUSED */
+     XtPointer closure; XtIntervalId *id;
 {
+  hlPtr data = (hlPtr)closure;
   XGrabServer(dpy);
   if (data->selectMode == drag) {
     XDrawRectangle(dpy, DefaultRootWindow(dpy), data->gc, 
@@ -348,10 +349,10 @@ HighlightTO(data, id)	/* ARGSUSED */
  *             then exit.
  */
 static void			/* ARGSUSED */
-CloseCB(w, shell, callData)
-     Widget w; Widget shell; XtPointer callData;
+CloseCB(w, clientData, callData)
+     Widget w; XtPointer clientData, callData;
 {
-  
+  Widget shell = (Widget)clientData;
   if (!--numXmags) exit(0);
   XtPopdown(shell);
   XtDestroyWidget(shell);
@@ -363,9 +364,10 @@ CloseCB(w, shell, callData)
  * ReplaceCB() -- Replace this particular xmag dialog.
  */
 static void                     /* ARGSUSED */
-ReplaceCB(w, data, callData)
-     Widget w; hlPtr data; XtPointer callData;
+ReplaceCB(w, clientData, callData)
+     Widget w; XtPointer clientData, callData;
 {
+  hlPtr data = (hlPtr)clientData;
   StartRootPtrGrab(False, data);
 }
 
@@ -400,9 +402,10 @@ SetupGC()
  * ResizeEH() -- Event Handler for resize of selection box.
  */
 static void 
-ResizeEH(w, data, event)	/* ARGSUSED */
-     Widget w; hlPtr data; XEvent *event;
+ResizeEH(w, closure, event, continue_to_dispatch)	/* ARGSUSED */
+     Widget w; XtPointer closure; XEvent *event; Boolean *continue_to_dispatch;
 {
+  hlPtr data = (hlPtr)closure;
   switch (event->type) {
   case MotionNotify:
     data->x = event->xmotion.x_root;
@@ -431,9 +434,10 @@ ResizeEH(w, data, event)	/* ARGSUSED */
  * DragEH() -- Event Handler for draging selection box.
  */
 static void 
-DragEH(w, data, event) /* ARGSUSED */
-     Widget w; hlPtr data; XEvent *event;
+DragEH(w, closure, event, continue_to_dispatch) /* ARGSUSED */
+     Widget w; XtPointer closure; XEvent *event; Boolean *continue_to_dispatch;
 {
+  hlPtr data = (hlPtr)closure;
   switch (event->type) {
   case MotionNotify:		/* drag mode */
     data->x = event->xmotion.x_root;
@@ -667,8 +671,8 @@ main(argc, argv)
 {
 				/* SUPPRESS 594 */
   toplevel = XtAppInitialize(&app, "Xmag", optionDesc, XtNumber(optionDesc),
-			     (Cardinal *)&argc, argv, NULL,
-			      NULL, 0);
+			     &argc, argv, NULL,
+			     NULL, 0);
 
   dpy = XtDisplay(toplevel);
   scr = DefaultScreen(dpy);

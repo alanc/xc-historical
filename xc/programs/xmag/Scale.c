@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.2 90/12/10 19:26:56 dave Exp $
+ * $XConsortium: Scale.c,v 1.3 91/01/06 12:10:09 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -382,8 +382,10 @@ void ScaleImage(sw, drawable, img_x, img_y, dst_x, dst_y, img_width,img_height)
     /* Clip the img coordinates */
     img_x = min(max(img_x, 0), (Position) sw->scale.image->width - 1);
     img_y = min(max(img_y, 0), (Position) sw->scale.image->height - 1);
-    img_width = min(img_width, sw->scale.image->width - (Dimension) img_x);
-    img_height = min(img_height, sw->scale.image->height - (Dimension) img_y);
+    img_width = 
+      min(img_width, (Dimension)(sw->scale.image->width - (Dimension)img_x));
+    img_height = 
+      min(img_height, (Dimension)(sw->scale.image->height - (Dimension)img_y));
 
     if (sw->scale.scale_x == 1.0 && sw->scale.scale_y == 1.0) 
 	XPutImage(XtDisplay(sw), drawable, sw->scale.gc, sw->scale.image, 
@@ -413,8 +415,8 @@ void ScaleImage(sw, drawable, img_x, img_y, dst_x, dst_y, img_width,img_height)
 		       sw->scale.table.y[(int) img_y]);
 	
 	if (sw->scale.image->format == XYBitmap) {
-	    for (x = img_x; x < img_x + img_width; x++)
-		for (y = img_y; y < img_y + img_height; y++) {
+	    for (x = img_x; x < img_x + (Position)img_width; x++)
+		for (y = img_y; y < img_y + (Position)img_height; y++) {
 		    pixel = XGetPixel(sw->scale.image, x, y);
 		    if (pixel) /* Do not draw background */
 			FillRectangle(sw, drawable, sw->scale.gc, 
@@ -426,8 +428,8 @@ void ScaleImage(sw, drawable, img_x, img_y, dst_x, dst_y, img_width,img_height)
 	    FlushRectangles(sw, drawable, sw->scale.gc);
 	}
 	else {
-	    for (x = img_x; x < img_x + img_width; x++)
-		for (y = img_y; y < img_y + img_height; y++) {
+	    for (x = img_x; x < img_x + (Position)img_width; x++)
+		for (y = img_y; y < img_y + (Position)img_height; y++) {
 		    pixel = XGetPixel(sw->scale.image, x, y);
 		    if (pixel != gcv.background) { /* Do not draw background */
 			if (gcv.foreground != pixel) { /* Change fg to pixel */
@@ -464,7 +466,7 @@ int FindPixel(sw, x, y, img_x, img_y, img_pixel)
 	return FindPixel(sw, x, y, img_x, img_y, img_pixel);
     }
     if (sw->scale.table.x[(int) *img_x] + 
-	sw->scale.table.width[(int) *img_x] < x) {
+	(Position)sw->scale.table.width[(int) *img_x] < x) {
 	++*img_x;
 	return FindPixel(sw, x, y, img_x, img_y, img_pixel);
     }
@@ -473,7 +475,7 @@ int FindPixel(sw, x, y, img_x, img_y, img_pixel)
 	return FindPixel(sw, x, y, img_x, img_y, img_pixel);
     }
     if (sw->scale.table.y[(int) *img_y] + 
-	sw->scale.table.height[(int) *img_y] < y) {
+	(Position)sw->scale.table.height[(int) *img_y] < y) {
 	++*img_y;
 	return FindPixel(sw, x, y, img_x, img_y, img_pixel);
     }
@@ -650,11 +652,11 @@ void GetScaleValues(sw)
      */
     
     sw->scale.scale_x = 
-	(float) max(sw->core.width - 2 * sw->scale.internal_width, 1)
+	(float) max((int)(sw->core.width - 2 * sw->scale.internal_width), 1)
 	    / (float) sw->scale.image->width;
 
     sw->scale.scale_y =
-	(float) max(sw->core.height - 2 * sw->scale.internal_height, 1)
+	(float) max((int)(sw->core.height - 2 * sw->scale.internal_height), 1)
 	    / (float) sw->scale.image->height;
 }
 
