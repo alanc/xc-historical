@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.163 91/05/11 16:14:01 gildea Exp $
+ * $XConsortium: charproc.c,v 1.164 91/05/11 23:26:46 gildea Exp $
  */
 
 /*
@@ -26,27 +26,41 @@
  * SOFTWARE.
  */
 
-
 /* charproc.c */
 
 #include "ptyx.h"
 #include "VTparse.h"
 #include "data.h"
 #include "error.h"
-#include "main.h"
 #include "menu.h"
-#include <X11/Xatom.h>
-#include <X11/Xmu/Atoms.h>
-#include <X11/Xmu/CharSet.h>
-#include <X11/Xmu/Converters.h>
+#include "main.h"
 #include <X11/Xos.h>
+#include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <X11/StringDefs.h>
+#include <X11/Xmu/Atoms.h>
+#include <X11/Xmu/CharSet.h>
+#include <X11/Xmu/Converters.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <errno.h>
 #include <setjmp.h>
+#include <ctype.h>
+
+/*
+ * Check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
+ * systems are broken and return EWOULDBLOCK when they should return EAGAIN.
+ * Note that this macro may evaluate its argument more than once.
+ */
+#if defined(EAGAIN) && defined(EWOULDBLOCK)
+#define E_TEST(err) ((err) == EAGAIN || (err) == EWOULDBLOCK)
+#else
+#ifdef EAGAIN
+#define E_TEST(err) ((err) == EAGAIN)
+#else
+#define E_TEST(err) ((err) == EWOULDBLOCK)
+#endif
+#endif
 
 extern jmp_buf VTend;
 

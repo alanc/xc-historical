@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.103 91/05/11 14:32:47 gildea Exp $
+ * $XConsortium: Tekproc.c,v 1.104 91/05/11 16:14:27 gildea Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -32,6 +32,10 @@
 /* Tekproc.c */
 
 #include "ptyx.h"
+#include "Tekparse.h"
+#include "data.h"
+#include "error.h"
+#include "menu.h"
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -39,13 +43,24 @@
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 #include <X11/Xmu/CharSet.h>
-#include "Tekparse.h"
 #include <stdio.h>
 #include <errno.h>
 #include <setjmp.h>
-#include "data.h"
-#include "error.h"
-#include "menu.h"
+
+/*
+ * Check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
+ * systems are broken and return EWOULDBLOCK when they should return EAGAIN.
+ * Note that this macro may evaluate its argument more than once.
+ */
+#if defined(EAGAIN) && defined(EWOULDBLOCK)
+#define E_TEST(err) ((err) == EAGAIN || (err) == EWOULDBLOCK)
+#else
+#ifdef EAGAIN
+#define E_TEST(err) ((err) == EAGAIN)
+#else
+#define E_TEST(err) ((err) == EWOULDBLOCK)
+#endif
+#endif
 
 extern jmp_buf Tekend;
 

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.54 91/05/08 19:01:13 gildea Exp $
+ *	$XConsortium: ptyx.h,v 1.55 91/05/11 15:56:29 gildea Exp $
  */
 
 /*
@@ -270,17 +270,18 @@ typedef struct {
 	char		*abuf_address;	/* alternate screen memory address */
 	Boolean		alternate;	/* true if using alternate buf	*/
 	unsigned short	do_wrap;	/* true if cursor in last column
-					   and character just output    */
-	int		incopy;		/* 0 if no RasterCopy exposure
-					   event processed since last
-					   RasterCopy			*/
+					    and character just output    */
+	int		incopy;		/* 0 idle; 1 XCopyArea issued;
+					    -1 first GraphicsExpose seen,
+					    but last not seen		*/
 	Boolean		c132;		/* allow change to 132 columns	*/
 	Boolean		curses;		/* cludge-ups for more and vi	*/
 	Boolean		marginbell;	/* true if margin bell on	*/
 	int		nmarginbell;	/* columns from right margin	*/
 	int		bellarmed;	/* cursor below bell margin	*/
 	Boolean 	multiscroll;	/* true if multi-scroll		*/
-	int		scrolls;	/* outstanding scroll count	*/
+	int		scrolls;	/* outstanding scroll count,
+					    used only with multiscroll	*/
 	SavedCursor	sc;		/* data for restore cursor	*/
 	int		save_modes[19];	/* save dec private modes	*/
 
@@ -513,21 +514,6 @@ typedef struct Tek_Link
 #define	I_LOG		0x01
 #define	I_SIGNAL	0x02
 #define	I_TEK		0x04
-
-/*
- * Check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
- * systems are broken and return EWOULDBLOCK when they should return EAGAIN.
- * Note that this macro may evaluate its argument more than once.
- */
-#if defined(EAGAIN) && defined(EWOULDBLOCK)
-#define E_TEST(err) ((err) == EAGAIN || (err) == EWOULDBLOCK)
-#else
-#ifdef EAGAIN
-#define E_TEST(err) ((err) == EAGAIN)
-#else
-#define E_TEST(err) ((err) == EWOULDBLOCK)
-#endif
-#endif
 
 extern Cursor make_colored_cursor();
 extern int GetBytesAvailable();
