@@ -50,7 +50,6 @@ static	unsigned	 changeVIgnoreLocks;
 static	unsigned	 vIgnoreLocks;
 static	unsigned	 changeEnabled;
 static	unsigned	 enabled;
-static	unsigned	 changeCoreRepeat= IGNORE;
 static	int		 synch = 0;
 static	int		 device = XkbUseCoreKbd;
 
@@ -166,9 +165,8 @@ usage(argc,argv)
     E("[+-]vignorelock <vmods>        set/clear ignore locks virtual mods\n");
     E("                               virtual modifiers are specified by\n");
     E("                               using one hexadecimal digit per vmod\n");
-    E("-{hw,sw}repeat                 disable RepeatKeys\n");
-    E("+swrepeat [ delay [ ival ] ]   enable software RepeatKeys with the specified delay\n");
-    E("+hwrepeat [ delay [ ival ] ]   enable hardware RepeatKeys with the specified delay\n");
+    E("-repeat                        disable RepeatKeys\n");
+    E("+repeat [ delay [ ival ] ]     enable RepeatKeys with specified delay\n");
     E("                               and interval\n");
     E("-slow                          disable SlowKeys\n");
     E("+slow [ delay ]                enable SlowKeys with the specified delay\n");
@@ -267,7 +265,7 @@ int onoff;
 	    }
 	    i++;
 	}
-	else if ( strcmp(&argv[i][1],"swrepeat")==0 ) {
+	else if ( strcmp(&argv[i][1],"repeat")==0 ) {
 	    which|= XkbControlsEnabledMask;
 	    changeEnabled|= XkbRepeatKeysMask;
 	    enabled|= (onoff?XkbRepeatKeysMask:0);
@@ -281,30 +279,6 @@ int onoff;
 		if (ok && ((i+1)<argc) && (isdigit(argv[i+1][0]))) {
 		    newControls.repeat_interval= atoi(argv[++i]);
 		}
-		changeCoreRepeat= ON;
-	    }
-	    else {
-		changeCoreRepeat= OFF;
-	    }
-	}
-	else if ( strcmp(&argv[i][1],"hwrepeat")==0 ) {
-	    which|= XkbControlsEnabledMask;
-	    changeEnabled|= XkbRepeatKeysMask;
-	    enabled&= ~XkbRepeatKeysMask;
-	    if (onoff) {
-		int ok= 0;
-		if ( ((i+1)<argc) && (isdigit(argv[i+1][0])) ) {
-		    which|= XkbRepeatKeysMask;
-		    newControls.repeat_delay= atoi(argv[++i]);
-		    ok= 1;
-		}
-		if (ok && ((i+1)<argc) && (isdigit(argv[i+1][0]))) {
-		    newControls.repeat_interval= atoi(argv[++i]);
-		}
-		changeCoreRepeat= ON;
-	    }
-	    else {
-		changeCoreRepeat= OFF;
 	    }
 	}
 	else if ( strcmp(&argv[i][1],"slow")==0 ) {
@@ -390,7 +364,6 @@ Display	*dpy;
 int	i1,i2,i3,i4,i5;
 XkbDescRec	*desc;
 XkbControlsRec	*ctrls;
-XKeyboardState	 coreKbdState;
 unsigned	 query;
 
   
@@ -411,8 +384,6 @@ unsigned	 query;
 	fprintf(stderr,"use extension failed (%d,%d)\n",i4,i5);
 	goto BAIL;
     }
-    XGetKeyboardControl(dpy,&coreKbdState);
-
     desc = XkbGetMap(dpy,0,device);
     if (desc) {
 	if (!XkbGetControls(dpy,XkbAllControlsMask,desc)) {
@@ -488,20 +459,6 @@ unsigned	 query;
 	    }
 	    XkbSetControls(dpy,which,desc);
 	}
-	if (((changeCoreRepeat==ON)&&(!coreKbdState.global_auto_repeat))||
-	    ((changeCoreRepeat==OFF)&&coreKbdState.global_auto_repeat)) {
-	    XKeyboardControl coreCtrl;
-	    if (changeCoreRepeat==ON) {
-		coreCtrl.auto_repeat_mode= AutoRepeatModeOn;
-		coreKbdState.global_auto_repeat= 1;
-	    }
-	    else {
-		coreCtrl.auto_repeat_mode= AutoRepeatModeOff;
-		coreKbdState.global_auto_repeat= 0;
-	    }
-	    fprintf(stderr,"Changing core protocol repeat mode\n");
-	    XChangeKeyboardControl(dpy,KBAutoRepeatMode,&coreCtrl);
-	}
     }
     else {
 	fprintf(stderr,"Get keyboard description request failed\n");
@@ -521,10 +478,9 @@ unsigned	 query;
     printf("ignore lock mods:  0x%x\n",ctrls->ignore_lock_real_mods);
     printf("internal vmods:    0x%x\n",ctrls->internal_vmods);
     printf("ignore lock vmods: 0x%x\n",ctrls->ignore_lock_vmods);
-    printf("repeat keys:       %s (%d/%d -- %s)\n",
-		(coreKbdState.global_auto_repeat?"on ":"off"),
-		ctrls->repeat_delay,ctrls->repeat_interval,
-		(ctrls->enabled_ctrls&XkbRepeatKeysMask?"sw":"hw"));
+    printf("repeat keys:       %s (%d/%d)\n",
+		(ctrls->enabled_ctrls&XkbRepeatKeysMask?"on ":"off"),
+		ctrls->repeat_delay,ctrls->repeat_interval);
     printf("slow keys:         %s (%d)\n",
 		(ctrls->enabled_ctrls&XkbSlowKeysMask?"on ":"off"),
 		ctrls->slow_keys_delay);
