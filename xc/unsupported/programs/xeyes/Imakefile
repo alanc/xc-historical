@@ -1,0 +1,7 @@
+SYSAUX_LIBRARIES = -lm
+LOCAL_LIBRARIES = $(XTOOLLIB) $(XLIB)
+
+SRCS = xeyes.c Eyes.c
+OBJS = xeyes.o Eyes.o
+
+ComplexProgramTarget(xeyes)
