@@ -1,4 +1,4 @@
-.\" $XConsortium: xprop.man,v 1.15 94/04/11 14:27:18 gildea Exp $
+.\" $XConsortium: xprop.man,v 1.16 94/04/12 18:55:19 gildea Exp $
 .\" Copyright 1988 Massachusetts Institute of Technology
 .\"
 .\" Permission to use, copy, modify, distribute, and sell this software and
@@ -27,7 +27,7 @@ xprop - property displayer for X
 .SH SUMMARY
 .PP
 The
-.I prop
+.I xprop
 utility is for displaying window and font properties in an X server.
 One window or font is selected using the command
 line arguments or possibly in the case of a window, by clicking on the desired
