@@ -1,0 +1,3920 @@
+\&
+.sp 1
+.ce 3
+\s+1\fBChapter 1\fP\s-1
+
+\s+1\fB\*(tk Overview\fP\s-1
+.sp 2
+.nr H1 1
+.nr H2 0
+.nr H3 0
+.nr H4 0
+.nr H5 0
+.LP
+.XS
+Chapter 1 \- \*(tk Overview
+.XE
+The \*(tk provides the base functionality necessary to build a variety 
+of application environments.
+The \*(tk is extensible and supportive of the independent development 
+of new or extended components.
+This is accomplished by defining interfaces that mask
+implementation details from both application and component implementors.
+By following a small set of conventions,
+a programmer can extend the \*(tk and have these extensions 
+function with existing facilities.
+.LP
+The \*(tk is a library package layered on top of the X Window System.
+This layer extends the basic abstractions provided by X
+and provides the next layer of functionality primarily by supplying:
+.IP \(bu 5
+Mechanisms for interactions between and within user-interface components
+.IP \(bu 5
+A cohesive set of sample widgets 
+.LP
+In the \*(tk, 
+a widget is the combination of an X window or subwindow 
+and its associated input and output semantics.
+.LP
+To the extent possible, 
+the \*(tk is policy free.
+The application environment, not the \*(tk, defines, implements, and enforces:
+.IP \(bu 5
+Policy
+.IP \(bu 5
+Consistency
+.IP \(bu 5
+Style 
+.LP
+Each individual widget implementation defines its own policy.
+The \*(tk design allows for but does not necessarily encourage 
+the free mixing of radically differing widget implementations.
+.NT
+This document describes the ``Athena Widgets'' set.
+Related future documents may describe other widget sets as they are made
+available.
+.NE
+.NH 2
+Introduction to the \*(tk Library
+.LP
+.XS
+\*(SN Introduction to the \*(tk Library
+.XE
+The \*(tk library provides tools that simplify the design of
+application user interfaces in the X Window System programming environment.
+It assists application programmers by providing a set of common
+underlying user-interface functions.
+It also lets widget programmers modify existing widgets 
+or add new widgets.
+By using the \*(tk library in their applications,
+programmers present a similar user interface across 
+applications to all workstation users.
+.LP
+The \*(tk consists of:
+.IP \(bu 5
+A set of Intrinsic mechanisms for building widgets
+.IP \(bu 5
+An architectural model for constructing widgets 
+.IP \(bu 5
+A sample interface (widget set) for programming
+.LP
+The Intrinsic mechanisms are intended for the widget programmer.
+The architectural model lets the widget programmer design new widgets
+by using the Intrinsics and by combining other widgets.
+The application interface layers built on top of the \*(tk include a
+coordinated set of widgets and composition policies.
+Some of these widgets and policies are application domain-specific, 
+while others are common across a number of application domains.
+.LP
+The \*(tk library provides an architectural model that 
+can accommodate different kinds of
+application interface layers.
+In addition, the supplied toolkit functions are:
+.IP \(bu 5
+Functionally complete and policy free 
+.IP \(bu 5
+Stylistically and functionally consistent with the X Window System primitives
+.IP \(bu 5
+Portable across languages, computer architectures, 
+and operating systems
+.LP
+The \*(tk library also can implement one or more application 
+interface layers to:
+.IP \(bu 5
+Verify the toolkit architecture
+.IP \(bu 5
+Provide a base set of widgets and composition policies that
+can be incorporated in other application interface layers
+.IP \(bu 5
+Make the \*(tk immediately usable by those application 
+programmers who find that a supplied application interface layer
+meets their needs
+.LP
+The remainder of this chapter discusses the \*(tk:
+.IP \(bu 5
+Terminology
+.IP \(bu 5
+Model
+.IP \(bu 5
+Design principles and philosophy
+.LE
+.NH 2 
+Terminology
+.LP
+.XS
+\*(SN Terminology
+.XE
+The following terms are used throughout this manual.
+.LP
+.PN "Application programmer"
+.IP
+A programmer who uses \*(tk widgets to produce an application 
+user interface.
+.LP
+.PN Child
+.IP
+A widget that is contained in another widget (parent).
+.LP
+.PN Class
+.IP
+The general group that a specific object belongs to.
+.LP
+.PN Client
+.IP
+A routine that uses a widget in an application or for composing
+another widget.
+.LP
+.PN "Full name"
+.IP
+The name of a widget instance appended to the full name of its parent.
+.LP
+.PN Instance
+.IP
+A specific widget object as opposed to a general widget class.
+.LP
+.PN Method
+.IP
+The functions or procedures that a widget itself implements.
+.LP
+.PN Name
+.IP
+The name that is specific to an instance of a widget for a given client.
+.LP 
+.PN Object 
+.IP
+A software data abstraction consisting of private data and private and public 
+routines that operate on the private data.
+Users of the abstraction can interact with the object only through calls 
+to the object's public routines.
+.LP
+.PN Parent
+.IP
+A widget that contains at least one other widgets (child).
+A parent widget is also known as a composite widget.
+.LP
+.PN Resource
+.IP
+A named piece of data in a widget that can be set by a client,
+by an application, or by user defaults.
+.LP
+.PN Superclass
+.IP
+A larger class of which a specific class is a member.
+All members of a class also are members of the superclass.
+.LP
+.PN User
+.IP
+A person interacting with a workstation.
+.LP
+.PN Widget
+.IP
+An object providing a user interface abstraction (for example, a Scrollbar
+widget).
+.LP
+.PN "Widget class"
+.IP
+The general group that a specific widget belongs to,
+which is also known as the type of the widget.
+.LP
+.PN "Widget programmer"
+.IP
+A programmer who adds new widgets to the \*(tk.
+.NH 2 
+Underlying Model
+.LP
+.XS
+\*(SN Underlying Model
+.XE
+The underlying architectural model is based on the following premises:
+.KS
+.IP "Widgets are X windows"
+.IP
+Every user-interface widget is contained in a unique X window.
+The X window ID for a widget is readily available from the widget ID,
+so standard Xlib window manipulation procedures can operate on
+widgets.
+.KE
+.KS
+.IP "Information hiding"
+.IP
+The data for every widget is private to the widget.
+That is, the data is neither directly accessible 
+nor visible outside of the module implementing the widget.
+All program interaction with the widget is performed by a set of operations
+(methods) that are defined for the widget.
+.KE
+.KS
+.IP "Widget semantics and widget layout geometry"
+.IP
+Widget semantics are clearly separated from widget layout
+geometry.
+Widgets are concerned with implementing specific user-interface
+semantics.
+They have little say over issues such as their size or
+placement relative to other widget peers.
+Mechanisms are provided for associating geometric managers with widgets
+and for widgets to make suggestions about their own geometry.
+.KE
+.NH 2 
+Design Principles and Philosophy
+.LP
+.XS
+\*(SN Design Principles and Philosophy
+.XE
+The \*(tk follows two design principles throughout,
+which cover languages and language bindings as well as widget IDs.
+.SH
+Languages and Language Bindings
+.LP
+The \*(tk facilitates access from objective languages.
+However, the \*(tk library is conveniently usable by
+application programs written in nonobjective languages.
+Procedural interface guidelines are required when the
+\*(tk is used with nonobjective languages.
+.LP
+The guidelines for the procedural interfaces are:
+.IP \(bu 5
+Strings are passed as null-terminated character arrays.
+.IP \(bu 5
+Most other arrays are passed using two parameters: a size and a pointer to 
+the first element.
+This also applies to argument lists passed to widgets.
+.IP \(bu 5
+Most numeric arguments are passed by value.
+.IP \(bu 5
+Structures as arguments are avoided, 
+unless a method for building them is provided for languages without pointers.
+Pointers embedded in structures are allowed, 
+but they should be avoided if an equivalent alternative is available.
+.IP \(bu 5
+Pointers are not recommended as return arguments, unless they will never
+have to be dereferenced by the caller.
+If they need to be dereferenced, 
+the caller should allocate storage and pass the address to the procedure 
+to fill in.
+.IP \(bu 5
+Procedures can be passed as parameters.
+.IP \(bu 5
+The ownership of dynamically allocated storage is determined on a 
+case-by-case basis.
+The application is also permitted to replace the standard
+memory allocation and freeing routines used by the library.
+.SH
+Widget IDs
+.LP
+All references to widgets are made using a unique identifier
+that is known as the widget ID.
+The widget ID is returned to the client by the
+.PN XtCreateWidget
+function.
+From an application programmer's perspective,
+a widget ID is an opaque data type;
+no particular interpretation may be assigned to it.
+Given a widget ID, 
+the corresponding X window ID, the
+.PN Display
+and 
+.PN Screen
+structures, and other information are readily available 
+by using Intrinsic functions.
+.LP
+From a widget programmer's perspective,
+the widget ID actually is a pointer to a data structure 
+that is known as the widget instance record.
+Several parts of the data structure are common to all widget types,
+while other parts are unique to a particular widget type.
+The widget's private data that is associated with a particular widget instance
+normally is included directly in the widget instance record.
+.bp
+\&
+.sp 1
+.ce 3
+\s+1\fBChapter 2\fP\s-1
+
+\s+1\fBUsing Widgets\fP\s-1
+.sp 2
+.nr H1 2
+.nr H2 0
+.nr H3 0
+.nr H4 0
+.nr H5 0
+.LP
+.XS
+Chapter 2 \- Using Widgets
+.XE
+Widgets serve as the primary tools for building a user
+interface or application environment.
+The widget set consists of primitive widgets (for example, a command button)
+and composite widgets (for example, a Dialog widget).
+.LP
+The remaining chapters of this guide explain the widgets and the geometry 
+managers that work together to provide a set of user-interface components.
+These user-interface components serve as a default interface for 
+application programmers who do not want to implement their own widgets.
+In addition, they serve as examples or a starting point
+for those widget programmers who, using the Intrinsic mechanisms,
+want to implement alternative application programming interfaces.
+.LP
+The remainder of this chapter discusses the common features of 
+the \*(tk widgets.
+.NH 2
+Initializing the Toolkit
+.LP
+.XS
+\*(SN Initializing the Toolkit
+.XE
+You must invoke the toolkit initialization function 
+.PN XtInitialize
+prior to invoking any other toolkit routines.
+.PN XtInitialize
+opens the X server connection,
+parses standard parts of the command line,
+and creates an initial widget that is to serve as the root of
+a tree of widgets that will be created by this application.
+.IN "XtInitialize" "" "@DEF@"
+.FD 0
+Widget XtInitialize(\fIshell_name\fP, \fIapplication_class\fP, \fIoptions\fP, \
+\fInum_options\fP, \fIargc\fP, \fIargv\fP)
+.br
+      String \fIshell_name\fP;
+.br
+      String \fIapplication_class\fP;
+.br
+      XrmOptionDescRec \fIoptions\fP[];
+.br
+      Cardinal \fInum_options\fP;
+.br
+      Cardinal *\fIargc\fP;
+.br
+      String \fIargv\fP[];
+.FN
+.IP \fIshell_name\fP 1i
+Specifies the name of the application shell widget instance,
+which usually is something generic like ``main''.
+.IP \fIapplication_class\fP 1i
+Specifies the class name of this application,
+which usually is the generic name for all instances of this application.
+By convention, the class name is formed by reversing the case of the
+application's first two letters.
+For example,
+an application named ``xterm'' would have a class name of ``XTerm''.
+.IP \fIoptions\fP 1i
+Specifies how to parse the command line for any application-specific resources.
+The options argument is passed as a parameter to
+.PN XrmParseCommand .
+For further information,
+see \fI\*(xL\fP.
+.IP \fInum_options\fP 1i
+Specifies the number of entries in options list.
+.IP \fIargc\fP 1i
+Specifies a pointer to the number of command line parameters.
+.IP \fIargv\fP 1i
+Specifies the command line parameters.
+.LP
+For further information about this function,
+see the \fI\*(xI\fP.
+.NH 2
+Creating a Widget 
+.LP
+.XS
+\*(SN Creating a Widget
+.XE
+Creating a widget is a three-step process.
+First, the widget instance is allocated,
+and various instance-specific attributes are set by using
+.PN XtCreateWidget .
+Second, the widget's parent is informed of the new child by using
+.PN XtManageChild .
+Finally, X windows are created for the parent and all its children by using 
+.PN XtRealizeWidget
+and specifying the top-most widget.
+The first two steps can be combined by using
+.PN XtCreateManagedWidget .
+In addition, 
+.PN XtRealizeWidget
+is automatically called when the child becomes managed if the parent
+already is realized.
+.LP
+To allocate and initialize a widget, use
+.PN XtCreateWidget .
+.IN "XtCreateWidget" "" "@DEF@"
+.FD 0
+Widget XtCreateWidget(\fIname\fP, \fIwidget_class\fP, \fIparent\fP, \
+\fIargs\fP, \fInum_args\fP)
+.br
+      String \fIname\fP;
+.br
+      WidgetClass \fIwidget_class\fP;
+.br
+      Widget \fIparent\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
+.FN
+.IP \fIname\fP 1i
+Specifies the instance name for the created widget that is used for retrieving
+widget resources.
+.IP \fIwidget_class\fP 1i
+Specifies the widget class pointer for the created widget.
+.IP \fIparent\fP 1i
+Specifies the parent widget ID.
+.IP \fIargs\fP 1i
+Specifies the argument list.
+The argument list is a variable-length list composed of name 
+and value pairs that contain information pertaining to the specific widget 
+instance being created.
+For further information,
+see ``Creating Argument Lists''.
+.IP \fInum_args\fP 1i
+Specifies the number of arguments in the argument list.
+When the num_args is zero, the argument list is never referenced.
+.LP
+When a widget instance is successfully created, 
+the widget identifier is returned to the application.
+If an error is encountered, 
+the
+.PN XtError
+routine is invoked to inform the user of the error.
+.LP
+For further information,
+see the \fI\*(xI\fP.
+.SH
+Common Arguments in the Widget Argument List
+.LP
+Although a widget can have unique arguments that it understands,
+all widgets have common arguments that provide some regularity of operation.
+The common arguments allow arbitrary widgets to be 
+managed by higher-level components without regards to the individual
+widget type.
+All widgets ignore any argument that they do not understand.
+.LP
+The following resources are retrieved from the argument list
+or from the resource database by all \*(tk widgets:
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	White	Window background color
+XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+XtNborderColor	Pixel	Black	Window border color
+XtNborderPixmap	Pixmap	none	Window border pixmap
+XtNborderWidth	int	1	Width of the border in pixels
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callback for 
+.PN XtDestroyWidget
+T}
+XtNheight	int	widget-dependent	Height of the widget
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+XtNsensitive	Boolean	True	Whether widget should receive input
+XtNtranslations	TranslationTable	none	event-to-action translations
+XtNwidth	int	widget-dependent	Width of the widget
+XtNx	int	0	x coordinate within parent
+XtNy	int	0	y coordinate within parent
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The following additional resources are retrieved from the argument list
+or from the resource database by many \*(tk widgets:
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNcallback	XtCallbackList	NULL	Callback functions and client data
+XtNforeground	Pixel	Black	Foreground color
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.NH 2
+Realizing a Widget
+.LP
+.XS
+\*(SN Realizing a Widget
+.XE
+The \*(tk provides the application programmer with a single function that:
+.IP \(bu 5
+First, creates an X window for the widget and, 
+if it is a composite widget, for each of its managed children.
+.IP \(bu 5
+Then, maps each window onto the screen.
+.IN "XtRealizeWidget" "" "@DEF@"
+.FD 0
+void XtRealizeWidget(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.LP
+For further information about this function,
+see the \fI\*(xI\fP.
+.NH 2
+Standard Widget Manipulation Functions
+.LP
+.XS
+\*(SN Standard Widget Manipulation Functions
+.XE
+After a widget has been created, 
+a client can interact with that widget by calling:
+.IP \(bu 5
+One of the standard widget manipulation routines that
+provide functions that all widgets support
+.IP \(bu 5
+A widget class-specific manipulation routine
+.LP
+The \*(tk provides generic routines to provide the
+application programmer access to a set of standard widget functions.
+These routines let an application or composite widget manipulate
+widgets without requiring explicit knowledge of the widget type.
+The standard widget manipulation functions let you:
+.IP \(bu 5
+Control the location, size and mapping of widget windows
+.IP \(bu 5
+Control the screen updating process
+.IP \(bu 5
+Destroy a widget instance
+.IP \(bu 5
+Obtain an argument value
+.IP \(bu 5
+Set an argument value
+.SH
+Mapping Widgets
+.LP
+By default,
+widget windows automatically are mapped (made viewable) by
+.PN XtRealizeWidget .
+This behavior can be changed by using 
+.PN XtSetMappedWhenManaged ,
+and it then is the client's responsibility to use the
+.PN XtMapWidget
+function to make the widget viewable.
+.IN "XtSetMappedWhenManaged" "" @DEF@"
+.FD 0
+void XtSetMappedWhenManaged(\fIw\fP, \fImap_when_managed\fP)
+.br
+      Widget \fIw\fP;
+.br
+      Boolean \fImap_when_managed\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.IP \fImap_when_managed\fP 1i
+Specifies the new value.
+If map_when_managed is
+.PN True ,
+the widget is mapped automatically when it is realized.
+If map_when_managed is
+.PN False ,
+the client must call
+.PN XtMapWidget
+or make a second call to
+.PN XtSetMappedWhenManaged
+to cause the child window to be mapped.
+.LP
+.sp
+The definition for
+.PN XtMapWidget
+is:
+.IN "XtMapWidget" "" "@DEF@"
+.FD 0
+XtMapWidget(\fIw\fP)
+.br
+     Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.LP
+When you create several children in sequence for a common parent 
+after it has been realized,
+it generally is more efficient to construct a list of children as 
+they are created and use
+.PN XtManageChildren
+to inform their parent of them all at once, 
+instead of causing each child to be managed separately.
+By managing a list of children at one time,
+the parent can avoid wasteful duplication of geometry processing.
+.IN "XtManageChildren" "" "@DEF@"
+.FD 0
+void XtManageChildren(\fIchildren\fP, \fInum_children\fP)
+.br
+      WidgetList \fIchildren\fP;
+.br
+      Cardinal \fInum_children\fP;
+.FN
+.IP \fIchildren\fP 1i
+Specifies a list of children to add.
+.IP \fInum_children\fP 1i
+Specifies the number of children to add.
+.LP
+If the parent already is visible on the screen,
+it is especially important to batch updates so that the minimum amount 
+of visible window reconfiguration is performed.
+.LP
+For further information about these functions,
+see the \fI\*(xI\fP.
+.SH
+Destroying Widgets
+.LP
+To destroy a widget instance of any type, use
+.PN XtDestroyWidget .
+.IN "XtDestroyWidget" "" "@DEF@"
+.FD 0
+void XtDestroyWidget(\fIw\fP)
+.br
+      Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.LP
+.PN XtDestroyWidget
+destroys the widget and recursively destroys any children that it may have,
+including the windows created by its children.
+After calling
+.PN XtDestroyWidget ,
+no further references should be made to the widget or to the widget IDs 
+of any children that the destroyed widget may have had.
+.SH
+Retrieving Widget Resource Values
+.LP
+To retrieve the current value of a resource attribute associated 
+with a widget instance, use
+.PN XtGetValues .
+.IN "XtGetValues" "" "@DEF@"
+.FD 0
+void XtGetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
+.br
+      Widget \fIw\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.IP \fIargs\fP 1i
+Specifies a variable length argument list of name/address
+pairs which contain the resource name and the address to store the resource
+value into.
+The arguments and values passed in args are dependent on the widget.
+The storage for argument values which are pointed to by
+args must be allocated and deallocated by the caller.
+.IP \fInum_args\fP 1i
+Specifies the number of arguments in argument list.
+.LP
+The arguments and values passed in the argument list are dependent upon
+the widget.
+.SH
+Modifying Widget Resource Values
+.LP
+To modify the current value of a resource attribute associated 
+with a widget instance, use
+.PN XtSetValues .
+.IN "XtSetValues" "" "@DEF@"
+.FD 0
+void XtSetValues(\fIw\fP, \fIargs\fP, \fInum_args\fP)
+.br
+      Widget \fIw\fP;
+.br
+      ArgList \fIargs\fP;
+.br
+      Cardinal \fInum_args\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget.
+.IP \fIargs\fP 1i
+Specifies a variable length argument list of name/value
+pairs which contain the arguments to be modified and their new
+values.
+The arguments and values passed are dependent on
+the widget being modified.
+.IP \fInum_args\fP 1i
+Specifies the number of arguments in the argument list.
+.LP
+The arguments and values passed in the argument list depend upon
+the widget being modified.
+Some widgets may not allow certain resources to be modified
+after the widget instance has been created or realized.
+No notification is given if any part of a 
+.PN XtSetValues
+request is ignored.
+.LP
+For further information about these functions,
+see the \fI\*(xI\fP.
+.NT
+The argument list entry for
+.PN XtGetValues
+specifies the address to which the caller wants the value copied.
+The argument list entry for
+.PN XtSetValues ,
+however, contains the new value itself if the value is four bytes
+or less; otherwise, it is a pointer to the value.
+.NE
+.NH 2
+Using the Client Callback Interface
+.LP
+.XS
+\*(SN Using the Client Callback Interface
+.XE
+Widgets communicate changes in their state to their clients
+by means of a callback facility.
+The format for a client's callback handler is:
+.IN "CallbackProc" "" "@DEF@"
+.FD 0
+void \fICallbackProc\fP(\fIw\fP, \fIclient_data\fP, \fIcall_data\fP);
+.br
+      Widget \fIw\fP;
+.br
+      caddr_t \fIclient_data\fP;
+.br
+      caddr_t \fIcall_data\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies widget for which the callback is registered.
+.IP \fIclient_data\fP 1i
+Specifies the arbitrary client-supplied data that the widget should pass back 
+to the client when the widget executes the client's callback procedure.
+This is a way for the client registering the callback to also register 
+client-specific data:
+a pointer to additional information about the widget, 
+a reason for invoking the callback, and so on.
+It is perfectly normal to have client_data of NULL
+if all necessary information is in the widget.
+.IP \fIcall_data\fP 1i
+Specifies any callback-specific data the widget wants to pass to the client.
+For example,  when Scrollbar executes its thumbProc callback list, 
+it passes the current position of the thumb in the call_data argument.
+.LP
+Callbacks can be registered with widgets in one of two ways.
+When the widget is created,
+a pointer to a list of callback procedure and data pairs can be passed in the
+argument list to
+.PN XtCreateWidget .
+The list is of type
+.PN XtCallbackList :
+.IN "XtCallbackProc" 
+.IN "XtCallbackList" "" "@DEF@"
+.Ds 0
+.TA .5i 3i
+.ta .5i 3i
+typedef struct {
+	XtCallbackProc callback;
+	caddr_t client_data;
+} XtCallbackRec, XtCallbackList;
+.De
+.LP
+The callback list must be allocated and initialized prior to calling
+.PN XtCreateWidget .
+Once the widget is created,
+the client can change or de-allocate this list;
+The widget, itself, makes no further reference to it.
+.LP
+The second method for registering callbacks is to use
+.PN XtAddCallback 
+after the widget has been created.
+.IN "XtAddCallback" "" "@DEF@"
+.FD 0
+void XtAddCallback(\fIw\fP, \fIcallback_name, \fP\fIcallback\fP, \
+\fIclient_data\fP)
+.br
+      Widget \fIw\fP;
+.br
+      String \fIcallback_name\fP;
+.br
+      XtCallbackProc \fIcallback\fP;
+.br
+      caddr_t \fIclient_data\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget to add the callback to.
+.IP \fIcallback_name\fP 1i
+Specifies the callback list within the widget to append to.
+.IP \fIcallback\fP 1i
+Specifies the callback procedure to add.
+.IP \fIclient_data\fP 1i
+Specifies the data to be passed to the callback when it is invoked.
+.LP
+.PN XtAddCallback
+adds the specified callback to the list for the named widget.
+.LP
+All widgets provide a callback list named
+.PN XtNdestroyCallback
+where clients can register procedures that are to be executed when the widget
+is destroyed.
+The destroy callbacks are executed when the widget or an ancestor is destroyed.
+The call_data argument is unused for destroy callbacks.
+.LP
+The \*(tk Intrinsics provide additional functions for further manipulating
+a callback list.
+For information about these function, see
+.PN XtCallCallbacks ,
+.PN XtRemoveCallback ,
+.PN XtRemoveCallbacks ,
+and
+.PN XtRemoveAllCallbacks .
+in the \fI\*(xI\fP.
+.NH 2
+Programming Considerations
+.LP
+.XS
+\*(SN Programming Considerations
+.XE
+This section provides some guidelines to set up an application
+program that uses the \*(tk.
+.SH
+Writing Applications
+.LP
+When writing an application that uses the toolkit, 
+the application needs to perform a standard set of steps:
+.IP 1. 5
+Include 
+.Pn < X11/Intrinsic.h >
+in your application programs.
+This header file automatically includes
+.Pn < X11/Xlib.h >,
+so all Xlib functions also are defined.
+.IP 2. 5
+Include the widget-specific header files for each widget type 
+that you need to use.
+For example, 
+.Pn < X11/Label.h >
+and
+.Pn < X11/Command.h >.
+.IP 3. 5
+Call the
+.PN XtInitialize
+function prior to invoking any other toolkit or Xlib functions.
+For further information,
+see Section 2.1 and the \fI\*(xI\fP.
+.IP 4. 5
+To pass attributes to the widget creation routines, 
+set up argument lists.
+In this document,
+a list of valid argument names that start with 
+.PN XtN 
+is provided in the discussion of each widget.
+.IP
+For example, while creating a Command button, 
+an application may provide a label string to the Command button, 
+such as ``PressSpacesToExit''.
+The application also should provide a function name that the
+application calls when the command button is selected.
+.IP
+For further information,
+see ``Creating Argument Lists''.
+.IP 5. 5
+When the argument list is set up, 
+create the widget by using the
+.PN XtCreateWidget
+function.
+For further information,
+see Section 2.2 and the \fI\*(xI\fP.
+.IP 6. 5
+If the widget has any callback routines, which are usually defined
+by using the 
+.PN XtNcallback
+argument or the
+.PN XtAddCallback 
+function, declare these routines within the application.
+.IP 7. 5
+After a widget has been created,
+the widget should be managed by using
+.PN XtManageChild .
+If there is no manipulation of the widget between
+.PN XtCreateWidget
+and
+.PN XtManageChild,
+you can do this in a single step by using
+.PN XtCreateManagedWidget .
+For further information about these functions,
+see the \fI\*(xI\fP.
+.IP 8. 5
+Most applications now sit in a loop processing events using
+.PN XtMainLoop ,
+for example:
+.IP
+.Ds 0
+XtCreateManagedWidget(\fIname\fP, \fIclass\fP, \fIparent\fP, \fIargs\fP, \fInum_args\fP);
+XtRealizeWidget(\fIparent\fP);
+XtMainLoop();
+.De
+.IP
+For information about this function, 
+see the \fI\*(xI\fP.
+.IP 9. 5
+Link your application with 
+.PN libXaw.a
+(the Athena widgets),
+.PN libXt.a 
+(the \*(tk Intrinsics), and 
+.PN libX.a 
+(the core X library).
+The following provides a sample command line:
+.IP
+.Ds 0
+cc -o \fIapplication\fP \fIapplication\fP.c \-lXaw \-lXt \-lX
+.De
+.SH
+Creating Argument Lists
+.LP
+To set up an argument list for the inline specification of widget attributes,
+you can use one of the three approaches discussed in this section.
+You should use whichever approach fits the needs of the application  
+and you are most comfortable with.
+In general, 
+argument lists should be kept as short as possible to allow widget attributes
+to be specified through the resource database.
+Whenever a client inserts a specific attribute value in an argument list,
+the user is prevented from customizing the behavior of the widget.
+Resource names in the resource database, by convention, 
+correspond to their symbolic names that are used in argument list without the
+.PN XtN
+prefix.
+For example, the resource name for
+.PN XtNforeground
+is ``foreground''.
+For further information,
+see the \fI\*(xI\fP.
+.LP
+The 
+.PN Arg
+structure contains:
+.IN "ArgList" "" "@DEF@"
+.IN "Arg" "" "@DEF@"
+.LP
+.Ds 0
+.TA .5i 1.5i
+.ta .5i 1.5i
+typedef struct {
+	String name;
+	XtArgVal value;
+} Arg, *ArgList;
+.De
+.SH
+Approach 1
+.LP
+You can statically initialize the argument list, as in this example: 
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+static Arg arglist[] = {
+	{XtNwidth, (XtArgVal) 400},
+	{XtNheight, (XtArgVal) 300},
+};
+.De
+.LP
+This approach makes it easy to add or delete new
+elements.
+The 
+.PN XtNumber 
+macro can be used to compute the number of elements in the argument list,
+thus preventing simple programming errors.
+The following provides an example:
+.LP
+.Ds 
+XtCreateWidget(\fIname\fP, \fIclass\fP, \fIparent\fP, \fIargs\fP, XtNumber(\fIargs\fP));
+.De
+.SH
+Approach 2
+.LP
+You can use the 
+.PN XtSetArg
+macro:
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+Arg arglist[10];
+XtSetArg(arglist[1], XtNwidth, 400);
+XtSetArg(arglist[2], XtNheight, 300);
+.De
+.LP
+To make it easier to insert and delete entries, 
+you also can use a variable index,
+as in this example:
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+Arg arglist[10];
+Cardinal i=0;
+XtSetArg(arglist[i], XtNwidth,  400);       i++;
+XtSetArg(arglist[i], XtNheight, 300);       i++;
+.De
+.LP
+The i variable can then be used as the argument list count in the widget
+create function.
+In this example,
+.PN XtNumber 
+would return 10, not 2, and, therefore, is not useful.
+.NT
+You should not use auto-increment or auto-decrement 
+within the first argument to
+.PN XtSetArg .
+As it is currently implemented,
+.PN XtSetArg
+is a macro that dereferences the first argument twice.
+.NE
+.SH
+Approach 3
+.LP
+You can individually set the elements of the argument list array, one
+piece at a time:
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+Arg arglist[10];
+arglist[0].name  = XtNwidth;
+arglist[0].value = (XtArgVal) 400;
+arglist[1].name  = XtNheight;
+arglist[1].value = (XtArgVal) 300;
+.De
+.LP
+Also in this example, 
+.PN XtNumber 
+would return 10, not 3, and, therefore, is not useful.
+.SH
+Approach 4
+.LP
+Use a mixture of Approaches 1 and 3.
+The argument list is statically defined but some entries are modified 
+at run-time.
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+static Arg arglist[] = {
+	{XtNwidth, (XtArgVal) 400},
+	{XtNheight, (XtArgVal) NULL},
+};
+arglist[1].value = (XtArgVal) 300;
+.De
+.LP
+In this example,
+.PN XtNumber 
+can be used, as in Approach 1, for easier code maintenance.
+.SH
+Sample Program
+.LP
+This sample program creates one command button that, when pressed, 
+causes the program to exit.
+This example is a complete program that illustrates:
+.IP \(bu 5
+Toolkit initialization
+.IP \(bu 5
+Optional command-line arguments
+.IP \(bu 5
+Widget creation
+.IP \(bu 5
+Callback routines
+.LP
+.ps 9
+.nr PS 9
+.Ds 0
+.TA .5i 2i
+.ta .5i 2i
+#include <stdio.h>
+#include <X11/Intrinsic.h>
+#include <X11/Command.h>
+.sp 6p
+static XrmOptionDescRec options[] = {
+{"\-label", "*button.label", XrmoptionSepArg, NULL}
+};
+.sp 6p
+Syntax(call)
+	char *call;
+{
+	fprintf(stderr, "Usage: %s\\n", call);
+}
+.sp 6p
+void Activate(w, client_data, call_data)
+	Widget w;
+	caddr_t client_data;
+	caddr_t call_data;
+{
+	printf("button was activated.\\n");
+	exit(0);
+}
+.sp 6p
+void main(argc, argv)
+	unsigned int argc;
+	char **argv;
+{
+	Widget toplevel;
+	static XtCallbackRec callbacks[] = {
+	\ \ \ \ { Activate, NULL },
+	\ \ \ \ { NULL, NULL },
+	};
+.sp 6p
+	static Arg args[] = {
+	\ \ { XtNcallback, (XtArgVal)callbacks },
+	};
+.sp 6p
+	toplevel = XtInitialize("main", "Demo", options, XtNumber(options), &argc, argv );
+	if (argc != 1) Syntax(argv[0]);
+.sp 6p
+	XtCreateManagedWidget("button",commandWidgetClass,toplevel,args,XtNumber(args));
+.sp 6p    
+	XtRealizeWidget(toplevel);
+	XtMainLoop();
+}
+.De
+.ps 11
+.nr PS 11
+.bp 
+\&
+.sp 1
+.ce 3
+\s+1\fBChapter 3\fP\s-1
+
+\s+1\fBWidgets\fP\s-1
+.sp 2
+.nr H1 3
+.nr H2 0
+.nr H3 0
+.nr H4 0
+.nr H5 0
+.na
+.LP
+.XS
+Chapter 3 - Widgets
+.XE
+.LP
+This chapter describes the following \*(tk widgets:
+.IP \(bu 5
+Command buttons
+.\".IP \(bu 5
+.\"Toggle buttons
+.IP \(bu 5
+Labels
+.IP \(bu 5
+Text
+.IP \(bu 5
+Scrollbars
+.IP \(bu 5
+Viewports
+.IP \(bu 5
+Boxes
+.\".IP \(bu 5
+.\"MenuBox
+.IP \(bu 5
+VPaned
+.IP \(bu 5
+Forms
+.IP \(bu 5
+Dialog
+.IP \(bu 5
+Grip
+.LE
+.NH 2
+Command Button Widget
+.LP
+.XS
+\*(SN Command Button Widget
+.XE
+.IN "Command widget" "" "@DEF@"
+The Command button widget is a rectangle that contains a text label.
+When the pointer cursor is on the button,
+its border is highlighted to indicate that the button is available 
+for selection.
+Then, when a pointer button is clicked, 
+the button is selected, 
+and the application's callback routine is invoked.
+.LP
+The class variable for the Command button widget is 
+.PN commandWidgetClass .
+.LP
+When creating a Command button widget instance, 
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Command widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	White	Window background color
+XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+XtNborderColor	Pixel	Black	Window border color
+XtNborderPixmap	Pixmap	none	Window border pixmap
+XtNborderWidth	int	1	Width of button border
+XtNcallback	XtCallbackList	NULL	Callback for button select
+XtNcursor	Cursor	opendot	Pointer cursor
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNfont	FontInfo*	fixed	Label font
+XtNforeground	Pixel	Black	Foreground color
+XtNheight	int	text height	Button height
+T{
+XtNhighlightThickness
+T}	T{
+int
+T}	T{
+2
+T}	T{
+Width of border to be highlighted
+T}
+XtNinsensitiveBorder	Pixmap	Gray	Border when not sensitive
+T{
+XtNinternalHeight
+T}	T{
+int
+T}	T{
+2
+T}	T{
+Internal border height for highlighting
+T}
+T{
+XtNinternalWidth
+T}	T{
+int
+T}	T{
+4
+T}	T{
+Internal border width for highlighting
+T}
+XtNjustify	XtJustify	XtjustifyCenter	Type of text alignment
+XtNlabel	char*	Button name	Button label
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNtranslations	TranslationTable	none	event-to-action translations
+XtNwidth	int	text width	Button width
+XtNx	int	0	Widget x coordinate
+XtNy	int	0	Widget y coordinate
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.TS
+lw(1.5i) lw(4i).
+T{
+.PN XtNheight
+T}	T{
+Specifies the height of the Command widget.
+The default value is the minimum height that will contain:
+.br
+XtNinternalheight + height of XtNlabel + XtNinternalHeight 
+.br
+If the specified height is larger than the minimum,
+the label string is centered vertically.
+T}
+.sp 6p
+T{
+.PN XtNinternalHeight 
+T}	T{
+Represents the distance in pixels between the top and bottom 
+of the label text and the horizontal edges of the Command widget.
+HighlightThickness can be larger or smaller than this value.
+T}
+.sp 6p
+T{
+.PN XtNinternalWidth 
+T}	T{
+Represents the distance in pixels between the ends of the label text
+and the outer vertical edges of the Command widget.
+HighlightThickness can be larger or smaller than this value.
+T}
+.sp 6p
+T{
+.PN XtNjustify
+T}	T{
+Specifies left, center, or right alignment of the label string
+within the Command widget.
+If it is specified within an
+.PN ArgList ,
+one of the values
+.PN XtJustifyLeft ,
+.PN XtJustifyCenter ,
+or
+.PN XtJustifyRight
+can be specified.
+In a resource of type ``string'',
+one of the values ``left'', ``center'', or ``right'' can be specified.
+T}
+.sp 6p
+T{
+.PN XtNlabel
+T}	T{
+Specifies the text string that is to be displayed in the Command widget.
+The default is the widget name of the Command widget.
+T}
+.sp 6p
+T{
+.PN XtNsensitive
+T}	T{
+Causes the Command widget to display a different border and a stippled
+label string when the Command widget is set to insensitive.
+T}
+.sp 6p
+T{
+.PN XtNwidth
+T}	T{
+Specifies the width of the Command widget.
+The default value is the minimum width that will contain:
+.br
+XtNinternalWidth + width of XtNlabel + XtNinternalWidth 
+.br
+If the width is larger or smaller than the minimum,
+.PN XtNjustify 
+determines how the label string is aligned.
+T}
+.TE
+.LP
+The Command button widget supports the following actions:
+.IP \(bu 5
+Switching the button between the foreground and background
+colors with
+.PN set 
+and
+.PN unset 
+.IP \(bu 5
+Processing application callbacks with 
+.PN notify 
+.IP \(bu 5
+Switching the internal border between highlighted
+and unhighlighted states with 
+.PN highlight
+and
+.PN unhighlight
+.LE
+.LP
+The following are the default translation bindings that are used 
+by the Command button widget:
+.LP
+.Ds 0
+.TA .5i 2.25i
+.ta .5i 2.25i
+	<BtnDown>ButtonDown1:	set(\|)
+	<BtnUp>ButtonDown1:	notify(\|) unset(\|)
+	<EnterWindow>:	highlight(\|)
+	<LeaveWindow>:	unset(\|) unhighlight(\|)
+.De
+.LP
+.IN "Command widget" "creating"
+.IN "Creating widgets" "Command"
+To create a Command button widget instance, use
+.PN XtCreateWidget
+and specify the class variable
+.PN commandWidgetClass .
+.LP
+.IN "Command widget" "destroying"
+.IN "Destroying widgets" "Command"
+To destroy a Command button widget instance, use
+.PN XtDestroyWidget
+and specify the widget ID of the button.
+.LP
+The Command button widget supports two callback lists:
+.PN XtNdestroyCallback
+and
+.PN XtNcallback .
+The notify action executes the callbacks on the the
+.PN XtNcallback
+list.
+The call_data
+argument is unused.
+.\".NH 2
+.\"Toggle Button Widget
+.\".LP
+.\".XS
+.\"\*(SN Toggle Button Widget
+.\".XE
+.\".IN "Toggle widget" "" "@DEF@"
+.\"A Toggle button widget is a button that alternates 
+.\"between set and unset states on successive events.
+.\".LP
+.\"When the cursor is placed on the button, 
+.\"its border is highlighted to indicate that the button is available
+.\"for selection.
+.\"Then, when a pointer button is clicked, 
+.\"the selection state is reversed.
+.\"It stays in this state until it is selected,
+.\"and the pointer button is clicked again.
+.\"Reverse video is used to indicate that the button is selected or unselected.
+.\".LP
+.\"The class variable for the Toggle button widget is 
+.\".PN toggleWidgetClass .
+.\".LP
+.\"When creating a Toggle button widget instance,
+.\"the following resources are retrieved from the argument list 
+.\"or from the resource database:
+.\".IN "Toggle widget" "resources"
+.\".ps 9
+.\".nr PS 9
+.\".vs 11
+.\".nr VS 11
+.\".TS H
+.\"lw(1.5i) lw(1i) lw(1i) lw(2i).
+.\"_
+.\".sp 3p
+.\".TB
+.\"Name	Type	Default	Description
+.\".sp 3p
+.\"_
+.\".TH
+.\".R
+.\".sp 3p
+.\"XtNbackground	Pixel	White	Window background color
+.\"XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+.\"XtNborderColor	Pixel	Black	Window border color
+.\"XtNborderPixmap	Pixmap	none	Window border pixmap
+.\"XtNborderWidth	int	1	Width of button border
+.\"XtNcallback	XtCallbackList	NULL	Callback for button select
+.\"XtNcursor	Cursor	opendot	Pointer cursor
+.\"T{
+.\"XtNdestroyCallback
+.\"T}	T{
+.\"XtCallbackList
+.\"T}	T{
+.\"NULL
+.\"T}	T{
+.\"Callbacks for 
+.\".PN XtDestroyWidget
+.\"T}
+.\"XtNfont	FontInfo*	fixed	Label font
+.\"XtNforeground	Pixel	Black	Foreground color
+.\"XtNheight	int	text height	Button height
+.\"T{
+.\"XtNhighlightThickness
+.\"T}	T{
+.\"int
+.\"T}	T{
+.\"2
+.\"T}	T{
+.\"Width of border to be highlighted
+.\"T}
+.\"XtNinsensitiveBorder	Pixmap	Gray	Border when not sensitive
+.\"T{
+.\"XtNinternalHeight
+.\"T}	T{
+.\"int
+.\"T}	T{
+.\"2
+.\"T}	T{
+.\"Internal border height for highlighting
+.\"T}
+.\"T{
+.\"XtNinternalWidth
+.\"T}	T{
+.\"int
+.\"T}	T{
+.\"4
+.\"T}	T{
+.\"Internal border width for highlighting
+.\"T}
+.\"XtNjustify	XtJustify	XtjustifyCenter	Type of text alignment
+.\"XtNlabel	char*	Button name	Button label
+.\"T{
+.\"XtNmappedWhenManaged
+.\"T}	T{
+.\"Boolean
+.\"T}	T{
+.\"True
+.\"T}	T{
+.\"Whether 
+.\".PN XtMapWidget
+.\"is automatic
+.\"T}
+.\"XtNsensitive	Boolean	True	Whether widget receives input
+.\"XtNtranslations	TranslationTable	none	event-to-action translations
+.\"XtNwidth	int	text width	Button width
+.\"XtNx	int	0	Widget x coordinate
+.\"XtNy	int	0	Widget y coordinate
+.\".sp 3p
+.\"_
+.\".TE
+.\".ps 11
+.\".nr PS 11
+.\".vs 13
+.\".nr VS 13
+.\".NT Notes
+.\".IP 1. 5
+.\"The value 
+.\".PN XtNinternalWidth 
+.\"represents the distance in pixels between the ends of the label text
+.\"and the outer vertical edges of the button.
+.\".IP 2. 5
+.\"The value 
+.\".PN XtNinternalHeight 
+.\"represents the distance in pixels between the top and bottom of the label
+.\"text and the horizontal edges of the button.
+.\".NE
+.\".LP
+.\"The Toggle button widget supports the following actions:
+.\".IP \(bu 5
+.\"Highlight
+.\".IP \(bu 5
+.\"Unhighlight
+.\".IP \(bu 5
+.\"Toggle
+.\".IP \(bu 5
+.\"Notify
+.\".LP
+.\"The 
+.\".PN Highlight 
+.\"action causes the border around the button to appear in reverse
+.\"video.
+.\"The size of the border is determined by the
+.\".PN XtNborderWidth 
+.\"argument.
+.\".LP
+.\"The 
+.\".PN Toggle 
+.\"action causes the entire button to appear in reverse video.
+.\"The 
+.\".PN Notify 
+.\"action invokes the callback procedure.
+.\".LP
+.\"The Toggle button widget provides the following event bindings to
+.\"the actions:
+.\".LP
+.\".Ds 0
+.\".TA .5i 2.5i
+.\".ta .5i 2.5i
+.\"static char* defaultEventBindings[\^] = {
+.\"	``<EnterWindow>:	highlight()'',
+.\"	``<LeaveWindow>:	unhighlight()'',
+.\"	``<ButtonPressed>ButtonDown1:	toggle()'',
+.\"	``<ButtonReleased>ButtonUp1:	notify()'',
+.\"	NULL
+.\"}
+.\".De
+.\".LP
+.\".IN "Toggle widget" "creating"
+.\".IN "Creating widgets" "Toggle"
+.\"To create a Toggle button widget instance, use
+.\".PN XtCreateWidget
+.\"and specify the class variable
+.\".PN toggleWidgetClass .
+.\".LP
+.\".IN "Toggle widget" "destroying"
+.\".IN "Destroying widgets" "Toggle"
+.\"To destroy a Toggle button widget instance, use
+.\".PN XtDestroyWidget
+.\"and specify the widget ID of the button.
+.\".LP
+.\"The Toggle button widget supports two callback lists:
+.\".PN XtNdestroyCallback
+.\"and
+.\".PN XtNcallback .
+.\"The call_data argument contains the new toggle state (0 or 1).
+.\"For further information,
+.\"see Section 2.5.
+.NH 2 
+Label Widget
+.LP
+.XS
+\*(SN Label Widget
+.XE
+.IN "Label widget" "" "@DEF@"
+A Label is an uneditable text string that is displayed within a window.
+The string is limited to one line and can be aligned to the left, right, 
+or center of its window.
+A Label can neither be selected nor edited by the user.
+.LP
+The class variable for the Label widget is 
+.PN labelWidgetClass .
+.LP
+When creating a Label widget instance, 
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Label widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	White	Window background color
+XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+XtNborderColor	Pixel	Black	Window border color
+XtNborderPixmap	Pixmap	none	Window border pixmap
+XtNborderWidth	int	1	Border width in pixels
+XtNcursor	Cursor	None	Pointer cursor
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNfont	FontInfo*	fixed	Label font
+XtNforeground	Pixel	Black	Foreground color
+XtNheight	int	text height	Height of widget
+XtNinsensitiveBorder	Pixmap	Gray	Border when not sensitive
+XtNinternalHeight	int	2	See note
+XtNinternalWidth	int	4	See note
+XtNjustify	XtJustify	XtjustifyCenter	Type of text alignment
+XtNlabel	char*	label name	String to be displayed
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNwidth	int	text width	Width of widget
+XtNx	int	0	x coordinate in pixels
+XtNy	int	0	y coordinate in pixels
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.TS
+lw(1.5i) lw(4i).
+T{
+.PN XtNheight
+T}	T{
+Specifies the height of the Label widget.
+The default value is the minimum height that will contain:
+.br
+XtNinternalheight + height of XtNlabel + XtNinternalHeight 
+.br
+If the specified height is larger than the minimum,
+the label string is centered vertically.
+T}
+.sp 6p
+T{
+.PN XtNinternalHeight 
+T}	T{
+Represents the distance in pixels between the top and bottom 
+of the label text and the horizontal edges of the Label widget.
+T}
+.sp 6p
+T{
+.PN XtNinternalWidth 
+T}	T{
+Represents the distance in pixels between the ends of the label text
+and the outer vertical edges of the Label widget.
+T}
+.sp 6p
+T{
+.PN XtNjustify
+T}	T{
+Specifies left, center, or right alignment of the label string
+within the Label widget.
+If it is specified within an
+.PN ArgList ,
+one of the values
+.PN XtJustifyLeft ,
+.PN XtJustifyCenter ,
+or
+.PN XtJustifyRight
+can be specified.
+In a resource of type ``string'',
+one of the values ``left'', ``center'', or ``right'' can be specified.
+T}
+.sp 6p
+T{
+.PN XtNlabel
+T}	T{
+Specifies the text string that is to be displayed in the button.
+The default is the widget name of the Label widget.
+T}
+.sp 6p
+T{
+.PN XtNsensitive
+T}	T{
+Causes the button to display a different border and a stippled
+label string when the Label widget is set to insensitive.
+T}
+.sp 6p
+T{
+.PN XtNwidth
+T}	T{
+Specifies the width of the Label widget.
+The default value is the minimum width that will contain:
+.br
+XtNinternalWidth + width of XtNlabel + XtNinternalWidth 
+.br
+If the width is larger or smaller than the minimum,
+.PN XtNjustify 
+determines how the label string is aligned.
+T}
+.TE
+.LP
+.IN "Label widget" "creating"
+.IN "Creating widgets" "Label"
+To create a Label widget instance, use
+.PN XtCreateWidget
+and specify the class variable
+.PN labelWidgetClass .
+.LP
+.IN "Label widget" "destroying"
+.IN "Destroying widgets" "Label"
+To destroy a Label widget instance, use
+.PN XtDestroyWidget
+and specify the widget ID of the label.
+.LP
+The Label widget supports only the
+.PN XtNdestroyCallback
+callback list.
+.NH 2 
+Text Widget
+.LP
+.XS
+\*(SN Text Widget
+.XE
+.IN "Text widget" "" "@DEF@"
+A Text widget is a window that provides a way for an application to display
+one or more lines of text.
+The displayed text can reside in a file on disk or in a string in memory.
+An option also lets an application display a vertical Scrollbar 
+in the Text window,
+letting the user scroll through the displayed text.
+Other options allow an application to let the user modify the text 
+in the window.
+.LP
+The Text widget is divided into three parts: 
+.IP \(bu 5
+Source 
+.IP \(bu 5
+Sink
+.IP \(bu 5
+Text widget
+.LP
+The idea is to separate the storage
+of the text (source) from the painting of the text (sink).
+The Text widget coordinates the sources and sinks.
+Clients normally will use 
+.PN AsciiText 
+widgets that automatically create the source and sink for the client.
+A client can, if it so chooses, explicitly create the source and sink
+before creating the Text widget.
+.LP
+The source stores and manipulates the text.
+The \*(tk provides string and disk file sources.
+The source determines what functions may be performed on the text.
+.LP
+The sink obtains the fonts and the
+colors in which to paint the text.
+The sink also computes what text can fit on each line.
+The \*(tk provides a single font, single color ASCII sink.
+.LP
+If a disk file is used to display the text,
+two edit modes are available: 
+.IP \(bu 5
+Append
+.IP \(bu 5
+Read-only 
+.LP
+Append mode lets the user enter text into the window,
+while read-only mode does not.
+As the text is entered, 
+it is added after the last character in the window, 
+regardless of where the user positions the cursor.
+.LP
+If a string in memory is used, 
+the application must allocate the amount of space needed.
+If a string in memory is used to display text,
+three types of edit mode are available:
+.IN "Text widget" "edit modes"
+.IP \(bu 5
+Append-only 
+.IP \(bu 5
+Read-only 
+.IP \(bu 5
+Editable
+.LP
+The first two modes are the same as displaying text from a disk file.
+Editable mode lets the user place the cursor anywhere in the text and
+modify the text at that position.
+The text cursor position can be modified by using the
+key strokes or pointer buttons defined by the event bindings.
+.LE
+All standard keyboard editing facilities are supported by the
+event bindings.
+The following actions are supported:
+.LP
+.Ds 0
+.TA .5i	2.5i 3i
+.ta .5i 2.5i 3i
+Cursor Movement	Delete
+	forward-character		delete-next-character
+	backward-character		delete-previous-character
+	forward-word		delete-next-word
+	backward-word		delete-previous-word
+	forward-paragraph		delete-selection
+	backward-paragraph
+	beginning-of-line
+	end-of-line	Selection
+	next-line		select-word
+	previous-line		select-all
+	next-page		select-start
+	previous-page		select-adjust
+	beginning-of-file		select-end
+	end-of-file		 extend-start
+	scroll-one-line-up		extend-adjust
+	scroll-one-line-down		extend-end
+
+New Line	Miscellaneous
+	newline-and-indent		redraw-display
+	newline-and-backup		insert-file
+	newline		do-nothing
+
+Kill		Unkill
+	kill-word		unkill
+	backward-kill-word		stuff
+	kill-selection
+	kill-to-end-of-line
+	kill-to-end-of-paragraph
+.De
+.NT Notes
+.IP 1. 5
+A page corresponds to the size of the Text window.
+For example, if the Text window is 50 lines in length, 
+scrolling forward one page is the same as scrolling forward 50 lines.
+.IP 2. 5
+The 
+.PN delete 
+binding deletes a text item.
+The 
+.PN kill 
+binding deletes a text item and puts the item in the kill buffer (X buffer 1).
+.IP 3. 5
+The 
+.PN unkill 
+binding inserts the contents of the kill buffer into the text at the current
+position.
+The 
+.PN stuff 
+binding inserts the contents of the select buffer (X buffer 0) into the text at
+the current position.
+.NE
+.LP
+The default event bindings for the Text widget are:
+.IN "Text widget" "default bindings"
+.LP
+.Ds 0
+.TA .5i 2.5i
+.ta .5i 2.5i
+char *defaultTextEventBindings[] = {
+	``Ctrl<Key>F:	forward-character(\|)\\n\\
+	<Key>Right:	forward-character(\|)\\n\\ 
+	Ctrl<Key>B:	backward-character(\|)\\n\\
+	<Key>Left:	backward-character(\|)\\n\\
+	Meta<Key>F:	forward-word(\|)\\n\\
+	Meta<Key>B:	backward-word(\|)\\n\\
+	Meta<Key>]:	forward-paragraph(\|)\\n\\
+	Ctrl<Key>[:	backward-paragraph(\|)\\n\\
+	Ctrl<Key>A:	beginning-of-line(\|)\\n\\
+	Ctrl<Key>E:	end-of-line(\|)\\n\\
+	Ctrl<Key>N:	next-line(\|)\\n\\
+	<Key>Down:	next-line(\|)\\n\\
+	Ctrl<Key>P:	previous-line(\|)\\n\\
+	<Key>Up:	previous-line(\|)\\n\\
+	Ctrl<Key>V:	next-page(\|)\\n\\
+	Meta<Key>V:	previous-page(\|)\\n\\
+	Meta<Key>\\<:	beginning-of-file(\|)\\n\\
+	Meta<Key>\\>:	end-of-file(\|)\\n\\
+	Ctrl<Key>Z:	scroll-one-line-up(\|)\\n\\
+	Meta<Key>Z:	scroll-one-line-down(\|)\\n\\
+	Ctrl<Key>D:	delete-next-character(\|)\\n\\
+	Ctrl<Key>H:	delete-previous-character(\|)\\n\\
+	<Key>Num_Lock:	delete-previous-character(\|)\\n\\
+	<Key>Delete:	delete-previous-character(\|)\\n\\
+	<Key>BackSpace:	delete-previous-character(\|)\\n\\
+	Meta<Key>D:	delete-next-word(\|)\\n\\
+	Meta<Key>H:	delete-previous-word(\|)\\n\\
+	Shift Meta<Key>D:	kill-word(\|)\\n\\
+	Shift Meta<Key>H:	backward-kill-word(\|)\\n\\
+	Ctrl<Key>W:	kill-selection(\|)\\n\\
+	Ctrl<Key>K:	kill-to-end-of-line(\|)\\n\\
+	Meta<Key>K:	kill-to-end-of-paragraph(\|)\\n\\
+	Ctrl<Key>Y:	unkill(\|)\\n\\
+	Meta<Key>Y:	stuff(\|)\\n\\
+	Ctrl<Key>J:	newline-and-indent(\|)\\n\\
+	<Key>Linefeed:	newline-and-indent(\|)\\n\\
+	Ctrl<Key>O:	newline-and-backup(\|)\\n\\
+	Ctrl<Key>M:	newline(\|)\\n\\
+	<Key>Return:	newline(\|)\\n\\
+	Ctrl<Key>L:	redraw-display(\|)\\n\\
+	Meta<Key>I:	insert-file(\|)\\n\\
+	<FocusIn>:	focus-in(\|)\\n\\
+	<FocusOut>:	focus-out(\|)\\n\\
+	<Btn1Down>:	select-start(\|)\\n\\
+	Button1<PtrMoved>:	extend-adjust(\|)\\n\\
+	<Btn1Up>:	extend-end(\|)\\n\\
+	<Btn2Down>:	stuff(\|)\\n\\
+	<Btn3Down>:	extend-start(\|)\\n\\
+	Button3<PtrMoved>:	extend-adjust(\|)\\n\\
+	<Btn3Up>:	extend-end(\|)\\n\\
+	<Key>:	insert-char(\|)\\n\\
+	Shift<Key>:	insert-char(\|)'';
+.De
+.LP
+A user-supplied resource entry can use application-specific bindings, a subset
+of the supplied default bindings, or both.
+The following is an example of a user-supplied resource entry that uses a 
+subset of the default bindings:
+.LP
+.Ds 0
+.TA .5i 1.75i
+.ta .5i 1.75i
+xmh*Text.translation:\\n
+	<Key>Right:	forward-character(\|)\\n
+	<Key>Left:	backward-character(\|)\\n
+	<Meta>F:	forward-word(\|)\\n
+	<Meta>B:	backward-word(\|)\\n
+	<Meta>]:	forward-paragraph(\|)\\n
+	<Ctrl>[:	backward-paragraph(\|)
+.De
+.LP
+A Text widget lets both the user and the application
+take control of the text being displayed.
+The user takes control with the scroll bar or with key strokes 
+defined by the event bindings.
+The scroll bar option places the scroll bar on the left side of the window
+and can be used with any editing mode.
+The application takes control with procedure calls to the Text widget
+to:
+.IP \(bu 5
+Display text at a specified position
+.IP \(bu 5
+Highlight specified text areas 
+.IP \(bu 5
+Replace specified text areas
+.LE
+.LP
+The text that is selected within a Text window is put into buffer 0 (zero)
+and can be retrieved by the application with the Xlib 
+.PN XFetchBytes 
+function.
+All standard selection schemes are supported by the event bindings.
+.LP
+The class variable for the Text widget is 
+.PN textWidgetClass .
+.LP
+.IN "Text widget" "creating"
+.IN "Creating widgets" "Text string"
+To create a Text string widget, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN asciiStringWidgetClass .
+.LP
+.IN "Creating widgets" "Text file"
+To create a Text file widget, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN asciiDiskWidgetClass .
+.NT
+If you want to create an instance of the class
+.PN textWidgetClass ,
+you must provide a source and a sink when the widget is created.
+The Text widget cannot be instantiated without either or both.
+.NE
+.LP
+When creating a Text widget instance, 
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Text widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	White	Window background color 
+XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+XtNborderColor	Pixel	Black	Window border color
+XtNborderPixmap	Pixmap	none	Window border pixmap
+XtNborderWidth	int	4	Border width in pixels
+XtNcursor	Cursor	XC_xterm	Pointer cursor
+XtNdialogHOffset	int	10	Offset of insert file dialog
+XtNdialogVOffset	int	10	Offset of insert file dialog
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNdisplayPosition	int	0	Byte offset of first line
+XtNeditType	XtEditType	XttextRead	Edit mode (see note)
+T{
+XtNfile
+T}	T{
+char*
+T}	T{
+tmpnam()
+T}	T{
+File name for
+.br
+.PN asciiDiskWidgetClass
+T}
+XtNforeground	Pixel	Black	Foreground color
+XtNfont	FontInfo*	fixed	Fontname
+XtNheight	int	font height	Height of widget
+XtNinsertPosition	int	0	Byte offset of cursor position
+XtNleftMargin	int	2	Left margin in pixels
+T{
+XtNlength
+T}	T{
+int
+T}	T{
+string length
+T}	T{
+Length for 
+.PN asciiStringWidgetClass
+T}
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+T{
+XtNmaxLength
+T}	T{
+int
+T}	T{
+1024
+T}	T{
+Maximum string size for 
+.br
+.PN asciiStringWidgetClass
+T}
+XtNselectTypes	XtTextSelectType*	See below	See below
+XtNselection	XtTextBlock	none	String that is highlighted
+XtNsensitive	Boolean	True	Whether widget receives input
+T{
+XtNstring
+T}	T{
+char*
+T}	T{
+blank
+T}	T{
+String for 
+.PN asciiStringWidgetClass
+T}
+XtNtextOptions	int	none	See below
+XtNtextSink	XtTextSink	none	See below
+XtNtextSource	XtTextSource	none	See below
+XtNtranslations	TranslationTable	none	event-to-action translations
+XtNwidth	int	100	Width of widget (pixels)
+XtNx	int	0	x coordinate in pixels
+XtNy	int	0	y coordinate in pixels
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.NT Notes
+.IP 1. 5
+You cannot use 
+.PN XtNeditType ,
+.PN XtNfile ,
+.PN XtNlength ,
+and
+.PN XtNfont
+with the 
+.PN XtTextSetValues 
+and the 
+.PN XtTextGetValues 
+calls.
+.IP 2. 5
+The 
+.PN XtNeditType 
+attribute has one of the values
+.PN XttextAppend ,
+.PN XttextEdit ,
+or
+.PN XttextRead .
+.NE
+.LP
+The options for the 
+.PN XtNtextOptions 
+attribute are:
+.TS H
+lw(1.5i) lw(4.5i).
+_
+.sp 3p
+.TB
+Option	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+T{
+.PN editable
+T}	T{
+Whether or not the user is allowed to modify the text.
+T}
+.sp 3p
+T{
+.PN resizeHeight
+T}	T{
+Makes a request to the parent widget to lengthen the window 
+if all the text cannot fit in the window.
+T}
+.sp 3p
+T{
+.PN resizeWidth
+T}	T{
+Makes a request to the parent widget to widen the window if the 
+text becomes too long to fit on one line.
+T}
+.sp 3p
+T{
+.PN scrollHorizontal
+T}	T{
+Puts a scroll bar on the top of the window.
+T}
+.sp 3p
+T{
+.PN scrollOnOverflow
+T}	T{
+Automatically scrolls the text up when new text is entered
+below the bottom (last) line.
+T}
+.sp 3p
+T{
+.PN scrollVertical
+T}	T{
+Puts a scroll bar on the left side of the window.
+T}
+.sp 3p
+T{
+.PN wordBreak
+T}	T{
+Starts newline when word does not fit on current line.
+T}
+.sp 3p
+_
+.TE
+.LP
+These options can be ORed together to set more than one at the same time.
+.PN XtNselectionTypes 
+is an array of entries of type 
+.PN XtTextSelectType
+and is used for multiclick.
+As the pointer button is clicked in rapid succession, 
+each click highlights the next ``type'' described in the array.
+.TS
+lw(1.25i) lw(4.25i).
+T{
+XtselectAll
+T}	T{
+Selects the contents of the entire buffer.
+T}
+.sp 6p
+T{
+XtselectChar
+T}	T{
+Selects text characters as the pointer moves over them.
+T}
+.sp 6p
+T{
+XtselectLine
+T}	T{
+Selects the entire line.
+T}
+.sp 6p
+T{
+XtselectNull
+T}	T{
+Indicates the end of the selection array.
+T}
+.sp 6p
+T{
+XtselectParagraph
+T}	T{
+Selects the entire paragraph (delimited by newline characters).
+T}
+.sp 6p
+T{
+XtselectPosition
+T}	T{
+Selects the current pointer position.
+T}
+.sp 6p
+T{
+XtselectWord
+T}	T{
+Selects whole words (delimited by whitespace) as the pointer moves onto
+them.
+T}
+.TE
+.LP
+The default selectType array is:
+.LP
+.Ds 0
+{XtselectPosition, XtselectWord, XtselectLine, XtselectParagraph, XtselectAll, XtselectNull}
+.De
+.LP
+For the default case, 
+two rapid pointer clicks highlight the current word, three clicks
+highlight the current line, 
+four clicks highlight the current paragraph,
+and five clicks highlight the entire text.
+If the timeout value is exceeded, the next pointer
+click returns to the first entry in the selection array.
+The selection array is not copied by the Text widget.
+The client must allocate space for the array
+and may not deallocate or change it until the Text widget is destroyed
+or until a new selection array is set.
+.SH
+Selecting Text
+.LP
+To enable an application to select a piece of text, use 
+.PN XtTextSetSelection .
+.IN "XtTextSetSelection" "" "@DEF@"
+.FD 0
+typedef long XtTextPosition;
+.sp 6p
+void XtTextSetSelection(\fIw\fP, \fIleft\fP, \fIright\fP)
+.br
+     Widget \fIw\fP;
+.br
+     XtTextPosition \fIleft\fP, \fIright\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the window ID.
+.IP \fIleft\fP 1i
+Specifies the byte offset at which the the selection begins.
+.IP \fIright\fP 1i
+Specifies the byte offset at which the selection ends.
+.LP
+This function highlights the text and puts the text into buffer 0 (zero).
+The text can be retrieved by using the Xlib
+.PN XFetchBytes 
+call.
+.LP
+.SH
+Unhighlighting Text
+.LP
+To unhighlight previously highlighted text in a window, use 
+.PN XtTextUnsetSelection .
+.IN "XtTextUnsetSelection" "" "@DEF@"
+.FD 0
+void XtTextUnsetSelection(\fIw\fP)
+.br
+     Widget \fIw\fP;
+.FN
+.LP
+.SH
+Getting Selected Text Byte Positions
+.LP
+.sp
+To enable the application to get the byte positions of the selected text, use 
+.PN XtTextGetSelectionPos .
+.IN "XtTextGetSelectionPos" "" "@DEF@"
+.FD 0
+void XtTextGetSelectionPos(\fIw\fP, \fIpos1\fP, \fIpos2\fP)
+.br
+     Widget \fIw\fP;
+.br
+     XtTextPosition *\fIpos1\fP, *\fIpos2\fP; 
+.FN
+.IP \fIw\fP 1i
+Specifies the window ID.
+.IP \fIpos1\fP 1i
+Specifies an argument to which the beginning byte offset of the selection
+is returned.
+.IP \fIpos2\fP 1i
+Specifies an argument to which the ending byte offset of the selection is 
+returned.
+.SH
+Replacing Text
+.LP
+To enable an application to replace text, use 
+.PN XtTextReplace .
+.IN "XtTextReplace" "" "@DEF@"
+.FD 0
+int XtTextReplace(\fIw\fP, \fIstart_pos\fP, \fIend_pos\fP, \fItext\fP)
+.br
+     Widget \fIw\fP;
+.br
+     XtTextPosition \fIstart_pos\fP, \fIend_pos\fP;
+.br
+     XtTextBlock *\fItext\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the window ID.
+.IP \fIstart_pos\fP 1i
+Specifies the starting byte position of the text replacement.
+.IP \fIend_pos\fP 1i
+Specifies the ending byte position of the text replacement.
+.IP \fItext\fP 1i
+Specifies the text to be inserted into the file.
+.LP
+The
+.PN XtTextBlock 
+structure contains:
+.IN "XtTextBlock" "" "@DEF@"
+.Ds 0
+.TA .5i 1.5i 2.25i 
+.ta .5i 1.5i 2.25i
+typedef struct {
+	int firstPos;
+	int length;
+	char *ptr;
+} XtTextBlock, *TextBlockPtr;
+.De
+.LP
+The firstPos field is the starting point to use within the ptr field.
+The value is usually zero.
+The length field is the number of bytes that are transferred from the 
+ptr field.
+The number of bytes transferred is usually the number of bytes in ptr.
+The 
+.PN XtTextReplace 
+arguments 
+.PN start_pos 
+and
+.PN end_pos 
+represent the text source byte offsets for text that is found in
+the  
+.PN XtTextBlock 
+structure.
+The characters between start_pos and end_pos are deleted,
+and the characters that are specified by text are inserted in their place.
+.LP
+The 
+.PN XtTextReplace 
+function has no effect on a read-only, disk-source Text widget.
+.NT
+Only ASCII text currently is supported, and
+only one font may be used for each Text widget.
+.NE
+.NH 2 
+Scrollbar Widget
+.LP
+.XS
+\*(SN Scrollbar Widget
+.XE
+.IN "Scrollbar widget" "" "@DEF@"
+The Scrollbar widget is a rectangular box that contains a slide region and 
+a thumb (slide bar).
+A Scrollbar can be used alone, as a valuator, or it can
+be used within a composite widget (for example, a Viewport).
+A Scrollbar can be aligned either vertically or horizontally.
+.LP
+When a Scrollbar is created, 
+it is drawn with the thumb in a contrasting color.
+The thumb is used to scroll the data and to give visual feedback on 
+the percentage of the data visible.
+.LP
+Each pointer button invokes a specific scrollbar action.
+That is, given either a vertical or horizontal alignment, 
+the pointer button actions will scroll or return data as appropriate
+for that alignment.
+Pointer button 1 and button 3 do not perform scrolling operations by default.
+Instead, they return the pixel position of the cursor on the scroll region.
+When pointer button 2 is clicked, 
+the thumb moves to the current pointer position.
+When pointer button 2 is held down and the pointer pointer is moved,
+the thumb moves in the appropriate direction.
+.LP
+The cursor in the scroll region changes depending on the current action.
+When no pointer button is pressed, 
+the cursor appears as an arrow that points in the direction 
+that scrolling can occur.
+When either pointer button 1 or button 2 is pressed, 
+the cursor appears as a single-headed arrow that points in the direction 
+that scrolling can occur.
+When pointer button 2 is pressed, 
+the cursor appears as an arrow that points to the thumb.
+.LP
+While scrolling is in progress, 
+the application receives notification from callback procedures.
+For both scrolling actions, 
+the callback returns the Scrollbar widget ID, the client_data,
+and the pixel position relative to the current thumb position.
+For smooth scrolling,
+the callback routine returns the scroll bar window, the client data, 
+and the current relative position of the thumb.
+When the thumb is moved using pointer button 2, 
+the callback procedure is invoked continuously.
+When the thumb is moved using either button 1 or button 2,
+the callback procedure is invoked only when the button is released.
+.LP
+The class variable for the Scrollbar widget is
+.PN scrollbarWidgetClass .
+.LP
+When creating a Scrollbar widget instance, 
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Scrollbar widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description   
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	White	Window background color
+XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+XtNborderColor	Pixel	Black	Window border color
+XtNborderPixmap	Pixmap	none	Window border pixmap
+XtNborderWidth	int	1	Width of button border
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNforeground	Pixel	Black	Thumb color
+XtNheight	int	See below	Height of scroll bar
+XtNlength	int	None	major dimension (height of XtorientVertical)
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether
+.PN XtMapWidget
+is automatic
+T}
+T{
+XtNorientation
+T}	T{
+XtOrientation
+T}	T{
+XtorientVertical
+T}	T{
+Orientation (vertical or horizontal)
+T}
+T{
+XtNscrollDCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_down_arrow
+T}	T{
+Cursor for scrolling down
+T}
+T{
+XtNscrollHCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_h_double_arrow
+T}	T{
+Idle horizontal cursor
+T}
+T{
+XtNscrollLCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_left_arrow
+T}	T{
+Cursor for scrolling left
+T}
+XtNscrollProc	XtCallbackList	NULL	Callback for the slide region
+T{
+XtNscrollRCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_right_arrow
+T}	T{
+Cursor for scrolling right
+T}
+T{
+XtNscrollUCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_up_arrow
+T}	T{
+Cursor for scrolling up
+T}
+T{
+XtNscrollVCursor
+T}	T{
+Cursor
+T}	T{
+XC_sb_v_double_arrow
+T}	T{
+Idle vertical cursor
+T}
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNshown	float	NULL	Percentage the thumb covers
+XtNthickness	int	14	minor dimension (height if XtorientHorizontal)
+XtNthumb	Pixmap	Grey	Thump pixmap
+XtNthumbProc	XtCallbackList	NULL	Callback for thumb select
+XtNtop	float	NULL	Position on scroll bar
+XtNtranslations	TranslationTable	none	event-to-action translations
+XtNwidth	int	See below	Width of scroll bar
+XtNx	int	NULL	x position of scroll bar
+XtNy	int	NULL	y position of scroll bar
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+You can set the dimensions of the Scrollbar two ways.
+As for all widgets,
+you can use the
+.PN XtNwidth
+and
+.PN XtNheight
+resources.
+In addition,
+you can use an alternative method that is independent of the vertical
+or horizontal orientation:
+.TS
+lw(1.5i) lw(4.5i).
+T{
+.PN XtNlength
+T}	T{
+Specifies the height for a vertical Scrollbar
+and the width for a horizontal Scrollbar.
+T}
+T{
+.PN XtNthickness
+T}	T{
+Specifies the width for a vertical Scrollbar
+and the height for a horizontal Scrollbar.
+T}
+.TE
+.LP
+.IN "Scrollbar widget" "creating"
+.IN "Creating widgets" "Scrollbar"
+To create a Scrollbar widget instance, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN scrollbarWidgetClass .
+.LP
+The callback procedure for the slide area is:
+.IN "ScrollProc" "" "@DEF@"
+.FD 0
+void \fIScrollProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIposition\fP)
+.br
+     Widget \fIscrollbar\fP;
+.br
+     caddr_t \fIclient_data\fP;
+.br
+     int \fIposition\fP;
+.FN
+.IP \fIscrollbar\fP 1i
+Specifies the ID of the Scrollbar.
+.IP \fIclient_data\fP 1i
+Specifies the client data.
+.IP \fIposition\fP 1i
+Returns the pixel position of the thumb in integer form.
+.LP
+The 
+.PN ScrollProc 
+callback is used for incremental scrolling 
+and for getting feedback from the thumb and background.
+The position argument is a signed quantity.
+Using the default button bindings,
+Button 1 returns a positive value,
+and Button 3 returns a negative value.
+In both cases,
+the magnitude of the value is the distance of the pointer from the
+top (or left) of the Scrollbar.
+The value will never be less than zero or greater than the length
+of the Scrollbar.
+.LP
+The callback procedure for the thumb area is:
+.IN "ThumbProc" "" "@DEF@"
+.FD 0
+void \fIThumbProc\fP(\fIscrollbar\fP, \fIclient_data\fP, \fIpercent\fP)
+.br
+     Widget \fIscrollbar\fP;
+.br
+     caddr_t \fIclient_data\fP;
+.br
+     float \fIpercent\fP;
+.FN
+.IP \fIscrollbar\fP 1i
+Specifies the ID of the scroll bar window.
+.IP \fIclient_data\fP 1i
+Specifies the client data.
+.IP \fIpercent\fP 1i
+Specifies the floating point position of the thumb (0.0 \- 1.0).
+.LP
+The 
+.PN ThumbProc 
+callback is used to implement smooth scrolling.
+With the default button bindings,
+Button2 moves the thumb interactively,
+and the ThumbProc is called on each new position of the pointer.
+.LP
+.IN "Scrollbar widget" "setting thumb values"
+To set the values of a Scrollbar thumb, use 
+.PN XtScrollbarSetThumb .
+.IN "XtScrollbarSetThumb" "" "@DEF@"
+.FD 0
+void XtScrollbarSetThumb(\fIw\fP, \fItop\fP, \fIshown\fP)
+.br
+     Widget \fIw\fP;
+.br
+     float \fItop\fP;
+.br
+     float \fIshown\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the Scrollbar widget ID.
+.IP \fItop\fP 1i
+Specifies the position of the top of the thumb as a fraction of the
+length of the Scrollbar.
+.IP \fIshown\fP 1i
+Specifies the length of the thumb as a fraction of the total length
+of the Scrollbar.
+.LP
+.PN XtScrollbarThumb
+moves the visible thumb to position (0.0 \- 1.0) and length (0.0 \- 1.0).
+Either the top or shown arguments can be specified as \-1.0,
+in which case the current value is left unchanged.
+Values greater than 1.0 are truncated to 1.0.
+.LP
+If called from the ThumbProc,
+.PN XtScrollbarSetThumb
+has no effect.
+.LP
+.IN "Scrollbar widget" "destroying"
+.IN "Destroying widgets" "Scrollbar"
+To destroy a Scrollbar widget instance, use 
+.PN XtDestroyWidget
+and specify the widget ID for the Scrollbar.
+.NH 2
+Viewport Widget
+.LP
+.XS
+\*(SN Viewport Widget
+.XE
+.IN "Viewport widget" "" "@DEF@"
+The Viewport widget consists of a frame window, one or two Scrollbars,
+and an inner window.
+The frame window is determined by 
+the viewing size of the data that is to be displayed 
+and the dimensions to which the Viewport is created.
+The inner window is the full size of the data that is to be displayed
+and is clipped by the frame window.
+The Viewport widget controls the scrolling of the data directly.
+No application callbacks are required for scrolling.
+.LP
+When the geometry of the frame window is equal in size to the inner window, 
+or when the data does not require scrolling, 
+the Viewport widget automatically removes the Scrollbar(s).
+The
+.PN forceBars 
+option causes the viewport widget to display the Scrollbar(s) permanently.
+.LP
+The class variable for the Viewport widget is
+.PN viewportWidgetClass .
+.LP
+When creating a Viewport widget instance,
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Viewport widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNallowHoriz	Boolean	False	Flag to allow horizontal scroll bars
+XtNallowVert	Boolean	False	Flag to allow vertical scroll bars
+XtNbackground	Pixel	White	Window background color
+XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+XtNborderColor	Pixel	Black	Window border color
+XtNborderPixmap	Pixmap	none	Window border pixmap
+XtNborderWidth	int	1	Width of the border in pixels
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callback for 
+.PN XtDestroyWidget
+T}
+XtNforceBars	Boolean	False	Flag to force display of scroll bars
+XtNheight	int	widget-dependent	Height of the widget
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+XtNsensitive	Boolean	True	Whether widget should receive input
+XtNtranslations	TranslationTable	none	event-to-action translations
+XtNuseBottom	Boolean	False	Flag to indicate bottom/top bars
+XtNuseRight	Boolean	False	Flag to indicate right/left bars
+XtNwidth	int	widget-dependent	Width of the widget
+XtNx	int	0	x coordinate within parent
+XtNy	int	0	y coordinate within parent
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The Viewport widget manages a single child widget.
+When the size of the child is larger than the size of the Viewport,
+the user may interactively move the child within the Viewport
+by repositioning the Scrollbars.
+.LP
+.IN "Viewport widget" "creating"
+To create a Viewport widget instance, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN viewportWidgetClass .
+.LP
+.IN "Viewport widget" "inserting a child"
+To insert a child into a Viewport widget, use 
+.PN XtCreateWidget
+and specify the widget ID of the previously created Viewport as the parent.
+.LP
+.IN "Viewport widget" "removing a child"
+To remove a child from a Viewport widget, use
+.PN XtUnmanageChild
+or
+.PN XtDestroyWidget
+and specify the widget ID of the child.
+.LP
+.IN "Viewport widget" "destroying"
+.IN "Destroying widgets" "Viewport"
+To delete the inner window, any children, and the frame window, use
+.PN XtDestroyWidget
+and specify the widget ID of the Viewport widget.
+.NH 2
+Box Widget
+.LP
+.XS
+\*(SN Box Widget
+.XE
+.IN "Box widget" "" "@DEF@"
+The Box widget provides geometry management of
+arbitrary widgets in a box of a specified dimension.
+The children are rearranged when resizing events occurs either on the 
+Box or when children are added or deleted.
+.LP
+The children are arranged on a background that
+has its own specified dimensions and colors.
+.LP
+The class variable for the Box widget is
+.PN boxWidgetClass .
+.LP
+When creating a Box widget instance,
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Box widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i) .
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	White	Window background color
+XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+XtNborderColor	Pixel	Black	Window border color
+XtNborderPixmap	Pixmap	none	Window border pixmap
+XtNborderWidth	int	1	Border width on button box
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNhSpace	int	4	Pixel distance left and right of children
+XtNheight	int	NULL	Viewing height of inner window
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether
+.PN XtMapWidget
+is automatic
+T}
+XtNtranslations	TranslationTable	none	event-to-action translations
+XtNvSpace	int	4	Pixel distance top and bottom of children
+XtNwidth	int	NULL	Viewing width of inner window
+XtNx	int	0	Widget location x coordinate
+XtNy	int	0	Widget location y coordinate
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The Box widget positions its children in rows with
+.PN hSpace
+pixels to the left and right of each child and
+.PN vSpace
+pixels between rows.
+If the Box width is not specified,
+the Box widget uses the width of the widest child.
+After positioning all children,
+the Box widget attempts to shrink its size to the minimum dimensions required
+for the layout.
+.LP
+.IN "Box widget" "creating"
+.IN "Creating widgets" "Box"
+To create a box widget instance, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN boxWidgetClass .
+.LP
+.IN "Box widget" "adding children"
+To add a child to the Box, use
+.PN XtCreateWidget
+and specify the widget ID of the Box as the parent of the new widget.
+.LP
+.IN "Box widget" "removing children"
+To remove a child from the Box, use 
+.PN XtUnmanageChild
+or
+.PN XtDestroyWidget
+and specify the widget ID of the child.
+.LP
+.IN "Box widget" "destroying"
+.IN "Destroying widgets" "Box"
+To destroy a Box widget instance, use
+.PN XtDestroyWidget
+and specify the widget ID of the Box widget.
+All the children of this box are automatically destroyed at the same time.
+.\".NH 2
+.\"MenuBox Widget
+.\".LP
+.\".XS
+.\"\*(SN MenuBox Widget
+.\".XE
+.\".IN "MenuBox widget" "" "@DEF@"
+.\"The MenuBox widget allows for menus of arbitrary complexity.
+.\"A MenuBox consists of a main window and a number of entries that
+.\"are added to it.
+.\"Although these entries typically are Command widgets,
+.\"any kind of widget can be added to a MenuBox.
+.\".LP
+.\"The class variable for the MenuBox widget is
+.\".PN menuBoxWidgetClass .
+.\".LP
+.\"An application can use the MenuBox widget to create:
+.\".IP \(bu 5
+.\"Pop-up menus
+.\".IP \(bu 5
+.\"Pull-down menus
+.\".IP \(bu 5
+.\"Cascading menus
+.\".LP
+.\"For example, to create a pop-up menu, 
+.\"use
+.\".PN XtCreateWidget
+.\"and specifies the class variable
+.\".PN menuBoxWidgetClass .
+.\"This creates an empty main window.
+.\"Then, to create a menu item that is to be added to the MenuBox,
+.\"specify the widget ID of this empty menu as the parent 
+.\"of each new item.
+.\".LP
+.\"The MenuBox can arrange its children either vertically or horizontally.
+.\".LP
+.\"The MenuBox widget automatically makes all items the same width
+.\"(for vertical orientation) or the same height (for horizontal orientation)
+.\"as the largest one passed to it.
+.\"Then, to make the MenuBox visible,
+.\"use
+.\".PN XtRealize 
+.\"to map the MenuBox widget.
+.\".LP
+.\"When creating a MenuBox widget,
+.\"the following resources are retrieved from the argument list
+.\"or from the resource database:
+.\".IN "MenuBox widget" "resources"
+.\".ps 9
+.\".nr PS 9
+.\".vs 11
+.\".nr VS 11
+.\".TS H
+.\"lw(1.5i) lw(1i) lw(1i) lw(2i).
+.\"_
+.\".sp 3p
+.\".TB
+.\"Name	Type	Default	Description
+.\".sp 3p
+.\"_
+.\".TH
+.\".R
+.\".sp 3p
+.\"XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+.\"XtNborderPixmap	Pixmap	none	Window border pixmap
+.\"XtNwidth	int	1	Menu window width
+.\"XtNheight	int	1	Menu window height
+.\"XtNorientation	XtOrientation	XtorientVertical	Row/column layout
+.\"XtNborderWidth	int	1	Menu window border width
+.\"XtNborder	Pixmap	BlackPixmap	Border color
+.\"XtNbackground	int	WhitePixel	Background color
+.\"T{
+.\"XtNinternalWidth
+.\"T}	T{
+.\"int
+.\"T}	T{
+.\"2
+.\"T}	T{
+.\"Space between first item and top
+.\".br
+.\"Space between last item and bottom
+.\"T}
+.\"XtNinternalHeight	int	2	First menu item to window top
+.\"XtNspace	int	1	Space between menu items
+.\"XtNtranslations	TranslationTable	none	event-to-action translations
+.\"XtNx	int	0	Widget location x coordinate
+.\"XtNy	int	0	Widget location y coordinate	
+.\"XtNcallback	XtCallbackList	Dummy	Callback function
+.\".sp 3p
+.\"_
+.\".TE
+.\".ps 11
+.\".nr PS 11
+.\".vs 13
+.\".nr VS 13
+.\".LP
+.\".IN "MenuBox widget" 'creating"
+.\".IN "Creating widgets" "MenuBox"
+.\"To create a MenuBox widget instance, use
+.\".PN XtCreateWidget
+.\"and specify the class variable
+.\".PN menuBoxWidgetClass .
+.\".LP
+.\".IN "MenuBox widget" "adding entries"
+.\"To add entries, 
+.\"specify the widget ID of the previously created MenuBox widget
+.\"as the parent of each new entry.
+.\".LP
+.\".IN "MenuBox widget" "deleting entries"
+.\"To delete an entry, use
+.\".PN XtUnmanageChild
+.\"or
+.\".PN XtDestroyWidget
+.\"and specify the widget ID of the entry.
+.\".LP
+.\"The MenuBox widget resides in whatever parent window the application specifies.
+.\"For example, it does not automatically create a pop-up widget.
+.\"To create a pop-up menu, use
+.\".PN XtCreatePopupShell
+.\"and then create the MenuBox as a child of this newly created shell.
+.\".LP
+.\".IN "MenuBox widget" "over-riding geometry manager"
+.\"The MenuBox widget has a built-in geometry manager that enables the menu to
+.\"become as large as necessary.
+.\"To override the built-in geometry manager, 
+.\"create your own geometry manager and call it
+.\".PN XtMenuGeometryManager .
+.\".IN "XtMenuGeometryManager" "" "@DEF@"
+.\".FD 0
+.\"GeometryReturnCode XtMenuGeometryManager(\fIw\fP, \fIrequest\fP, \
+.\"\fIrequest_box\fP, \fIreply_box\fP)
+.\".br
+.\"     Widget \fIw\fP;
+.\".br
+.\"     int \fIrequest\fP;
+.\".br
+.\"XtWidgetGeometry *\fIrequest_box\fP, *\fIreply_box\fP;
+.\".FN 
+.\".IP \fIw\fP 1i
+.\"Specifies the window ID.
+.\".IP \fIrequest\fP 1i
+.\"Specifies the geometry management request.
+.\".IP \fIrequest_box\fP 1i
+.\"Specifies the desired window geometry.
+.\".IP \fIreply_box\fP 1i
+.\"Specifies an argument to which the allowed widget size is returned.
+.\".LP
+.\".IN "MenuBox widget" "destroying"
+.\".IN "Destroying widgets" "MenuBox"
+.\"To destroy a MenuBox widget instance,
+.\"use
+.\".PN XtDestroyWidget
+.\"and specify the widget ID of the MenuBox widget.
+.NH 2 
+VPaned Widget
+.LP
+.XS
+\*(SN VPaned Widget
+.XE
+.IN "VPaned widget" "" "@DEF@"
+The VPaned widget manages children in a vertically tiled fashion.
+A region, called a grip, appears on the border between each child.
+When the pointer pointer is positioned on a grip and pressed,  
+an arrow is displayed that indicates the direction the border can be moved 
+While keeping the pointer button down, 
+the user can move the pointer in the direction of the arrow.
+This, in turn, changes the window borders, causing one widget to shrink
+and a neighbor widget to grow.
+The VPaned widget can change the height of all vertical
+paned windows,
+which are arranged from the top to the bottom of the parent window.
+.LP
+The class variable for the VPaned widget is
+.PN vPanedWidgetClass .
+.LP
+When creating a VPaned widget instance,
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "VPaned widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i) .
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	White	Window background color
+XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+XtNborderColor	Pixel	Black	Window border color
+XtNborderPixmap	Pixmap	none	Window border pixmap
+XtNborderWidth	int	1	Border width (pixels)
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNforeground	Pixel	Black	Pixel value for the foreground color
+XtNheight	int	NULL	Height of vPane
+XtNgripIndent	int	16	Offset of grip from margin (pixels)
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether
+.PN XtMapWidget
+is automatic
+T}
+XtNrefigureMode	Boolean	On	Whether vPane should adjust children
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNtranslations	TranslationTable	none	event-to-action translations
+XtNwidth	int	NULL	Width of vPane
+XtNx	int	NULL	x position of vPane
+XtNy	int	NULL	y position of vPane
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+.IN "VPaned widget" "creating"
+.IN "Creating widgets" "VPaned"
+To create a VPaned widget instance, use 
+.PN XtCreateWidget 
+and specify the class variable
+.PN vPanedWidgetClass .
+.LP
+Once the parent frame is created, 
+you then add panes to it.
+Any type of widget can be paned.
+.LP
+.IN "VPaned widget" "adding pane"
+To add a child pane to a VPaned frame, use
+.PN XtCreateWidget
+and specify the widget ID of the VPaned widget
+as the parent of each new child pane.
+.LP
+When creating a child pane,
+the following resources,
+by which the VPaned widget controls the placement of the child,
+can be specified in the argument list or retrieved from the resource database:
+.IN "VPaned widget" "child resources"
+.LP
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i) .
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+T{
+XtNallowResize
+T}	T{
+Boolean
+T}	T{
+False
+T}	T{
+True if child is allowed to make resize requests
+T}
+XtNmax	int	65535	maximum height for pane
+XtNmin	int	1	minimum height for pane
+T{
+XtNskipAdjust
+T}	T{
+Boolean
+T}	T{
+False
+T}	T{
+True if VPaned widget should not automatically resize pane
+T}
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+.IN "VPaned widget" "deleting pane"
+To delete a pane from a vertical-paned window frame, use
+.PN XtUnmanageWidget
+or
+.PN XtDestroyWidget
+and specify the widget ID of the child pane.
+.LP
+.IN "VPaned widget" "enable pane resizing"
+.IN "VPaned widget" "disable pane resizing"
+To enable or disable a child's request for pane resizing,
+use
+.PN XtPanedAllowResize .
+.IN "XtPanedAllowResize" "" "@DEF@"
+.FD 0
+void XtPanedAllowResize(\fIw\fP, \fIallow_resize\fP)
+.br
+     Widget \fIw\fP;
+.br
+     Boolean \fIallow_resize\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the child widget pane.
+.IP \fIallow_resize\fP
+Enables or disables a pane window for resizing requests.
+.LP
+If allow_resize is
+.PN True ,
+VPane allows geometry requests from the child to change the pane's height.
+If allow_resize is
+.PN False ,
+VPane ignores geometry requests from the child to change the pane's height. 
+The default state is
+.PN True
+before the VPane is realized and
+.PN False
+after it is realized.
+.LP
+.IN "VPaned widget" "change height settings"
+To change the minimum and maximum height settings for a pane, use
+.PN XtPanedSetMinMax .
+.IN "XtPanedSetMinMax" "" "@DEF@"
+.FD 0
+void XtPanedSetMinMax(\fIw\fP, \fImin\fP, \fImax\fP)
+.br
+     Widget \fIw\fP;
+.br
+     int \fImin\fP, \fImax\fP;   
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the child widget pane.
+.IP \fImin\fP 1i
+New minimum height of the child, expressed in pixels.
+.IP \fImax\fP 1i
+New maximum height of the child, expressed in pixels.
+.LP
+.IN "VPaned widget" "enable auto-reconfiguring"
+.IN "VPaned widget" "disable auto-reconfiguring"
+To enable or disable automatic recalculation of pane sizes and positions,
+use 
+.PN XtPanedSetRefigureMode .
+.IN "XtPanedSetRefigureMode" "" "@DEF@"
+.FD 0
+void XtPanedSetRefigureMode(\fIw\fP, \fImode\fP)
+.br
+     Widget \fIw\fP;
+.br
+     Boolean \fImode\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the VPaned widget.
+.IP \fImode\fP 1i
+Enables or disables refiguration.
+.LP
+You should set the mode to FALSE if you add or remove multiple panes 
+to/from the parent frame after it has been realized,
+unless you can arrange to manage all the panes at once using
+.PN XtManageChildren .
+After all the panes are added, set the mode to TRUE.
+This avoids unnecessary geometry calculations and ``window dancing''.
+.LP
+.IN "VPaned widget" "destroying"
+.IN "Destroying widgets" "VPaned"
+To delete an entire VPaned widget and all associated data structures, 
+use 
+.PN XtDestroyWidget
+and specify the widget ID of the VPaned widget.
+All the children of the VPaned widget automatically 
+are destroyed at the same time.
+.NH 2
+Form Widget
+.LP
+.XS
+\*(SN Form Widget
+.XE
+.IN "Form widget" "" "@DEF@"
+The Form widget can contain an arbitrary number of children or subwidgets.
+The Form provides geometry management for the subwidgets.
+Any combination of children can be added to a Form.
+When the Form is resized, 
+it computes new positions and sizes for its children.
+This computation is based upon information provided 
+when a child is added to the Form.
+.LP
+The class variable for a Form widget is
+.PN formWidgetClass .
+.LP
+When creating a Form widget instance,
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Form widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	White	Window background color
+XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+XtNborderColor	Pixel	Black	Window border color
+XtNborderPixmap	Pixmap	none	Window border pixmap
+XtNborderWidth	int	1	Width of border in pixels
+T{
+XtNdefaultDistance
+T}	T{
+int
+T}	T{
+4
+T}	T{
+Default value for XtNhorizDistance 
+.br
+and XtNvertDistance
+T}
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNheight	int	10	Height of form
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether
+.PN XtMapWidget
+is automatic
+T}
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNtranslations	TranslationTable	none	event-to-action translations
+XtNwidth	int	10	Width of form
+XtNx	int	NULL	x position of form
+XtNy	int	NULL	y position of form
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+.IN "Form widget" "creating"
+.IN "Creating widgets" "Form"
+To create a Form widget instance, use 
+.PN XtCreateWidget
+and specify the class variable
+.PN formWidgetClass .
+.LP
+.IN "Form widget" "adding children"
+To add a new child to a Form, use 
+.PN XtCreateWidget
+and specify the widget ID of the previously created Form as the parent
+of the child.
+.LP
+When creating children that are to be added to a Form,
+the following additional resources are retrieved from the
+argument list or from the resource database:
+.IN "Form widget" "child resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbottom	XtEdgeType	XtRubber	See text
+XtNfromHoriz	Widget	NULL	See text
+XtNfromVert	Widget	NULL	See text
+XtNhorizDistance	int	XtdefaultDistance	See text
+XtNleft	XtEdgeType	XtRubber	See text
+XtNresizable	Boolean	FALSE	TRUE if allowed to resize
+XtNright	XtEdgeType	XtRubber	See text
+XtNtop	XtEdgeType	XtRubber	See text
+XtNvertDistance	int	XtdefaultDistance	See text
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+When a widget is added to a Form, 
+it can, to some extent, specify hints to the form 
+where it should be positioned within the form.
+.LP
+The parameters 
+.PN XtNhorizDistance 
+and 
+.PN XtNfromHoriz 
+let the
+widget position itself a specified number of pixels horizontally
+away from another
+widget in the form.
+As an example, 
+.PN XtNhorizDistance
+could equal 10 and 
+.PN XtNfromHoriz 
+could be the widget ID of
+another widget in the Form.
+The new widget will be placed
+10 pixels to the right of the
+widget defined in 
+.PN XtNfromHoriz .
+If 
+.PN XtNfromHoriz 
+equals NULL, then 
+.PN XtNhorizDistance 
+is measured from the left edge of the Form.
+.LP
+Similarly, the parameters 
+.PN XtNvertDistance 
+and 
+.PN XtNfromVert 
+let
+the widget position itself a specified number of pixels vertically
+away from another widget in the Form.
+If 
+.PN XtNfromVert 
+equals
+NULL, then
+.PN XtNvertDistance 
+is measured from the top of the Form.
+.LP
+The 
+.PN XtNtop , 
+.PN XtNbottom , 
+.PN XtNleft , 
+and 
+.PN XtNright
+parameters tell the Form where to position the widget when the Form is
+resized.
+The 
+.PN XtEdgeType 
+structure contains:
+.IN "XtEdgeType" "" "@DEF@"
+.LP
+.Ds 0
+.TA .5i
+.ta .5i
+typedef enum {
+	XtChainTop,
+	XtChainBottom,
+	XtChainLeft,
+	XtChainRight,
+	XtRubber,
+} XtEdgeType;
+.De
+.LP
+The 
+.PN XtChainTop ,
+.PN XtChainBottom ,
+.PN XtChainLeft ,
+and 
+.PN XtChainRight 
+fields maintain a constant distance from an edge of the widget to
+the top, bottom, left, or right edges of a Form.
+The 
+.PN XtRubber 
+field maintains a proportional distance from an edge of a widget to all
+edges of the Form.
+.LP
+.IN "Form widget" "deleting children"
+To remove a child from a Form, use 
+.PN XtUnmanageChild
+or
+.PN XtDestroyWidget
+and specify the widget ID of the child widget.
+.LP
+.IN "Form widget" "destroying"
+.IN "Destroying widgets" "Form"
+To destroy a Form widget instance, use 
+.PN XtDestroyWidget
+and specify the widget ID of the Form.
+All children of the Form automatically are destroyed at the same time.
+.NH 2
+Dialog Widget
+.LP
+.XS
+\*(SN Dialog Widget
+.XE
+.IN "Dialog widget" "" "@DEF@"
+The Dialog widget implements a commonly used interaction
+semantic to prompt for auxiliary input from a user.
+For example, you can use a Dialog widget when an application
+requires a small piece of information, such as a file name, from the user.
+Essentially, a Dialog widget is a special case of the Form widget
+that provides a convenient way to create a ``preconfigured form''.
+.LP
+The typical Dialog widget contains three areas.
+The first line contains a 
+description of the function of the Dialog widget, 
+for example, the string ``Filename:''.
+The second line contains an area into which the user types input.
+The third line can contain buttons that let the user confirm 
+or cancel the Dialog input.
+.LP
+The class variable for the Dialog box widget is
+.PN dialogWidgetClass .
+.LP
+When creating a Dialog widget instance,
+the following resources are retrieved from the argument list
+or from the resource database:
+.IN "Dialog widget" "resources"
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+XtNbackground	Pixel	White	Window background color
+XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+XtNborderColor	Pixel	Black	Window border color
+XtNborderPixmap	Pixmap	none	Window border pixmap
+XtNborderWidth	int	1	Width of border in pixels
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callbacks for 
+.PN XtDestroyWidget
+T}
+XtNheight	int	10	Height of dialog
+XtNlabel	char*	label name	String to be displayed
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether
+.PN XtMapWidget
+is automatic
+T}
+XtNmaximumLength	int	256	Maximum number of input characters
+XtNsensitive	Boolean	True	Whether widget receives input
+XtNtranslations	TranslationTable	none	event-to-action translations
+XtNvalue	char*	NULL	Pointer to default string
+XtNwidth	int	10	Width of dialog
+XtNx	int	NULL	x position of dialog
+XtNy	int	NULL	y position of dialog
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The instance name of the label for the Dialog widget is ``label'',
+and the instance name of the Dialog value field is ``value''.
+.LP
+.IN "Dialog widget" "creating"
+.IN "Creating widgets" "Dialog"
+To create a Dialog widget instance, you can use 
+.PN XtCreateWidget
+and specify the class variable
+.PN dialogWidgetClass ,
+or you can use the
+.PN XtDialogCreate
+convenience function.
+.IN "XtDialogCreate" "" "@DEF@"
+.FD 0
+Widget XtDialogCreate(\fIparent\fP, \fIdescription\fP, \fIvalueinit\fP, \
+\fIargs\fP, \fInum_args\fP)
+.br
+	Widget \fIparent\fP\^;
+.br
+	char *\fIdescription\fP\^;
+.br
+	char *\fIvalueinit\fP\^;
+.br
+	ArgList \fIargs\fP\^;
+.br
+	int \fInum_args\fP\^;
+.FN
+.IP \fIparent\fP 1i
+Specifies the widget ID in which the Dialog box is to reside.
+.IP \fIdescription\fP 1i
+Specifies a pointer to the title for the Dialog box.
+.IP \fIvalueinit\fP 1i
+Specifies a pointer to the initial value that is displayed in the Dialog box.
+Use NULL if you do not want a value field.
+.IP \fIargs\fP 1i
+Specifies a variable-length argument list.
+The argument list is the same as that for the form widget.
+.IP \fInum_args\fP 1i
+Specifies the number of arguments in the argument list.
+When the argument list is NULL, 
+the num_args must be zero.
+However, when the num_args is zero, 
+the argument list does not have to be NULL.
+.LP
+.PN XtDialogCreate
+is convenience function that calls
+.PN XtCreateWidget
+and specifies the class
+.PN dialogWidgetClass .
+.LP
+.IN "Dialog widget" "adding children"
+To add a child button to the Dialog box, use 
+.PN XtCreateWidget
+and specify widget ID of the previously created Dialog box as the parent
+of each child.
+When creating buttons,
+you do not have to specify form constraints.
+The Dialog box will automatically add the constraints.
+.LP
+To return the character string in the text field, use
+.PN XtDialogGetValueString .
+.IN "XtDialogGetValueString" "" "@DEF@"
+.FD 0
+char *XtDialogGetValueString(\fIw\fP)
+.br
+	Widget \fIw\fP;
+.FN
+.IP \fIw\fP 1i
+Specifies the widget ID of the Dialog box.
+.LP
+.IN "Dialog widget" "removing children"
+To remove a child button from the Dialog box, use
+.PN XtUnmanageChild
+or
+.PN XtDestroyWidget
+and specify the widget ID of the child.
+.LP
+.IN "Dialog widget" "destroying"
+.IN "Destroying widgets" "Dialog"
+To destroy a Dialog widget instance, use
+.PN XtDestroyWidget
+and specify the widget ID of the Dialog widget.
+All children of the Dialog automatically are destroyed at the same time.
+.NH 2
+Grip Widget
+.XS
+\*(SN Grip Widget
+.XE
+.IN "Grip widget" "" "@DEF@"
+.LP
+The Grip widget provides a small region in which pointer events
+are handled.
+The most common use for the grip is as an attachment
+point for visually repositioning an object, 
+such as the pane border in a VPaned widget.
+.LP
+The class variable for the Grip widget is 
+.PN gripWidgetClass .
+.LP
+When creating a Grip widget instance, 
+the following resources are retrieved from the argument list 
+or from the resource database:
+.ps 9
+.nr PS 9
+.vs 11
+.nr VS 11
+.TS H
+lw(1.5i) lw(1i) lw(1i) lw(2i).
+_
+.sp 3p
+.TB
+Name	Type	Default	Description
+.sp 3p
+_
+.TH
+.R
+.sp 3p
+XtNbackground	Pixel	Black	Window background color
+XtNbackgroundPixmap	Pixmap	none	Window background pixmap
+XtNborderColor	Pixel	Black	Window border color
+XtNborderPixmap	Pixmap	none	Window border pixmap
+XtNborderWidth	int	0	Width of the border in pixels
+XtNcallback	XtCallbackList	none	Action routine
+T{
+XtNdestroyCallback
+T}	T{
+XtCallbackList
+T}	T{
+NULL
+T}	T{
+Callback for 
+.PN XtDestroyWidget
+T}
+XtNheight	int	8	Height of the widget
+T{
+XtNmappedWhenManaged
+T}	T{
+Boolean
+T}	T{
+True
+T}	T{
+Whether 
+.PN XtMapWidget
+is automatic
+T}
+XtNsensitive	Boolean	True	Whether widget should receive input
+XtNtranslations	TranslationTable	none	event-to-action translations
+XtNwidth	int	8	Width of the widget
+XtNx	int	0	x coordinate within parent
+XtNy	int	0	y coordinate within parent
+.sp 3p
+_
+.TE
+.ps 11
+.nr PS 11
+.vs 13
+.nr VS 13
+.LP
+The Grip widget does not declare any default event translation bindings,
+but it does declare a single action routine named ``GripAction'' in
+its action table.
+Using this table, 
+the client specifies an arbitrary
+event translation table giving parameters to the GripAction routine.
+The GripAction is declared in the client program.
+.IN "Grip widget" "GripAction table"
+.LP
+The following is an example of a GripAction table:
+.Ds 0
+.TA .5i 2.5i
+.ta .5i 2.5i
+	<Btn1Down>:	GripAction(press)\\n\\
+	<Btn1Motion>:	GripAction(move)\\n\\
+	<Btn1Up>:	GripAction(release)
+.De
+For a complete description of the format of action routines,
+see \fI\*(xI\fP.
+.LP
+.IN "Grip widget" "creating"
+.IN "Creating widgets" "Grip"
+To create a Grip widget instance, use
+.PN XtCreateWidget
+and specify the class variable
+.PN gripWidgetClass .
+.LP
+.IN "Grip widget" "destroying"
+.IN "Destroying widgets" "Grip"
+To destroy a Command button widget instance, use
+.PN XtDestroyWidget
+and specify the ID of the Grip widget.
+.TC
