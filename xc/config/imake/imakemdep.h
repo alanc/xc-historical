@@ -1,4 +1,4 @@
-/* $XConsortium: imakemdep.h,v 1.79 94/12/03 12:08:36 kaleb Exp kaleb $ */
+/* $XConsortium: imakemdep.h,v 1.80 95/01/09 20:06:32 kaleb Exp kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -402,6 +402,9 @@ char *cpp_argv[ARGUMENTS] = {
 	"-DATT",
 # endif
 # ifdef DELL
+	"-DDELL",
+# endif
+#endif
 #ifdef __osf__
 	"-D__osf__",
 # ifdef __mips__
