@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.33 89/03/22 15:59:59 rws Exp $ */
+/* $XConsortium: os.h,v 1.34 89/03/22 18:15:21 rws Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -95,14 +95,7 @@ char *alloca();
 #define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))
 #define xfree(ptr) Xfree((pointer)(ptr))
 
-
-/*
- * The declaration for ReadRequestFromClient should be a xReq *, but
- * then other files must also include Xproto.h and (boo hoo) that
- * would introduce many, many more symbols which would break the less
- * intelligent strain of compilers available today.
- */
-char		*ReadRequestFromClient();
+int		ReadRequestFromClient();
 char		*strcat();
 char		*strncat();
 char		*strcpy();
