@@ -1,5 +1,5 @@
 /*
- * $XConsortium: locking.h,v 1.3 93/07/11 13:37:16 rws Exp $
+ * $XConsortium: locking.h,v 1.4 93/07/11 14:53:20 rws Exp $
  *
  * Copyright 1992 Massachusetts Institute of Technology
  *
@@ -23,7 +23,7 @@
  * Author: Stephen Gildea, MIT X Consortium
  *
  * locking.h - data types for C Threads locking.
- * Used only by XlibInt.c, locking.c, and XLockDis.c
+ * Used only by XlibInt.c and locking.c
  */
 
 #ifndef _X_locking_H_
