@@ -39,6 +39,7 @@ HEADERS = \
 	SimpleP.h \
 	Text.h \
 	TextP.h \
+	TextSrcP.h \
 	VPaned.h \
 	VPanedP.h \
 	Viewport.h \
