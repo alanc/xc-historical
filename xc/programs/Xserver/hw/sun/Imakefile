@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.13 91/07/29 18:26:59 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.14 91/12/28 10:49:51 keith Exp $
 #include <Server.tmpl>
 
 #ifdef SparcArchitecture
@@ -13,17 +13,24 @@ GXOBJ=
 GXSRC=
 #endif
 
-SRCS1 =	sunInit.c sunBW2.c sunCursor.c sunIo.c sunKbd.c sunMouse.c sunUtils.c\
-	sunCG.c sunCG2C.c sunCG2M.c sunCG3C.c sunCG4C.c sunCG6C.c sunCG8C.c \
+SRCS1 =	sunInit.c sunBW2.c sunCursor.c sunIo.c sunKbd.c sunMouse.c sunUtils.c \
+	sunCG.c sunCG2C.c sunCG2M.c sunCG3C.c sunCG4C.c sunCG6C.c \
 	$(GXSRC) sunKeyMap.c
 
-SRCS =	$(SRCS1) kbd_mode.c constype.c 
+OBJS1 = sunBW2.o sunCursor.o sunIo.o sunKbd.o sunMouse.o sunUtils.o \
+	sunCG.o sunCG2C.o sunCG2M.o sunCG3C.o sunCG4C.o sunCG6C.o \
+	$(GXOBJ) sunKeyMap.o
+
+#if Xsun24Server
+SRCS2 = sunCG8C.c
+OBJS2 = sunCG8C.o
+#endif
+
+SRCS =	$(SRCS1) $(SRCS2) kbd_mode.c constype.c 
 
 OFILES = sunInit.o sunInitMono.o sunInitExtMono.o
 
-OBJS = 	sunBW2.o sunCursor.o sunIo.o sunKbd.o sunMouse.o sunUtils.o\
-	sunCG.o sunCG2C.o sunCG2M.o sunCG3C.o sunCG4C.o sunCG6C.o sunCG8C.o \
-	$(GXOBJ) sunKeyMap.o
+OBJS = $(OBJS1) $(OBJS2)
 
    INCLUDES = -I. -I../mfb -I../mi -I../cfb -I../../include\
    		-I$(INCLUDESRC) -I$(FONTSRC)/include
@@ -37,14 +44,17 @@ all:: $(OFILES) kbd_mode constype
 lintlib:
 
 NormalLibraryTarget(sun,$(OBJS))
-NormalLintTarget($(SRCS1))
+NormalLintTarget($(SRCS1) $(SRCS2))
 
 #if !HasMITGXSource
 LinkFile(sunGX.o,sunGX.o.dist)
 #endif
 
+#if Xsun24Server
+SpecialCObjectRule(sunInit,$(ICONFIGFILES),-DDEPTH24)
+#endif
 sunInitExtMono.o: $(ICONFIGFILES)
-ObjectFromSpecialSource(sunInitExtMono,../mi/miinitext,-UPEXEXT)
+ObjectFromSpecialSource(sunInitExtMono,../mi/miinitext,-DNOPEXEXT)
 ObjectFromSpecialSource(sunInitMono,sunInit,-DMONO_ONLY)
 
 SingleProgramTarget(kbd_mode, kbd_mode.o,,)
@@ -57,6 +67,6 @@ InstallManPage(Xsun,$(MANDIR))
 InstallManPageAliases(Xsun,$(MANDIR),XsunMono)
 
 saber_src:
-	#load $(CFLAGS) $(SRCS1)
+	#load $(CFLAGS) $(SRCS1) $(SRCS2)
 
 DependTarget()
