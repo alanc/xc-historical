@@ -1,4 +1,4 @@
-.\" $XConsortium: SMlib.ms,v 1.10 94/04/15 13:10:39 mor Exp $
+.\" $XConsortium: SMlib.ms,v 1.11 94/04/17 18:46:31 rws Exp $
 .\" 
 .\" Use tbl, -ms, and macros.t
 .\" 
@@ -36,6 +36,7 @@ X Consortium
 .LP
 .DS C
 Copyright \(co 1993, 1994 X Consortium
+.DE
 .LP
 .sp 5
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -60,7 +61,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 .sp 3
 X Window System is a trademark of X Consortium, Inc.
-.DE
 .bp
 .bp 1
 .EH '\fBX Session Management Library\fP'''
