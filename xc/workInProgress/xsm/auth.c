@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.1 94/02/22 14:32:07 mor Exp $ */
+/* $XConsortium: auth.c,v 1.2 94/03/08 12:29:34 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -94,7 +94,7 @@ IceAuthDataEntry	**authDataEntries;
     for (i = 0; i < count * 2; i += 2)
     {
 	(*authDataEntries)[i].address =
-	    IceGetListenNetworkId (listenObjs[i/2]);
+	    IceGetListenConnectionString (listenObjs[i/2]);
 	(*authDataEntries)[i].protocol_name = "ICE";
 	(*authDataEntries)[i].auth_name = "MIT-MAGIC-COOKIE-1";
 
@@ -103,7 +103,7 @@ IceAuthDataEntry	**authDataEntries;
 	(*authDataEntries)[i].auth_data_length = MAGIC_COOKIE_LEN;
 
 	(*authDataEntries)[i+1].address =
-	    IceGetListenNetworkId (listenObjs[i/2]);
+	    IceGetListenConnectionString (listenObjs[i/2]);
 	(*authDataEntries)[i+1].protocol_name = "XSMP";
 	(*authDataEntries)[i+1].auth_name = "MIT-MAGIC-COOKIE-1";
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.29 94/02/22 14:40:35 mor Exp $ */
+/* $XConsortium: xsm.c,v 1.30 94/02/22 15:44:01 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -930,8 +930,9 @@ XtInputId	*id;
 {
     IceConn 	ice_conn;
     char	*connstr;
+    IceAcceptStatus status;
 
-    ice_conn = IceAcceptConnection((IceListenObj) client_data);
+    ice_conn = IceAcceptConnection((IceListenObj) client_data, &status);
     if (! ice_conn) {
 	if (app_resources.verbose)
 	    printf ("IceAcceptConnection failed\n");
@@ -1430,7 +1431,7 @@ main(argc, argv)
     for (i = 0; i < numTransports; i++)
     {
 	XtAppAddInput (appContext,
-	    IceGetListenDescrip (listenObjs[i]),
+	    IceGetListenConnectionNumber (listenObjs[i]),
 	    (XtPointer) XtInputReadMask,
 	    newConnectionXtProc, (XtPointer) listenObjs[i]);
     }

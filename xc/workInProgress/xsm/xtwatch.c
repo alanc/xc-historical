@@ -56,5 +56,5 @@ XtInputId	*id;
 {
     IceConn	ice_conn = (IceConn) client_data;
 
-    IceProcessMessage (ice_conn, NULL);
+    IceProcessMessages (ice_conn, NULL);
 }
