@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.6 89/07/05 20:20:30 rws Exp $ */
+/* $XConsortium: misprite.c,v 5.7 89/07/09 15:55:28 rws Exp $ */
 
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
@@ -46,6 +46,7 @@ static void	    miSpriteGetImage();
 static unsigned int *miSpriteGetSpans();
 static Bool	    miSpriteCreateGC();
 static Bool	    miSpriteCreateWindow();
+static Bool	    miSpriteDestroyWindow();
 static Bool	    miSpriteChangeWindowAttributes();
 static void	    miSpriteBlockHandler();
 static void	    miSpriteInstallColormap();
@@ -273,6 +274,7 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pPriv->GetSpans = pScreen->GetSpans;
     pPriv->CreateGC = pScreen->CreateGC;
     pPriv->CreateWindow = pScreen->CreateWindow;
+    pPriv->DestroyWindow = pScreen->DestroyWindow;
     pPriv->ChangeWindowAttributes = pScreen->ChangeWindowAttributes;
     pPriv->BlockHandler = pScreen->BlockHandler;
     pPriv->InstallColormap = pScreen->InstallColormap;
@@ -290,6 +292,7 @@ miSpriteInitialize (pScreen, spriteFuncs, pointerFuncs)
     pScreen->GetSpans = miSpriteGetSpans;
     pScreen->CreateGC = miSpriteCreateGC;
     pScreen->CreateWindow = miSpriteCreateWindow;
+    pScreen->DestroyWindow = miSpriteDestroyWindow;
     pScreen->ChangeWindowAttributes = miSpriteChangeWindowAttributes;
     pScreen->BlockHandler = miSpriteBlockHandler;
     pScreen->InstallColormap = miSpriteInstallColormap;
@@ -318,6 +321,7 @@ miSpriteCloseScreen (i, pScreen)
     pScreen->GetImage = pScreenPriv->GetImage;
     pScreen->GetSpans = pScreenPriv->GetSpans;
     pScreen->CreateWindow = pScreenPriv->CreateWindow;
+    pScreen->DestroyWindow = pScreenPriv->DestroyWindow;
     pScreen->ChangeWindowAttributes = pScreenPriv->ChangeWindowAttributes;
     pScreen->CreateGC = pScreenPriv->CreateGC;
 
@@ -438,6 +442,35 @@ miSpriteCreateWindow (pWin)
     }
 
     SCREEN_EPILOGUE (pScreen, CreateWindow, miSpriteCreateWindow);
+
+    return ret;
+}
+
+static Bool
+miSpriteDestroyWindow (pWin)
+    WindowPtr	    pWin;
+{
+    ScreenPtr		pScreen;
+    miSpriteWindowPtr   pWindowPriv;
+    Bool		ret;
+
+    pScreen = pWin->drawable.pScreen;
+
+    SCREEN_PROLOGUE (pScreen, DestroyWindow);
+
+    pWindowPriv = (miSpriteWindowPtr) pWin->devPrivates[miSpriteWindowIndex].ptr;
+    /*
+     * unwrap the window funcs before diving down
+     */
+    if (pWin->backStorage)
+	pWin->backStorage->funcs = pWindowPriv->wrapBSFuncs;
+    pWin->funcs = pWindowPriv->wrapFuncs;
+
+    ret = (*pScreen->DestroyWindow) (pWin);
+
+    xfree(pWindowPriv);
+
+    SCREEN_EPILOGUE (pScreen, DestroyWindow, miSpriteDestroyWindow);
 
     return ret;
 }
