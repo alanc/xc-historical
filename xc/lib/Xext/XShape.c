@@ -26,7 +26,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: XShape.c,v 1.7 89/04/06 17:52:01 keith Exp $ */
+/* $XConsortium: XShape.c,v 1.8 89/04/13 13:33:06 keith Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES
@@ -56,6 +56,7 @@ CheckExtension (dpy)
     return queryExtension (dpy);
 }
 				    
+/*ARGSUSED*/
 static int
 shapeCloseDisplay (dpy, codes)
     Display	*dpy;
@@ -193,6 +194,7 @@ XShapeQueryExtension (dpy)
     return CheckExtension (dpy) != 0;
 }
 
+int
 XShapeGetEventBase (dpy)
     Display *dpy;
 {
@@ -231,7 +233,7 @@ XShapeQueryVersion(dpy, majorVersion, minorVersion)
     return 1;
 }
 
-XShapeCombineRegion(dpy, dest, destKind, r, op, xOff, yOff)
+XShapeCombineRegion(dpy, dest, destKind, xOff, yOff, r, op)
 register Display    *dpy;
 Window		    dest;
 int		    destKind, op, xOff, yOff;
@@ -249,14 +251,16 @@ register REGION	    *r;
 	pr->width = pb->x2 - pb->x1;
 	pr->height = pb->y2 - pb->y1;
      }
-     XShapeCombineRectangles (dpy, dest, destKind, xr, r->numRects, op, xOff, yOff);
+     XShapeCombineRectangles (dpy, dest, destKind, xOff, yOff,
+			      xr, r->numRects, op, YXBanded);
 }
 
-XShapeCombineRectangles(dpy, dest, destKind, rectangles, n_rects, op, xOff, yOff)
+XShapeCombineRectangles(dpy, dest, destKind, xOff, yOff,
+			rects, n_rects, op, ordering)
 register Display *dpy;
 XID dest;
-int op, xOff, yOff;
-XRectangle  *rectangles;
+int op, xOff, yOff, ordering;
+XRectangle  *rects;
 int n_rects;
 {
     register xShapeRectanglesReq *req;
@@ -270,6 +274,7 @@ int n_rects;
     req->reqType = codes->major_opcode;
     req->shapeReqType = X_ShapeRectangles;
     req->op = op;
+    req->ordering = ordering;
     req->destKind = destKind;
     req->dest = dest;
     req->xOff = xOff;
@@ -280,12 +285,12 @@ int n_rects;
 
     nbytes = n_rects * sizeof(xRectangle);
 
-    Data16 (dpy, (short *) rectangles, nbytes);
+    Data16 (dpy, (short *) rects, nbytes);
     UnlockDisplay(dpy);
     SyncHandle();
 }
 
-XShapeCombineMask (dpy, dest, destKind, src, op, xOff, yOff)
+XShapeCombineMask (dpy, dest, destKind, xOff, yOff, src, op)
 register Display *dpy;
 int destKind;
 XID dest;
@@ -293,7 +298,6 @@ Pixmap	src;
 int op, xOff, yOff;
 {
     register xShapeMaskReq *req;
-    register long nbytes;
     XExtCodes	*codes;
 
     if (!(codes = CheckExtension (dpy)))
@@ -312,7 +316,7 @@ int op, xOff, yOff;
     SyncHandle();
 }
 
-XShapeCombineShape (dpy, dest, destKind, src, srcKind, op, xOff, yOff)
+XShapeCombineShape (dpy, dest, destKind, xOff, yOff, src, srcKind, op)
 register Display *dpy;
 int destKind;
 XID dest;
@@ -321,7 +325,6 @@ XID src;
 int op, xOff, yOff;
 {
     register xShapeCombineReq *req;
-    register long nbytes;
     XExtCodes	*codes;
 
     if (!(codes = CheckExtension (dpy)))
@@ -348,7 +351,6 @@ XID dest;
 int xOff, yOff;
 {
     register xShapeOffsetReq *req;
-    register long nbytes;
     XExtCodes	*codes;
 
     if (!(codes = CheckExtension (dpy)))
@@ -366,8 +368,8 @@ int xOff, yOff;
 }
 
 XShapeQueryExtents (dpy, window,
-		bShaped, xbs, ybs, wbs, hbs,
-		cShaped, xcs, ycs, wcs, hcs)    
+		    bShaped, xbs, ybs, wbs, hbs,
+		    cShaped, xcs, ycs, wcs, hcs)    
     register Display    *dpy;
     Window		    window;
     int			    *bShaped, *cShaped;	    /* RETURN */
@@ -379,7 +381,7 @@ XShapeQueryExtents (dpy, window,
     XExtCodes	*codes;
     
     if (!(codes = CheckExtension (dpy)))
-	return;
+	return 0;
     LockDisplay (dpy);
     GetReq (ShapeQueryExtents, req);
     req->reqType = codes->major_opcode;
@@ -428,6 +430,32 @@ XShapeSelectInput (dpy, window, enable)
     SyncHandle ();
 }
 
+Bool
+XShapeInputSelected (dpy, window)
+    register Display	*dpy;
+    Window		window;
+{
+    register xShapeInputSelectedReq *req;
+    XExtCodes			    *codes;
+    xShapeInputSelectedReply	    rep;
+
+    if (!(codes = CheckExtension (dpy)))
+	return FALSE;
+    LockDisplay (dpy);
+    GetReq (ShapeInputSelected, req);
+    req->reqType = codes->major_opcode;
+    req->shapeReqType = X_ShapeInputSelected;
+    req->window = window;
+    if (!_XReply (dpy, (xReply *) &rep, 0, xFalse)) {
+	UnlockDisplay (dpy);
+	SyncHandle ();
+	return FALSE;
+    }
+    UnlockDisplay (dpy);
+    SyncHandle ();
+    return rep.enabled;
+}
+
 XRectangle *
 XShapeGetRectangles (dpy, window, kind, count)
     register Display	*dpy;
@@ -443,7 +471,7 @@ XShapeGetRectangles (dpy, window, kind, count)
     int				    i;
 
     if (!(codes = CheckExtension (dpy)))
-	return;
+	return (XRectangle *)NULL;
     LockDisplay (dpy);
     GetReq (ShapeGetRectangles, req);
     req->reqType = codes->major_opcode;
@@ -453,7 +481,7 @@ XShapeGetRectangles (dpy, window, kind, count)
     if (!_XReply (dpy, (xReply *) &rep, 0, xFalse)) {
 	UnlockDisplay (dpy);
 	SyncHandle ();
-	return 0;
+	return (XRectangle *)NULL;
     }
     *count = rep.nrects;
     rects = 0;
@@ -479,5 +507,7 @@ XShapeGetRectangles (dpy, window, kind, count)
 	    Xfree (xrects);
 	}
     }
+    UnlockDisplay (dpy);
+    SyncHandle ();
     return rects;
 }
