@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.12 89/11/01 21:38:51 keith Exp $
+ * $XConsortium: miwideline.c,v 1.13 89/11/02 12:04:09 rws Exp $
  *
  * Copyright 1988 Massachusetts Institute of Technology
  *
@@ -1362,4 +1362,16 @@ miWideDash (pDrawable, pGC, mode, npt, pPts)
     }
     if (spanData)
 	miCleanupSpanData (pDrawable, pGC, spanData);
+}
+
+/* these are stubs to allow old ddx ValidateGCs to work without change */
+
+void
+miMiter()
+{
+}
+
+void
+miNotMiter()
+{
 }
