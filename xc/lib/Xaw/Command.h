@@ -1,5 +1,5 @@
 /*
-* $Header$
+* $Header: Command.h,v 1.5 87/09/11 21:18:54 swick Locked $
 */
 
 /*
@@ -46,13 +46,10 @@ typedef enum {
 } XtJustify;
 #endif _XtJustify_e
 
-#define XtRjustify		"Justify"
-#define XtNhighlightThickness    "hightlightThickness"
-#define XtNtranslations         "Translations"
-#define XtCTranslations         "Translations"
-#define XtRTranslationTable     "TranslationTable"
+#define XtNcallback		"callback"
+#define XtNhighlightThickness   "hightlightThickness"
+#define XtNtranslations		"translations"
 
-extern XtCallbackKind  activateCommand;
 extern WidgetClass     commandWidgetClass;
 
 typedef struct _CommandClassRec   *CommandWidgetClass;
