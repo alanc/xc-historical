@@ -23,7 +23,7 @@
 
      EXTENSIONS = $(OTHEREXTS) $(EXTENSIONSRC)/server/libext.a $(PEXLIBS)
          EXTDIR = $(EXTENSIONSRC)/server
-            BSD = os/4.2bsd/libos.a $(XAULIB) $(XDMCPLIB)
+             OS = os/libos.a $(XAULIB) $(XDMCPLIB)
         BSDEMUL = $(TOP)/lib/Berk/Berklib.o
            SYSV = os/sysV/libos.a
             MFB = ddx/mfb/libmfb.a
@@ -185,10 +185,10 @@ XCOMM
 #define need_ddx_mfb
 #define need_ddx_dec_lk201
 #define need_ddx_dec_qvss
-#define need_os_42bsd
-QVSSDIRS = dix ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/qvss os/4.2bsd
+#define need_os
+QVSSDIRS = dix ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/qvss os
 QVSSOBJS = ddx/dec/qvss/init.o ddx/dec/qvss/qvss_io.o ddx/dec/lk201/lk201.o
-QVSSLIBS = $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+QVSSLIBS = $(DIX) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 XqvssDIRS = $(QVSSDIRS)
 
 ServerTarget(Xqvss,$(QVSSDIRS) $(EXTDIR),$(QVSSOBJS),$(QVSSLIBS),$(SYSLIBS))
@@ -205,13 +205,13 @@ XCOMM
 #define need_ddx_mfb
 #define need_ddx_dec_lk201
 #define need_ddx_dec_qdss
-#define need_os_42bsd
+#define need_os
 QDSSDIRS = dix ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/qdss \
-           ddx/dec/qdss/libtl os/4.2bsd
+           ddx/dec/qdss/libtl os
 QDSSOBJS = ddx/dec/qdss/init.o ddx/dec/qdss/qdss_io.o ddx/dec/lk201/lk201.o
 QDSSLIBS = ddx/dec/qdss/libqdss.a ddx/dec/qdss/libtl/libtl.a \
            ddx/dec/qdss/libqdss.a \
-           $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+           $(DIX) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 XqdssDIRS = $(QDSSDIRS)
 
 ServerTarget(Xqdss,$(QDSSDIRS) $(EXTDIR),$(QDSSOBJS),$(QDSSLIBS),$(SYSLIBS))
@@ -226,10 +226,10 @@ XCOMM
 #define need_ddx_mfb
 #define need_ddx_cfb
 #define need_ddx_dec_ws
-#define need_os_42bsd
-DECDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/dec/ws os/4.2bsd
+#define need_os
+DECDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/dec/ws os
 DECOBJS = ddx/dec/ws/init.o
-DECLIBS = $(DECWS) $(DIX) $(BSD) $(FONT) $(CFB) $(MFB) $(MI) $(EXTENSIONS)
+DECLIBS = $(DECWS) $(DIX) $(OS) $(FONT) $(CFB) $(MFB) $(MI) $(EXTENSIONS)
 XcfbpmaxDIRS = $(DECDIRS)
 
 ServerTarget(Xdec,$(DECDIRS) $(EXTDIR),$(DECOBJS),$(DECLIBS),$(SYSLIBS))
@@ -244,10 +244,10 @@ XCOMM
 #define need_ddx_mfb
 #define need_ddx_dec_lk201
 #define need_ddx_dec_mfbpmax
-#define need_os_42bsd
-PMAXMFBDIRS = dix ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/mfbpmax os/4.2bsd
+#define need_os
+PMAXMFBDIRS = dix ddx/mi ddx/mfb ddx/dec/lk201 ddx/dec/mfbpmax os
 PMAXMFBOBJS = ddx/dec/mfbpmax/init.o ddx/dec/mfbpmax/mfbpmax_io.o ddx/dec/lk201/lk201.o
-PMAXMFBLIBS = $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+PMAXMFBLIBS = $(DIX) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 XmfbpmaxDIRS = $(PMAXMFBDIRS)
 
 ServerTarget(Xmfbpmax,$(PMAXMFBDIRS) $(EXTDIR),$(PMAXMFBOBJS),$(PMAXMFBLIBS),$(SYSLIBS))
@@ -263,11 +263,11 @@ XCOMM
 #define need_ddx_cfb
 #define need_ddx_dec_lk201
 #define need_ddx_dec_cfbpmax
-#define need_os_42bsd
-PMAXCFBDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/dec/lk201 ddx/dec/cfbpmax os/4.2bsd
+#define need_os
+PMAXCFBDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/dec/lk201 ddx/dec/cfbpmax os
 PMAXCFBOBJS = ddx/dec/cfbpmax/init.o ddx/dec/cfbpmax/cfbpmax_io.o\
 	ddx/dec/cfbpmax/cfbpmaxcolor.o ddx/dec/lk201/lk201.o
-PMAXCFBLIBS = $(DIX) $(BSD) $(FONT) $(CFB) $(MFB) $(MI) $(EXTENSIONS)
+PMAXCFBLIBS = $(DIX) $(OS) $(FONT) $(CFB) $(MFB) $(MI) $(EXTENSIONS)
 XcfbpmaxDIRS = $(PMAXCFBDIRS)
 
 ServerTarget(Xcfbpmax,$(PMAXCFBDIRS) $(EXTDIR),$(PMAXCFBOBJS),$(PMAXCFBLIBS),$(SYSLIBS))
@@ -285,10 +285,10 @@ SUNWINDOWSLIBS = -lsunwindow -lpixrect
 #define need_ddx_mfb
 #define need_ddx_cfb
 #define need_ddx_sun
-#define need_os_42bsd
-SUNDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/sun os/4.2bsd
+#define need_os
+SUNDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/sun os
 SUNOBJS = ddx/sun/sunInit.o
-SUNLIBS = $(SUN) $(CFB) $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+SUNLIBS = $(SUN) $(CFB) $(DIX) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 SUNSYSLIBS = $(SYSLIBS) $(SUNWINDOWSLIBS)
 XsunDIRS = $(SUNDIRS)
 
@@ -305,7 +305,7 @@ saber_src_sun:
 	XCOMM make saber_src
 	XCOMM cd ../sun
 	XCOMM make saber_src
-	XCOMM cd ../../os/4.2bsd
+	XCOMM cd ../../os
 	XCOMM make saber_src
 	XCOMM cd ../../../extensions/server
 	XCOMM make saber_src
@@ -327,8 +327,8 @@ XCOMM
 #define need_dix
 #define need_ddx_mi
 #define need_ddx_hp
-#define need_os_42bsd
-HPDIRS = dix ddx/mi ddx/hp os/4.2bsd
+#define need_os
+HPDIRS = dix ddx/mi ddx/hp os
 
 /* set up .o load */
 #ifdef hp9000s300
@@ -337,7 +337,7 @@ HPOBJS = ddx/hp/hp.300.o
 HPOBJS = ddx/hp/hp.800.o
 #endif /* hp9000s300 */
 
-HPLIBS = $(DIX) $(BSD) $(MI) $(EXTENSIONS) $(BSDEMUL)
+HPLIBS = $(DIX) $(OS) $(MI) $(EXTENSIONS) $(BSDEMUL)
 #if ServerMallocLib
 HPMALLOCLIB = -lmalloc
 #endif
@@ -362,11 +362,11 @@ IBMALLOCLIB =
 #define need_ddx_mi
 #define need_ddx_mfb
 #define need_ddx_ibm
-#define need_os_42bsd
-IBMDIRS = dix ddx/mi ddx/mfb ddx/ibm os/4.2bsd
+#define need_os
+IBMDIRS = dix ddx/mi ddx/mfb ddx/ibm os
 IBMOBJS = ddx/ibm/common/ibmcomm.o ddx/ibm/common/ibmDate.o
 IBMLIBS = ddx/ibm/libibm.a $(IBMALLOCLIB) \
-		$(DIX)  $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+		$(DIX) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 IBMSYSLIBS = $(SYSLIBS)
 XibmDIRS = $(IBMDIRS)
 
@@ -384,10 +384,10 @@ XCOMM
 #define need_ddx_mfb
 #define need_ddx_apollo
 #define need_ddx_apollo_apc
-#define need_os_42bsd
-APOLLODIRS = dix ddx/mi ddx/mfb ddx/apollo ddx/apollo/apc os/4.2bsd
+#define need_os
+APOLLODIRS = dix ddx/mi ddx/mfb ddx/apollo ddx/apollo/apc os
 APOLLOOBJS = ddx/apollo/ap_init.o /sys/traits/io_traits.2
-APOLLOLIBS = $(APOLLO) $(APC) $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+APOLLOLIBS = $(APOLLO) $(APC) $(DIX) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 XapolloDIRS = $(APOLLODIRS)
 
 ServerTarget(Xapollo,$(APOLLODIRS) $(EXTDIR),$(APOLLOOBJS),$(APOLLOLIBS),$(SYSLIBS))
@@ -404,10 +404,10 @@ XCOMM
 #define need_ddx_cfb
 #define need_ddx_mfb
 #define need_ddx_tek
-#define need_os_42bsd
-TEKDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/tek os/4.2bsd
+#define need_os
+TEKDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/tek os
 TEKOBJS = ddx/tek/pegInit.o
-TEKLIBS = $(DIX) $(BSD) $(FONT) $(TEK) $(MFB) $(CFB) $(MI) $(EXTENSIONS)
+TEKLIBS = $(DIX) $(OS) $(FONT) $(TEK) $(MFB) $(CFB) $(MI) $(EXTENSIONS)
 XtekDIRS = $(TEKDIRS)
 
 ServerTarget(Xtek,$(TEKDIRS) $(EXTDIR),$(TEKOBJS),$(TEKLIBS),$(CBRT) $(SYSLIBS))
@@ -424,10 +424,10 @@ XCOMM
 #define need_ddx_mfb
 #define need_ddx_cfb
 #define need_ddx_macII
-#define need_os_42bsd
-MACIIDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/macII os/4.2bsd
+#define need_os
+MACIIDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/macII os
 MACIIOBJS = ddx/macII/macIIInitS.o ddx/macII/macIIColor.o
-MACIILIBS = $(MACII) $(CFB) $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+MACIILIBS = $(MACII) $(CFB) $(DIX) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 MACIISYSLIBS = $(SYSLIBS)
 XmacIIDIRS = $(MACIIDIRS)
  
@@ -443,13 +443,13 @@ XCOMM
 #define need_ddx_mi
 #define need_ddx_omron
 #define need_ddx_mfb
-#define need_os_42bsd
-LUNADIRS = dix ddx/mi ddx/mfb ddx/omron os/4.2bsd
+#define need_os
+LUNADIRS = dix ddx/mi ddx/mfb ddx/omron os
 LUNAOBJS =
 #ifdef UniOSU
-LUNALIBS = $(DIX) $(LUNA) $(BSD) $(BSDEMUL) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+LUNALIBS = $(DIX) $(LUNA) $(OS) $(BSDEMUL) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 #else
-LUNALIBS = $(DIX) $(LUNA) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+LUNALIBS = $(DIX) $(LUNA) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 #endif
 XlunaDIRS = $(LUNADIRS)
 
@@ -466,10 +466,10 @@ XCOMM
 #define need_ddx_mfb
 #define need_ddx_cfb
 #define need_ddx_mips
-#define need_os_42bsd
-MIPSDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/mips os/4.2bsd
+#define need_os
+MIPSDIRS = dix ddx/mi ddx/mfb ddx/cfb ddx/mips os
 MIPSOBJS = ddx/mips/mipsInit.o
-MIPSLIBS = $(MIPS) $(CFB) $(DIX) $(BSD) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
+MIPSLIBS = $(MIPS) $(CFB) $(DIX) $(OS) $(FONT) $(MFB) $(MI) $(EXTENSIONS)
 MIPSSYSLIBS = $(SYSLIBS) -lc /usr/lib/libc.a
 XmipsDIRS = $(MIPSDIRS)
  
@@ -485,9 +485,9 @@ XCOMM
 #define need_ddx_mi
 #define need_ddx_cfb
 #define need_ddx_mfb
-#define need_os_42bsd
+#define need_os
 
-Xnon: $(EXTDIR) dix ddx/mi ddx/mfb ddx/cfb os/4.2bsd
+Xnon: $(EXTDIR) dix ddx/mi ddx/mfb ddx/cfb os
 
 #endif /* dononServer */
 
@@ -504,10 +504,10 @@ Xnon: $(EXTDIR) dix ddx/mi ddx/mfb ddx/cfb os/4.2bsd
 #else
 #define dir_dix /**/
 #endif
-#ifdef need_os_42bsd
-#define dir_os_42bsd os/4.2bsd
+#ifdef need_os
+#define dir_os os
 #else
-#define dir_os_42bsd /**/
+#define dir_os /**/
 #endif
 
 #ifdef need_ddx_snf
@@ -619,7 +619,7 @@ Xnon: $(EXTDIR) dix ddx/mi ddx/mfb ddx/cfb os/4.2bsd
 
 OURDIX = dir_dix
 OURDDX = dir_ddx_mfb dir_ddx_cfb dir_ddx_mi
-OUROS = dir_os_42bsd
+OUROS = dir_os
 DECDDX = dir_ddx_dec_lk201 dir_ddx_dec_qdss dir_ddx_dec_qvss dir_ddx_dec_ws dir_ddx_dec_mfbpmax dir_ddx_dec_cfbpmax
 HPDDX = dir_ddx_hp dir_ddx_hpMit
 OTHERDDX = dir_ddx_apollo dir_ddx_apollo_apc dir_ddx_ibm dir_ddx_macII dir_ddx_sun dir_ddx_tek dir_ddx_omron dir_ddx_mips
@@ -634,7 +634,7 @@ SUBDIRS = $(OURDIX) $(OURDDX) $(OUROS) $(DECDDX) $(HPDDX) $(OTHERDDX)
 		  ddx/dec/ws ddx/dec/mfbpmax ddx/dec/cfbpmax \
                   ddx/hp ddx/hp.mit ddx/tek \
                   ddx/macII ddx/omron ddx/mips
-      ALLOSDIRS = os/4.2bsd
+      ALLOSDIRS = os
      ALLSUBDIRS = dix $(ALLDDXDIRS) $(ALLOSDIRS)
 
 InstallMultipleFlags($(ALL),$(BINDIR),$(INSTPGMFLAGS))
