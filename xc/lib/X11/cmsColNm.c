@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.17 91/06/07 17:36:29 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.18 91/06/07 18:21:04 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -22,7 +22,6 @@
  * RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER IN AN ACTION OF
  * CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR THE PERFORMANCE OF THIS SOFTWARE.
- *
  *
  *	NAME
  *		XcmsColNm.c
@@ -69,6 +68,10 @@ static Status LoadColornameDB();
 #  define isgraph(c)	(isprint((c)) && !isspace((c)))
 #endif
 
+#ifndef XCMSDB_MAXLINELEN
+#  define XCMSDB_MAXLINELEN	256
+#endif
+
 #define FORMAT_VERSION	"0.1"
 #define START_TOKEN	"XCMS_COLORDB_START"
 #define END_TOKEN	"XCMS_COLORDB_END"
@@ -97,6 +100,7 @@ static int XcmsColorDbState = XcmsDbInitNone;
 static int nEntries;
 static char *strings;
 static XcmsPair *pairs;
+static char whitePtStr[] = "WhitePoint";
 
 
 /************************************************************************
@@ -243,7 +247,9 @@ _XcmsParseColorString(ccc, color_string, pColor)
  */
 {
     XcmsColorSpace	*pColorSpace;
-    char		string_lowered[BUFSIZ];
+    char		string_lowered_64[64];
+    char		*string_lowered;
+    int			len, maxlen;
 
     if (ccc == NULL) {
 	return(0);
@@ -252,8 +258,12 @@ _XcmsParseColorString(ccc, color_string, pColor)
     /*
      * While copying color_string to string_lowered, convert to lowercase
      */
-    if ((int)(strlen(color_string)) > BUFSIZ -1) {
-	return(0);
+    if ((len = strlen(color_string)) > 63) {
+	string_lowered = (char *) Xmalloc(len+1);
+	maxlen = len;
+    } else {
+	string_lowered = string_lowered_64;
+	maxlen = 63;
     }
 
     _XcmsCopyISOLatin1Lowered((char *)string_lowered, (char *)color_string);
@@ -410,7 +420,7 @@ field2(pBuf, delim, p1, p2)
 static Status
 _XcmsLookupColorName(ccc, name, pColor)
     XcmsCCC ccc;
-    char *name;
+    char **name;
     XcmsColor *pColor;
 /*
  *	DESCRIPTION
@@ -423,17 +433,15 @@ _XcmsLookupColorName(ccc, name, pColor)
  *		XcmsSuccess if succeeded in converting color name to
  *			XcmsColor.
  *		_XCMS_NEWNAME if succeeded in converting color string (which
- *			is a color name to yet another color name.
- *
- *	CAVEATS
- *		Assumes name is an array of BUFSIZ characters so we can
- *		overwrite!
- *
+ *			is a color name to yet another color name.  Note
+ *			that the new name is passed back via 'name'.
  */
  {
     Status		retval = 0;
-    char		name_lowered[BUFSIZ];
+    char		name_lowered_64[64];
+    char		*name_lowered;
     register int	i, j, left, right;
+    int			maxlen;
     int			len;
     char		*tmpName;
     XcmsPair		*pair;
@@ -459,11 +467,15 @@ _XcmsLookupColorName(ccc, name, pColor)
      * While copying name to name_lowered, convert to lowercase
      */
 
-    tmpName = name;
+    tmpName = *name;
 
 Retry:
-    if ((len = strlen(tmpName)) > BUFSIZ -1) {
-	return(XcmsFailure);
+    if ((len = strlen(tmpName)) > 63) {
+	name_lowered = (char *) Xmalloc(len+1);
+	maxlen = len;
+    } else {
+	name_lowered = name_lowered_64;
+	maxlen = 63;
     }
 
     _XcmsCopyISOLatin1Lowered((char *)name_lowered, (char *)tmpName);
@@ -495,8 +507,8 @@ Retry:
 
     if (left > right) {
 	if (retval == 2) {
-	    if (name != tmpName) {
-		strncpy(name, tmpName, BUFSIZ - 1);
+	    if (*name != tmpName) {
+		*name = tmpName;
 	    }
 	    return(_XCMS_NEWNAME);
 	}
@@ -579,9 +591,9 @@ stringSectionSize(stream, pNumEntries, pSectionSize)
  *
  */
 {
-    char buf[BUFSIZ];
-    char token[BUFSIZ];
-    char token2[BUFSIZ];
+    char buf[XCMSDB_MAXLINELEN];
+    char token[XCMSDB_MAXLINELEN];
+    char token2[XCMSDB_MAXLINELEN];
     char *pBuf;
     char *f1;
     char *f2;
@@ -595,7 +607,7 @@ stringSectionSize(stream, pNumEntries, pSectionSize)
      *	 Anything before is just considered as comments.
      */
 
-    while((pBuf = fgets(buf, BUFSIZ, stream)) != NULL) {
+    while((pBuf = fgets(buf, XCMSDB_MAXLINELEN, stream)) != NULL) {
 	if ((sscanf(buf, "%s %s", token, token2))
 		&& (strcmp(token, START_TOKEN) == 0)) {
 	    if (strcmp(token2, FORMAT_VERSION) != 0) {
@@ -610,7 +622,7 @@ stringSectionSize(stream, pNumEntries, pSectionSize)
 	return(XcmsFailure);
     }
 
-    while((pBuf = fgets(buf, BUFSIZ, stream)) != NULL) {
+    while((pBuf = fgets(buf, XCMSDB_MAXLINELEN, stream)) != NULL) {
 	if ((sscanf(buf, "%s", token)) && (strcmp(token, END_TOKEN) == 0)) {
 	    break;
 	}
@@ -663,9 +675,9 @@ ReadColornameDB(stream, pRec, pString)
  *
  */
 {
-    char buf[BUFSIZ];
-    char token[BUFSIZ];
-    char token2[BUFSIZ];
+    char buf[XCMSDB_MAXLINELEN];
+    char token[XCMSDB_MAXLINELEN];
+    char token2[XCMSDB_MAXLINELEN];
     char *f1;
     char *f2;
     char *pBuf;
@@ -675,7 +687,7 @@ ReadColornameDB(stream, pRec, pString)
      *	 Anything before is just considered as comments.
      */
 
-    while((pBuf = fgets(buf, BUFSIZ, stream)) != NULL) {
+    while((pBuf = fgets(buf, XCMSDB_MAXLINELEN, stream)) != NULL) {
 	if ((sscanf(buf, "%s %s", token, token2))
 		&& (strcmp(token, START_TOKEN) == 0)) {
 	    if (strcmp(token2, FORMAT_VERSION) != 0) {
@@ -694,7 +706,7 @@ ReadColornameDB(stream, pRec, pString)
      * Process lines between START_TOKEN to END_TOKEN
      */
 
-    while ((pBuf = fgets(buf, BUFSIZ, stream)) != NULL) {
+    while ((pBuf = fgets(buf, XCMSDB_MAXLINELEN, stream)) != NULL) {
 	if ((sscanf(buf, "%s", token)) && (strcmp(token, END_TOKEN) == 0)) {
 	    /*
 	     * Found END_TOKEN so break out of for loop
@@ -842,14 +854,14 @@ XcmsFreeColorDB()
 Status
 _XcmsResolveColorString (
     XcmsCCC ccc,
-    _Xconst char *color_string,
+    _Xconst char **color_string,
     XcmsColor *pColor_exact_return,
     XcmsColorFormat result_format)
 #else
 Status
 _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
     XcmsCCC ccc;
-    char *color_string;
+    char **color_string;
     XcmsColor *pColor_exact_return;
     XcmsColorFormat result_format;
 #endif
@@ -864,7 +876,8 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
  *		XcmsSuccess if succeeded in converting color string to
  *			XcmsColor.
  *		_XCMS_NEWNAME if succeeded in converting color string (which
- *			is a color name to yet another color name.
+ *			is a color name to yet another color name.  Note
+ *			that the new color name is returned via 'name'.
  *
  *		This function returns both the color specification found in the
  *		database (db specification) and the color specification for the
@@ -873,21 +886,18 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
  *		returned specifications in the XcmsColor format component.
  *		If XcmsUndefinedFormat, the specification is returned in the
  *		format used to store the color in the database.
- *
- *	CAVEATS
- *		Assumes name is an array of BUFSIZ characters so we can
- *		overwrite!
  */
 {
     XcmsColor dbWhitePt;	/* whitePt associated with pColor_exact_return*/
     int inheritScrnWhitePt = 0;	/* Indicates if pColor_exact_return inherits */
 				/*    the screen's white point */
     int retval;
+    char *strptr = whitePtStr;
 
 /*
  * 0. Check for invalid arguments.
  */
-    if (ccc == NULL || color_string[0] == '\0' || pColor_exact_return == NULL) {
+    if (ccc == NULL || (*color_string)[0] == '\0' || pColor_exact_return == NULL) {
 	return(XcmsFailure);
     }
 
@@ -896,7 +906,7 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
  *    If successful, then convert the specification to the target format
  *    and return.
  */
-    if (_XcmsParseColorString(ccc, color_string, pColor_exact_return)
+    if (_XcmsParseColorString(ccc, *color_string, pColor_exact_return)
 	    == 1) {
 	if (result_format != XcmsUndefinedFormat
 		&& pColor_exact_return->format != result_format) {
@@ -940,8 +950,9 @@ _XcmsResolveColorString(ccc, color_string, pColor_exact_return, result_format)
      *	     (2) the DI Database does not have a white point,
      *	  then assume the white point is the same as the Screen White Point.
      */
-    if (XCMS_DD_ID(pColor_exact_return->format) ||
-	    (_XcmsLookupColorName(ccc, "WhitePoint", &dbWhitePt)
+
+     if (XCMS_DD_ID(pColor_exact_return->format) ||
+	    (_XcmsLookupColorName(ccc, &strptr, &dbWhitePt)
 	    != 1)) {
 	inheritScrnWhitePt++;
 	bcopy((char *)&ccc->pPerScrnInfo->screenWhitePt, (char *)&dbWhitePt,

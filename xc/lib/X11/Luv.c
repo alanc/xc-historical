@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuv.c,v 1.5 91/02/12 16:09:18 dave Exp $" */
+/* $XConsortium: CIELuv.c,v 1.6 91/05/13 22:21:59 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -34,6 +34,9 @@
  *
  *	DOCUMENTATION
  *		"TekColor Color Management System, System Implementor's Manual"
+ *		and
+ *		Fred W. Billmeyer & Max Saltzman, "Principles of Color
+ *		Technology", John Wily & Sons, Inc, 1981.
  */
 
 #include <X11/Xos.h>
@@ -286,21 +289,11 @@ XcmsCIELuvToCIEuvY(ccc, pLuv_WhitePt, pColors_in_out, nColors)
 	    uvY_return.u_prime = pLuv_WhitePt->spec.CIEuvY.u_prime;
 	    uvY_return.v_prime = pLuv_WhitePt->spec.CIEuvY.v_prime;
 	} else {
-#ifndef WRONG
-	    tmpVal = 13.0 * (pColor->spec.CIELuv.L_star / 100.0);
-	    uvY_return.u_prime = (pColor->spec.CIELuv.u_star + 
-			    (tmpVal * pLuv_WhitePt->spec.CIEuvY.u_prime)) / 
-			    tmpVal;
-	    uvY_return.v_prime = (pColor->spec.CIELuv.v_star +
-			    (tmpVal * pLuv_WhitePt->spec.CIEuvY.v_prime)) /
-			    tmpVal;
-#else
 	    tmpVal = 13.0 * (pColor->spec.CIELuv.L_star / 100.0);
 	    uvY_return.u_prime = pColor->spec.CIELuv.u_star/tmpVal + 
 			    pLuv_WhitePt->spec.CIEuvY.u_prime;
 	    uvY_return.v_prime = pColor->spec.CIELuv.v_star/tmpVal +
 			    pLuv_WhitePt->spec.CIEuvY.v_prime;
-#endif /* OK */
 	}
 	/* Copy result to pColor */
 	bcopy ((char *)&uvY_return, (char *)&pColor->spec, sizeof(XcmsCIEuvY));

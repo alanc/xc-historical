@@ -1,4 +1,4 @@
-/* $XConsortium: XStNColor.c,v 11.19 91/05/13 23:01:26 rws Exp $ */
+/* $XConsortium: XStNColor.c,v 11.20 91/05/14 10:58:29 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -40,15 +40,12 @@ int flags;  /* DoRed, DoGreen, DoBlue */
     XcmsCCC ccc;
     XcmsColor cmsColor_exact;
     XColor scr_def;
-    char tmpName[BUFSIZ];
 
     /*
      * Let's Attempt to use TekCMS approach to Parse Color
      */
-    /* copy string to allow overwrite by _XcmsResolveColorString() */
-    strncpy(tmpName, name, BUFSIZ - 1);
     if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
-	if (_XcmsResolveColorString(ccc, tmpName, &cmsColor_exact,
+	if (_XcmsResolveColorString(ccc, &name, &cmsColor_exact,
 		XcmsRGBFormat) == XcmsSuccess) {
 	    _XcmsRGB_to_XColor(&cmsColor_exact, &scr_def, 1);
 	    scr_def.pixel = pixel;
@@ -57,15 +54,14 @@ int flags;  /* DoRed, DoGreen, DoBlue */
 	    return;
 	}
 	/*
-	 * Otherwise we failed; or tmpName was overwritten with yet another
+	 * Otherwise we failed; or name was changed with yet another
 	 * name.  Thus pass name to the X Server.
 	 */
     }
 
     /*
      * The TekCMS and i18n methods failed, so lets pass it to the server
-     * for parsing.  Remember to use tmpName since it may have been
-     * overwritten by _XcmsResolveColorString().
+     * for parsing.
      */
 
     LockDisplay(dpy);
@@ -74,9 +70,9 @@ int flags;  /* DoRed, DoGreen, DoBlue */
     req->cmap = cmap;
     req->flags = flags;
     req->pixel = pixel;
-    req->nbytes = nbytes = strlen(tmpName);
+    req->nbytes = nbytes = strlen(name);
     req->length += (nbytes + 3) >> 2; /* round up to multiple of 4 */
-    Data(dpy, tmpName, (long)nbytes);
+    Data(dpy, name, (long)nbytes);
     UnlockDisplay(dpy);
     SyncHandle();
 }

@@ -348,6 +348,7 @@ OBJS3 = \
 	XcmsSetGet.o \
 	XcmsStCol.o \
 	XcmsStCols.o \
+	XcmsTrig.o \
 	XcmsXRGB.o \
 	XFSWrap.o \
 	XICWrap.o \

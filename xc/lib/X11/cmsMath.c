@@ -1,7 +1,7 @@
 /*
  * square and cube roots by Newton's method
  *
- * $XConsortium: XcmsMath.c,v 1.5 91/02/12 16:13:23 dave Exp $
+ * $XConsortium: XcmsMath.c,v 1.6 91/05/05 21:16:26 rws Exp $
  *
  * Copyright 1990 Massachusetts Institute of Technology
  *
@@ -46,13 +46,13 @@ int sqrt_loopcount;
 /* for cube roots, x^3 - a = 0,  x_new = x - 1/3 (x - a/x^2) */
 
 double
-XcmsCubeRoot(a)
+_XcmsCubeRoot(a)
     double a;
 {
     register double abs_a, cur_guess, delta;
 
 #ifdef DEBUG
-    printf("XcmsCubeRoot passed in %g\n", a);
+    printf("_XcmsCubeRoot passed in %g\n", a);
 #endif
 #ifdef _X_ROOT_STATS
     cbrt_loopcount = 0;
@@ -81,7 +81,7 @@ XcmsCubeRoot(a)
 	cur_guess = -cur_guess;
 
 #ifdef DEBUG
-    printf("XcmsCubeRoot returning %g\n", cur_guess);
+    printf("_XcmsCubeRoot returning %g\n", cur_guess);
 #endif
     return cur_guess;
 }
@@ -91,13 +91,13 @@ XcmsCubeRoot(a)
 /* for square roots, x^2 - a = 0,  x_new = x - 1/2 (x - a/x) */
 
 double
-XcmsSquareRoot(a)
+_XcmsSquareRoot(a)
     double a;
 {
     register double cur_guess, delta;
 
 #ifdef DEBUG
-    printf("XcmsSquareRoot passed in %g\n", a);
+    printf("_XcmsSquareRoot passed in %g\n", a);
 #endif
 #ifdef _X_ROOT_STATS
     sqrt_loopcount = 0;
@@ -126,7 +126,7 @@ XcmsSquareRoot(a)
     } while (delta >= cur_guess*DBL_EPSILON);
 
 #ifdef DEBUG
-    printf("XcmsSquareRoot returning %g\n", cur_guess);
+    printf("_XcmsSquareRoot returning %g\n", cur_guess);
 #endif
     return cur_guess;
 }

@@ -1,4 +1,4 @@
-/* $XConsortium: XParseCol.c,v 11.24 91/05/13 22:55:52 rws Exp $ */
+/* $XConsortium: XParseCol.c,v 11.25 91/05/14 10:58:18 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1985	*/
 
 /*
@@ -24,13 +24,13 @@ extern void _XcmsRGB_to_XColor();
 Status XParseColor (
 	register Display *dpy,
         Colormap cmap,
-	register _Xconst char *spec,
+	_Xconst char *spec,
 	XColor *def)
 #else
 Status XParseColor (dpy, cmap, spec, def)
 	register Display *dpy;
         Colormap cmap;
-	register char *spec;
+	char *spec;
 	XColor *def;
 #endif
 {
@@ -39,7 +39,6 @@ Status XParseColor (dpy, cmap, spec, def)
 	char c;
 	XcmsCCC ccc;
 	XcmsColor cmsColor;
-	char tmpName[BUFSIZ];
 
         if (!spec) return(0);
 	n = strlen (spec);
@@ -82,24 +81,21 @@ Status XParseColor (dpy, cmap, spec, def)
 	/*
 	 * Let's Attempt to use TekCMS and i18n approach to Parse Color
 	 */
-	/* copy string to allow overwrite by _XcmsResolveColorString() */
-	strncpy(tmpName, spec, BUFSIZ - 1);
 	if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
-	    if (_XcmsResolveColorString(ccc, tmpName,
+	    if (_XcmsResolveColorString(ccc, &spec,
 		    &cmsColor, XcmsRGBFormat) == XcmsSuccess) {
 		_XcmsRGB_to_XColor(&cmsColor, def, 1);
 		return(1);
 	    }
 	    /*
-	     * Otherwise we failed; or tmpName was overwritten with yet another
+	     * Otherwise we failed; or spec was changed with yet another
 	     * name.  Thus pass name to the X Server.
 	     */
 	}
 
 	/*
 	 * TekCMS and i18n methods failed, so lets pass it to the server
-	 * for parsing.  Remember to use tmpName since it may have been
-	 * overwritten by XcmsResolveColorString().
+	 * for parsing.
 	 */
 	{
 	    xLookupColorReply reply;
@@ -107,9 +103,9 @@ Status XParseColor (dpy, cmap, spec, def)
 	    LockDisplay(dpy);
 	    GetReq (LookupColor, req);
 	    req->cmap = cmap;
-	    req->nbytes = n = strlen(tmpName);
+	    req->nbytes = n = strlen(spec);
 	    req->length += (n + 3) >> 2;
-	    Data (dpy, tmpName, (long)n);
+	    Data (dpy, spec, (long)n);
 	    if (!_XReply (dpy, (xReply *) &reply, 0, xTrue)) {
 		UnlockDisplay(dpy);
 		SyncHandle();

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLRGB.c,v 1.9 91/05/13 23:23:44 rws Exp $" */
+/* $XConsortium: XcmsLRGB.c,v 1.10 91/05/14 14:32:07 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -91,7 +91,6 @@ Status XcmsRGBiToCIEXYZ();
 Status XcmsCIEXYZToRGBi();
 Status XcmsRGBiToRGB();
 static int LINEAR_RGB_InitSCCData();
-XPointer LINEAR_RGB_CopySCCData();
 int XcmsLRGB_RGB_ParseString();
 int XcmsLRGB_RGBi_ParseString();
 
@@ -194,7 +193,8 @@ XcmsColorSpace	XcmsRGBiColorSpace =
 	XcmsRGBiFormat,		/* id */
 	XcmsLRGB_RGBi_ParseString,	/* parseString */
 	Fl_RGBi_to_CIEXYZ,	/* to_CIEXYZ */
-	Fl_CIEXYZ_to_RGBi	/* from_CIEXYZ */
+	Fl_CIEXYZ_to_RGBi,	/* from_CIEXYZ */
+	1
     };
 
     /*
@@ -206,7 +206,8 @@ XcmsColorSpace	XcmsRGBColorSpace =
 	XcmsRGBFormat,		/* id */
 	XcmsLRGB_RGB_ParseString,	/* parseString */
 	Fl_RGB_to_CIEXYZ,	/* to_CIEXYZ */
-	Fl_CIEXYZ_to_RGB	/* from_CIEXYZ */
+	Fl_CIEXYZ_to_RGB,	/* from_CIEXYZ */
+	1
     };
 
     /*
@@ -463,15 +464,378 @@ static LINEAR_RGB_SCCData Default_RGB_SCCData = {
  *			PRIVATE ROUTINES				*
  *									*
  ************************************************************************/
+
+/*
+ *	NAME
+ *		LINEAR_RGB_InitSCCData()
+ *
+ *	SYNOPSIS
+ */
+static Status
+LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
+    Display *dpy;
+    int screenNumber;
+    XcmsPerScrnInfo *pPerScrnInfo;
+/*
+ *	DESCRIPTION
+ *
+ *	RETURNS
+ *		XcmsFailure if failed.
+ *		XcmsSuccess if succeeded.
+ *
+ */
+{
+    Atom  CorrectAtom = XInternAtom (dpy, XDCCC_CORRECT_ATOM_NAME, True);
+    Atom  MatrixAtom  = XInternAtom (dpy, XDCCC_MATRIX_ATOM_NAME, True);
+    int	  format_return, count, cType, nTables, nElements;
+    unsigned long nitems_return, nbytes_return;
+    char *property_return, *pChar;
+    XcmsFloat *pValue;
+    IntensityRec *pIRec;
+
+    LINEAR_RGB_SCCData *pScreenData;
+
+    /*
+     * Allocate memory for pScreenData
+     */
+    if (!(pScreenData = (LINEAR_RGB_SCCData *) 
+		      Xcalloc (1, sizeof(LINEAR_RGB_SCCData)))) {
+	return(XcmsFailure);
+    }
+
+    /*
+     *	1. Get the XYZ to RGB Matrix
+     *	2. Get the RGB to XYZ Matrix
+     *	3. Compute the white point of the matrix
+     */
+
+    /* 
+     *  First try to see if the XDXcmsCCC.conversion matrices property is
+     *  loaded on the root window.  If it is then read it and set the
+     *  screen info using this property.  If it is not use the default.
+     */
+    if (MatrixAtom != None &&
+	_XcmsGetProperty (dpy, RootWindow(dpy, screenNumber), MatrixAtom, 
+	   &format_return, &nitems_return, &nbytes_return, &property_return) &&
+	   nitems_return == 18) {
+
+	/* Get the RGBtoXYZ and XYZtoRGB matrices */
+	pValue = (XcmsFloat *) pScreenData;
+	pChar = property_return;
+	for (count = 0; count < 18; count++) {
+	    *pValue++ = (XcmsFloat)_XcmsGetElement(format_return, &pChar)
+		    / (XcmsFloat)XDCCC_NUMBER;
+	}
+	XFree (property_return);
+	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.X = pScreenData->RGBtoXYZmatrix[0][0] +
+					      pScreenData->RGBtoXYZmatrix[0][1] +
+					      pScreenData->RGBtoXYZmatrix[0][2];
+	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y = pScreenData->RGBtoXYZmatrix[1][0] +
+					      pScreenData->RGBtoXYZmatrix[1][1] +
+					      pScreenData->RGBtoXYZmatrix[1][2];
+	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Z = pScreenData->RGBtoXYZmatrix[2][0] +
+					      pScreenData->RGBtoXYZmatrix[2][1] +
+					      pScreenData->RGBtoXYZmatrix[2][2];
+	if ((pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y < (1.0 - EPS) )
+		|| (pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y > (1.0 + EPS))) {
+	    goto FreeSCCData;
+	} else {
+	    pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y = 1.0;
+	}
+	pPerScrnInfo->screenWhitePt.format = XcmsCIEXYZFormat;
+	pPerScrnInfo->screenWhitePt.pixel = 0;
+#ifdef PDEBUG
+	printf ("A Matrix values:\n");
+	printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n",
+		pScreenData->RGBtoXYZmatrix[0][0],
+		pScreenData->RGBtoXYZmatrix[0][1],
+		pScreenData->RGBtoXYZmatrix[0][2],
+		pScreenData->RGBtoXYZmatrix[1][0],
+		pScreenData->RGBtoXYZmatrix[1][1],
+		pScreenData->RGBtoXYZmatrix[1][2],
+		pScreenData->RGBtoXYZmatrix[2][0],
+		pScreenData->RGBtoXYZmatrix[2][1],
+		pScreenData->RGBtoXYZmatrix[2][2]);
+	printf ("A- Matrix values:\n");
+	printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n",
+		pScreenData->XYZtoRGBmatrix[0][0],
+		pScreenData->XYZtoRGBmatrix[0][1],
+		pScreenData->XYZtoRGBmatrix[0][2],
+		pScreenData->XYZtoRGBmatrix[1][0],
+		pScreenData->XYZtoRGBmatrix[1][1],
+		pScreenData->XYZtoRGBmatrix[1][2],
+		pScreenData->XYZtoRGBmatrix[2][0],
+		pScreenData->XYZtoRGBmatrix[2][1],
+		pScreenData->XYZtoRGBmatrix[2][2]);
+	printf ("Screen White Pt value: %f %f %f\n",
+		pPerScrnInfo->screenWhitePt.spec.CIEXYZ.X,
+		pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y,
+		pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Z);
+#endif /* PDEBUG */
+    } else {
+	/* when debug is on then use the statics otherwise just return. */
+	goto FreeSCCData;
+    }
+
+    /*
+     *	4. Get the Intensity Profile if it exists
+     */
+    if (CorrectAtom != None &&
+	_XcmsGetProperty (dpy, RootWindow(dpy, screenNumber), CorrectAtom,
+	   &format_return, &nitems_return, &nbytes_return, &property_return) &&
+	    nitems_return > 3) {
+
+	pChar = property_return;
+	cType = _XcmsGetElement(format_return, &pChar);
+	nTables = _XcmsGetElement(format_return, &pChar);
+
+	if (cType == 0) {
+	    /* Red Intensity Table */
+	    if (!(pScreenData->pRedTbl = (IntensityTbl *)
+		    Xcalloc (1, sizeof(IntensityTbl)))) {
+		goto FreeSCCData;
+	    }
+	    nElements = pScreenData->pRedTbl->nEntries = 
+		    _XcmsGetElement(format_return, &pChar);
+	    if (!(pScreenData->pRedTbl->pBase = (IntensityRec *)
+		  Xcalloc (nElements, sizeof(IntensityRec)))) {
+		goto FreeRedTbl;
+	    }
+	    pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
+	    for (; nElements--; pIRec++) {
+		pIRec->value = _XcmsGetElement (format_return, &pChar);
+		pIRec->intensity = (XcmsFloat) 
+		 _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
+	    }
+	    if (nTables == 1) {
+		/* Green Intensity Table */
+		pScreenData->pGreenTbl = pScreenData->pRedTbl;
+		/* Blue Intensity Table */
+		pScreenData->pBlueTbl = pScreenData->pRedTbl;
+	    } else {
+		/* Green Intensity Table */
+		if (!(pScreenData->pGreenTbl = (IntensityTbl *)
+			Xcalloc (1, sizeof(IntensityTbl)))) {
+		    goto FreeRedTblElements;
+		}
+		nElements = pScreenData->pGreenTbl->nEntries =
+			(int) _XcmsGetElement (format_return, &pChar);
+		if (!(pScreenData->pGreenTbl->pBase = (IntensityRec *)
+		      Xcalloc (nElements, sizeof(IntensityRec)))) {
+		    goto FreeGreenTbl;
+		}
+		pIRec = (IntensityRec *) pScreenData->pGreenTbl->pBase;
+		for (; nElements--; pIRec++) {
+		    pIRec->value = _XcmsGetElement (format_return, &pChar);
+		    pIRec->intensity = (XcmsFloat)
+		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
+		}
+		/* Blue Intensity Table */
+		if (!(pScreenData->pBlueTbl = (IntensityTbl *)
+			Xcalloc (1, sizeof(IntensityTbl)))) {
+		    goto FreeGreenTblElements;
+		}
+		nElements = pScreenData->pBlueTbl->nEntries =
+			(int) _XcmsGetElement (format_return, &pChar);
+		if (!(pScreenData->pBlueTbl->pBase = (IntensityRec *)
+		      Xcalloc (nElements, sizeof(IntensityRec)))) {
+		    goto FreeBlueTbl;
+		}
+		pIRec = (IntensityRec *) pScreenData->pBlueTbl->pBase;
+		for (; nElements--; pIRec++) {
+		    pIRec->value = _XcmsGetElement (format_return, &pChar);
+		    pIRec->intensity = (XcmsFloat)
+		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
+		}
+	    }	    
+	} else {
+	    /* Red Intensity Table */
+	    if (!(pScreenData->pRedTbl = (IntensityTbl *)
+		    Xcalloc (1, sizeof(IntensityTbl)))) {
+		goto FreeSCCData;
+	    }
+	    nElements = pScreenData->pRedTbl->nEntries =
+		    (int) _XcmsGetElement (format_return, &pChar);
+	    if (!(pScreenData->pRedTbl->pBase = (IntensityRec *)
+		  Xcalloc (nElements, sizeof(IntensityRec)))) {
+		goto FreeRedTbl;
+	    }
+	    pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
+	    for (; nElements--; pIRec++) {
+		pIRec->value = count;
+		pIRec->intensity = (XcmsFloat) 
+		  _XcmsGetElement (format_return,&pChar)/(XcmsFloat)XDCCC_NUMBER;
+	    }
+	    if (nTables == 1) {
+		/* Green Intensity Table */
+		pScreenData->pGreenTbl = pScreenData->pRedTbl;
+		/* Blue Intensity Table */
+		pScreenData->pBlueTbl = pScreenData->pRedTbl;
+	    } else {
+		/* Green Intensity Table */
+		if (!(pScreenData->pGreenTbl = (IntensityTbl *)
+			Xcalloc (1, sizeof(IntensityTbl)))) {
+		    goto FreeRedTblElements;
+		}
+		nElements = pScreenData->pGreenTbl->nEntries =
+			(int) _XcmsGetElement (format_return, &pChar);
+		if (!(pScreenData->pGreenTbl->pBase =(IntensityRec *)
+		      Xcalloc (nElements, sizeof(IntensityRec)))) {
+		    goto FreeGreenTbl;
+		}
+		pIRec = (IntensityRec *) pScreenData->pGreenTbl->pBase;
+		for (; nElements; pIRec++) {
+		    pIRec->value = count;
+		    pIRec->intensity = (XcmsFloat) 
+		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
+		}
+		/* Blue Intensity Table */
+		if (!(pScreenData->pBlueTbl = (IntensityTbl *)
+			Xcalloc (1, sizeof(IntensityTbl)))) {
+		    goto FreeGreenTblElements;
+		}
+		nElements = pScreenData->pBlueTbl->nEntries =
+			(int) _XcmsGetElement (format_return, &pChar);
+		if (!(pScreenData->pBlueTbl->pBase =(IntensityRec *)
+		      Xcalloc (nElements, sizeof(IntensityRec)))) {
+		    goto FreeBlueTbl;
+		}
+		pIRec = (IntensityRec *) pScreenData->pBlueTbl->pBase;
+		for (; nElements--; pIRec++) {
+		    pIRec->value = count;
+		    pIRec->intensity = (XcmsFloat)
+		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
+		}
+	    }
+	}
+	XFree (property_return);
+#ifdef ALLDEBUG
+	printf ("Intensity Table  RED    %d\n", pScreenData->pRedTbl->nEntries);
+	pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
+	for (count = 0; count < pScreenData->pRedTbl->nEntries; count++, pIRec++) {
+	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
+	}
+	if (pScreenData->pGreenTbl->pBase != pScreenData->pRedTbl->pBase) {
+	    printf ("Intensity Table  GREEN  %d\n", pScreenData->pGreenTbl->nEntries);
+	    pIRec = (IntensityRec *)pScreenData->pGreenTbl->pBase;
+	    for (count = 0; count < pScreenData->pGreenTbl->nEntries; count++, pIRec++) {
+		printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
+	    }
+	}
+	if (pScreenData->pBlueTbl->pBase != pScreenData->pRedTbl->pBase) {
+	    printf ("Intensity Table  BLUE   %d\n", pScreenData->pBlueTbl->nEntries);
+	    pIRec = (IntensityRec *) pScreenData->pBlueTbl->pBase;
+	    for (count = 0; count < pScreenData->pBlueTbl->nEntries; count++, pIRec++) {
+		printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
+	    }
+	}
+#endif /* ALLDEBUG */
+    } else {
+	XFree (property_return);
+	goto FreeSCCData;
+    }
+    /* Free the old memory and use the new structure created. */
+    LINEAR_RGB_FreeSCCData((LINEAR_RGB_SCCData *) pPerScrnInfo->screenData);
+
+    pPerScrnInfo->functionSet = (XPointer) &XcmsLinearRGBFunctionSet;
+
+    pPerScrnInfo->screenData = (XPointer) pScreenData;
+
+    pPerScrnInfo->state = XcmsInitSuccess;
+
+    return(XcmsSuccess);
+
+FreeBlueTblElements:
+    free(pScreenData->pBlueTbl->pBase);
+
+FreeBlueTbl:
+    free(pScreenData->pBlueTbl);
+
+FreeGreenTblElements:
+    free(pScreenData->pBlueTbl->pBase);
+
+FreeGreenTbl:
+    free(pScreenData->pGreenTbl);
+
+FreeRedTblElements:
+    free(pScreenData->pRedTbl->pBase);
+
+FreeRedTbl:
+    free(pScreenData->pRedTbl);
+
+FreeSCCData:
+    free(pScreenData);
+    pPerScrnInfo->state = XcmsInitNone;
+    return(XcmsFailure);
+}
+
 
+/*
+ *	NAME
+ *		LINEAR_RGB_FreeSCCData()
+ *
+ *	SYNOPSIS
+ */
+static void
+LINEAR_RGB_FreeSCCData(pScreenData)
+    LINEAR_RGB_SCCData *pScreenData;
+/*
+ *	DESCRIPTION
+ *
+ *	RETURNS
+ *		0 if failed.
+ *		1 if succeeded with no modifications.
+ *
+ */
+{
+    if (pScreenData) {
+	if (pScreenData->pRedTbl) {
+	    if (pScreenData->pGreenTbl) {
+		if (pScreenData->pRedTbl->pBase != 
+		    pScreenData->pGreenTbl->pBase) {
+		    if (pScreenData->pGreenTbl->pBase) {
+			free (pScreenData->pGreenTbl->pBase);
+		    }
+		}
+		if (pScreenData->pGreenTbl != pScreenData->pRedTbl) {
+		    free (pScreenData->pGreenTbl);
+		}
+	    }
+	    if (pScreenData->pBlueTbl) {
+		if (pScreenData->pRedTbl->pBase != 
+		    pScreenData->pBlueTbl->pBase) {
+		    if (pScreenData->pBlueTbl->pBase) {
+			free (pScreenData->pBlueTbl->pBase);
+		    }
+		}
+		if (pScreenData->pBlueTbl != pScreenData->pRedTbl) {
+		    free (pScreenData->pBlueTbl);
+		}
+	    }
+	    if (pScreenData->pRedTbl->pBase) {
+		free (pScreenData->pRedTbl->pBase);
+	    }
+	    free (pScreenData->pRedTbl);
+	}
+	free (pScreenData);
+    }
+}
+
+
+
+/************************************************************************
+ *									*
+ *			API PRIVATE ROUTINES				*
+ *									*
+ ************************************************************************/
 /*
  *	NAME
  *		ValueCmp
  *
  *	SYNOPSIS
  */
-static int
-ValueCmp (p1, p2)
+int
+_XcmsValueCmp (p1, p2)
     IntensityRec *p1, *p2;
 /*
  *	DESCRIPTION
@@ -495,8 +859,8 @@ ValueCmp (p1, p2)
  *
  *	SYNOPSIS
  */
-static int
-IntensityCmp (p1, p2)
+int
+_XcmsIntensityCmp (p1, p2)
     IntensityRec *p1, *p2;
 /*
  *	DESCRIPTION
@@ -526,8 +890,8 @@ IntensityCmp (p1, p2)
  *	SYNOPSIS
  */
 /* ARGSUSED */
-static int
-ValueInterpolation (key, lo, hi, answer, bitsPerRGB)
+int
+_XcmsValueInterpolation (key, lo, hi, answer, bitsPerRGB)
     IntensityRec *key, *lo, *hi, *answer;
     int bitsPerRGB;
 /*
@@ -556,8 +920,8 @@ ValueInterpolation (key, lo, hi, answer, bitsPerRGB)
  *
  *	SYNOPSIS
  */
-static int
-IntensityInterpolation (key, lo, hi, answer, bitsPerRGB)
+int
+_XcmsIntensityInterpolation (key, lo, hi, answer, bitsPerRGB)
     IntensityRec *key, *lo, *hi, *answer;
     int bitsPerRGB;
 /*
@@ -580,14 +944,7 @@ IntensityInterpolation (key, lo, hi, answer, bitsPerRGB)
     return (XcmsSuccess);
 }
 
-
 
-/************************************************************************
- *									*
- *			API PRIVATE ROUTINES				*
- *									*
- ************************************************************************/
-
 /*
  *	NAME
  *		_XcmsTableSearch
@@ -1086,7 +1443,7 @@ XcmsRGBiToRGB(ccc, pXcmsColors_in_out, nColors, pCompressed)
 		(char *)pScreenData->pRedTbl->pBase,
 		(unsigned)pScreenData->pRedTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
-		IntensityCmp, IntensityInterpolation, (char *)&answerIRec)) {
+		_XcmsIntensityCmp, _XcmsIntensityInterpolation, (char *)&answerIRec)) {
 	    return(XcmsFailure);
 	}
 	tmpRGB.red = answerIRec.value;
@@ -1096,7 +1453,7 @@ XcmsRGBiToRGB(ccc, pXcmsColors_in_out, nColors, pCompressed)
 		(char *)pScreenData->pGreenTbl->pBase,
 		(unsigned)pScreenData->pGreenTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
-		IntensityCmp, IntensityInterpolation, (char *)&answerIRec)) {
+		_XcmsIntensityCmp, _XcmsIntensityInterpolation, (char *)&answerIRec)) {
 	    return(XcmsFailure);
 	}
 	tmpRGB.green = answerIRec.value;
@@ -1106,7 +1463,7 @@ XcmsRGBiToRGB(ccc, pXcmsColors_in_out, nColors, pCompressed)
 		(char *)pScreenData->pBlueTbl->pBase,
 		(unsigned)pScreenData->pBlueTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
-		IntensityCmp, IntensityInterpolation, (char *)&answerIRec)) {
+		_XcmsIntensityCmp, _XcmsIntensityInterpolation, (char *)&answerIRec)) {
 	    return(XcmsFailure);
 	}
 	tmpRGB.blue = answerIRec.value;
@@ -1167,7 +1524,7 @@ XcmsRGBToRGBi(ccc, pXcmsColors_in_out, nColors, pCompressed)
 		(char *)pScreenData->pRedTbl->pBase,
 		(unsigned)pScreenData->pRedTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
-		ValueCmp, ValueInterpolation, (char *)&answerIRec)) {
+		_XcmsValueCmp, _XcmsValueInterpolation, (char *)&answerIRec)) {
 	    return(XcmsFailure);
 	}
 	tmpRGBi.red = answerIRec.intensity;
@@ -1177,7 +1534,7 @@ XcmsRGBToRGBi(ccc, pXcmsColors_in_out, nColors, pCompressed)
 		(char *)pScreenData->pGreenTbl->pBase,
 		(unsigned)pScreenData->pGreenTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
-		ValueCmp, ValueInterpolation, (char *)&answerIRec)) {
+		_XcmsValueCmp, _XcmsValueInterpolation, (char *)&answerIRec)) {
 	    return(XcmsFailure);
 	}
 	tmpRGBi.green = answerIRec.intensity;
@@ -1187,7 +1544,7 @@ XcmsRGBToRGBi(ccc, pXcmsColors_in_out, nColors, pCompressed)
 		(char *)pScreenData->pBlueTbl->pBase,
 		(unsigned)pScreenData->pBlueTbl->nEntries,
 		(unsigned)sizeof(IntensityRec),
-		ValueCmp, ValueInterpolation, (char *)&answerIRec)) {
+		_XcmsValueCmp, _XcmsValueInterpolation, (char *)&answerIRec)) {
 	    return(XcmsFailure);
 	}
 	tmpRGBi.blue = answerIRec.intensity;
@@ -1196,310 +1553,6 @@ XcmsRGBToRGBi(ccc, pXcmsColors_in_out, nColors, pCompressed)
 	(pXcmsColors_in_out++)->format = XcmsRGBiFormat;
     }
     return(XcmsSuccess);
-}
-
-/*
- *	NAME
- *		LINEAR_RGB_InitSCCData()
- *
- *	SYNOPSIS
- */
-static Status
-LINEAR_RGB_InitSCCData(dpy, screenNumber, pPerScrnInfo)
-    Display *dpy;
-    int screenNumber;
-    XcmsPerScrnInfo *pPerScrnInfo;
-/*
- *	DESCRIPTION
- *
- *	RETURNS
- *		XcmsFailure if failed.
- *		XcmsSuccess if succeeded.
- *
- */
-{
-    Atom  CorrectAtom = XInternAtom (dpy, XDCCC_CORRECT_ATOM_NAME, True);
-    Atom  MatrixAtom  = XInternAtom (dpy, XDCCC_MATRIX_ATOM_NAME, True);
-    int	  format_return, count, cType, nTables, nElements;
-    unsigned long nitems_return, nbytes_return;
-    char *property_return, *pChar;
-    XcmsFloat *pValue;
-    IntensityRec *pIRec;
-
-    LINEAR_RGB_SCCData *pScreenData;
-
-    /*
-     * Allocate memory for pScreenData
-     */
-    if (!(pScreenData = (LINEAR_RGB_SCCData *) 
-		      Xcalloc (1, sizeof(LINEAR_RGB_SCCData)))) {
-	return(XcmsFailure);
-    }
-
-    /*
-     *	1. Get the XYZ to RGB Matrix
-     *	2. Get the RGB to XYZ Matrix
-     *	3. Compute the white point of the matrix
-     */
-
-    /* 
-     *  First try to see if the XDXcmsCCC.conversion matrices property is
-     *  loaded on the root window.  If it is then read it and set the
-     *  screen info using this property.  If it is not use the default.
-     */
-    if (MatrixAtom != None &&
-	_XcmsGetProperty (dpy, RootWindow(dpy, screenNumber), MatrixAtom, 
-	   &format_return, &nitems_return, &nbytes_return, &property_return) &&
-	   nitems_return == 18) {
-
-	/* Get the RGBtoXYZ and XYZtoRGB matrices */
-	pValue = (XcmsFloat *) pScreenData;
-	pChar = property_return;
-	for (count = 0; count < 18; count++) {
-	    *pValue++ = (XcmsFloat)_XcmsGetElement(format_return, &pChar)
-		    / (XcmsFloat)XDCCC_NUMBER;
-	}
-	XFree (property_return);
-	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.X = pScreenData->RGBtoXYZmatrix[0][0] +
-					      pScreenData->RGBtoXYZmatrix[0][1] +
-					      pScreenData->RGBtoXYZmatrix[0][2];
-	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y = pScreenData->RGBtoXYZmatrix[1][0] +
-					      pScreenData->RGBtoXYZmatrix[1][1] +
-					      pScreenData->RGBtoXYZmatrix[1][2];
-	pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Z = pScreenData->RGBtoXYZmatrix[2][0] +
-					      pScreenData->RGBtoXYZmatrix[2][1] +
-					      pScreenData->RGBtoXYZmatrix[2][2];
-	if ((pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y < (1.0 - EPS) )
-		|| (pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y > (1.0 + EPS))) {
-	    goto FreeSCCData;
-	} else {
-	    pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y = 1.0;
-	}
-	pPerScrnInfo->screenWhitePt.format = XcmsCIEXYZFormat;
-	pPerScrnInfo->screenWhitePt.pixel = 0;
-#ifdef PDEBUG
-	printf ("A Matrix values:\n");
-	printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n",
-		pScreenData->RGBtoXYZmatrix[0][0],
-		pScreenData->RGBtoXYZmatrix[0][1],
-		pScreenData->RGBtoXYZmatrix[0][2],
-		pScreenData->RGBtoXYZmatrix[1][0],
-		pScreenData->RGBtoXYZmatrix[1][1],
-		pScreenData->RGBtoXYZmatrix[1][2],
-		pScreenData->RGBtoXYZmatrix[2][0],
-		pScreenData->RGBtoXYZmatrix[2][1],
-		pScreenData->RGBtoXYZmatrix[2][2]);
-	printf ("A- Matrix values:\n");
-	printf ("       %f %f %f\n       %f %f %f\n       %f %f %f\n",
-		pScreenData->XYZtoRGBmatrix[0][0],
-		pScreenData->XYZtoRGBmatrix[0][1],
-		pScreenData->XYZtoRGBmatrix[0][2],
-		pScreenData->XYZtoRGBmatrix[1][0],
-		pScreenData->XYZtoRGBmatrix[1][1],
-		pScreenData->XYZtoRGBmatrix[1][2],
-		pScreenData->XYZtoRGBmatrix[2][0],
-		pScreenData->XYZtoRGBmatrix[2][1],
-		pScreenData->XYZtoRGBmatrix[2][2]);
-	printf ("Screen White Pt value: %f %f %f\n",
-		pPerScrnInfo->screenWhitePt.spec.CIEXYZ.X,
-		pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Y,
-		pPerScrnInfo->screenWhitePt.spec.CIEXYZ.Z);
-#endif /* PDEBUG */
-    } else {
-	/* when debug is on then use the statics otherwise just return. */
-	goto FreeSCCData;
-    }
-
-    /*
-     *	4. Get the Intensity Profile if it exists
-     */
-    if (CorrectAtom != None &&
-	_XcmsGetProperty (dpy, RootWindow(dpy, screenNumber), CorrectAtom,
-	   &format_return, &nitems_return, &nbytes_return, &property_return) &&
-	    nitems_return > 3) {
-
-	pChar = property_return;
-	cType = _XcmsGetElement(format_return, &pChar);
-	nTables = _XcmsGetElement(format_return, &pChar);
-
-	if (cType == 0) {
-	    /* Red Intensity Table */
-	    if (!(pScreenData->pRedTbl = (IntensityTbl *)
-		    Xcalloc (1, sizeof(IntensityTbl)))) {
-		goto FreeSCCData;
-	    }
-	    nElements = pScreenData->pRedTbl->nEntries = 
-		    _XcmsGetElement(format_return, &pChar);
-	    if (!(pScreenData->pRedTbl->pBase = (IntensityRec *)
-		  Xcalloc (nElements, sizeof(IntensityRec)))) {
-		goto FreeRedTbl;
-	    }
-	    pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
-	    for (; nElements--; pIRec++) {
-		pIRec->value = _XcmsGetElement (format_return, &pChar);
-		pIRec->intensity = (XcmsFloat) 
-		 _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
-	    }
-	    if (nTables == 1) {
-		/* Green Intensity Table */
-		pScreenData->pGreenTbl = pScreenData->pRedTbl;
-		/* Blue Intensity Table */
-		pScreenData->pBlueTbl = pScreenData->pRedTbl;
-	    } else {
-		/* Green Intensity Table */
-		if (!(pScreenData->pGreenTbl = (IntensityTbl *)
-			Xcalloc (1, sizeof(IntensityTbl)))) {
-		    goto FreeRedTblElements;
-		}
-		nElements = pScreenData->pGreenTbl->nEntries =
-			(int) _XcmsGetElement (format_return, &pChar);
-		if (!(pScreenData->pGreenTbl->pBase = (IntensityRec *)
-		      Xcalloc (nElements, sizeof(IntensityRec)))) {
-		    goto FreeGreenTbl;
-		}
-		pIRec = (IntensityRec *) pScreenData->pGreenTbl->pBase;
-		for (; nElements--; pIRec++) {
-		    pIRec->value = _XcmsGetElement (format_return, &pChar);
-		    pIRec->intensity = (XcmsFloat)
-		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
-		}
-		/* Blue Intensity Table */
-		if (!(pScreenData->pBlueTbl = (IntensityTbl *)
-			Xcalloc (1, sizeof(IntensityTbl)))) {
-		    goto FreeGreenTblElements;
-		}
-		nElements = pScreenData->pBlueTbl->nEntries =
-			(int) _XcmsGetElement (format_return, &pChar);
-		if (!(pScreenData->pBlueTbl->pBase = (IntensityRec *)
-		      Xcalloc (nElements, sizeof(IntensityRec)))) {
-		    goto FreeBlueTbl;
-		}
-		pIRec = (IntensityRec *) pScreenData->pBlueTbl->pBase;
-		for (; nElements--; pIRec++) {
-		    pIRec->value = _XcmsGetElement (format_return, &pChar);
-		    pIRec->intensity = (XcmsFloat)
-		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
-		}
-	    }	    
-	} else {
-	    /* Red Intensity Table */
-	    if (!(pScreenData->pRedTbl = (IntensityTbl *)
-		    Xcalloc (1, sizeof(IntensityTbl)))) {
-		goto FreeSCCData;
-	    }
-	    nElements = pScreenData->pRedTbl->nEntries =
-		    (int) _XcmsGetElement (format_return, &pChar);
-	    if (!(pScreenData->pRedTbl->pBase = (IntensityRec *)
-		  Xcalloc (nElements, sizeof(IntensityRec)))) {
-		goto FreeRedTbl;
-	    }
-	    pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
-	    for (; nElements--; pIRec++) {
-		pIRec->value = count;
-		pIRec->intensity = (XcmsFloat) 
-		  _XcmsGetElement (format_return,&pChar)/(XcmsFloat)XDCCC_NUMBER;
-	    }
-	    if (nTables == 1) {
-		/* Green Intensity Table */
-		pScreenData->pGreenTbl = pScreenData->pRedTbl;
-		/* Blue Intensity Table */
-		pScreenData->pBlueTbl = pScreenData->pRedTbl;
-	    } else {
-		/* Green Intensity Table */
-		if (!(pScreenData->pGreenTbl = (IntensityTbl *)
-			Xcalloc (1, sizeof(IntensityTbl)))) {
-		    goto FreeRedTblElements;
-		}
-		nElements = pScreenData->pGreenTbl->nEntries =
-			(int) _XcmsGetElement (format_return, &pChar);
-		if (!(pScreenData->pGreenTbl->pBase =(IntensityRec *)
-		      Xcalloc (nElements, sizeof(IntensityRec)))) {
-		    goto FreeGreenTbl;
-		}
-		pIRec = (IntensityRec *) pScreenData->pGreenTbl->pBase;
-		for (; nElements; pIRec++) {
-		    pIRec->value = count;
-		    pIRec->intensity = (XcmsFloat) 
-		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
-		}
-		/* Blue Intensity Table */
-		if (!(pScreenData->pBlueTbl = (IntensityTbl *)
-			Xcalloc (1, sizeof(IntensityTbl)))) {
-		    goto FreeGreenTblElements;
-		}
-		nElements = pScreenData->pBlueTbl->nEntries =
-			(int) _XcmsGetElement (format_return, &pChar);
-		if (!(pScreenData->pBlueTbl->pBase =(IntensityRec *)
-		      Xcalloc (nElements, sizeof(IntensityRec)))) {
-		    goto FreeBlueTbl;
-		}
-		pIRec = (IntensityRec *) pScreenData->pBlueTbl->pBase;
-		for (; nElements--; pIRec++) {
-		    pIRec->value = count;
-		    pIRec->intensity = (XcmsFloat)
-		     _XcmsGetElement (format_return, &pChar)/(XcmsFloat)XDCCC_NUMBER;
-		}
-	    }
-	}
-	XFree (property_return);
-#ifdef ALLDEBUG
-	printf ("Intensity Table  RED    %d\n", pScreenData->pRedTbl->nEntries);
-	pIRec = (IntensityRec *) pScreenData->pRedTbl->pBase;
-	for (count = 0; count < pScreenData->pRedTbl->nEntries; count++, pIRec++) {
-	    printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
-	}
-	if (pScreenData->pGreenTbl->pBase != pScreenData->pRedTbl->pBase) {
-	    printf ("Intensity Table  GREEN  %d\n", pScreenData->pGreenTbl->nEntries);
-	    pIRec = (IntensityRec *)pScreenData->pGreenTbl->pBase;
-	    for (count = 0; count < pScreenData->pGreenTbl->nEntries; count++, pIRec++) {
-		printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
-	    }
-	}
-	if (pScreenData->pBlueTbl->pBase != pScreenData->pRedTbl->pBase) {
-	    printf ("Intensity Table  BLUE   %d\n", pScreenData->pBlueTbl->nEntries);
-	    pIRec = (IntensityRec *) pScreenData->pBlueTbl->pBase;
-	    for (count = 0; count < pScreenData->pBlueTbl->nEntries; count++, pIRec++) {
-		printf ("\t0x%4x\t%f\n", pIRec->value, pIRec->intensity);
-	    }
-	}
-#endif /* ALLDEBUG */
-    } else {
-	XFree (property_return);
-	goto FreeSCCData;
-    }
-    /* Free the old memory and use the new structure created. */
-    LINEAR_RGB_FreeSCCData((LINEAR_RGB_SCCData *) pPerScrnInfo->screenData);
-
-    pPerScrnInfo->functionSet = (XPointer) &XcmsLinearRGBFunctionSet;
-
-    pPerScrnInfo->screenData = (XPointer) pScreenData;
-
-    pPerScrnInfo->state = XcmsInitSuccess;
-
-    return(XcmsSuccess);
-
-FreeBlueTblElements:
-    free(pScreenData->pBlueTbl->pBase);
-
-FreeBlueTbl:
-    free(pScreenData->pBlueTbl);
-
-FreeGreenTblElements:
-    free(pScreenData->pBlueTbl->pBase);
-
-FreeGreenTbl:
-    free(pScreenData->pGreenTbl);
-
-FreeRedTblElements:
-    free(pScreenData->pRedTbl->pBase);
-
-FreeRedTbl:
-    free(pScreenData->pRedTbl);
-
-FreeSCCData:
-    free(pScreenData);
-    pPerScrnInfo->state = XcmsInitNone;
-    return(XcmsFailure);
 }
 
 /*
@@ -1549,55 +1602,4 @@ _XcmsLRGB_InitScrnDefault(dpy, screenNumber, pPerScrnInfo)
     pPerScrnInfo->functionSet = (XPointer)&XcmsLinearRGBFunctionSet;
     pPerScrnInfo->state = XcmsInitDefault;
     return(1);
-}
-
-/*
- *	NAME
- *		LINEAR_RGB_FreeSCCData()
- *
- *	SYNOPSIS
- */
-static void
-LINEAR_RGB_FreeSCCData(pScreenData)
-    LINEAR_RGB_SCCData *pScreenData;
-/*
- *	DESCRIPTION
- *
- *	RETURNS
- *		0 if failed.
- *		1 if succeeded with no modifications.
- *
- */
-{
-    if (pScreenData) {
-	if (pScreenData->pRedTbl) {
-	    if (pScreenData->pGreenTbl) {
-		if (pScreenData->pRedTbl->pBase != 
-		    pScreenData->pGreenTbl->pBase) {
-		    if (pScreenData->pGreenTbl->pBase) {
-			free (pScreenData->pGreenTbl->pBase);
-		    }
-		}
-		if (pScreenData->pGreenTbl != pScreenData->pRedTbl) {
-		    free (pScreenData->pGreenTbl);
-		}
-	    }
-	    if (pScreenData->pBlueTbl) {
-		if (pScreenData->pRedTbl->pBase != 
-		    pScreenData->pBlueTbl->pBase) {
-		    if (pScreenData->pBlueTbl->pBase) {
-			free (pScreenData->pBlueTbl->pBase);
-		    }
-		}
-		if (pScreenData->pBlueTbl != pScreenData->pRedTbl) {
-		    free (pScreenData->pBlueTbl);
-		}
-	    }
-	    if (pScreenData->pRedTbl->pBase) {
-		free (pScreenData->pRedTbl->pBase);
-	    }
-	    free (pScreenData->pRedTbl);
-	}
-	free (pScreenData);
-    }
 }

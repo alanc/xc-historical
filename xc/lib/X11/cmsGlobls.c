@@ -1,4 +1,4 @@
-/*$XConsortium: XcmsGlobls.c,v 1.5 91/02/20 18:47:11 dave Exp $ */
+/*$XConsortium: XcmsGlobls.c,v 1.6 91/05/13 23:22:09 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -44,7 +44,7 @@
  */
 extern XcmsSCCFuncSet	XcmsLinearRGBFunctionSet;
 #ifdef GRAY
-extern XcmsSCCFuncSet	GRAY_SCCFuncSet;
+extern XcmsSCCFuncSet	XcmsGrayFunctionSet;
 #endif /* GRAY */
 
 /* UNDEFINED Color Space */
@@ -90,9 +90,7 @@ XcmsColorSpace *_XcmsDIColorSpacesInit[] = {
     &XcmsCIExyYColorSpace,
     &XcmsCIELabColorSpace,
     &XcmsCIELuvColorSpace,
-#ifdef TekHVC_IN_APILIB
     &XcmsTekHVCColorSpace,
-#endif
     &XcmsUNDEFINEDColorSpace,
     NULL
 };
@@ -124,7 +122,7 @@ XcmsColorSpace **_XcmsDDColorSpaces = &_XcmsDDColorSpacesInit[0];
 XcmsSCCFuncSet	*_XcmsSCCFuncSetsInit[] = {
 	&XcmsLinearRGBFunctionSet,
 #ifdef GRAY
-	&GRAY_SCCFuncSet,
+	&XcmsGrayFunctionSet,
 #endif /* GRAY */
 	NULL};
     /*

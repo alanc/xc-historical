@@ -72,6 +72,7 @@
 #define VisualOfCCC(ccc)		((ccc)->visual)
 #define ClientWhitePointOfCCC(ccc)	((ccc)->clientWhitePt)
 #define ScreenWhitePointOfCCC(ccc)	((ccc)->pPerScrnInfo->screenWhitePt)
+#define FunctionSetOfCCC(ccc)		((ccc)->pPerScrnInfo->functionSet)
 
 typedef unsigned int XcmsColorFormat;	/* Color Space Format ID */
 

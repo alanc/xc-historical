@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsLkCol.c,v 1.8 91/05/13 23:25:38 rws Exp $ */
+/* $XConsortium: XcmsLkCol.c,v 1.9 91/05/14 10:58:42 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -59,17 +59,17 @@ Status
 XcmsLookupColor (
     Display *dpy,
     Colormap cmap,
-    _Xconst char *color_name,
+    _Xconst char *colorname,
     XcmsColor *pColor_exact_return,
     XcmsColor *pColor_scrn_return,
     XcmsColorFormat result_format)
 #else
 Status
-XcmsLookupColor(dpy, cmap, color_name, pColor_exact_return, pColor_scrn_return,
+XcmsLookupColor(dpy, cmap, colorname, pColor_exact_return, pColor_scrn_return,
 	result_format)
     Display *dpy;
     Colormap cmap;
-    char *color_name;
+    char *colorname;
     XcmsColor *pColor_exact_return;
     XcmsColor *pColor_scrn_return;
     XcmsColorFormat result_format;
@@ -91,7 +91,6 @@ XcmsLookupColor(dpy, cmap, color_name, pColor_exact_return, pColor_scrn_return,
 {
     Status retval1 = XcmsSuccess;
     Status retval2 = XcmsSuccess;
-    char tmpName[BUFSIZ];
     XcmsCCC ccc;
     register int n;
     xLookupColorReply reply;
@@ -101,7 +100,7 @@ XcmsLookupColor(dpy, cmap, color_name, pColor_exact_return, pColor_scrn_return,
 /*
  * 0. Check for invalid arguments.
  */
-    if (dpy == NULL || color_name[0] == '\0' || pColor_scrn_return == 0
+    if (dpy == NULL || colorname[0] == '\0' || pColor_scrn_return == 0
 	    || pColor_exact_return == NULL) {
 	return(XcmsFailure);
     }
@@ -113,8 +112,7 @@ XcmsLookupColor(dpy, cmap, color_name, pColor_exact_return, pColor_scrn_return,
 /*
  * 1. Convert string to a XcmsColor
  */
-    strncpy(tmpName, color_name, BUFSIZ - 1);
-    if ((retval1 = _XcmsResolveColorString(ccc, color_name,
+    if ((retval1 = _XcmsResolveColorString(ccc, &colorname,
 	    pColor_exact_return, result_format)) != XcmsSuccess) {
 	goto PassToServer;
     }
@@ -163,16 +161,15 @@ XcmsLookupColor(dpy, cmap, color_name, pColor_exact_return, pColor_scrn_return,
 PassToServer:
     /*
      * TekCMS and i18n methods failed, so lets pass it to the server
-     * for parsing.  Remember to use tmpName since it may have been
-     * overwritten by XcmsResolveColorString().
+     * for parsing.
      */
 
     LockDisplay(dpy);
     GetReq (LookupColor, req);
     req->cmap = cmap;
-    req->nbytes = n = strlen(tmpName);
+    req->nbytes = n = strlen(colorname);
     req->length += (n + 3) >> 2;
-    Data (dpy, tmpName, (long)n);
+    Data (dpy, colorname, (long)n);
     if (!_XReply (dpy, (xReply *) &reply, 0, xTrue)) {
 	UnlockDisplay(dpy);
 	SyncHandle();

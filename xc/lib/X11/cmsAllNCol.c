@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAlNCol.c,v 1.5 91/05/13 23:02:49 rws Exp $" */
+/* $XConsortium: XcmsAlNCol.c,v 1.6 91/05/14 10:58:45 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -56,17 +56,17 @@ Status
 XcmsAllocNamedColor (
     Display *dpy,
     Colormap cmap,
-    _Xconst char *color_name,
+    _Xconst char *colorname,
     XcmsColor *pColor_scrn_return,
     XcmsColor *pColor_exact_return,
     XcmsColorFormat result_format)
 #else
 Status
-XcmsAllocNamedColor(dpy, cmap, color_name, pColor_scrn_return,
+XcmsAllocNamedColor(dpy, cmap, colorname, pColor_scrn_return,
 	pColor_exact_return, result_format)
     Display *dpy;
     Colormap cmap;
-    char *color_name;
+    char *colorname;
     XcmsColor *pColor_scrn_return;
     XcmsColor *pColor_exact_return;
     XcmsColorFormat result_format;
@@ -84,10 +84,6 @@ XcmsAllocNamedColor(dpy, cmap, color_name, pColor_scrn_return,
  *		1 if succeeded in converting color name to XcmsColor.
  *		2 if succeeded in converting color name to another color name.
  *
- *	CAVEATS
- *		Assumes name is an array of BUFSIZ characters so we can
- *		overwrite!
- *
  */
 {
     long nbytes;
@@ -99,13 +95,12 @@ XcmsAllocNamedColor(dpy, cmap, color_name, pColor_scrn_return,
     Status retval2 = XcmsSuccess;
     XcmsColor tmpColor;
     XColor XColor_in_out;
-    char tmpName[BUFSIZ];
     XcmsCCC ccc;
 
     /*
      * 0. Check for invalid arguments.
      */
-    if (dpy == NULL || color_name[0] == '\0' || pColor_scrn_return == 0
+    if (dpy == NULL || colorname[0] == '\0' || pColor_scrn_return == 0
 	    || pColor_exact_return == NULL) {
 	return(XcmsFailure);
     }
@@ -117,9 +112,7 @@ XcmsAllocNamedColor(dpy, cmap, color_name, pColor_scrn_return,
     /*
      * 1. Convert string to a XcmsColor using TekCMS and i18n mechanism
      */
-    /* copy string to allow overwrite by _XcmsResolveColorString() */
-    strncpy(tmpName, color_name, BUFSIZ - 1);
-    if ((retval1 = _XcmsResolveColorString(ccc, tmpName,
+    if ((retval1 = _XcmsResolveColorString(ccc, &colorname,
 	    &tmpColor, result_format)) == XcmsFailure) {
 	return(XcmsFailure);
     }
@@ -175,10 +168,10 @@ PassToServer:
     GetReq(AllocNamedColor, req);
 
     req->cmap = cmap;
-    nbytes = req->nbytes = strlen(color_name);
+    nbytes = req->nbytes = strlen(colorname);
     req->length += (nbytes + 3) >> 2; /* round up to mult of 4 */
 
-    _XSend(dpy, color_name, nbytes);
+    _XSend(dpy, colorname, nbytes);
        /* _XSend is more efficient that Data, since _XReply follows */
 
     if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {

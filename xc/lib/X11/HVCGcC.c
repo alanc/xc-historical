@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCGcC.c,v 1.4 91/02/12 16:09:56 dave Exp $" */
+/* $XConsortium: TekHVCGcC.c,v 1.5 91/05/13 22:44:20 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -52,6 +52,7 @@
  */
 extern Status XcmsTekHVCQueryMaxC();
 extern XcmsColorSpace XcmsTekHVCColorSpace;
+extern XcmsSCCFuncSet	XcmsLinearRGBFunctionSet;
 
 
 
@@ -114,7 +115,8 @@ XcmsTekHVCClipC (ccc, pColors_in_out, nColors, i, pCompressed)
 
     pColor = pColors_in_out + i;
 
-    if (ccc->visual->class < PseudoColor) {
+    if (ccc->visual->class < StaticColor &&
+	    FunctionSetOfCCC(ccc) != (XPointer) &XcmsLinearRGBFunctionSet) {
 	/*
 	 * GRAY !
 	 */

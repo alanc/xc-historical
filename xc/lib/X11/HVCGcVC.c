@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCGcVC.c,v 1.5 91/02/15 18:33:27 dave Exp $" */
+/* $XConsortium: TekHVCGcVC.c,v 1.6 91/05/13 22:45:19 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -61,6 +61,7 @@
 extern int _XcmsTekHVC_CheckModify();
 extern Status _XcmsTekHVCQueryMaxVCRGB();
 extern XcmsColorSpace XcmsTekHVCColorSpace;
+extern XcmsSCCFuncSet	XcmsLinearRGBFunctionSet;
 
 
 /************************************************************************
@@ -130,7 +131,8 @@ XcmsTekHVCClipVC (ccc, pColors_in_out, nColors, i, pCompressed)
 
     pColor = pColors_in_out + i;
 
-    if (ccc->visual->class < StaticColor) {
+    if (ccc->visual->class < StaticColor &&
+	    FunctionSetOfCCC(ccc) != (XPointer) &XcmsLinearRGBFunctionSet) {
 	/*
 	 * GRAY !
 	 */
@@ -198,7 +200,7 @@ XcmsTekHVCClipVC (ccc, pColors_in_out, nColors, i, pCompressed)
 	nI =     nMaxCount / 2;
 	bestValue = Value =  pColor->spec.TekHVC.V;
 	bestChroma = Chroma = pColor->spec.TekHVC.C;
-	saveDist = (XcmsFloat) sqrt ((double) (((Chroma - hvc_max.spec.TekHVC.C) *
+	saveDist = (XcmsFloat) XCMS_SQRT ((double) (((Chroma - hvc_max.spec.TekHVC.C) *
 					       (Chroma - hvc_max.spec.TekHVC.C)) +
 					      ((Value - hvc_max.spec.TekHVC.V) *
 					       (Value - hvc_max.spec.TekHVC.V))));
@@ -219,7 +221,7 @@ XcmsTekHVCClipVC (ccc, pColors_in_out, nColors, i, pCompressed)
 	    if (!_XcmsTekHVC_CheckModify(pColor)) {
 		return (XcmsFailure);
 	    }
-	    tmpDist = (XcmsFloat) sqrt ((double) 
+	    tmpDist = (XcmsFloat) XCMS_SQRT ((double) 
 			(((Chroma - pColor->spec.TekHVC.C) *
 			  (Chroma - pColor->spec.TekHVC.C)) +
 			 ((Value - pColor->spec.TekHVC.V) *

@@ -1,4 +1,4 @@
-/* $XConsortium: XGetColor.c,v 11.22 91/05/13 22:54:11 rws Exp $ */
+/* $XConsortium: XGetColor.c,v 11.23 91/05/14 10:58:34 rws Exp $ */
 /* Copyright    Massachusetts Institute of Technology    1986	*/
 
 /*
@@ -41,7 +41,6 @@ XColor *exact_def; /* RETURN */
     xAllocNamedColorReply rep;
     xAllocNamedColorReq *req;
 
-    char tmpName[BUFSIZ];
     XcmsCCC ccc;
     XcmsColor cmsColor_exact;
     Status ret;
@@ -50,9 +49,8 @@ XColor *exact_def; /* RETURN */
      * Let's Attempt to use TekCMS and i18n approach to Parse Color
      */
     /* copy string to allow overwrite by _XcmsResolveColorString() */
-    strncpy(tmpName, colorname, BUFSIZ - 1);
     if ((ccc = XcmsCCCOfColormap(dpy, cmap)) != (XcmsCCC)NULL) {
-	if (_XcmsResolveColorString(ccc, tmpName, &cmsColor_exact,
+	if (_XcmsResolveColorString(ccc, &colorname, &cmsColor_exact,
 		XcmsRGBFormat) == XcmsSuccess) {
 	    _XcmsRGB_to_XColor(&cmsColor_exact, exact_def, 1);
 	    bcopy((char *)exact_def, (char *)hard_def, sizeof(XColor));
@@ -61,7 +59,7 @@ XColor *exact_def; /* RETURN */
 	    return(ret);
 	}
 	/*
-	 * Otherwise we failed; or tmpName was overwritten with yet another
+	 * Otherwise we failed; or colorname was changed with yet another
 	 * name.  Thus pass name to the X Server.
 	 */
     }
@@ -73,10 +71,10 @@ XColor *exact_def; /* RETURN */
     GetReq(AllocNamedColor, req);
 
     req->cmap = cmap;
-    nbytes = req->nbytes = strlen(tmpName);
+    nbytes = req->nbytes = strlen(colorname);
     req->length += (nbytes + 3) >> 2; /* round up to mult of 4 */
 
-    _XSend(dpy, tmpName, nbytes);
+    _XSend(dpy, colorname, nbytes);
        /* _XSend is more efficient that Data, since _XReply follows */
 
     if (!_XReply (dpy, (xReply *) &rep, 0, xTrue)) {

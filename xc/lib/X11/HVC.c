@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVC.c,v 1.5 91/02/15 18:33:16 dave Exp $" */
+/* $XConsortium: TekHVC.c,v 1.6 91/05/13 22:43:33 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -251,7 +251,7 @@ ThetaOffset(pWhitePt, pThetaOffset)
 	return(0);
     }
     slopeuv = (v_BR - pWhitePt->spec.CIEuvY.v_prime) / div;
-    *pThetaOffset = degrees(atan(slopeuv));
+    *pThetaOffset = degrees(XCMS_ATAN(slopeuv));
     return(1);
 }
 
@@ -404,9 +404,9 @@ XcmsTekHVCToCIEuvY(ccc, pHVC_WhitePt, pColors_in_out, nColors)
 	    tempHue = radians(tempHue);
 
 	    /* Calculate u'v' for the obtained hue */
-	    u = (XcmsFloat) ((cos(tempHue) * pColor->spec.TekHVC.C) / 
+	    u = (XcmsFloat) ((XCMS_COS(tempHue) * pColor->spec.TekHVC.C) / 
 		    (pColor->spec.TekHVC.V * (double)CHROMA_SCALE_FACTOR));
-	    v = (XcmsFloat) ((sin(tempHue) * pColor->spec.TekHVC.C) / 
+	    v = (XcmsFloat) ((XCMS_SIN(tempHue) * pColor->spec.TekHVC.C) / 
 		    (pColor->spec.TekHVC.V * (double)CHROMA_SCALE_FACTOR));
 
 	    /* Based on the white point get the offset from best red */
@@ -505,7 +505,7 @@ XcmsCIEuvYToTekHVC(ccc, pHVC_WhitePt, pColors_in_out, nColors)
 	    theta = 0.0;
 	} else {
 	    theta = v / u;
-	    theta = (XcmsFloat) atan((double)theta);
+	    theta = (XcmsFloat) XCMS_ATAN((double)theta);
 	    theta = degrees(theta);
 	}
 
@@ -537,7 +537,7 @@ XcmsCIEuvYToTekHVC(ccc, pHVC_WhitePt, pColors_in_out, nColors)
 	    (pColor->spec.CIEuvY.Y * 903.29)
 	    :
 	    ((XcmsFloat)(XCMS_CUBEROOT(pColor->spec.CIEuvY.Y) * 116.0) - 16.0);
-	HVC_return.C = L2 * CHROMA_SCALE_FACTOR * sqrt((double) ((u * u) + (v * v)));
+	HVC_return.C = L2 * CHROMA_SCALE_FACTOR * XCMS_SQRT((double) ((u * u) + (v * v)));
 	if (HVC_return.C < 0.0) {
 	    theta = 0.0;
 	}
