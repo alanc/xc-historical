@@ -37,7 +37,6 @@
  * for the address format. This will simplify the code in other places like
  * The X Server.
  */
-#include <sys/socket.h>
 #include <sys/un.h>
 
 /*
@@ -83,7 +82,7 @@ int sig;
 #define ISCNODENAME "/tmp/.X11-unix/X%s"
 #define SCONODENAME "/dev/X/%1sR"
 #endif
-#if defined(FS)
+#if defined(FS) || defined(FONT)
 /*
  * USL has already defined something here. We need to check with them
  * and see if their choice is usable here.
@@ -833,6 +832,7 @@ while(1)
 		 */
 		strncpy(typebuf,typetocheck,TYPEBUFSIZE);
 		for(j=0;j<TYPEBUFSIZE;j++)
+		    if (isupper(typebuf[j]))
 			typebuf[j]=tolower(typebuf[j]);
 
 		/* Now, see if they match */
