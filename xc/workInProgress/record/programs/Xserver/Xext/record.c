@@ -1,4 +1,4 @@
-/* $XConsortium: record.c,v 1.9 94/02/04 11:18:14 rws Exp $ */
+/* $XConsortium: record.c,v 1.10 94/02/04 14:46:30 rws Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices;
  * Portions Copyright 1988 by Digital Equipment Corporation and the
@@ -504,7 +504,7 @@ RecordEvents(pcbl, nulldata, pinfo)
 				   x_event->u.u.type,
 				   pCur->flags.events.first,
 				   pCur->flags.events.last);
-    #endif
+#endif
 			    WriteToClient(RecordConfigList[i]->data_client,
 					  sizeof(xRecordEnableConfigReply),
 					  (char *)&rep);
