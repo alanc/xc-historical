@@ -24,7 +24,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * %W%	%G%
+ * $NCDId: @(#)fonts.c,v 4.9 1991/06/13 11:52:37 lemke Exp $
  *
  */
 
@@ -91,25 +91,6 @@ FreeFPE(fpe)
 	fsfree(fpe->name);
 	fsfree(fpe);
     }
-}
-
-/*
- * tries to find the font name in the font name cache
- */
-FontPtr
-FindCachedFontName(name, namelen)
-    char       *name;
-    int         namelen;
-{
-    return NullFont;
-}
-
-int
-CacheFontName(name, namelen, pfont)
-    char       *name;
-    int         namelen;
-    FontPtr     pfont;
-{
 }
 
 /*
@@ -218,14 +199,14 @@ remove_id_from_list(ids, fid)
     FontIDListPtr ids;
     Font        fid;
 {
-    int         i,
-                j;
+    int         i;
 
     for (i = 0; i < ids->num; i++) {
 	if (ids->client_list[i] == fid) {
 	    /* a bcopy() might be better here */
-	    for (j = i + 1; j < ids->num; j++) {
-		ids->client_list[j - 1] = ids->client_list[j];
+	    while (i < ids->num) {
+		ids->client_list[i] = ids->client_list[i + 1];
+		i++;
 	    }
 	    ids->num--;
 	    return;
@@ -268,8 +249,7 @@ do_open_font(client, c)
     int         newlen;
     ClientFontPtr cfp;
     fsOpenBitmapFontReply rep;
-    Font        orig,
-               *fids;
+    Font        orig;
     FontIDListPtr *idlist,
                 ids;
 
@@ -321,6 +301,14 @@ do_open_font(client, c)
     cfp->font = pfont;
     cfp->clientindex = c->client->index;
 
+    /*
+     * XXX -- note that this will still be caching the real name, rather than
+     * the resolved alias unless we stash the real name.  this is less than
+     * optimal, so it may be necessary to add some more stuff to the closure
+     * to hold the original name
+     */
+    CacheFontPattern(c->fontname, c->fnamelen, pfont);
+
     /* either pull out the original id or make the array */
     if (pfont->refcnt != 0) {
 	idlist = (FontIDListPtr *) pfont->svrPrivate;
@@ -329,16 +317,12 @@ do_open_font(client, c)
 	    ids = make_clients_id_list();
 	    if (!ids) {
 		err = AllocError;
-		fsfree(ids);
 		fsfree(cfp);
 		goto dropout;
 	    }
 	    idlist[c->client->index] = ids;
 	}
 	orig = ids->client_list[0];
-	if (!orig) {
-	    add_id_to_list(ids, c->fontid);
-	}
     } else {
 	idlist = (FontIDListPtr *) fsalloc(sizeof(FontIDListPtr) * MAXCLIENTS);
 	if (!idlist) {
@@ -357,16 +341,15 @@ do_open_font(client, c)
 	idlist[c->client->index] = ids;
 	orig = (Font) 0;
 	pfont->svrPrivate = (pointer) idlist;
-	add_id_to_list(ids, c->fontid);
     }
-    if (!orig &&
-	 !AddResource(c->client->index, c->fontid, RT_FONT, (pointer) cfp)) {
+    if (!AddResource(c->client->index, c->fontid, RT_FONT, (pointer) cfp)) {
 	fsfree(cfp);
 	fsfree(pfont->svrPrivate);
 	pfont->svrPrivate = (pointer) 0;
 	err = AllocError;
 	goto dropout;
     }
+    add_id_to_list(ids, c->fontid);
     /* send the reply */
     rep.type = FS_Reply;
     rep.originalid = orig;
@@ -412,29 +395,33 @@ OpenFont(client, fid, format, format_mask, namelen, name)
     int         i;
 
     /* check name cache */
-    pfont = FindCachedFontName(name, namelen);
+    pfont = FindCachedFontPattern(name, namelen);
     if (pfont) {		/* found it */
 	ClientFontPtr cfp;
 
 	idlist = (FontIDListPtr *) pfont->svrPrivate;
 	ids = idlist[client->index];
-	orig = ids->client_list[0];
-	if (!orig) {
-	    cfp = (ClientFontPtr) fsalloc(sizeof(ClientFontRec));
-	    if (!cfp) {
-		SendErrToClient(client, FSBadAlloc, (pointer) 0);
-		return FSBadAlloc;
+	if (!ids) {
+	    ids = make_clients_id_list();
+	    if (!ids) {
+		goto lowmem;
 	    }
-	    cfp->font = pfont;
-	    cfp->clientindex = client->index;
-	    if (!AddResource(client->index, fid, RT_FONT, (pointer) cfp)) {
-		SendErrToClient(client, FSBadAlloc, (pointer) 0);
-		return FSBadAlloc;
-	    }
+	    idlist[client->index] = ids;
 	}
-	if (!add_id_to_list(ids, fid)) {
+	orig = ids->client_list[0];
+	cfp = (ClientFontPtr) fsalloc(sizeof(ClientFontRec));
+	if (!cfp) {
+    lowmem:
 	    SendErrToClient(client, FSBadAlloc, (pointer) 0);
 	    return FSBadAlloc;
+	}
+	cfp->font = pfont;
+	cfp->clientindex = client->index;
+	if (!AddResource(client->index, fid, RT_FONT, (pointer) cfp)) {
+	    goto lowmem;
+	}
+	if (!add_id_to_list(ids, fid)) {
+	    goto lowmem;
 	}
 	pfont->refcnt++;
 	rep.type = FS_Reply;
@@ -447,11 +434,11 @@ OpenFont(client, fid, format, format_mask, namelen, name)
     }
     c = (OFclosurePtr) fsalloc(sizeof(OFclosureRec));
     if (!c)
-	return FSBadAlloc;
+	goto lowmem;
     c->fontname = (char *) fsalloc(namelen);
     if (!c->fontname) {
 	fsfree(c);
-	return FSBadAlloc;
+	goto lowmem;
     }
     /*
      * copy the current FPE list, so that if it gets changed by another client
@@ -462,7 +449,7 @@ OpenFont(client, fid, format, format_mask, namelen, name)
     if (!c->fpe_list) {
 	fsfree(c->fontname);
 	fsfree(c);
-	return FSBadAlloc;
+	goto lowmem;
     }
     bcopy(name, c->fontname, namelen);
     for (i = 0; i < num_fpes; i++) {
@@ -491,6 +478,7 @@ close_font(pfont)
 
     assert(pfont);
     if (--pfont->refcnt == 0) {
+	RemoveCachedFontPattern(pfont);
 	fpe = pfont->fpe;
 	fsfree((char *) pfont->svrPrivate);
 	(*fpe_functions[fpe->type].close_font) (fpe, pfont);
@@ -592,9 +580,10 @@ set_font_path_elements(npaths, paths, bad)
 {
     int         i,
                 err;
-    unsigned int len, sublen;
+    unsigned int len,
+                sublen;
     char       *cp = paths;
-    char	*colon;
+    char       *colon;
     FontPathElementPtr fpe,
                *fplist;
 
@@ -623,13 +612,11 @@ set_font_path_elements(npaths, paths, bad)
 	    }
 	    sublen = len;
 	    colon = cp;
-	    while (sublen && *colon != ':')
-	    {
+	    while (sublen && *colon != ':') {
 		sublen--;
 		colon++;
 	    }
-	    if (!sublen)
-	    {
+	    if (!sublen) {
 		err = FSBadName;
 		goto bail;
 	    }
@@ -650,11 +637,11 @@ set_font_path_elements(npaths, paths, bad)
 	    fpe->refcount = 1;
 	    fplist[i] = fpe;
 	    fpe->type = determine_fpe_type(cp);
-	    
+
 	    strncpy(fpe->name, (char *) colon, (int) sublen);
 	    cp += len;
 	    fpe->name[sublen] = '\0';
-	    fpe->name_length = len;
+	    fpe->name_length = sublen;
 	    if (fpe->type == -1) {
 		fsfree(fpe->name);
 		fsfree(fpe);
@@ -673,6 +660,7 @@ set_font_path_elements(npaths, paths, bad)
     free_font_path(font_path_elements, num_fpes);
     font_path_elements = fplist;
     num_fpes = npaths;
+    FreeFontPatternCache();
     return FSSuccess;
 bail:
     *bad = i;
@@ -1172,10 +1160,10 @@ GetNewFontClientID()
 
 int
 StoreFontClientFont(pfont, id)
-    FontPtr	pfont;
-    Font	id;
+    FontPtr     pfont;
+    Font        id;
 {
-    return AddResource(0, id, RT_FONT, (pointer)pfont);
+    return AddResource(0, id, RT_FONT, (pointer) pfont);
 }
 
 static int  fs_handlers_installed = 0;
