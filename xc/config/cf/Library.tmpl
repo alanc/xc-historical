@@ -6,10 +6,10 @@
  * DoNormalLib, DoSharedLib, DoDebugLib, DoProfileLib
  *
  * To get automatic generation of standard rules, also set the variables:
- * LibName and SoRev, and optionally HugLibrary and IncSubdir
+ * LibName, SoRev, HasSharedData, and optionally HugLibrary and IncSubdir
  */
 
-XCOMM $XConsortium: Library.tmpl,v 1.16 93/08/14 16:19:45 rws Exp $
+XCOMM $XConsortium: Library.tmpl,v 1.17 93/08/25 13:57:12 rws Exp $
 
 #ifndef LibraryCcCmd
 #if DoSharedLib && defined(SharedLibraryCcCmd)
@@ -133,6 +133,10 @@ LibraryObjectRule()
 SharedLibraryTarget(LibName,$(SoRev),$(OBJS),shared,..)
 #else
 SharedLibraryTarget(LibName,$(SoRev),$(OBJS),.,.)
+#endif
+#if HasSharedData
+SharedLibraryDataTarget(LibName,$(SoRev),$(UNSHAREDOBJS))
+InstallSharedLibraryData(LibName,$(SoRev),$(SHLIBDIR))
 #endif
 InstallSharedLibrary(LibName,$(SoRev),$(SHLIBDIR))
 #endif
