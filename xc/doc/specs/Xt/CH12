@@ -1,4 +1,4 @@
-.\" $XConsortium: CH12,v 1.4 91/07/31 20:24:45 swick Exp $
+.\" $XConsortium: CH12,v 1.5 94/01/07 19:36:43 converse Exp $
 .\"
 .\" Copyright 1985, 1986, 1987, 1988, 1991
 .\" Massachusetts Institute of Technology, Cambridge, Massachusetts,
@@ -449,15 +449,19 @@ structure to
 will otherwise generate an error message on an attempt to create a
 nonwidget child.
 .LP
-Of the classes defined by the \*(xI, only
-ApplicationShell
-accepts nonwidget children, and the class of any nonwidget child
+Of the classes defined by the \*(xI,
+ApplicationShell 
+and
+SessionShell
+accept nonwidget children, and the class of any nonwidget child
 must not be
 .PN rectObjClass
 or any subclass.  The intent of allowing
 Object
 children of
 ApplicationShell
+and
+SessionShell
 is to provide clients a simple mechanism
 for establishing the resource-naming root of an object hierarchy.
 
