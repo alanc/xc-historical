@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium: Xosdefs.h,v 1.4 91/04/13 11:44:55 rws Exp $
+ * $XConsortium: Xosdefs.h,v 1.5 91/04/26 19:41:33 keith Exp $
  *
  * Copyright 1991 Massachusetts Institute of Technology
  *
@@ -35,50 +35,53 @@
  * You may still have to define _POSIX_SOURCE to get it.
  */
 
-#ifdef NOSTDHDRS	/* this is to aid backwards compatibility only */
+#ifdef NOSTDHDRS
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
-#else
+#endif
 
 #ifdef bsd43
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
-#else
+#endif
 
 #ifdef UTEK
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
-#else
+#endif
 
 #ifdef CRAY
 #define X_NOT_POSIX
-#else
+#endif
 
 #ifdef vax
 #ifndef ultrix			/* assume vanilla BSD */
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
 #endif
-#else
+#endif
 
 #ifdef luna
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
-#else
+#endif
 
 #ifdef Mips
 #define X_NOT_POSIX
 #define X_NOT_STDC_ENV
-#else
+#endif
 
-/* add new ones here */
+#ifdef SYSV386
+#ifdef SYSV
+#define X_NOT_POSIX
+#define X_NOT_STDC_ENV
+#endif
+#endif
 
-#endif /* Mips */
-#endif /* luna */
-#endif /* vax */
-#endif /* CRAY */
-#endif /* UTEK */
-#endif /* bsd43 */
-#endif /* NOSTDHDRS */
+#ifdef MOTOROLA
+#ifdef SYSV
+#define X_NOT_STDC_ENV
+#endif
+#endif
 
 #endif /* _XOSDEFS_H_ */
