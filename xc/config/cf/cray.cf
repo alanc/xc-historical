@@ -1,4 +1,4 @@
-/**/# platform:  $XConsortium: cray.cf,v 1.7 89/07/18 15:39:43 jim Exp $
+/**/# platform:  $XConsortium: cray.cf,v 1.8 89/07/21 11:20:57 jim Exp $
 
 
 /*
@@ -13,8 +13,8 @@
 
 #define InstallCmd $(SCRIPTSRC)/install.sh
 #define RemoveTargetProgramByMoving YES
-#define StandardDefines		-DSYSV
-#define StandardCppDefines	-DSYSV
+#define StandardDefines		-DSYSV -DUSG
+#define StandardCppDefines	-DSYSV -DUSG
 #define ExecableScripts		NO
 #define BuildServer		NO
 
