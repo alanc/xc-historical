@@ -1,4 +1,4 @@
-/* $XConsortium: SMlibint.h,v 1.15 94/03/18 10:26:51 mor Exp $ */
+/* $XConsortium: SMlibint.h,v 1.16 94/03/18 16:04:52 mor Exp $ */
 /******************************************************************************
 
 Copyright 1993 by the Massachusetts Institute of Technology,
@@ -325,6 +325,16 @@ typedef struct _SmcInteractWait {
 
 
 /*
+ * Waiting for SaveYourselfPhase2
+ */
+
+typedef struct _SmcPhase2Wait {
+    SmcSaveYourselfPhase2Proc	phase2_proc;
+    SmPointer			client_data;
+} _SmcPhase2Wait;
+
+
+/*
  * Waiting for Properties Reply
  */
 
@@ -390,6 +400,13 @@ struct _SmcConn {
 
 
     /*
+     * If we send a SaveYourselfPhase2Request, we wait for SaveYourselfPhase2.
+     */
+
+    _SmcPhase2Wait	*phase2_wait;
+
+
+    /*
      * We keep track of all Get Properties sent by the client.  When the
      * Properties Reply arrives, we remove it from the list (a FIFO list
      * is maintained).
@@ -426,14 +443,6 @@ struct _SmsConn {
 
     int			proto_major_version;
     int			proto_minor_version;
-
-
-    /*
-     * The vendor and release number of the SMlib used by the client.
-     */
-
-    char		*vendor;
-    char		*release;
 
 
     /*
