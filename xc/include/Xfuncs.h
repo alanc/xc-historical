@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xfuncs.h,v 1.5 91/01/11 17:08:06 rws Exp $
+ * $XConsortium: Xfuncs.h,v 1.6 91/04/02 21:23:23 rws Exp $
  * 
  * Copyright 1990 by the Massachusetts Institute of Technology
  *
@@ -20,22 +20,16 @@
 
 #include <X11/Xosdefs.h>
 
-#ifdef _XUSEBFUNCS
+#ifdef X_USEBFUNCS
 void bcopy();
 void bzero();
 int bcmp();
 #else
-#if __STDC__ && !defined(X_NOT_STDC_ENV) && !defined(sun) && !defined(macII)
+#if (__STDC__ && !defined(X_NOT_STDC_ENV) && !defined(sun) && !defined(macII)) || defined(SVR4) || defined(hpux)
 #include <string.h>
-#define bcopy(b1,b2,len) memmove((void *)(b2), (void *)(b1), (size_t)(len))
-#define bzero(b,len) memset((void *)(b), 0, (size_t)(len))
-#define bcmp(b1,b2,len) memcmp((void *)(b1), (void *)(b2), (size_t)(len))
-#else
-#if defined(SVR4) || defined(hpux)
-#include <string.h>
-#define bcopy(b1,b2,len) memmove(b2, b1, len)
-#define bzero(b,len) memset(b, 0, len)
-#define bcmp(b1,b2,len) memcmp(b1, b2, len)
+#define bcopy(b1,b2,len) memmove(b2, b1, (size_t)(len))
+#define bzero(b,len) memset(b, 0, (size_t)(len))
+#define bcmp(b1,b2,len) memcmp(b1, b2, (size_t)(len))
 #else
 #ifdef sgi
 #include <bstring.h>
@@ -55,8 +49,7 @@ void bzero();
 int bcmp();
 #endif /* SYSV */
 #endif /* sgi */
-#endif /* SVR4 or hpux */
-#endif /* __STDC__ */
-#endif /* _XUSEBFUNCS */
+#endif /* __STDC__ and relatives */
+#endif /* X_USEBFUNCS */
 
 #endif /* _XFUNCS_H_ */
