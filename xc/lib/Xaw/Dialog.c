@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.c,v 1.43 91/01/06 16:08:33 rws Exp $ */
+/* $XConsortium: Dialog.c,v 1.44 91/02/17 14:55:45 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -61,7 +61,9 @@ static XtResource resources[] = {
      XtOffsetOf(DialogRec, dialog.icon), XtRImmediate, 0},
 };
 
-static void Initialize(), ConstraintInitialize(), CreateDialogValueWidget();
+static void Initialize(), ConstraintInitialize(), CreateDialogValueWidget(),
+            GetValuesHook();
+
 static Boolean SetValues();
 
 DialogClassRec dialogClassRec = {
@@ -90,7 +92,7 @@ DialogClassRec dialogClassRec = {
     /* set_values         */    SetValues,
     /* set_values_hook    */    NULL,
     /* set_values_almost  */    XtInheritSetValuesAlmost,
-    /* get_values_hook    */    NULL,
+    /* get_values_hook    */    GetValuesHook,
     /* accept_focus       */    NULL,
     /* version            */    XtVersion,
     /* callback_private   */    NULL,
@@ -289,6 +291,35 @@ Cardinal *in_num_args;
     return False;
 }
 
+/*	Function Name: GetValuesHook
+ *	Description: This is a get values hook routine that gets the
+ *                   values in the dialog.
+ *	Arguments: w - the Text Widget.
+ *                 args - the argument list.
+ *                 num_args - the number of args.
+ *	Returns: none.
+ */
+
+static void
+GetValuesHook(w, args, num_args)
+Widget w;
+ArgList args;
+Cardinal * num_args;
+{
+  Arg a[1];
+  String s;
+  DialogWidget src = (DialogWidget) w;
+  register int i;
+  
+  for (i=0; i < *num_args; i++)
+    if (streq(args[i].name, XtNvalue)) {
+      XtSetArg(a[0], XtNstring, &s);
+      XtGetValues(src->dialog.valueW, a, 1);
+      *((char **) args[i].value) = s;
+    }
+}
+
+
 /*	Function Name: CreateDialogValueWidget
  *	Description: Creates the dialog widgets value widget.
  *	Arguments: w - the dialog widget.
@@ -316,7 +347,7 @@ Widget w;
     XtSetArg(arglist[num_args], XtNfromVert, dw->dialog.labelW);  num_args++;
     XtSetArg(arglist[num_args], XtNleft, XtChainLeft);            num_args++;
     XtSetArg(arglist[num_args], XtNright, XtChainRight);          num_args++;
-    
+
     dw->dialog.valueW = XtCreateWidget("value",asciiTextWidgetClass,
 				       w, arglist, num_args);
 
