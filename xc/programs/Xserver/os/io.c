@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.87 94/04/01 17:37:05 dpw Exp $ */
+/* $XConsortium: io.c,v 1.88 94/04/17 20:27:00 dpw Exp dpw $ */
 /*****************************************************************
  * i/o functions
  *
@@ -61,7 +61,6 @@ extern int errno;
 #endif
 #include "Xmd.h"
 #include <errno.h>
-#include <sys/param.h>
 #include <sys/uio.h>
 #include "X.h"
 #include "Xproto.h"

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.67 94/02/23 15:49:19 dpw Exp $ */
+/* $XConsortium: WaitFor.c,v 1.68 94/04/17 20:26:52 dpw Exp dpw $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -67,7 +67,6 @@ extern int errno;
 #include "X.h"
 #include "misc.h"
 
-#include <sys/param.h>
 #include "osdep.h"
 #include "dixstruct.h"
 #include "opaque.h"

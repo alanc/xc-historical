@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.187 94/04/17 20:26:56 dpw Exp $ */
+/* $XConsortium: connection.c,v 1.188 94/06/02 11:36:56 mor Exp dpw $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -66,7 +66,6 @@ SOFTWARE.
 #include "X.h"
 #include "Xproto.h"
 #include <X11/Xtrans.h>
-#include <sys/param.h>
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
