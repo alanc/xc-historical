@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.175 92/03/02 16:43:31 converse Exp $ */
+/* $XConsortium: Intrinsic.h,v 1.176 93/06/18 17:02:53 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1084,6 +1084,12 @@ extern void XtSetKeyboardFocus(
 #if NeedFunctionPrototypes
     Widget		/* subtree */,
     Widget 		/* descendent */
+#endif
+);
+
+extern XEvent* XtLastEventProcessed(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */
 #endif
 );
 
