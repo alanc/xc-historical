@@ -1,18 +1,18 @@
-XCOMM $XConsortium: Imakefile,v 1.39 93/08/25 10:11:17 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 94/06/14 20:11:42 mor Exp $
 
          YFLAGS = -d
-        DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
-LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
-       LINTLIBS = $(LINTXMU) $(LINTXLIB)
+        DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
+LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB)
+       LINTLIBS = $(LINTXMU) $(LINTXTOOLLIB) $(LINTXLIB)
         DEFINES = $(SIGNAL_DEFINES)
 
            SRCS = gram.c lex.c deftwmrc.c add_window.c gc.c list.c twm.c \
 		parse.c menus.c events.c resize.c util.c version.c iconmgr.c \
-		cursor.c icons.c
+		cursor.c icons.c session.c
 
            OBJS = gram.o lex.o deftwmrc.o add_window.o gc.o list.o twm.o \
 		parse.o menus.o events.o resize.o util.o version.o iconmgr.o \
-		cursor.o icons.o
+		cursor.o icons.o session.o
 
 all::
 
