@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShape.c,v 1.22 91/01/12 11:19:44 rws Exp $
+ * $XConsortium: XShape.c,v 1.23 93/08/17 18:13:30 rws Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -190,10 +190,17 @@ Window		    dest;
 int		    destKind, op, xOff, yOff;
 register REGION	    *r;
 {
+    XExtDisplayInfo *info = find_display (dpy);
+    register xShapeRectanglesReq *req;
+    register long nbytes;
     register int i;
     register XRectangle *xr, *pr;
     register BOX *pb;
 
+    ShapeSimpleCheckExtension (dpy, info);
+
+    LockDisplay(dpy);
+    GetReq(ShapeRectangles, req);
     xr = (XRectangle *) 
     	_XAllocScratch(dpy, (unsigned long)(r->numRects * sizeof (XRectangle)));
     for (pr = xr, pb = r->rects, i = r->numRects; --i >= 0; pr++, pb++) {
@@ -202,8 +209,23 @@ register REGION	    *r;
 	pr->width = pb->x2 - pb->x1;
 	pr->height = pb->y2 - pb->y1;
      }
-     XShapeCombineRectangles (dpy, dest, destKind, xOff, yOff,
-			      xr, r->numRects, op, YXBanded);
+    req->reqType = info->codes->major_opcode;
+    req->shapeReqType = X_ShapeRectangles;
+    req->op = op;
+    req->ordering = YXBanded;
+    req->destKind = destKind;
+    req->dest = dest;
+    req->xOff = xOff;
+    req->yOff = yOff;
+
+    /* SIZEOF(xRectangle) will be a multiple of 4 */
+    req->length += r->numRects * (SIZEOF(xRectangle) / 4);
+
+    nbytes = r->numRects * sizeof(xRectangle);
+
+    Data16 (dpy, (short *) xr, nbytes);
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
 
