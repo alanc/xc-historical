@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: screen.c,v 1.6 88/08/21 20:48:46 rws Exp $
+ *	$XConsortium: screen.c,v 1.7 88/09/06 17:08:32 jim Exp $
  */
 
 #include <X11/copyright.h>
@@ -30,7 +30,7 @@
 /* screen.c */
 
 #ifndef lint
-static char rcs_id[] = "$XConsortium: screen.c,v 1.6 88/08/21 20:48:46 rws Exp $";
+static char rcs_id[] = "$XConsortium: screen.c,v 1.7 88/09/06 17:08:32 jim Exp $";
 #endif	/* lint */
 
 #include <X11/Xlib.h>
@@ -206,7 +206,7 @@ register int n, col;
 }
 
 
-ScrnRefresh (screen, toprow, leftcol, nrows, ncols)
+ScrnRefresh (screen, toprow, leftcol, nrows, ncols, force)
 /*
    Repaints the area enclosed by the parameters.
    Requires: (toprow, leftcol), (toprow + nrows, leftcol + ncols) are
@@ -215,6 +215,7 @@ ScrnRefresh (screen, toprow, leftcol, nrows, ncols)
  */
 register TScreen *screen;
 int toprow, leftcol, nrows, ncols;
+Boolean force;			/* ... leading/trailing spaces */
 {
 	int y = toprow * FontHeight(screen) + screen->border +
 		screen->fnt_norm->ascent;
@@ -223,7 +224,6 @@ int toprow, leftcol, nrows, ncols;
 	int maxrow = toprow + nrows - 1;
 	int scrollamt = screen->scroll_amt;
 	int max = screen->max_row;
-	
 
 	if(screen->cursor_col >= leftcol && screen->cursor_col <=
 	 (leftcol + ncols - 1) && screen->cursor_row >= toprow + topline &&
@@ -238,6 +238,7 @@ int toprow, leftcol, nrows, ncols;
 	   int flags;
 	   int x, n;
 	   GC gc;
+	   Boolean hilite;	
 
 	   if (row < screen->top_marg || row > screen->bot_marg)
 		lastind = row;
@@ -246,22 +247,48 @@ int toprow, leftcol, nrows, ncols;
 
 	   if (lastind < 0 || lastind > max)
 	   	continue;
+
 	   chars = screen->buf [2 * (lastind + topline)];
 	   att = screen->buf [2 * (lastind + topline) + 1];
 
-	   while (col <= maxcol && (att[col] & ~BOLD) == 0 &&
-	    (chars[col] & ~040) == 0)
-		col++;
+	   if (row < screen->startHRow || row > screen->endHRow ||
+	       (row == screen->startHRow && maxcol < screen->startHCol) ||
+	       (row == screen->endHRow && col >= screen->endHCol))
+	       {
+	       /* row does not intersect selection; don't hilite */
+	       if (!force) {
+		   while (col <= maxcol && (att[col] & ~BOLD) == 0 &&
+			  (chars[col] & ~040) == 0)
+		       col++;
 
-	   while (col <= maxcol && (att[maxcol] & ~BOLD) == 0 &&
-	    (chars[maxcol] & ~040) == 0)
-		maxcol--;
+		   while (col <= maxcol && (att[maxcol] & ~BOLD) == 0 &&
+			  (chars[maxcol] & ~040) == 0)
+		       maxcol--;
+	       }
+	       hilite = False;
+	   }
+	   else {
+	       /* row intersects selection; split into pieces of single type */
+	       if (row == screen->startHRow && col < screen->startHCol) {
+		   ScrnRefresh(screen, row, col, 1, screen->startHCol - col,
+			       force);
+		   col = screen->startHCol;
+	       }
+	       if (row == screen->endHRow && maxcol >= screen->endHCol) {
+		   ScrnRefresh(screen, row, screen->endHCol, 1,
+			       maxcol - screen->endHCol + 1, force);
+		   maxcol = screen->endHCol - 1;
+	       }
+	       /* remaining piece should be hilited */
+	       hilite = True;
+	   }
 
 	   if (col > maxcol) continue;
 
 	   flags = att[col];
 
-	   if ((flags & INVERSE) != 0)
+	   if ( (!hilite && (flags & INVERSE) != 0) ||
+	        (hilite && (flags & INVERSE) == 0) )
 	       if (flags & BOLD) gc = screen->reverseboldGC;
 	       else gc = screen->reverseGC;
 	   else 
@@ -288,7 +315,8 @@ int toprow, leftcol, nrows, ncols;
 
 		   flags = att[col];
 
-	   	   if ((flags & INVERSE) != 0)
+	   	   if ((!hilite && (flags & INVERSE) != 0) ||
+		       (hilite && (flags & INVERSE) == 0) )
 	       		if (flags & BOLD) gc = screen->reverseboldGC;
 	       		else gc = screen->reverseGC;
 	  	    else 
@@ -301,7 +329,8 @@ int toprow, leftcol, nrows, ncols;
 	   }
 
 
-	   if ((flags & INVERSE) != 0)
+	   if ( (!hilite && (flags & INVERSE) != 0) ||
+	        (hilite && (flags & INVERSE) == 0) )
 	       if (flags & BOLD) gc = screen->reverseboldGC;
 	       else gc = screen->reverseGC;
 	   else 
