@@ -15,7 +15,7 @@ without any express or implied warranty.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.0 89/08/22 18:44:35 rws Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.1 89/08/22 18:50:49 rws Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"
@@ -72,7 +72,29 @@ cfbPolyPoint(pDrawable, pGC, mode, npt, pptInit)
 	addrl = (int *)(((PixmapPtr)pDrawable)->devPrivate.ptr);
 	nlwidth = (int)(((PixmapPtr)pDrawable)->devKind);
     }
-#if PPW != 4
+#if PPW == 4
+    if ((rop == GXcopy) && !(nlwidth & (nlwidth - 1)))
+    {
+	nlwidth = ffs(nlwidth) - 1;
+	for (nbox = REGION_NUM_RECTS(cclip), pbox = REGION_RECTS(cclip);
+	     --nbox >= 0;
+	     pbox++)
+	{
+	    for (ppt = pptInit, i = npt; --i >= 0; ppt++)
+	    {
+		x = ppt->x + pDrawable->x;
+		y = ppt->y + pDrawable->y;
+		if ((x >= pbox->x1) && (x < pbox->x2) &&
+		    (y >= pbox->y1) && (y < pbox->y2))
+		{
+		    addrb = (char *)(addrl) + (y << nlwidth) + x;
+		    *addrb = pixel;
+		}
+	    }
+	}
+	return;
+    }
+#else
     nlwidth >>= 2;
     pixel = PFILL(pixel);
 #endif
