@@ -27,8 +27,8 @@ special cursor with which you should select a window to be kill.
 .B \-button \fInumber\fP
 This option specifies a specific pointer button number 
 that should be used in selecting a window to kill.  
-If the word "any" is specified, or if no specific button is given, any 
-button on the pointer may be used.
+If the word "any" is specified, any button on the pointer may be used.  By
+default, the first button in the pointer map is used.
 .SH XDEFAULTS
 .TP 8
 .B Button
