@@ -33,7 +33,7 @@
 
 #ifndef lint
 static char rcsid[] =
-"$Header: mivaltree.c,v 1.37 88/02/04 11:30:02 rws Exp $ SPRITE (Berkeley)";
+"$Header: mivaltree.c,v 1.38 88/02/04 17:58:34 rws Exp $ SPRITE (Berkeley)";
 #endif lint
 
 #include    "X.h"
@@ -442,11 +442,11 @@ miValidateTree (pParent, pChild, top, anyMarked)
 		 * get nuked, so drawing operations succeeded while the window
 		 * was unmapped...
 		 */
-		(* pScreen->RegionEmpty) (pChild->borderClip);
-		(* pScreen->RegionEmpty) (pChild->clipList);
-		(* pScreen->RegionEmpty) (pChild->exposed);
-		(* pScreen->RegionEmpty) (pChild->borderExposed);
-		pChild->drawable.serialNumber = NEXT_SERIAL_NUMBER;
+		(* pScreen->RegionEmpty) (pWin->borderClip);
+		(* pScreen->RegionEmpty) (pWin->clipList);
+		(* pScreen->RegionEmpty) (pWin->exposed);
+		(* pScreen->RegionEmpty) (pWin->borderExposed);
+		pWin->drawable.serialNumber = NEXT_SERIAL_NUMBER;
 	    }
 	}
     }
