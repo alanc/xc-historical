@@ -1,4 +1,4 @@
-/* $XConsortium: miclut.c,v 1.1 93/10/26 09:45:03 rws Exp $ */
+/* $XConsortium: miclut.c,v 1.2 93/10/31 09:45:03 dpw Exp $ */
 /**** module miclut.c ****/
 /******************************************************************************
 				NOTICE
@@ -186,10 +186,10 @@ static int ActivateICLUT(flo,ped,pet)
   
   for(band = 0; band < nbands; band++, ext++, iband++) {
     bandPtr oband = &(pet->emitter[ext->bandnum]);
-    void   *ivoid, *ovoid;
+    pointer ivoid, ovoid;
     int     ilen, icopy;
 
-    if(!(ovoid = GetDstBytes(void,flo,pet,oband,0,ext->striplength,FALSE)))
+    if(!(ovoid = GetDstBytes(pointer,flo,pet,oband,0,ext->striplength,FALSE)))
       return(FALSE);
     /*
     **  We have no guarantee to get all the output in one packet.  In 
@@ -199,7 +199,7 @@ static int ActivateICLUT(flo,ped,pet)
     **  something similar to a decodeNotify.
     */
     for(ilen = 0;
-	ivoid = GetSrcBytes(void,flo,pet,iband,iband->current+ilen,1,FALSE);) {
+	ivoid = GetSrcBytes(pointer,flo,pet,iband,iband->current+ilen,1,FALSE);) {
       icopy = ilen = iband->strip->length;
       
       if ((ext->byteptr + ilen) > ext->bytelength)
