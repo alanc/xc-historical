@@ -3,7 +3,7 @@
  * that Imakefiles in the server subtree will need.
  */
 
-XCOMM $XConsortium: Server.tmpl,v 1.4 90/11/30 11:15:35 rws Exp $
+XCOMM $XConsortium: Server.tmpl,v 1.5 91/05/06 19:00:26 rws Exp $
 
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)' 'CC=$(CC)' 'CCOPTIONS=$(CCOPTIONS)'
 
@@ -17,7 +17,7 @@ XCOMM $XConsortium: Server.tmpl,v 1.4 90/11/30 11:15:35 rws Exp $
 #define ServerDefines StandardDefines
 #endif
 #ifndef ServerCDebugFlags
-#define ServerCDebugFlags OptimizedCDebugFlags
+#define ServerCDebugFlags DefaultCDebugFlags
 #endif
 
          CC = ServerCcCmd
