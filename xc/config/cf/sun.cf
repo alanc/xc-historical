@@ -1,25 +1,49 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.140 95/02/21 21:36:15 gildea Exp kaleb $
+XCOMM platform:  $XConsortium: sun.cf,v 1.141 95/05/10 15:21:19 kaleb Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
+#ifndef OSName
 #define OSName            SunOS 5.1 x86
+#endif
 XCOMM operating system:  OSName
+#ifndef OSMajorVersion
 #define OSMajorVersion    5
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion    1
-#define OSTeenyVersion    0
-#else
-#define OSName            SunOS 5.3
-XCOMM operating system:  OSName
-#define OSMajorVersion    5
-#define OSMinorVersion    3
+#endif
+#ifndef	OSTeenyVersion
 #define OSTeenyVersion    0
 #endif
 #else
-#define OSName            SunOS 4.1.3
+#ifndef OSName
+#define OSName            SunOS 5.3
+#endif
 XCOMM operating system:  OSName
+#ifndef OSMajorVersion
+#define OSMajorVersion    5
+#endif
+#ifndef OSMinorVersion
+#define OSMinorVersion    3
+#endif
+#ifndef	OSTeenyVersion
+#define OSTeenyVersion    0
+#endif
+#endif
+#else
+#ifndef OSName
+#define OSName            SunOS 4.1.3
+#endif
+XCOMM operating system:  OSName
+#ifndef OSMajorVersion
 #define OSMajorVersion    4
+#endif
+#ifndef OSMinorVersion
 #define OSMinorVersion    1
+#endif
+#ifndef	OSTeenyVersion
 #define OSTeenyVersion    3
+#endif
 #endif
 
 /*
