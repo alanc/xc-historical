@@ -1,4 +1,4 @@
-/* $XConsortium: Popup.c,v 1.29 91/05/06 19:49:15 converse Exp $ */
+/* $XConsortium: Popup.c,v 1.30 91/05/09 18:07:59 swick Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -117,7 +117,6 @@ void XtPopdown(widget)
 
     if (shell_widget->shell.popped_up) {
 	XtGrabKind grab_kind = shell_widget->shell.grab_kind;
-	XtUnmapWidget(widget);
 	XWithdrawWindow(XtDisplay(widget), XtWindow(widget),
 			XScreenNumberOfScreen(XtScreen(widget)));
 	if (grab_kind != XtGrabNone) {
