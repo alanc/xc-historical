@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: connection.c,v 1.150 92/10/21 11:06:03 rws Exp $ */
+/* $XConsortium: connection.c,v 1.151 92/11/24 11:31:18 rws Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -384,13 +384,15 @@ CreateWellKnownSockets()
     CLEARBITS(ClientsWithInput);
 
     for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = 0;
-    
-#if defined(hpux) || defined(SVR4)
-	lastfdesc = _NFILE - 1;
+#ifndef X_NOT_POSIX
+    lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
-	lastfdesc = getdtablesize() - 1;
-#endif	/* hpux */
-
+#ifdef hpux
+    lastfdesc = _NFILE - 1;
+#else
+    lastfdesc = getdtablesize() - 1;
+#endif
+#endif
     if (lastfdesc > MAXSOCKS)
     {
 	lastfdesc = MAXSOCKS;
