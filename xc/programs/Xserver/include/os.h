@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $Header: os.h,v 1.23 88/01/04 08:34:02 rws Exp $ */
+/* $Header: os.h,v 1.24 88/07/25 10:35:29 toddb Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -50,30 +50,40 @@ typedef struct _NewClientRec *NewClientPtr;
  * server code expects malloc(0) to return a valid pointer to storage.
  */
 #if defined(ibm032) && !defined(_pcc_)
-
 char *alloca();
-
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
-#define DEALLOCATE_LOCAL(ptr)
+#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 pragma on(alloca);
-
-#else /* everyone else */
-
-char *malloc();
-
-# ifdef MALLOC_0_RETURNS_NULL
-# define ALLOCATE_LOCAL(size) malloc((unsigned)((size) > 0 ? (size) : 1))
-# else
-# define ALLOCATE_LOCAL(size) malloc((unsigned)(size))
-# endif
-
-#define DEALLOCATE_LOCAL(ptr) free((char *)(ptr))
-
 #endif
+
+
+#if defined(vax) || defined(sun) || defined(macII) || defined(hpux)
+/*
+ * The macII and hpux systems extract alloca.o from /lib/libPW.a; if you
+ * decide that you don't want to use alloca, you might want to fix 
+ * ../os/4.2bsd/Imakefile
+ */
+char *alloca();
+#define ALLOCATE_LOCAL(size) alloca((int)(size))
+#define DEALLOCATE_LOCAL(ptr)  /* as nothing */
+#endif /* vax or sun */
+
+
+#ifndef ALLOCATE_LOCAL
+char *malloc();
+#ifdef MALLOC_0_RETURNS_NULL
+#define ALLOCATE_LOCAL(size) malloc((unsigned)((size) > 0 ? (size) : 1))
+#else
+#define ALLOCATE_LOCAL(size) malloc((unsigned)(size))
+#endif
+#define DEALLOCATE_LOCAL(ptr) free((char *)(ptr))
+#endif /* ALLOCATE_LOCAL */
+
 
 #define xalloc(size) Xalloc((unsigned long)(size))
 #define xrealloc(ptr, size) Xrealloc((pointer)(ptr), (unsigned long)(size))
 #define xfree(ptr) Xfree((pointer)(ptr))
+
 
 /*
  * The declaration for ReadRequestFromClient should be a xReq *, but
