@@ -1,4 +1,4 @@
-/* $Header$ */
+/* $Header: XDraw.c,v 1.1 87/08/28 13:33:10 toddb Locked $ */
 #include "copyright.h"
 
 /* Copyright    Massachusetts Institute of Technology    1987	*/
@@ -430,7 +430,7 @@ static vertices_converter(pathaddr, pathcount, ppathaddr_new, newpathcnt)
 		  {
 		    pathlist_segs *= 2;
 		    pathlist_bytes *= 2;
-		    if ((pathaddr_new = (Vertex *)realloc(pathaddr_new, 
+		    if ((pathaddr_new = (Vertex *)Xrealloc(pathaddr_new, 
 							 pathlist_bytes)) != 0)
 		      pnewpath = pathaddr_new + newpathcount;
 	    	    else
@@ -480,7 +480,7 @@ static vertices_converter(pathaddr, pathcount, ppathaddr_new, newpathcnt)
 	  {
 	    pathlist_bytes *= 2;
 	    pathlist_segs *= 2;
-	    if ((pathaddr_new = (Vertex *)realloc(pathaddr_new, 
+	    if ((pathaddr_new = (Vertex *)Xrealloc(pathaddr_new, 
 						 pathlist_bytes)) != 0)
 	      pnewpath = pathaddr_new + newpathcount;
     	    else
