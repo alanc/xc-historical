@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.h,v 2.11 91/07/10 19:58:26 converse Exp $
+ * $XConsortium: toc.h,v 2.12 91/07/14 18:53:30 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -68,7 +68,7 @@ extern Toc	TocGetNamed		(/* char* */);
 extern int	TocConfirmCataclysm(/* Toc, XtCallbackList, XtCallbackList */);
 extern void	TocCommitChanges	(/* Widget, XtPointer, XtPointer */);
 extern int	TocCanIncorporate	(/* Toc */);
-extern void	TocIncorporate		(/* Toc */);
+extern int	TocIncorporate		(/* Toc */);
 extern void	TocMsgChanged		(/* Toc, Msg */);
 extern Msg	TocMsgFromId		(/* Toc, int */);
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.c,v 2.52 91/07/14 18:52:33 converse Exp $
+ * $XConsortium: toc.c,v 2.53 91/07/16 21:00:15 converse Exp $
  *
  *
  *			  COPYRIGHT 1987
@@ -1050,12 +1050,12 @@ Toc toc;
 
 /* Incorporate new messages into the given toc. */
 
-void TocIncorporate(toc)
+int TocIncorporate(toc)
 Toc toc;
 {
     char **argv;
     char str[100], *file, *ptr;
-    Msg msg, firstmessage;
+    Msg msg, firstmessage = NULL;
     FILEPTR fid;
 
     argv = MakeArgv(toc->incfile ? 7 : 4);
@@ -1077,7 +1077,6 @@ Toc toc;
     TUGetFullFolderInfo(toc);
     if (toc->validity == valid) {
 	fid = FOpenAndCheck(file, "r");
-	firstmessage = NULL;
 	TocStopUpdate(toc);
 	while (ptr = ReadLineWithCR(fid)) {
 	    if (atoi(ptr) > 0) {
@@ -1096,6 +1095,7 @@ Toc toc;
     if (app_resources.block_events_on_busy) UnshowBusyCursor();
 
     toc->mailpending = False;
+    return (firstmessage != NULL);
 }
 
 
