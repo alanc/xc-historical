@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Scale.c,v 1.3 91/01/06 12:10:09 rws Exp $
+ * $XConsortium: Scale.c,v 1.4 91/01/10 18:16:31 dave Exp $
  *
  * Copyright 1989 Massachusetts Institute of Technology
  *
@@ -34,6 +34,9 @@
 #include "ScaleP.h"
 
 double rint();
+#if __STDC__ && !defined(NOSTDHDRS)
+#include <stdlib.h>
+#endif
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 #define min(x, y) (x > y ? y : x)
@@ -266,8 +269,8 @@ static void Initialize(request, new)
 	XtWarning("AspectRatio has to be a positive number. (forced to 1.0)");
     }
 
-    if ((new_sw->scale.precision = 
-	 atof(new_sw->scale.precision_str)) < 0.0) {
+    if ((new_sw->scale.precision =
+         atof(new_sw->scale.precision_str)) < 0.0) {
 	new_sw->scale.precision = 0.001;
 	XtWarning("Precision has to be a positive number. (forced to 0.001)");
     }
@@ -540,6 +543,7 @@ static void Redisplay(w, event, region)
 	img_x = min(max((Position) floor((float) x 
 					 / (float) sw->scale.scale_x), 0),
 		    (Position) sw->scale.image->width - 1);
+
 	img_y = min(max((Position) floor((float) y
 					 / (float) sw->scale.scale_y), 0),
 		    (Position) sw->scale.image->height - 1);
