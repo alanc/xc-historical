@@ -541,7 +541,7 @@
 	    (temp-var (gensym)))
 	(when value
 	  (push `(,temp-var ,value) temp-vars)
-	  (push `(setf ,accessor ,temp-var) setfs))))
+	  (push `(when ,temp-var (setf ,accessor ,temp-var)) setfs))))
     (if setfs
 	`(multiple-value-bind (,gc ,saved-state ,temp-mask ,temp-gc)
 	     (copy-gcontext-local-state ,gcontext ',indexes ,@extension-indexes)
