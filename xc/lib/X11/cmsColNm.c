@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsColNm.c,v 1.15 91/05/14 13:56:34 rws Exp $" */
+/* $XConsortium: XcmsColNm.c,v 1.16 91/06/07 17:29:12 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -61,8 +61,8 @@ static Status LoadColornameDB();
  *      LOCAL DEFINES
  *		#define declarations local to this package.
  */
-#ifndef XCMS_DEFAULT_DBPATH
-#define XCMS_DEFAULT_DBPATH  "/usr/lib/X11/Xcms.txt"
+#ifndef XCMSDB
+#define XCMSDB  "/usr/lib/X11/Xcms.txt"
 #endif
 
 #ifndef isgraph
@@ -753,8 +753,8 @@ LoadColornameDB()
     struct stat txt;
     int length;
 
-    if ((pathname = (char *)getenv("XCMSDB")) == NULL) {
-	pathname = XCMS_DEFAULT_DBPATH;
+    if ((pathname = getenv("XCMSDB")) == NULL) {
+	pathname = XCMSDB;
     }
 
     length = strlen(pathname);
