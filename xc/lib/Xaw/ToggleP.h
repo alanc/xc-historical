@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ToggleP.h,v 1.3 89/05/01 13:19:48 kit Exp $
+* $XConsortium: ToggleP.h,v 1.4 89/05/11 01:07:04 kit Exp $
 */
 
 
@@ -64,10 +64,11 @@ typedef struct _RadioGroup {
  ***********************************/
 
    /* New fields for the Toggle widget class record */
-typedef struct _ToggleClass 
-  {
-    int makes_compiler_happy;  /* not used */
-  } ToggleClassPart;
+typedef struct _ToggleClass  {
+    XtActionProc Set;
+    XtActionProc Unset;
+    XtPointer extension;
+} ToggleClassPart;
 
    /* Full class record declaration */
 typedef struct _ToggleClassRec {

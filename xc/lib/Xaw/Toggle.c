@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.8 89/05/05 15:02:50 kit Exp $";
+static char Xrcsid[] = "$XConsortium: Toggle.c,v 1.9 89/05/11 01:07:00 kit Exp $";
 #endif /* lint */
 
 /***********************************************************
@@ -82,8 +82,6 @@ static XtResource resources[] = {
 
 /* Action proceedures retrieved from the command widget */
 
-static XtActionProc Set, Unset;
-
 static void Toggle(), Initialize(), Notify(), ToggleSet();
 static void ToggleDestroy(), ClassInit();
 static Boolean SetValues();
@@ -139,14 +137,19 @@ ToggleClassRec toggleClassRec = {
     NULL				/* extension		  */
   },  /* CoreClass fields initialization */
   {
-    0,                                     /* field not used    */
+    0                                     /* field not used    */
+  },  /* SimpleClass fields initialization */
+  {
+    0                                     /* field not used    */
   },  /* LabelClass fields initialization */
   {
-    0,                                     /* field not used    */
-  },  /* CommmanClass fields initialization */
+    0                                     /* field not used    */
+  },  /* CommmandClass fields initialization */
   {
-    0,                                     /* field not used    */
-  },  /* ToggleClass fields initialization */
+      NULL,			        /* Set Proceedure. */
+      NULL,			        /* Unset Proceedure. */
+      NULL			        /* extension. */
+  }  /* ToggleClass fields initialization */
 };
 
   /* for public consumption */
@@ -163,7 +166,7 @@ ClassInit()
 {
   XtActionList actions;
   Cardinal i;
-  Set = Unset = NULL;
+  ToggleWidgetClass class = (ToggleWidgetClass) toggleWidgetClass;
 
 /* actions = SuperClass->core_class.actions; */
 
@@ -182,16 +185,20 @@ ClassInit()
  */
 
   for (i = 0 ; i < SuperClass->core_class.num_actions ; i++) {
-    if (streq(actions[i].string, "set")) Set = actions[i].proc;
-    if (streq(actions[i].string, "unset")) Unset = actions[i].proc;
-    if ( (Set != NULL) && (Unset != NULL) ) return;
+    if (streq(actions[i].string, "set"))
+	class->toggle_class.Set = actions[i].proc;
+    if (streq(actions[i].string, "unset")) 
+	class->toggle_class.Unset = actions[i].proc;
+
+    if ( (class->toggle_class.Set != NULL) &&
+	 (class->toggle_class.Unset != NULL) ) return;
   }  
 
 /* We should never get here. */
-  if (Set == NULL)
+  if (class->toggle_class.Set == NULL)
     XtWarning(
      "Toggle could not find action Proceedure Set() in the Command Widget.");
-  if (Unset == NULL)
+  if (class->toggle_class.Unset == NULL)
     XtWarning(
      "Toggle could not find action Proceedure Unset() in the Command Widget.");
   XtError("Aborting, due to errors in Toggle widget.");
@@ -245,8 +252,10 @@ XEvent *event;
 String *params;		/* unused */
 Cardinal *num_params;	/* unused */
 {
-  TurnOffRadioSiblings(w);
-  Set(w, event, NULL, 0);
+    ToggleWidgetClass class = (ToggleWidgetClass) w->core.widget_class;
+
+    TurnOffRadioSiblings(w);
+    class->toggle_class.Set(w, event, NULL, 0);
 }
 
 /* ARGSUSED */
@@ -258,9 +267,10 @@ String *params;		/* unused */
 Cardinal *num_params;	/* unused */
 {
   ToggleWidget tw = (ToggleWidget)w;
+  ToggleWidgetClass class = (ToggleWidgetClass) w->core.widget_class;
 
   if (tw->command.set) 
-    Unset(w, event, NULL, 0);
+    class->toggle_class.Unset(w, event, NULL, 0);
   else 
     ToggleSet(w, event, params, num_params);
 }
@@ -289,6 +299,7 @@ Widget current, request, new;
 {
     ToggleWidget oldtw = (ToggleWidget) current;
     ToggleWidget tw = (ToggleWidget) new;
+    ToggleWidgetClass class = (ToggleWidgetClass) new->core.widget_class;
 
     if (oldtw->toggle.widget != tw->toggle.widget)
       XawToggleChangeRadioGroup(new, tw->toggle.widget);
@@ -298,7 +309,7 @@ Widget current, request, new;
 	ToggleSet(new, NULL, NULL, 0); /* Does a redisplay. */
       }
       else
-	Unset(new, NULL, NULL, 0); /* Does a redisplay. */
+	class->toggle_class.Unset(new, NULL, NULL, 0); /* Does a redisplay. */
     }
     return(FALSE);
 }
@@ -412,6 +423,7 @@ TurnOffRadioSiblings(w)
 Widget w;
 {
   RadioGroup * group;
+  ToggleWidgetClass class = (ToggleWidgetClass) w->core.widget_class;
 
   if ( (group = GetRadioGroup(w)) == NULL)  /* Punt if there is no group */
     return;
@@ -423,7 +435,7 @@ Widget w;
   while ( group != NULL ) {
     ToggleWidget local_tog = (ToggleWidget) group->widget;
     if ( local_tog->command.set ) {
-      Unset(group->widget, NULL, NULL, 0);
+      class->toggle_class.Unset(group->widget, NULL, NULL, 0);
       Notify( group->widget, NULL, NULL, 0);
     }
     group = group->next;
@@ -567,11 +579,14 @@ void
 XawToggleUnsetCurrent(radio_group)
 Widget radio_group;
 {
+  ToggleWidgetClass class;
+  ToggleWidget local_tog = (ToggleWidget) radio_group;
+
   /* Special Case no radio group. */
 
-  ToggleWidget local_tog = (ToggleWidget) radio_group;
   if (local_tog->command.set) {
-    Unset(radio_group, NULL, NULL, 0);
+    class = (ToggleWidgetClass) local_tog->core.widget_class;
+    class->toggle_class.Unset(radio_group, NULL, NULL, 0);
     Notify(radio_group, NULL, NULL, 0);
   }
   if ( GetRadioGroup(radio_group) == NULL) return;
