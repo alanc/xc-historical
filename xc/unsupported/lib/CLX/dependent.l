@@ -2112,7 +2112,7 @@
 ;;-----------------------------------------------------------------------------
 
 
-;;; DEFAULT-RESOURCE-PATHNAME - The pathname of the resources file to load if
+;;; DEFAULT-RESOURCES-PATHNAME - The pathname of the resources file to load if
 ;;; a resource manager isn't running.
 
 (defun default-resources-pathname ()
@@ -2144,7 +2144,7 @@
 ;; Image stuff
 ;;-----------------------------------------------------------------------------
 
-v(deftype pixarray-1-element-type ()
+(deftype pixarray-1-element-type ()
   'bit)
 
 (deftype pixarray-4-element-type ()
