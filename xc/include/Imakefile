@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.85 94/03/29 15:54:38 gildea Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.86 94/11/21 18:19:48 kaleb Exp kaleb $
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
 
@@ -14,6 +14,7 @@ HEADERS = DECkeysym.h \
 	Xmd.h \
 	Xos.h \
 	Xosdefs.h \
+	Xpoll.h \
 	Xproto.h \
 	Xprotostr.h \
 	Xthreads.h \

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.181 94/08/10 21:40:25 gildea Exp gildea $
+ * $XConsortium: charproc.c,v 1.182 94/08/10 21:53:24 gildea Exp kaleb $
  */
 
 /*
@@ -54,11 +54,6 @@ in this Software without prior written authorization from the X Consortium.
 /* charproc.c */
 
 #include "ptyx.h"
-#include "VTparse.h"
-#include "data.h"
-#include "error.h"
-#include "menu.h"
-#include "main.h"
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -67,10 +62,16 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/Converters.h>
+#include <X11/Xpoll.h>
 #include <stdio.h>
 #include <errno.h>
 #include <setjmp.h>
 #include <ctype.h>
+#include "VTparse.h"
+#include "data.h"
+#include "error.h"
+#include "menu.h"
+#include "main.h"
 
 /*
  * Check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX
@@ -93,6 +94,9 @@ extern Widget toplevel;
 extern void exit();
 extern char *malloc();
 extern char *realloc();
+extern fd_set Select_mask;
+extern fd_set X_mask;
+extern fd_set pty_mask;
 
 static void VTallocbuf();
 static int finput();
@@ -1186,7 +1190,7 @@ v_write(f, d, len)
 	}
 #endif
 
-	if ((1 << f) != pty_mask)
+	if (!FD_ISSET (f, &pty_mask))
 		return(write(f, d, len));
 
 	/*
@@ -1306,8 +1310,8 @@ v_write(f, d, len)
 	return(c);
 }
 
-static int select_mask;
-static int write_mask;
+static fd_set select_mask;
+static fd_set write_mask;
 static int pty_read_bytes;
 
 in_put()
@@ -1317,7 +1321,7 @@ in_put()
     static struct timeval select_timeout;
 
     for( ; ; ) {
-	if (select_mask & pty_mask && eventMode == NORMAL) {
+	if (FD_ISSET (screen->respond, &select_mask) && eventMode == NORMAL) {
 #ifdef ALLOWLOGGING
 	    if (screen->logging)
 		FlushLog(screen);
@@ -1348,9 +1352,8 @@ in_put()
 		pty_read_bytes += bcnt;
 		/* stop speed reading at some point to look for X stuff */
 		/* (4096 is just a random large number.) */
-		if (pty_read_bytes > 4096) {
-		    select_mask &= ~pty_mask;
-		}
+		if (pty_read_bytes > 4096)
+		    FD_CLR (screen->respond, &select_mask);
 		break;
 	    }
 	}
@@ -1374,13 +1377,15 @@ in_put()
 
 	/* Update the masks and, unless X events are already in the queue,
 	   wait for I/O to be possible. */
-	select_mask = Select_mask;
-	write_mask = ptymask();
+	XFD_COPYSET (&Select_mask, &select_mask);
+	if (v_bufptr > v_bufstr) {
+	    XFD_COPYSET (&pty_mask, &write_mask);
+	} else
+	    FD_ZERO (&write_mask);
 	select_timeout.tv_sec = 0;
 	select_timeout.tv_usec = 0;
-	i = select(max_plus1, &select_mask, &write_mask, (int *)NULL,
-		   QLength(screen->display) ? &select_timeout
-		   : (struct timeval *) NULL);
+	i = Select(max_plus1, &select_mask, &write_mask, NULL,
+		   QLength(screen->display) ? &select_timeout : NULL);
 	if (i < 0) {
 	    if (errno != EINTR)
 		SysError(ERROR_SELECT);
@@ -1388,13 +1393,14 @@ in_put()
 	} 
 
 	/* if there is room to write more data to the pty, go write more */
-	if (write_mask & ptymask()) {
+	if (FD_ISSET (screen->respond, &write_mask)) {
 	    v_write(screen->respond, 0, 0); /* flush buffer */
 	}
 
 	/* if there are X events already in our queue, it
 	   counts as being readable */
-	if (QLength(screen->display) || (select_mask & X_mask)) {
+	if (QLength(screen->display) || 
+	    FD_ISSET (ConnectionNumber(screen->display), &select_mask)) {
 	    xevents();
 	}
 

@@ -1,4 +1,4 @@
-/* $XConsortium: x_hil.c,v 8.144 95/01/24 02:49:29 dpw Exp gildea $ */
+/* $XConsortium: x_hil.c,v 8.145 95/01/24 23:28:35 gildea Exp kaleb $ */
 
 /*******************************************************************
 **
@@ -83,6 +83,7 @@ University of California.
 #include "X.h"
 #include "XI.h"
 #include "Xproto.h"
+#include "Xpoll.h"
 #include "hildef.h"
 #include "XHPproto.h"
 #include "x_hil.h"
@@ -90,7 +91,6 @@ University of California.
 #include "hpkeys.h"
 #include "windowstr.h"
 #include "inputstr.h"
-#include "../../../os/osdep.h"
 #include "hppriv.h"
 #include <sys/times.h>
 #include <sys/hilioctl.h>
@@ -209,44 +209,45 @@ static	int	k_down_incy[4];
  *
  */
 
-CheckInput (data, result, LastSelectMask)
-    pointer data;
-    unsigned long result;
-    long LastSelectMask[];
+CheckInput (blockData, result, pReadmask)
+    pointer blockData;
+    int result;
+    pointer pReadmask;
     {
-    long mask[mskcnt], checkmask[mskcnt];
-    extern long EnabledDevices[];
+    fd_set* LastSelectMask = (fd_set*)pReadmask;
+    fd_set mask, checkmask;
+    extern fd_set EnabledDevices;
     int	    i;
     int     checkfd = max_input_fd;		/* max fd valid for input*/
-    int     checkword = MASKIDX(checkfd);	/* max valid word of mask*/
+    int     checkword = checkfd >> 5;		/* max valid word of mask*/
 
     if (result <= 0)
 	return;
-    MASKANDSETBITS(mask, LastSelectMask, EnabledDevices);
-    if (!ANYSET(mask)) 
+    XFD_ANDSET(&mask, LastSelectMask, &EnabledDevices);
+    if (!XFD_ANYSET(&mask)) 
 	return;
 
-    for (i=0; i<mskcnt; i++)
-	checkmask[i] = 0;
+    FD_ZERO(&checkmask);
 
-    BITSET(checkmask, checkfd);			/* corresponding mask	*/
+    FD_SET(checkfd, &checkmask);		/* corresponding mask	*/
 
     for (i=checkword; i>=0; i--)		/* for all mask words   */
 	{
-	while (mask[i] && checkmask[i])		/* while input available*/
+	while (mask.fds_bits[i] && 
+	       checkmask.fds_bits[i])		/* while input available*/
 	    {
-	    if (mask[i] & checkmask[i]) 	/* if current fd valid  */
+	    if (mask.fds_bits[i] & checkmask.fds_bits[i]) /* current fd valid  */
 		{
-		mask[i] &= ~checkmask[i];
+		mask.fds_bits[i] &= ~checkmask.fds_bits[i];
 		process_inputs(checkfd);	/* process its input	*/
 		}
 	    checkfd--;
-	    checkmask[i] = checkmask[i] >> 1;
+	    checkmask.fds_bits[i] = checkmask.fds_bits[i] >> 1;
             }
 	if (i>0)
 	    {
 	    checkfd = (i-1) * 32 + 31;
-	    BITSET(checkmask, checkfd);		/* corresponding mask	*/
+	    FD_SET(checkfd, &checkmask);	/* corresponding mask	*/
 	    }
         }
     }

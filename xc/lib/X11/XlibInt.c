@@ -1,4 +1,4 @@
-/* $XConsortium: XlibInt.c,v 11.229 94/09/12 19:58:21 kaleb Exp gildea $ */
+/* $XConsortium: XlibInt.c,v 11.230 94/11/29 00:06:42 gildea Exp kaleb $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -37,7 +37,7 @@ from the X Consortium.
 #define NEED_REPLIES
 
 #include "Xlibint.h"
-#include "Xlibnet.h"
+#include <X11/Xpoll.h>
 #include <X11/Xtrans.h>
 #include "xcmiscstr.h"
 #include <stdio.h>
@@ -194,8 +194,8 @@ _XWaitForWritable(dpy
 #ifdef USE_POLL
     struct pollfd filedes;
 #else
-    FdSet r_mask;
-    FdSet w_mask;
+    fd_set r_mask;
+    fd_set w_mask;
 #endif
     int nfound;
 
@@ -203,8 +203,8 @@ _XWaitForWritable(dpy
     filedes.fd = dpy->fd;
     filedes.events = 0;
 #else
-    CLEARBITS(r_mask);
-    CLEARBITS(w_mask);
+    FD_ZERO(&r_mask);
+    FD_ZERO(&w_mask);
 #endif
 
     for (;;) {
@@ -237,8 +237,8 @@ _XWaitForWritable(dpy
 	    filedes.events = POLLIN;
 	filedes.events |= POLLOUT;
 #else
-	    BITSET(r_mask, dpy->fd);
-        BITSET(w_mask, dpy->fd);
+	FD_SET(dpy->fd, &r_mask);
+        FD_SET(dpy->fd, &w_mask);
 #endif
 
 	do {
@@ -246,11 +246,7 @@ _XWaitForWritable(dpy
 #ifdef USE_POLL
 	    nfound = poll (&filedes, 1, -1);
 #else
-#ifdef WIN32
-	    nfound = select (0, &r_mask, &w_mask, NULL, NULL);
-#else
-	    nfound = select (dpy->fd + 1, r_mask, w_mask, NULL, NULL);
-#endif
+	    nfound = Select (dpy->fd + 1, &r_mask, &w_mask, NULL, NULL);
 #endif
 	    InternalLockDisplay(dpy, cv != NULL);
 	    if (nfound < 0 && !ECHECK(EINTR))
@@ -261,7 +257,7 @@ _XWaitForWritable(dpy
 #ifdef USE_POLL
 	    filedes.revents & POLLIN
 #else
-	    GETBIT(r_mask, dpy->fd)
+	    FD_ISSET(dpy->fd, &r_mask)
 #endif
 	    )
 	{
@@ -316,7 +312,7 @@ _XWaitForWritable(dpy
 #ifdef USE_POLL
 	if (filedes.revents & (POLLOUT|POLLHUP|POLLERR))
 #else
-	if (GETBIT(w_mask, dpy->fd))
+	if (FD_ISSET(dpy->fd, &w_mask))
 #endif
 	{
 #ifdef XTHREADS
@@ -420,7 +416,7 @@ _XWaitForReadable(dpy)
 #ifdef USE_POLL
     struct pollfd *filedes;
 #else
-    FdSet r_mask;
+    fd_set r_mask;
     int highest_fd = fd;
 #endif
 
@@ -441,14 +437,14 @@ _XWaitForReadable(dpy)
 	filedes = (struct pollfd *)dpy->filedes;
     }
 #else
-    CLEARBITS(r_mask);
+    FD_ZERO(&r_mask);
 #endif
     for (;;) {
 #ifndef USE_POLL
-	BITSET(r_mask, fd);
+	FD_SET(fd, &r_mask);
 	if (!(dpy->flags & XlibDisplayProcConni))
 	    for (ilist=dpy->im_fd_info; ilist; ilist=ilist->next) {
-		BITSET(r_mask, ilist->fd);
+		FD_SET(ilist->fd, &r_mask);
 		if (ilist->fd > highest_fd)
 		    highest_fd = ilist->fd;
 	    }
@@ -459,11 +455,7 @@ _XWaitForReadable(dpy)
 		      (dpy->flags & XlibDisplayProcConni) ? 1 : 1+dpy->im_fd_length,
 		      -1);
 #else
-#ifdef WIN32
-	result = select (0, &r_mask, NULL, NULL, NULL);
-#else
-	result = select(highest_fd + 1, r_mask, NULL, NULL, NULL);
-#endif
+	result = Select(highest_fd + 1, &r_mask, NULL, NULL, NULL);
 #endif
 	InternalLockDisplay(dpy, dpy->flags & XlibDisplayReply);
 	if (result == -1 && !ECHECK(EINTR)) _XIOError(dpy);
@@ -472,7 +464,7 @@ _XWaitForReadable(dpy)
 #ifdef USE_POLL
 	if (filedes[0].revents & (POLLIN|POLLHUP|POLLERR))
 #else
-	if (GETBIT(r_mask, fd))
+	if (FD_ISSET(fd, &r_mask))
 #endif
 	    break;
 	if (!(dpy->flags & XlibDisplayProcConni)) {
@@ -485,7 +477,7 @@ _XWaitForReadable(dpy)
 #ifdef USE_POLL
 		if (filedes[i].revents & POLLIN)
 #else
-		if (GETBIT(r_mask, ilist->fd))
+		if (FD_ISSET(ilist->fd, &r_mask))
 #endif
 		{
 		    _XProcessInternalConnection(dpy, ilist);
@@ -727,7 +719,7 @@ _XEventsQueued (dpy, mode)
 #ifdef USE_POLL
 	    struct pollfd filedes;
 #else
-	    FdSet r_mask;
+	    fd_set r_mask;
 	    static struct timeval zero_time;
 #endif
 
@@ -737,13 +729,9 @@ _XEventsQueued (dpy, mode)
 	    filedes.events = POLLIN;
 	    if (pend = poll(&filedes, 1, 0))
 #else
-	    CLEARBITS(r_mask);
-	    BITSET(r_mask, dpy->fd);
-#ifdef WIN32
-	    if (pend = select (0, &r_mask, NULL, NULL, &zero_time))
-#else
-	    if (pend = select(dpy->fd + 1, r_mask, NULL, NULL, &zero_time))
-#endif
+	    FD_ZERO(&r_mask);
+	    FD_SET(dpy->fd, &r_mask);
+	    if (pend = Select(dpy->fd + 1, &r_mask, NULL, NULL, &zero_time))
 #endif
 	    {
 		if (pend > 0)

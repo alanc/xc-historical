@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omron.h,v 1.1 91/06/29 13:48:51 xguest Exp $
+ * $XConsortium: omron.h,v 1.3 94/02/04 19:37:26 dpw Exp kaleb $
  *
  * Copyright 1991 by OMRON Corporation
  * 
@@ -50,12 +50,12 @@
 
 #include "X.h"
 #include "Xmd.h"
+#include "Xpoll.h"
 
 #define	NEED_EVENTS
 #include "Xproto.h"
 
 #include "misc.h"
-#include "osdep.h"
 
 #include "scrnintstr.h"
 #include "screenint.h"
@@ -134,8 +134,7 @@ extern int errno;
 #endif
 
 /* os */
-extern long EnabledDevices[];
-extern long LastSelectMask[];
+extern fd_set* EnabledDevices;
 
 /* ddx/omron */
 extern int omronScreenIndex;	

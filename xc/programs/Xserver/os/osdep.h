@@ -45,14 +45,12 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.39 94/02/20 10:41:59 dpw Exp $ */
+/* $XConsortium: osdep.h,v 1.40 94/04/17 20:27:05 dpw Exp kaleb $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
 #define BUFWATERMARK 8192
 #define MAXBUFSIZE (1 << 22)
-
-#include <X11/Xmd.h>
 
 #ifndef sgi	    /* SGI defines OPEN_MAX in a useless way */
 #ifndef X_NOT_POSIX

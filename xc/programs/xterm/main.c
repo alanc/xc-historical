@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.226 95/01/13 21:12:00 kaleb Exp kaleb $";
+static char *rid="$XConsortium: main.c,v 1.227 95/03/01 00:54:49 kaleb Exp kaleb $";
 #endif /* lint */
 
 /*
@@ -68,17 +68,18 @@ SOFTWARE.
 /* main.c */
 
 #include "ptyx.h"
-#include "data.h"
-#include "error.h"
-#include "menu.h"
 #include <X11/StringDefs.h>
 #include <X11/Shell.h>
 
 #include <X11/Xos.h>
 #include <X11/cursorfont.h>
 #include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xpoll.h>
 #include <pwd.h>
 #include <ctype.h>
+#include "data.h"
+#include "error.h"
+#include "menu.h"
 
 #ifdef att
 #define ATT
@@ -855,14 +856,16 @@ XtActionsRec actionProcs[] = {
 };
 
 Atom wm_delete_window;
+extern fd_set Select_mask;
+extern fd_set X_mask;
+extern fd_set pty_mask;
 
 main (argc, argv)
 int argc;
 char **argv;
 {
 	register TScreen *screen;
-	register int pty;
-	int Xsocket, mode;
+	int mode;
 	char *base_name();
 	int xerror(), xioerror();
 
@@ -1269,9 +1272,6 @@ char **argv;
 
 	/* Realize procs have now been executed */
 
-	Xsocket = ConnectionNumber(screen->display);
-	pty = screen->respond;
-
 	if (am_slave) { /* Write window id so master end can read and use */
 	    char buf[80];
 
@@ -1279,7 +1279,7 @@ char **argv;
 	    sprintf (buf, "%lx\n", 
 	    	     screen->TekEmu ? XtWindow (XtParent (tekWidget)) :
 				      XtWindow (XtParent (term)));
-	    write (pty, buf, strlen (buf));
+	    write (screen->respond, buf, strlen (buf));
 	}
 
 #ifdef ALLOWLOGGING
@@ -1299,35 +1299,41 @@ char **argv;
 	{
 	    struct termio tio;
 
-	    if(ioctl(pty, TCGETA, &tio) == -1)
+	    if(ioctl(screen->respond, TCGETA, &tio) == -1)
 		SysError(ERROR_TIOCGETP);
 
 	    tio.c_cflag &= ~(CLOCAL);
 
-	    if (ioctl (pty, TCSETA, &tio) == -1)
+	    if (ioctl (screen->respond, TCSETA, &tio) == -1)
 		SysError(ERROR_TIOCSETP);
 	}
 #endif
 #endif
 #ifdef USE_SYSV_TERMIO
-	if (0 > (mode = fcntl(pty, F_GETFL, 0)))
+	if (0 > (mode = fcntl(screen->respond, F_GETFL, 0)))
 		Error();
 #ifdef O_NDELAY
 	mode |= O_NDELAY;
 #else
 	mode |= O_NONBLOCK;
 #endif /* O_NDELAY */
-	if (fcntl(pty, F_SETFL, mode))
+	if (fcntl(screen->respond, F_SETFL, mode))
 		Error();
 #else	/* USE_SYSV_TERMIO */
 	mode = 1;
-	if (ioctl (pty, FIONBIO, (char *)&mode) == -1) SysError (ERROR_FIONBIO);
+	if (ioctl (screen->respond, FIONBIO, (char *)&mode) == -1) SysError (ERROR_FIONBIO);
 #endif	/* USE_SYSV_TERMIO */
 	
-	pty_mask = 1 << pty;
-	X_mask = 1 << Xsocket;
-	Select_mask = pty_mask | X_mask;
-	max_plus1 = (pty < Xsocket) ? (1 + Xsocket) : (1 + pty);
+	FD_ZERO (&pty_mask);
+	FD_ZERO (&X_mask);
+	FD_ZERO (&Select_mask);
+	FD_SET (screen->respond, &pty_mask);
+	FD_SET (ConnectionNumber(screen->display), &X_mask);
+	FD_SET (screen->respond, &Select_mask);
+	FD_SET (ConnectionNumber(screen->display), &Select_mask);
+	max_plus1 = (screen->respond < ConnectionNumber(screen->display)) ? 
+		(1 + ConnectionNumber(screen->display)) : 
+		(1 + screen->respond);
 
 #ifdef DEBUG
 	if (debug) printf ("debugging on\n");
@@ -1666,7 +1672,6 @@ spawn ()
 {
 	extern char *SysErrorMsg();
 	register TScreen *screen = &term->screen;
-	int Xsocket = ConnectionNumber(screen->display);
 #ifdef USE_HANDSHAKE
 	handshake_t handshake;
 #else
@@ -2051,7 +2056,7 @@ spawn ()
 		}
 
 		/* we don't need the socket, or the pty master anymore */
-		close (Xsocket);
+		close (ConnectionNumber(screen->display));
 		close (screen->respond);
 
 		/* Now is the time to set up our process group and

@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.47 94/05/14 19:10:18 rws Exp gildea $ */
+/* $XConsortium: command.c,v 2.48 94/11/28 23:43:16 gildea Exp kaleb $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -28,6 +28,7 @@
 /* command.c -- interface to exec mh commands. */
 
 #include "xmh.h"
+#include <X11/Xpoll.h>
 #include <sys/ioctl.h>
 #include <signal.h>
 #ifndef SYSV
@@ -35,11 +36,6 @@
 #endif	/* SYSV */
 #ifdef SVR4
 #include <sys/filio.h>
-#endif
-#ifdef SYSV
-#ifdef _IBMR2
-#include <sys/select.h>
-#endif
 #endif
 
 /* number of user input events to queue before malloc */
@@ -52,16 +48,6 @@
 #include <vfork.h>
 #endif
 #endif
-
-#ifndef FD_SET
-#define NFDBITS         (8*sizeof(fd_set))
-#define FD_SETSIZE      NFDBITS
-#define FD_SET(n, p)    ((p)->fds_bits[(n)/NFDBITS] |= (1 << ((n) % NFDBITS)))
-#define FD_CLR(n, p)    ((p)->fds_bits[(n)/NFDBITS] &= ~(1 << ((n) % NFDBITS)))
-#define FD_ISSET(n, p)  ((p)->fds_bits[(n)/NFDBITS] & (1 << ((n) % NFDBITS)))
-#define FD_ZERO(p)      bzero((char *)(p), sizeof(*(p)))
-#endif /* FD_SET */
-
 
 typedef struct _CommandStatus {
     Widget	popup;		 /* must be first; see PopupStatus */
@@ -253,8 +239,7 @@ static int _DoCommandToFileOrPipe(argv, inputfd, outputfd, bufP, lenP)
 		readfds = fds;
                 if (childdone) break;
 DEBUG("blocking.\n")
-		(void) select(num_fds, (int *) &readfds,
-			  (int *) NULL, (int *) NULL, (struct timeval *) NULL);
+		(void) Select(num_fds, &readfds, NULL, NULL, NULL);
 DEBUG1("unblocked; child%s done.\n", childdone ? "" : " not")
 		if (childdone) break;
 		if (!FD_ISSET(ConnectionNumber(theDisplay), &readfds))

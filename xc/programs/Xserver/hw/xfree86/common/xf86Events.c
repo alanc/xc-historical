@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp kaleb $ */
+/* $XConsortium: xf86Events.c,v 1.12 95/03/14 21:22:15 kaleb Exp kaleb $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.8 1995/01/11 03:50:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -956,7 +956,7 @@ xf86Wakeup(blockData, err, pReadmask)
         (xf86Info.mseEvents)(1);
 
 #else
-    XFD_ANSET(devicesWithInput, fdp, &EnabledDevices);
+    XFD_ANDSET(&devicesWithInput, fdp, &EnabledDevices);
     if (XFD_ANYSET(&devicesWithInput))
       {
 	(xf86Info.kbdEvents)();

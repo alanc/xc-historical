@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.144 94/06/14 10:11:06 kaleb Exp mumble $ */
+/* $XConsortium: NextEvent.c,v 1.145 94/10/10 18:59:29 kaleb Exp kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -164,7 +164,7 @@ typedef struct {
 
 static struct timeval  zero_time = { 0 , 0};
 #ifndef USE_POLL
-static Fd_set zero_fd = { 0 };
+static fd_set zero_fd = { 0 };
 #else
 #define X_BLOCK -1
 #define X_DONT_BLOCK 0
@@ -206,7 +206,7 @@ static void InitTimes (block, howlong, wt)
 
 typedef struct {
 #ifndef USE_POLL
-    Fd_set rmask, wmask, emask;
+    fd_set rmask, wmask, emask;
     int nfds;
 #else
     struct pollfd* fdlist;
@@ -295,10 +295,7 @@ static int IoWait (wt, wf)
     wait_fds_ptr_t wf;
 {
 #ifndef USE_POLL
-    return select (wf->nfds, 
-		   (int *) &wf->rmask, 
-		   (int *) &wf->wmask, 
-		   (int *) &wf->emask, 
+    return Select (wf->nfds, &wf->rmask, &wf->wmask, &wf->emask, 
 		   wt->wait_time_ptr);
 #else
     return poll (wf->fdlist, wf->fdlistlen, wt->poll_wait);
@@ -319,7 +316,7 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
     int ii;
 #ifndef USE_POLL /* { check ready file descriptors block */
 #ifdef XTHREADS
-    Fd_set rmask;
+    fd_set rmask;
 #endif
     int dd;
     *dpy_no = -1;

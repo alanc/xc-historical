@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: lbxio.c,v 1.1 94/12/01 20:58:09 mor Exp mor $ */
+/* $XConsortium: lbxio.c,v 1.2 94/12/02 17:33:49 mor Exp kaleb $ */
 /*****************************************************************
  * i/o functions
  *
@@ -42,6 +42,7 @@ extern int errno;
 #include "X.h"
 #include "Xproto.h"
 #include "os.h"
+#include "Xpoll.h"
 #include "osdep.h"
 #include "opaque.h"
 #include "dixstruct.h"
@@ -60,9 +61,9 @@ extern int errno;
 #endif
 #endif
 
-extern FdSet ClientsWithInput, IgnoredClientsWithInput, AllClients;
-extern FdSet ClientsWriteBlocked;
-extern FdSet OutputPending;
+extern fd_set ClientsWithInput, IgnoredClientsWithInput, AllClients;
+extern fd_set ClientsWriteBlocked;
+extern fd_set OutputPending;
 extern int ConnectionTranslation[];
 extern int ConnectionOutputTranslation[];
 extern Bool NewOutputPending;
@@ -117,7 +118,7 @@ ClientPtr   WritingClient;
 	  timesThisConnection = 0; }
 #define YieldControlNoInput()			\
         { YieldControl();			\
-	  BITCLEAR(ClientsWithInput, fd); }
+	  FD_CLR(fd,&ClientsWithInput); }
 #define YieldControlDeath()			\
         { timesThisConnection = 0; }
 
@@ -288,7 +289,7 @@ LBXReadRequestFromClient(client)
 	request = (xReq *)(oci->bufptr + needed);
 	nextneeds = RequestLength (request, client, gotnow - needed, &part);
 	if (gotnow >= needed + nextneeds && !part)
-	    BITSET(ClientsWithInput, fd);
+	    FD_SET(fd, &ClientsWithInput);
 	else
 	    YieldControlNoInput();
     }
@@ -338,7 +339,7 @@ SwitchClientOutput (from, to)
     if (PendingClientOutput (to))
     {
 	NewOutputPending = TRUE;
-	BITSET(OutputPending, ocTo->fd);
+	FD_SET(ocTo->fd, &OutputPending);
     }
 }
 
@@ -370,7 +371,7 @@ CheckPendingClientInput (client)
     request = (xReq *) (oci->bufptr + needed);
     if (gotnow >= needed + RequestLength(request, client, gotnow - needed, &part) && !part)
     {
-	BITSET(ClientsWithInput, oc->fd);
+	FD_SET(oc->fd, &ClientsWithInput);
 	return 1;
     }
     return 0;
@@ -382,7 +383,7 @@ MarkConnectionWriteBlocked (client)
 {
     OsCommPtr oc = (OsCommPtr)client->osPrivate;
 
-    BITSET(ClientsWriteBlocked, oc->fd);
+    FD_SET(oc->fd, &ClientsWriteBlocked);
     AnyClientsWriteBlocked = TRUE;
 }
 
@@ -479,7 +480,7 @@ AppendFakeRequest (client, data, count)
     oco->bufcnt += count;
     gotnow += count;
     if (gotnow >= RequestLength (oco->bufptr, client, gotnow, &part) && !part)
-	BITSET(ClientsWithInput, fd);
+	FD_SET(fd, &ClientsWithInput);
     else
 	YieldControlNoInput();
     return(TRUE);
@@ -622,7 +623,7 @@ UncompressWriteToClient (who, count, buf)
     }
 
     NewOutputPending = TRUE;
-    BITSET(OutputPending, oc->fd);
+    FD_SET(oc->fd, &OutputPending);
     return(count);
 }
 

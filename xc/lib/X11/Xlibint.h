@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.142 94/03/30 16:08:20 rws Exp $ */
+/* $XConsortium: Xlibint.h,v 11.143 94/04/17 20:21:50 rws Exp kaleb $ */
 
 /*
 
@@ -46,6 +46,14 @@ from the X Consortium.
 
 #ifdef WIN32
 #define _XFlush _XFlushIt
+#endif
+
+/*
+ * If your BytesReadable correctly detects broken connections, then
+ * you should NOT define XCONN_CHECK_FREQ.
+ */
+#ifndef XCONN_CHECK_FREQ
+#define XCONN_CHECK_FREQ 256
 #endif
 
 struct _XGC

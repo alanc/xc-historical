@@ -1,4 +1,4 @@
-/* $XConsortium: ConnDis.c,v 11.122 94/05/05 13:13:24 mor Exp $ */
+/* $XConsortium: ConnDis.c,v 11.123 94/05/19 11:00:27 mor Exp kaleb $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -33,7 +33,6 @@ in this Software without prior written authorization from the X Consortium.
 #define NEED_EVENTS
 
 #include <X11/Xlibint.h>
-#include "Xlibnet.h"
 #include <X11/Xtrans.h>
 #include <X11/Xauth.h>
 #include <stdio.h>

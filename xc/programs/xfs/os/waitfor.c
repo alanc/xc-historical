@@ -1,4 +1,4 @@
-/* $XConsortium: waitfor.c,v 1.12 94/04/12 22:00:28 dpw Exp $ */
+/* $XConsortium: waitfor.c,v 1.13 94/04/17 19:56:09 dpw Exp kaleb $ */
 /*
  * waits for input
  */
@@ -60,6 +60,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include	"clientstr.h"
 #include	"globals.h"
+#include	"X11/Xpoll.h"
 #include	"osdep.h"
 
 extern WorkQueuePtr workQueue;
@@ -72,14 +73,14 @@ extern int errno;
 extern void MakeNewConnections();
 extern void FlushAllOutput();
 
-extern long WellKnownConnections;
-extern long LastSelectMask[];
-extern long WriteMask[];
-extern long ClientsWithInput[];
-extern long ClientsWriteBlocked[];
-extern long AllSockets[];
-extern long AllClients[];
-extern long OutputPending[];
+extern fd_set WellKnownConnections;
+extern fd_set LastSelectMask;
+extern fd_set WriteMask;
+extern fd_set ClientsWithInput;
+extern fd_set ClientsWriteBlocked;
+extern fd_set AllSockets;
+extern fd_set AllClients;
+extern fd_set OutputPending;
 
 extern Bool AnyClientsWriteBlocked;
 extern Bool NewOutputPending;
@@ -102,8 +103,8 @@ WaitForSomething(pClientsReady)
 {
     struct timeval *wt,
                 waittime;
-    long        clientsReadable[mskcnt];
-    long        clientsWriteable[mskcnt];
+    fd_set      clientsReadable;
+    fd_set      clientsWriteable;
     long        curclient;
     int         selecterr;
     long        current_time = 0;
@@ -116,8 +117,8 @@ WaitForSomething(pClientsReady)
 	if (workQueue)
 	    ProcessWorkQueue();
 
-	if (ANYSET(ClientsWithInput)) {
-	    COPYBITS(ClientsWithInput, clientsReadable);
+	if (XFD_ANYSET(&ClientsWithInput)) {
+	    XFD_COPYSET(&ClientsWithInput, &clientsReadable);
 	    break;
 	}
 	/*
@@ -138,25 +139,23 @@ WaitForSomething(pClientsReady)
 	    (1000000 / MILLI_PER_SECOND);
 	wt = &waittime;
 
-	COPYBITS(AllSockets, LastSelectMask);
+	XFD_COPYSET(&AllSockets, &LastSelectMask);
 
-	BlockHandler((pointer) &wt, (pointer) LastSelectMask);
+	BlockHandler((pointer) &wt, (pointer) &LastSelectMask);
 	if (NewOutputPending)
 	    FlushAllOutput();
 
 	if (AnyClientsWriteBlocked) {
-	    COPYBITS(ClientsWriteBlocked, clientsWriteable);
-	    i = select(MAXSOCKS, (int *) LastSelectMask,
-		       (int *) clientsWriteable, (int *) NULL, wt);
+	    XFD_COPYSET(&ClientsWriteBlocked, &clientsWriteable);
+	    i = Select(MAXSOCKS, &LastSelectMask, &clientsWriteable, NULL, wt);
 	} else {
-	    i = select(MAXSOCKS, (int *) LastSelectMask, (int *) NULL,
-		       (int *) NULL, wt);
+	    i = Select(MAXSOCKS, &LastSelectMask, NULL, NULL, wt);
 	}
 	selecterr = errno;
 
-	WakeupHandler(i, (pointer) LastSelectMask);
+	WakeupHandler(i, (pointer) &LastSelectMask);
 	if (i <= 0) {		/* error or timeout */
-	    CLEARBITS(clientsWriteable);
+	    FD_ZERO(&clientsWriteable);
 	    if (i < 0) {
 		if (selecterr == EBADF) {	/* somebody disconnected */
 		    CheckConnections();
@@ -174,34 +173,34 @@ WaitForSomething(pClientsReady)
 		LastReapTime = GetTimeInMillis();
 	    }
 	} else {
-	    if (AnyClientsWriteBlocked && ANYSET(clientsWriteable)) {
+	    if (AnyClientsWriteBlocked && XFD_ANYSET(&clientsWriteable)) {
 		NewOutputPending = TRUE;
-		ORBITS(OutputPending, clientsWriteable, OutputPending);
-		UNSETBITS(ClientsWriteBlocked, clientsWriteable);
-		if (!ANYSET(ClientsWriteBlocked))
+		XFD_ORSET(&OutputPending, &clientsWriteable, &OutputPending);
+		XFD_UNSET(&ClientsWriteBlocked, &clientsWriteable);
+		if (!XFD_ANYSET(&ClientsWriteBlocked))
 		    AnyClientsWriteBlocked = FALSE;
 	    }
-	    MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients);
-	    if (LastSelectMask[0] & WellKnownConnections)
+	    XFD_ANDSET(&clientsReadable, &LastSelectMask, &AllClients);
+	    if (LastSelectMask.fds_bits[0] & WellKnownConnections.fds_bits[0])
 		MakeNewConnections();
-	    if (ANYSET(clientsReadable))
+	    if (XFD_ANYSET(&clientsReadable))
 		break;
 
 	}
     }
     nready = 0;
 
-    if (ANYSET(clientsReadable)) {
+    if (XFD_ANYSET(&clientsReadable)) {
 	ClientPtr   client;
 	int         conn;
 
 	if (current_time)	/* may not have been set */
 	    current_time = GetTimeInMillis();
-	for (i = 0; i < mskcnt; i++) {
-	    while (clientsReadable[i]) {
-		curclient = ffs(clientsReadable[i]) - 1;
+	for (i = 0; i < howmany(XFD_SETSIZE, NFDBITS); i++) {
+	    while (clientsReadable.fds_bits[i]) {
+		curclient = ffs(clientsReadable.fds_bits[i]) - 1;
 		conn = ConnectionTranslation[curclient + (i << 5)];
-		clientsReadable[i] &= ~(1 << curclient);
+		FD_CLR (curclient, &clientsReadable);
 		client = clients[conn];
 		if (!client)
 		    continue;
@@ -214,7 +213,7 @@ WaitForSomething(pClientsReady)
     return nready;
 }
 
-#ifndef ANYSET
+#if 0
 /*
  * This is not always a macro
   */

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.h,v 1.9 91/02/05 19:44:30 gildea Exp $
+ *	$XConsortium: data.h,v 1.10 93/02/25 17:21:28 gildea Exp kaleb $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -42,12 +42,10 @@ extern char *ptydev;
 extern char *ttydev;
 extern char *xterm_name;
 extern Char buffer[];
-extern int Select_mask;
 extern int T_lastx;
 extern int T_lasty;
 extern int Tbcnt;
 extern int Ttoggled;
-extern int X_mask;
 extern int am_slave;
 extern int bcnt;
 #ifdef DEBUG
@@ -55,7 +53,6 @@ extern int debug;
 #endif	/* DEBUG */
 extern int errno;
 extern int max_plus1;
-extern int pty_mask;
 extern int switchfb[];
 
 extern int waitingForTrackInfo;

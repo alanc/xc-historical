@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.91 95/01/25 11:14:28 kaleb Exp $ */
+/* $XConsortium: io.c,v 1.92 95/03/03 01:32:45 dpw Exp kaleb $ */
 /*****************************************************************
  * i/o functions
  *
@@ -65,6 +65,7 @@ extern int errno;
 #include "X.h"
 #include "Xproto.h"
 #include "os.h"
+#include "Xpoll.h"
 #include "osdep.h"
 #include "opaque.h"
 #include "dixstruct.h"
@@ -83,9 +84,9 @@ extern int errno;
 #endif
 #endif
 
-extern FdSet ClientsWithInput, IgnoredClientsWithInput, AllClients;
-extern FdSet ClientsWriteBlocked;
-extern FdSet OutputPending;
+extern fd_set ClientsWithInput, IgnoredClientsWithInput, AllClients;
+extern fd_set ClientsWriteBlocked;
+extern fd_set OutputPending;
 extern int ConnectionTranslation[];
 #ifdef LBX
 extern int ConnectionOutputTranslation[];
@@ -221,7 +222,7 @@ typedef struct {
 	  timesThisConnection = 0; }
 #define YieldControlNoInput()			\
         { YieldControl();			\
-	  BITCLEAR(ClientsWithInput, fd); }
+	  FD_CLR(fd, &ClientsWithInput); }
 #define YieldControlDeath()			\
         { timesThisConnection = 0; }
 
@@ -468,7 +469,7 @@ ReadRequestFromClient(client)
 		  gotnow >= (get_big_req_len(request, client) << 2))))
 #endif
 	    )
-	    BITSET(ClientsWithInput, fd);
+	    FD_SET(fd, &ClientsWithInput);
 	else
 	    YieldControlNoInput();
     }
@@ -574,7 +575,7 @@ InsertFakeRequest(client, data, count)
 #else
     if (gotnow >= RequestLength (request, client, gotnow, &part) && !part)
 #endif
-	BITSET(ClientsWithInput, fd);
+	FD_SET(fd, &ClientsWithInput);
     else
 	YieldControlNoInput();
     return(TRUE);
@@ -606,13 +607,13 @@ ResetCurrentRequest(client)
     request = (xReq *)oci->bufptr;
     if (gotnow >= RequestLength (request, client, gotnow, &part) && !part)
     {
-	if (GETBIT(AllClients, fd))
+	if (FD_ISSET(fd, &AllClients))
 	{
-	    BITSET(ClientsWithInput, fd);
+	    FD_SET(fd, &ClientsWithInput);
 	}
 	else
 	{
-	    BITSET(IgnoredClientsWithInput, fd);
+	    FD_SET(fd, &IgnoredClientsWithInput);
 	}
 	YieldControl();
     }
@@ -642,13 +643,13 @@ ResetCurrentRequest(client)
 #endif
 	if (gotnow >= (needed << 2))
 	{
-	    if (GETBIT(AllClients, fd))
+	    if (FD_ISSET(fd, &AllClients))
 	    {
-		BITSET(ClientsWithInput, fd);
+		FD_SET(fd, &ClientsWithInput);
 	    }
 	    else
 	    {
-		BITSET(IgnoredClientsWithInput, fd);
+		FD_SET(fd, &IgnoredClientsWithInput);
 	    }
 	    YieldControl();
 	}
@@ -891,7 +892,7 @@ FlushClient(who, oc, extraBuf, extraCount)
 	    /* If we've arrived here, then the client is stuffed to the gills
 	       and not ready to accept more.  Make a note of it and buffer
 	       the rest. */
-	    BITSET(ClientsWriteBlocked, connection);
+	    FD_SET(connection, &ClientsWriteBlocked);
 	    AnyClientsWriteBlocked = TRUE;
 
 	    if (written < oco->count)
@@ -964,8 +965,8 @@ FlushClient(who, oc, extraBuf, extraCount)
     /* check to see if this client was write blocked */
     if (AnyClientsWriteBlocked)
     {
-	BITCLEAR(ClientsWriteBlocked, oc->fd);
- 	if (! ANYSET(ClientsWriteBlocked))
+	FD_CLR(oc->fd, &ClientsWriteBlocked);
+ 	if (! XFD_ANYSET(&ClientsWriteBlocked))
 	    AnyClientsWriteBlocked = FALSE;
     }
     if (oco->size > BUFWATERMARK)
@@ -1010,10 +1011,10 @@ FlushAllOutput()
     CriticalOutputPending = FALSE;
     NewOutputPending = FALSE;
 
-    for (base = 0; base < mskcnt; base++)
+    for (base = 0; base < howmany(XFD_SETSIZE, NFDBITS); base++)
     {
-	mask = OutputPending[ base ];
-	OutputPending[ base ] = 0;
+	mask = OutputPending.fds_bits[ base ];
+	OutputPending.fds_bits[ base ] = 0;
 	while (mask)
 	{
 	    index = ffs(mask) - 1;
@@ -1028,9 +1029,9 @@ FlushAllOutput()
 	    if (client->clientGone)
 		continue;
 	    oc = (OsCommPtr)client->osPrivate;
-	    if (GETBIT(ClientsWithInput, oc->fd))
+	    if (FD_ISSET(oc->fd, &ClientsWithInput))
 	    {
-		BITSET(OutputPending, oc->fd); /* set the bit again */
+		FD_SET(oc->fd, &OutputPending); /* set the bit again */
 		NewOutputPending = TRUE;
 	    }
 	    else
@@ -1101,14 +1102,14 @@ WriteToClient (who, count, buf)
 
     if (oco->count + count + padBytes > oco->size)
     {
-	BITCLEAR(OutputPending, oc->fd);
+	FD_CLR(oc->fd, &OutputPending);
 	CriticalOutputPending = FALSE;
 	NewOutputPending = FALSE;
 	return FlushClient(who, oc, buf, count);
     }
 
     NewOutputPending = TRUE;
-    BITSET(OutputPending, oc->fd);
+    FD_SET(oc->fd, &OutputPending);
     memmove((char *)oco->buf + oco->count, buf, count);
     oco->count += count + padBytes;
     

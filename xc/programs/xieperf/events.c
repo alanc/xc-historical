@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.10 94/03/27 13:47:48 rws Exp $ */
+/* $XConsortium: events.c,v 1.11 94/04/17 20:39:17 rws Exp kaleb $ */
 /**** module events.c ****/
 /******************************************************************************
 
@@ -76,23 +76,8 @@ terms and conditions:
 #endif
 #include <stdio.h>
 #include <ctype.h>
+#include <X11/Xpoll.h>
 #include "xieperf.h"
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
-#include <time.h>
-#define Time_t time_t
-#endif
-#ifdef WIN32
-#define BOOL wBOOL
-#undef Status
-#define Status wStatus
-#include <winsock.h>
-#undef Status
-#define Status int
-#undef BOOL
-#endif
 
 static XieExtensionInfo *xieInfo=NULL;
 static int timeout = 60;        /* in seconds */
@@ -182,16 +167,10 @@ Bool	verbose;
 	XieImportObscuredEvent *ImportObscured = 
 		(XieImportObscuredEvent *) &event;
 	int retval, xie_event;
-	Time_t endtime, curtime, delta;
+	time_t endtime, curtime, delta;
 	struct timeval tv;
 	Bool done;
-#ifdef WIN32
 	fd_set rd;
-#define FDCAST fdset
-#else
-	unsigned int rd;
-#define FDCAST unsigned int
-#endif
 
 	retval = 1;
 	done = False;
@@ -199,7 +178,7 @@ Bool	verbose;
 	/* set up for the select */
 
 	Xsocket = ConnectionNumber(xp->d);	
-	endtime = time( ( Time_t * ) NULL ) + timeout;
+	endtime = time( ( time_t * ) NULL ) + timeout;
 	while ( done == False )
 	{
 		/* see if there is anything for us in the event queue... */	
@@ -207,7 +186,7 @@ Bool	verbose;
 		if ( XCheckTypedEvent( xp->d, xieInfo->first_event + which, 
 			&event ) == False )
 		{
-			curtime = time( ( Time_t * ) NULL );
+			curtime = time( ( time_t * ) NULL );
 			delta = endtime - curtime;
 			if ( delta <= 0 )
 			{
@@ -220,13 +199,9 @@ Bool	verbose;
 			tv.tv_sec = delta;  
 			tv.tv_usec = 0L;
 			XFlush( xp->d );
-#ifdef WIN32
 			FD_ZERO(&rd);
 			FD_SET(Xsocket, &rd);
-#else
-			rd = 1 << Xsocket;
-#endif
-			select( Xsocket + 1, ( int * ) &rd, ( int * ) NULL, ( int * ) NULL, &tv );
+			Select( Xsocket + 1, &rd, NULL, NULL, &tv );
 			continue;
 		}	
 		xie_event = event.type - xieInfo->first_event;

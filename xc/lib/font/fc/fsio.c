@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.35 94/02/07 11:20:37 gildea Exp $ */
+/* $XConsortium: fsio.c,v 1.36 94/03/18 11:01:01 mor Exp kaleb $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -34,7 +34,8 @@
 #include	"FS.h"
 #include	"FSproto.h"
 
-#include	"fslibos.h"
+#include 	"X11/Xtrans.h"
+#include	"X11/Xpoll.h"
 #include	"fontmisc.h"
 #include	"fsio.h"
 
@@ -79,7 +80,7 @@ extern int errno;
 #endif
 
 static int  padlength[4] = {0, 3, 2, 1};
-FdSet _fs_fd_mask;
+fd_set _fs_fd_mask;
 
 int  _fs_wait_for_readable();
 
@@ -476,31 +477,27 @@ int
 _fs_wait_for_readable(conn)
     FSFpePtr    conn;
 {
-    FdSet r_mask;
-    FdSet e_mask;
+    fd_set r_mask;
+    fd_set e_mask;
     int         result;
 
 #ifdef DEBUG
     fprintf(stderr, "read would block\n");
 #endif
 
-    CLEARBITS(r_mask);
-    CLEARBITS(e_mask);
     do {
-	BITSET(r_mask, conn->fs_fd);
-	BITSET(e_mask, conn->fs_fd);
-#ifdef WIN32
-	result = select(0, &r_mask, NULL, &e_mask, NULL);
-#else
-	result = select(conn->fs_fd + 1, r_mask, NULL, e_mask, NULL);
-#endif
+	FD_ZERO(&r_mask);
+	FD_ZERO(&e_mask);
+	FD_SET(conn->fs_fd, &r_mask);
+	FD_SET(conn->fs_fd, &e_mask);
+	result = Select(conn->fs_fd + 1, &r_mask, NULL, &e_mask, NULL);
 	if (result == -1) {
-	    if (!ECHECK(EINTR))
-		return -1;
-	    else
+	    if (ECHECK(EINTR) || ECHECK(EAGAIN))
 		continue;
+	    else
+		return -1;
 	}
-	if (result && _fs_any_bit_set(e_mask))
+	if (result && FD_ISSET(conn->fs_fd, &e_mask))
 	    return -1;
     } while (result <= 0);
 
@@ -509,49 +506,41 @@ _fs_wait_for_readable(conn)
 
 int
 _fs_set_bit(mask, fd)
-    FdSetPtr mask;
+    fd_set* mask;
     int         fd;
 {
-    BITSET(mask, fd);
+    FD_SET(fd, mask);
     return fd;
 }
 
 int
 _fs_is_bit_set(mask, fd)
-    FdSetPtr mask;
+    fd_set* mask;
     int         fd;
 {
-    return GETBIT(mask, fd);
+    return FD_ISSET(fd, mask);
 }
 
 void
 _fs_bit_clear(mask, fd)
-    FdSetPtr mask;
+    fd_set* mask;
     int         fd;
 {
-    BITCLEAR(mask, fd);
+    FD_CLR(fd, mask);
 }
 
 int
 _fs_any_bit_set(mask)
-    FdSetPtr mask;
+    fd_set* mask;
 {
-
-#ifdef ANYSET
-    return ANYSET(mask);
-#else
-    int         i;
-
-    for (i = 0; i < MSKCNT; i++)
-	if (mask[i])
-	    return (1);
-    return (0);
-#endif
+    XFD_ANYSET(mask);
 }
 
 int
 _fs_or_bits(dst, m1, m2)
-    FdSetPtr dst, m1, m2;
+    fd_set* dst;
+    fd_set* m1;
+    fd_set* m2;
 {
 #ifdef WIN32
     int i;
@@ -568,7 +557,7 @@ _fs_or_bits(dst, m1, m2)
 	}
     }
 #else
-    ORBITS(dst, m1, m2);
+    XFD_ORSET(dst, m1, m2);
 #endif
 }
 

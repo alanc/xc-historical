@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: omronIo.c,v 1.1 91/06/29 13:48:58 xguest Exp kaleb $
  *
  * Copyright 1991 by OMRON Corporation
  * 
@@ -41,16 +41,17 @@ void (* ioHandler)();
 void
 omronWakeupProc(blockData, result, pReadmask)
 pointer blockData;
-unsigned long   result;
+int result;
 pointer pReadmask;
 {
-	long devicesReadable[mskcnt];
+	fd_set* LastSelectMask = (fd_set*)pReadmask;
+	fd_set devicesReadable;
 
 	if(result <= 0) return;
 
-	MASKANDSETBITS(devicesReadable, LastSelectMask, EnabledDevices);
+	MASKANDSETBITS(&devicesReadable, LastSelectMask, &EnabledDevices);
 
-	if(ANYSET(devicesReadable)) {
+	if(XFD_ANYSET(&devicesReadable)) {
 		(* omronIoHandler)();
 	}
 }
