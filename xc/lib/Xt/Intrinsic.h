@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Intrinsic.h,v 1.110 89/10/05 11:16:25 swick Exp $
+* $XConsortium: Intrinsic.h,v 1.111 89/10/05 12:33:09 swick Exp $
 * $oHeader: Intrinsic.h,v 1.10 88/09/01 10:33:34 asente Exp $
 */
 
@@ -409,10 +409,11 @@ extern void XtKeysymToKeycodeList();
  *
  ****************************************************************/
 
-typedef void (*XtEventHandler)(); /* widget, closure, event */
+typedef void (*XtEventHandler)(); /* widget, closure, event, continue_to_dispatch */
     /* Widget  widget	*/
     /* XtPointer closure  */
     /* XEvent  *event;	*/
+    /* Boolean *continue_to_dispatch */
 
 #ifdef notdef
 typedef void (*XtAsyncHandler)(); /* closure */
@@ -421,6 +422,24 @@ typedef void (*XtAsyncHandler)(); /* closure */
 
 typedef unsigned long EventMask;
 #define XtAllEvents ((EventMask) -1L)
+
+extern void XtInsertEventHandler(); /* widget, eventMask, nonmaskable, proc, closure, position */
+    /* Widget		widget      */
+    /* EventMask        eventMask;  */
+    /* Boolean          nonmaskable; */
+    /* XtEventHandler   proc;       */
+    /* XtPointer	closure ;   */
+    /* XtListPosition position;	   */
+
+extern void XtInsertRawEventHandler(); /* widget, eventMask, nonmaskable, proc, closure, position */
+    /* Widget		widget      */
+    /* EventMask        eventMask;  */
+    /* Boolean          nonmaskable; */
+    /* XtEventHandler   proc;       */
+    /* XtPointer	closure ;   */
+    /* XtListPosition position;	   */
+
+typedef enum {XtListHead, XtListTail } XtListPosition;
 
 extern void XtAddEventHandler(); /* widget, eventMask, nonmaskable, proc, closure */
     /* Widget		widget	    */
@@ -449,8 +468,6 @@ extern void XtRemoveRawEventHandler(); /* widget, eventMask, nonmaskable, proc, 
     /* Boolean		nonmaskable;*/
     /* XtEventHandler	proc;	    */
     /* XtPointer	closure;    */
-
-typedef enum {XtListHead, XtListTail} XtListPosition;
 
 extern void XtInsertEventHandler();
     /* Widget		widget	    */
@@ -669,6 +686,23 @@ extern ArgList XtMergeArgLists(); /* args1, num_args1, args2, num_args2 */
     /* ArgList	args2;	    */
     /* Cardinal num_args2;  */
 
+/***************************************************************
+ *
+ * Vararg lists
+ *
+ ****************************************************************/
+
+#define XtVaNestedList  "XtVaNestedList"
+#define XtVaTypedArg    "XtVaTypedArg"
+
+typedef XtPointer	XtVarArgsList;
+
+extern XtVarArgsList XtVaCreateArgsList(
+#ifdef _STDC_
+    XtPointer unused, ...
+#endif
+);
+
 /*************************************************************
  *
  * Information routines
@@ -843,6 +877,12 @@ extern Widget XtCreatePopupShell();
     /* ArgList	    args;	    */
     /* Cardinal	    num_args;	    */
 
+extern Widget XtVaCreatePopupShell(
+#ifdef _STDC_
+    String name, WidgetClass widgetClass, Widget parent, ...
+#endif
+);
+
 typedef enum {XtGrabNone, XtGrabNonexclusive, XtGrabExclusive} XtGrabKind;
 
 extern void XtPopup();
@@ -895,6 +935,18 @@ extern Widget XtCreateManagedWidget();
     /* ArgList	    args;	    */
     /* Cardinal	    num_args;	    */
 
+extern Widget XtVaCreateWidget(
+#ifdef _STDC_
+    String name, WidgetClass widget, Widget parent, ...
+#endif
+);
+
+extern Widget XtVaCreateManagedWidget(
+#ifdef _STDC_
+    String name, WidgetClass widget_class, Widget parent,...
+#endif
+);
+
 extern Widget XtCreateApplicationShell();
     /* String	    name;	    */
     /* WidgetClass  widget_class;   */
@@ -908,6 +960,11 @@ extern Widget XtAppCreateShell();
     /* ArgList	    args;	    */
     /* Cardinal	    num_args;	    */
 
+extern Widget XtVaAppCreateShell(
+#ifdef _STDC_
+    String name, String class, WidgetClass widget_class, Display* display,...
+#endif
+);
 
 /****************************************************************
  *
@@ -936,6 +993,19 @@ extern Widget XtAppInitialize();
     /* String		    *fallback_resources;*/
     /* ArgList		    args;		*/
     /* Cardinal		    num_args;		*/
+
+extern Widget XtVaAppInitialize(
+#ifdef _STDC_
+    XtAppContext *app_context_return,
+    String application_class,
+    XrmOptionDescList options,
+    Cardinal num_options,
+    Cardinal *argc_in_out,
+    String *argv_in_out,
+    String *fallback_resources,
+    ...
+#endif
+);
 
 extern Widget XtInitialize();
     /* String		    name;	*/
@@ -1012,6 +1082,16 @@ extern void XtGetApplicationResources();
     /* ArgList		args;		*/
     /* Cardinal		num_args;	*/
 
+extern void XtVaGetApplicationResources(
+#ifdef _STDC_
+    Widget widget,
+    XtPointer base,
+    XtResourceList resources,
+    Cardinal num_resources,
+    ...
+#endif
+);
+
 extern void XtGetSubresources();
     /* Widget		widget;		*/
     /* XtPointer	base;		*/
@@ -1022,15 +1102,39 @@ extern void XtGetSubresources();
     /* ArgList		args;		*/
     /* Cardinal		num_args;	*/
 
+extern void XtVaGetSubresources(
+#ifdef _STDC_
+    Widget widget,
+    XtPointer base,
+    String name,
+    String class,
+    XtResourceList resources,
+    Cardinal num_resources,
+    ...
+#endif
+);
+
 extern void XtSetValues();
     /* Widget		widget;		*/
     /* ArgList		args;		*/
     /* Cardinal		num_args;	*/
 
+extern void XtVaSetValues(
+#ifdef _STDC_
+    Widget widget, ...
+#endif
+);
+
 extern void XtGetValues();
     /* Widget		widget;		*/
     /* ArgList		args;		*/
     /* Cardinal		num_args;	*/
+
+extern void XtVaGetValues(
+#ifdef _STDC_
+    Widget widget, ...
+#endif
+);
 
 extern void XtSetSubvalues();
     /* XtPointer	base;		*/
@@ -1039,12 +1143,24 @@ extern void XtSetSubvalues();
     /* ArgList		args;		*/
     /* Cardinal		num_args;	*/
 
+extern void XtVaSetSubvalues(
+#ifdef _STDC_
+    XtPointer base, XtResourceList resources, Cardinal num_resources, ...
+#endif
+);
+
 extern void XtGetSubvalues();
     /* XtPointer	base;		*/
     /* XtResourceList	resources;	*/
     /* Cardinal		num_resources;	*/
     /* ArgList		args;		*/
     /* Cardinal		num_args;	*/
+
+extern void XtVaGetSubvalues(
+#ifdef _STDC_
+    XtPointer base, XtResourceList resources, Cardinal num_resources, ...
+#endif
+);
 
 extern void XtGetResourceList();
     /* WidgetClass	widget_class;		*/

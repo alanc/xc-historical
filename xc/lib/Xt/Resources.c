@@ -1,6 +1,6 @@
 #ifndef lint
 static char Xrcsid[] =
-    "$XConsortium: Resources.c,v 1.74 89/10/05 13:17:10 swick Exp $";
+    "$XConsortium: Resources.c,v 1.75 89/10/11 13:18:50 swick Exp $";
 /* $oHeader: Resources.c,v 1.6 88/09/01 13:39:14 asente Exp $ */
 #endif /*lint*/
 /*LINTLIBRARY*/
@@ -31,6 +31,7 @@ SOFTWARE.
 
 #include <stdio.h>
 #include "IntrinsicI.h"
+#include "VarargsI.h"
 #include "Shell.h"
 #include "ShellP.h"
 #include "StringDefs.h"
@@ -121,7 +122,7 @@ void _XtCopyFromArg(src, dst, size)
 	bcopy((char *)  src, (char *) dst, (int) size);
     else
 	bcopy((char *) &src, (char *) dst, (int) size);
-} /* CopyFromArg */
+} /* _XtCopyFromArg */
 
 void _XtCopyToArg(src, dst, size)
     char* src;
@@ -432,7 +433,8 @@ XrmResourceList* _XtCreateIndirectionTable (resources, num_resources)
 }
 
 static XtCacheRef *GetResources(widget, base, names, classes,
-	table, num_resources, quark_args, args, num_args)
+	table, num_resources, quark_args, args, num_args,
+	typed_args, num_typed_args)
     Widget	    widget;	    /* Widget resources are associated with */
     char*	    base;	    /* Base address of memory to write to   */
     XrmNameList     names;	    /* Full inheritance name of widget      */
@@ -442,7 +444,13 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     XrmQuarkList    quark_args;     /* Arg names quarkified		    */
     ArgList	    args;	    /* ArgList to override resources	    */
     Cardinal	    num_args;       /* number of items in arg list	    */
+    XtTypedArgList  typed_args;	    /* Typed arg list to override resources */
+    Cardinal	    num_typed_args; /* number of items in typed arg list    */
 {
+/*
+ * assert: num_typed_args == 0 if num_args > 0
+ * assert: num_args == 0 if num_typed_args > 0
+ */
 #define SEARCHLISTLEN 100
 
     XrmValue	    value;
@@ -453,6 +461,7 @@ static XtCacheRef *GetResources(widget, base, names, classes,
     unsigned int    searchListSize = SEARCHLISTLEN;
     Bool            status;
     Boolean	    found[400];
+    Boolean	    typed[400];
     XtCacheRef	    cache_ref[400];
     int		    cache_ref_size = 0;
     Display	    *dpy;
@@ -478,12 +487,14 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 
     /* Mark each resource as not found on arg list */
     bzero((char *) found, (int) (num_resources * sizeof(Boolean)));
+    bzero((char *) typed, (int) (num_resources * sizeof(Boolean)));
 
     dpy = XtDisplayOfObject(widget);
     
     /* Copy the args into the resources, mark each as found */
     {
 	register ArgList	    arg;
+	register XtTypedArgList	    typed_arg;
 	register XrmName	    argName;
 	register int	    j;
 	register int	    i;
@@ -506,6 +517,30 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		    found[j] = TRUE;
 		    break;
 		}
+	    }
+	}
+	for (typed_arg = typed_args, i = 0; i < num_typed_args;
+	     i++, typed_arg++) {
+	    argName = quark_args[i];
+	    if (argName == QinitialResourcesPersistent) {
+		persistent_resources = (Boolean)typed_arg->value;
+		found_persistence = True;   
+		break;
+	    }
+	    for (j = 0, res = table; j < num_resources; j++, res++) {
+		rx = *res;
+		if (argName == rx->xrm_name) {
+		    if (typed_arg->type != NULL) {
+			typed[j] = TRUE;
+		    } else {
+			_XtCopyFromArg(
+				       typed_arg->value,
+				       base - rx->xrm_offset - 1,
+				       rx->xrm_size);
+		    }
+		    found[j] = TRUE;
+		    break;
+		}   
 	    }
 	}
     }
@@ -560,12 +595,84 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 		    persistent_resources = *(Boolean*)value.addr;
 	    }
 	}
+
 	for (res = table, j = 0; j < num_resources; j++, res++) {
-	    if (! found[j]) {
+	    rx = *res;
+	    xrm_type = rx->xrm_type;
+	    if (typed[j]) {
+		/*
+                 * This resource value has been specified as a typed arg and 
+		 * has to be converted. Typed arg conversions are done here 
+		 * to correctly interpose them with normal resource conversions.
+                 */
+                register int        i;                  
+		XrmQuark	    from_type;
+		XrmValue            from_val, to_val;
+		Boolean		    converted;
+                 
+                for (i = 0; i < num_typed_args; i++) { 
+                    if (quark_args[i] == rx->xrm_name) 
+                        break; 
+                }                         
+
+		from_type = StringToQuark((typed_args+i)->type);
+    		from_val.size = (typed_args+i)->size;
+		if ((from_type == QString) ||
+			((typed_args+i)->size > sizeof(XtArgVal))) {
+        	    from_val.addr = (caddr_t)(typed_args+i)->value;
+    		} else {
+            	    from_val.addr = (caddr_t)&(typed_args+i)->value;
+    		}
+		to_val.size = rx->xrm_size;
+		to_val.addr = base - rx->xrm_offset - 1;
+		converted = _XtConvert(widget, from_type, &from_val,
+					rx->xrm_type, &to_val, 
+					persistent_resources ?
+					NULL : &cache_ref[cache_ref_size]);
+		if (converted) {
+		    char *vp;
+
+		    /* Copy the converted value back into the typed argument.
+		     * normally the data should be <= sizeof(XtArgVal) and
+		     * is stored directly into the 'value' field .... BUT
+		     * if the resource size is greater than sizeof(XtArgVal)
+		     * then we dynamically alloc a block of store to hold the
+		     * data and zap a copy in there !!! .... freeing it later
+		     * the size field in the typed arg is negated to indicate
+		     * that the store pointed to by the value field is
+		     * dynamic .......
+		     * "freeing" happens in the case of _XtCreate after the
+		     * CallInitialize ..... other clients of GetResources
+		     * using typed args should be aware of the need to free
+		     * this store .....
+		     */
+
+		    if(rx->xrm_size > sizeof(XtArgVal)) {
+			(typed_args+i)->value =
+			    (XtArgVal)(vp = XtMalloc(rx->xrm_size));
+			(typed_args+i)->size = -(typed_args+i)->size;
+		    } else { /* will fit - copy directly into value field */
+			vp = (char *)&((typed_args+i)->value);
+		    }
+
+		    XtBCopy((char *)(base - rx->xrm_offset - 1), vp, rx->xrm_size);
+
+		} else {
+		   /* Conversion failed. Get default value. */
+		   found[j] = False;
+		}
+
+		if ((persistent_resources == False)
+			&& cache_ref[cache_ref_size] != NULL) {
+		    cache_ref_size++;
+		}
+	    }
+
+	    if (!found[j]) {
 		Boolean	already_copied = False;
 		Boolean have_value = False;
-		rx = *res;
-		xrm_type = rx->xrm_type;
+		register int	i;
+
 		if (XrmQGetSearchResource(searchList,
 			rx->xrm_name, rx->xrm_class, &rawType, &value)) {
 		    if (rawType != xrm_type) {
@@ -649,7 +756,27 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 			XtBZero(base - rx->xrm_offset - 1, rx->xrm_size);
 		    }
 		}
-	    }
+
+		if (typed[j]) {
+		    /*
+		     * This resource value was specified as a typed arg. 
+		     * However, the default value is being used here since the 
+		     * type conversion failed.
+		     */
+		     for (i = 0; i < num_typed_args; i++) {
+			if (quark_args[i] == rx->xrm_name)
+			    break;
+		     }
+		    if(rx->xrm_size >= (sizeof((typed_args+i)->value))) {
+			XtBCopy(base - rx->xrm_offset - 1, &((typed_args+i)->value),
+			    (sizeof((typed_args+i)->value)));
+			}
+		    else {
+			XtBCopy(base - rx->xrm_offset - 1, 
+			    &((typed_args+i)->value), rx->xrm_size);
+		    }
+		}
+	    } 
 	}
     }
     if (searchList != stackSearchList) XtFree((char*)searchList);
@@ -665,25 +792,35 @@ static XtCacheRef *GetResources(widget, base, names, classes,
 
 
 
-static void CacheArgs(args, num_args, quark_cache, num_quarks, pQuarks)
+static void CacheArgs(args, num_args, typed_args, num_typed_args, quark_cache, 
+	num_quarks, pQuarks)
     ArgList	    args;
     Cardinal	    num_args;
+    XtTypedArgList  typed_args;
+    Cardinal	    num_typed_args;
     XrmQuarkList    quark_cache;
     Cardinal	    num_quarks;
     XrmQuarkList    *pQuarks;       /* RETURN */
 {
     register XrmQuarkList   quarks;
     register Cardinal       i;
+    register Cardinal       count;
 
-    if (num_quarks < num_args) {
-	quarks = (XrmQuarkList) XtMalloc(num_args * sizeof(XrmQuark));
+    count = (args != NULL) ? num_args : num_typed_args;
+
+    if (num_quarks < count) {
+	quarks = (XrmQuarkList) XtMalloc(count * sizeof(XrmQuark));
     } else {
 	quarks = quark_cache;
     }
     *pQuarks = quarks;
 
-    for (i = 0; i < num_args; i++) {
-	quarks[i] = StringToQuark(args[i].name);
+    for (i = 0; i < count; i++) {
+	if (args != NULL) {
+	    quarks[i] = StringToQuark(args[i].name);
+	} else {
+	    quarks[i] = StringToQuark(typed_args[i].name);
+	}
     }
 }
 
@@ -691,10 +828,12 @@ static void CacheArgs(args, num_args, quark_cache, num_quarks, pQuarks)
 	  if (cache != pointer) XtFree((char *)pointer)
 
 
-XtCacheRef *_XtGetResources(w, args, num_args)
-    register 	Widget	  w;
-    		ArgList	  args;
-    		Cardinal  num_args;
+XtCacheRef *_XtGetResources(w, args, num_args, typed_args, num_typed_args)
+    register 	Widget	  	w;
+    		ArgList	  	args;
+    		Cardinal  	num_args;
+		XtVarArgsList	typed_args;
+		Cardinal	num_typed_args;
 {
     XrmName	    names[100];
     XrmClass	    classes[100];
@@ -716,17 +855,21 @@ XtCacheRef *_XtGetResources(w, args, num_args)
     (void) GetNamesAndClasses(w, names, classes);
    
     /* Compile arg list into quarks */
-    CacheArgs(args, num_args, quark_cache, XtNumber(quark_cache), &quark_args);
+    CacheArgs(args, num_args, typed_args, num_typed_args, quark_cache,
+	      XtNumber(quark_cache), &quark_args);
+
     /* Get normal resources */
     cache_refs = GetResources(w, (char*)w, names, classes,
 	(XrmResourceList *) wc->core_class.resources,
-	wc->core_class.num_resources, quark_args, args, num_args);
+	wc->core_class.num_resources, quark_args, args, num_args,
+	typed_args, num_typed_args);
+
     if (w->core.constraints != NULL) {
 	cwc = (ConstraintWidgetClass) XtClass(w->core.parent);
 	GetResources(w, (char*)w->core.constraints, names, classes,
 	    (XrmResourceList *) cwc->constraint_class.resources,
 	    cwc->constraint_class.num_resources,
-	    quark_args, args, num_args);
+	    quark_args, args, num_args, typed_args, num_typed_args);
     }
     FreeCache(quark_cache, quark_args);
     return cache_refs;
@@ -762,14 +905,16 @@ void XtGetSubresources
     classes[length] = NULLQUARK;
 
     /* Compile arg list into quarks */
-    CacheArgs(args, num_args, quark_cache, XtNumber(quark_cache), &quark_args);
+    CacheArgs(args, num_args, (XtTypedArgList)NULL, (Cardinal)0,
+	      quark_cache, XtNumber(quark_cache), &quark_args);
+
     /* Compile resource list if needed */
     if (((int) resources->resource_offset) >= 0) {
 	XrmCompileResourceList(resources, num_resources);
     }
     table = _XtCreateIndirectionTable(resources, num_resources); 
-    (void) GetResources(w, (char*)base, names, classes,
-        table, num_resources, quark_args, args, num_args);
+    (void) GetResources(w, (char*)base, names, classes, table, num_resources,
+	       quark_args, args, num_args, (XtTypedArgList)NULL, (Cardinal)0);
     FreeCache(quark_cache, quark_args);
     XtFree((char *)table);
 }
@@ -806,7 +951,8 @@ void XtGetApplicationResources
     }
 
     /* Compile arg list into quarks */
-    CacheArgs(args, num_args, quark_cache, XtNumber(quark_cache), &quark_args);
+    CacheArgs(args, num_args, (XtTypedArgList)NULL, (Cardinal)0,  quark_cache, 
+	XtNumber(quark_cache), &quark_args);
     /* Compile resource list if needed */
     if (((int) resources->resource_offset) >= 0) {
 #ifdef	CRAY2
@@ -822,8 +968,8 @@ void XtGetApplicationResources
     }
     table = _XtCreateIndirectionTable(resources,num_resources);
 
-    (void) GetResources(w, (char*)base, names, classes,
-        table, num_resources, quark_args, args, num_args);
+    (void) GetResources(w, (char*)base, names, classes, table, num_resources,
+	       quark_args, args, num_args, (XtTypedArgList)NULL, (Cardinal)0);
     FreeCache(quark_cache, quark_args);
     XtFree((char *)table);
 }
@@ -847,4 +993,3 @@ void _XtResourceListInitialize()
     QinitialResourcesPersistent = StringToName(XtNinitialResourcesPersistent);
     QInitialResourcesPersistent = StringToName(XtCInitialResourcesPersistent);
 }
-

@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.149 89/10/09 14:31:12 jim Exp $";
+static char Xrcsid[] = "$XConsortium: Initialize.c,v 1.150 89/10/09 18:34:16 swick Exp $";
 /* $oHeader: Initialize.c,v 1.7 88/08/31 16:33:39 asente Exp $ */
 #endif /* lint */
 
@@ -144,6 +144,7 @@ void _XtInherit()
 void XtToolkitInitialize()
 {
     extern void _XtResourceListInitialize();
+    extern void _XtVarargsInitialize();
 
     /* Resource management initialization */
     XrmInitialize();
@@ -153,6 +154,7 @@ void XtToolkitInitialize()
     _XtConvertInitialize();
     _XtEventInitialize();
     _XtTranslateInitialize();
+    _XtVarargsInitialize();
 }
 
 
@@ -448,8 +450,6 @@ static Boolean _GetResource(dpy, list, name, class, type, value)
     }
     return False;
 }
-
-
 void _XtDisplayInitialize(dpy, pd, name, class, urlist, num_urs, argc, argv)
 	Display *dpy;
         XtPerDisplay pd;
