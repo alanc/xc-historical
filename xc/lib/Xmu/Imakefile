@@ -5,6 +5,10 @@ XCOMM This library contains miscellaneous utility routines and is not part
 XCOMM of the Xlib standard.
 XCOMM
 
+/* Since people link in Xmu without Xt, we avoid references to string data. */
+#if HasSharedLibraries
+   SHAREDCODEDEF = SharedCodeDef -DXTSTRINGDEFINES
+#endif
    INSTALLFLAGS = $(INSTINCFLAGS)
        LINTLIBS = $(LINTXLIB) 
 
