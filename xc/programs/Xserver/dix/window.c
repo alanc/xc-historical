@@ -22,7 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 5.72 91/07/03 17:01:01 keith Exp $ */
+/* $XConsortium: window.c,v 5.73 91/07/05 10:32:34 rws Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES
@@ -2025,7 +2025,7 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
 
 	    cwsx = pSib->origin.x;
 	    cwsy = pSib->origin.y;
-	    GravityTranslate (cwsx, cwsy, cwsx - dx, cwsx - dy, dw, dh,
+	    GravityTranslate (cwsx, cwsy, cwsx - dx, cwsy - dy, dw, dh,
 			pSib->winGravity, &cwsx, &cwsy);
 	    if (cwsx != pSib->origin.x || cwsy != pSib->origin.y)
 	    {
