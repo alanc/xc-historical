@@ -21,9 +21,4 @@ NormalLintTarget($(SRCS))
 
 SpecialObjectRule(globals.o, $(IRULESRC)/Imake.tmpl, $(SITE_DEFINES))
 
-depend:: initatoms.c
-
 DependTarget()
-
-../../X11/Xatom.h initatoms.c:	BuiltInAtoms buildatoms
-	sh buildatoms
