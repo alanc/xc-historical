@@ -2,7 +2,7 @@
 static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #endif
 /*
- *	$Header: menu.c,v 1.2 88/02/18 16:48:09 jim Exp $
+ *	$Header: menu.c,v 1.3 88/06/28 15:11:48 swick Exp $
  */
 
 #include <X11/copyright.h>
@@ -45,7 +45,7 @@ static char sccsid[]="@(#)menu.c	1.7 Stellar 87/10/16";
 #include "data.h"
 
 #ifndef lint
-static char rcs_id[] = "$Header: menu.c,v 1.2 88/02/18 16:48:09 jim Exp $";
+static char rcs_id[] = "$Header: menu.c,v 1.3 88/06/28 15:11:48 swick Exp $";
 #endif	lint
 
 #define DEFMENUBORDER	2
@@ -117,6 +117,8 @@ register char *name;
 	register XtermWidget xw = term;
 	register char *cp;
 	Display *dpy = XtDisplay(xw);
+	Pixel background = xw->core.background_pixel;
+	Pixel foreground = xw->screen.foreground;
 
 	/*
 	 * If the gray tile hasn't been set up, do it now.
@@ -125,8 +127,7 @@ register char *name;
 		Gray_Tile = XtGrayPixmap(XtScreen(xw));
 	if (!Check_Tile) {
 	        Check_Tile = Make_tile(checkMarkWidth, checkMarkHeight,
-		  Check_MarkBits, BlackPixel(dpy, DefaultScreen(dpy)),
-		  WhitePixel(dpy, DefaultScreen(dpy)),
+		  Check_MarkBits, foreground, background,
 		  DefaultDepth(dpy, DefaultScreen(dpy)));
         }
 	Menu_Default.menuFlags = menuChanged;
@@ -205,6 +206,8 @@ int reverse;
 	extern char *malloc();
 	extern XFontStruct *XLoadQueryFont();
 	register Display *dpy = XtDisplay(xw);
+	Pixel background = xw->core.background_pixel;
+	Pixel foreground = xw->screen.foreground;
 
 	/*
 	 * If the GrayTile hasn't been defined, InitMenu() was never
@@ -237,15 +240,11 @@ int reverse;
 	 * and background colors (black and white).
 	 */
 	if(reverse) {
-		menu->menuFgColor = WhitePixel(dpy, 
-			DefaultScreen(dpy));
-		menu->menuBgColor = BlackPixel(dpy, 
-			DefaultScreen(dpy));
+		menu->menuFgColor = background;
+		menu->menuBgColor = foreground;
 	} else {
-		menu->menuFgColor = BlackPixel(dpy, 
-			DefaultScreen(dpy));
-		menu->menuBgColor = WhitePixel(dpy, 
-			DefaultScreen(dpy));
+		menu->menuFgColor = foreground;
+		menu->menuBgColor = background;
 	}
 	if(!gotGCs) {
 	        xgc.foreground = menu->menuFgColor;
