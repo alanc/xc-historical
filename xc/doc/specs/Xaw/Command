@@ -17,7 +17,8 @@ Superclass	Label
 .De
 .LP
 The Command widget is an area, often rectangular, that contains a text
-label or bitmap image.  When the cursor pointer is on the button, it
+label or bitmap image.  I will call thest selectable areas "buttons". 
+When the pointer cursor is on the button, it
 becomes highlighted by drawing a rectangle around its perimeter.  This
 highlighting indicates that the button is ready for selection.  When
 pointer button 1 (usually the left button) is pressed, the Command
@@ -55,7 +56,7 @@ borderColor	BorderColor	Pixel		XtDefaultForeground
 borderPixmap	Pixmap	Pixmap		XtUnspecifiedPixmap
 borderWidth	BorderWidth	Dimension		1
 callback	Callback	XtCallbackList		NULL
-colormap	Colormap	Pointer	Parent's 	Colormap
+colormap	Colormap	Pointer		Parent's Colormap
 cornerRoundPercent	CornerRoundPercent	Dimension		25
 cursor	Cursor	Cursor		None
 depth	Depth	int	C	Parent's Depth
@@ -169,3 +170,10 @@ in the \fBforeground\fP color.
 When the button is in the \fBset\fP state this action calls all functions in
 the callback list named by the \fBcallback\fP resource.  The value of
 the call_data argument passed to these functions is undefined. 
+.LP
+.NT
+When a bitmap of depth greater that one (1) is specified the
+\fIset\fP(), \fIunset\fP(), \fIreset\fP() actions have no effect,
+since there are no foreground and background colors used in a 
+multi-plane pixmap.
+.NE

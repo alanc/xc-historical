@@ -8,7 +8,8 @@ Toggle Widget
 .TA 2.0i
 .ta 2.0i
 .sp
-Header file	<Xaw/Toggle.h>
+Application Header file	<Xaw/Toggle.h>
+Class Header file	<Xaw/ToggleP.h>
 Class		toggleWidgetClass
 Class Name	Toggle
 Superclass 	Command
@@ -80,7 +81,7 @@ screen	Screen	Pointer	R	Parent's Screen
 sensitive	Sensitive	Boolean		True
 shapeStype	ShapeStyle	ShapeStyle		Rectangle
 state	State	Boolean		Off
-translations	Translations	TranslationTable		See above
+translations	Translations	TranslationTable		See below
 width	Width	Dimension	A	\fBlabel\fP width + 2 * \fBinternalWidth\fP
 x	X	Position		0
 y	Y	Position		0
@@ -204,6 +205,13 @@ button in the \fBbackground\fP color, with the label displayed in the
 When the button is in the \fBset\fP state this action calls all functions in
 the callback list named by the \fBcallback\fP resource.  The value of
 the call_data argument in these callback functions is undefined. 
+.LP
+.NT
+When a bitmap of depth greater that one (1) is specified the
+\fIset\fP(), \fIunset\fP(), \fIreset\fP() actions have no effect,
+since there are no foreground and background colors used in a 
+multi-plane pixmap.
+.NE
 .NH 3
 Radio Groups
 .LP
@@ -249,9 +257,9 @@ void XawToggleChangeRadioGroup(\fIw\fP, \fIradio_group\fP)
      Widget \fIw\fP, \fIradio_group\fP;
 .FN
 .IP \fIw\fP 1i
-Specifies the widget ID of the Toggle widget.
+Specifies the Toggle widget.
 .IP \fIradio_group\fP 1i
-Any Toggle in the new radio group.  If NULL then the Toggle
+Specifies any Toggle in the new radio group.  If NULL then the Toggle
 will be removed from any radio group of which it is a member.
 .LP
 If a Toggle is already in \fIset\fP in the new radio group,
@@ -271,7 +279,7 @@ caddr_t XawToggleGetCurrent(\fIradio_group\fP);
      Widget \fIradio_group\fP;
 .FN
 .IP \fIradio_group\fP 1i
-Specifies the widget ID of any Toggle in the radio group.
+Specifies the Toggle widget.
 .LP
 The value returned by this function is the
 .PN radioData, 
@@ -293,7 +301,7 @@ void XawToggleSetCurrent(\fIradio_group\fP, \fIradio_data\fP);
      caddr_t \fIradio_data\fP;
 .FN
 .IP \fIradio_group\fP 1i
-Specifies the widget ID of any Toggle in the radio group.
+Specifies the Toggle widget.
 .IP \fIradio_data\fP 1i
 Specifies the 
 .PN radioData
@@ -320,8 +328,8 @@ void XawToggleUnsetCurrent(\fIradio_group\fP);
      Widget \fIradio_group\fP;
 .FN
 .IP \fIradio_group\fP 1i
-Specifies the widget ID of any Toggle in the radio group.
+Specifies the Toggle widget.
 .LP
 If this causes a Toggle widget to change state, all routines on its
 callback list will be invoked.
-.TC
+

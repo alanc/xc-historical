@@ -25,7 +25,7 @@ handle small amounts of user input.
 .sp
 .IP \fBCommand\fP 1i
 A push button that, when selected, will cause a specific action
-to take place.  This widget can display a multi-line string or bitmap image.
+to take place.  This widget can display a multi-line string or a bitmap image.
 .IP \fBGrip\fP 1i
 A rectangle that, when selected, will cause an action to take place.
 .IP \fBLabel\fP 1i

@@ -125,7 +125,7 @@ the string parameters specified in the translation table for the
 particular event binding.
 .IN "Grip widget" "GripAction table"
 .LP
-The following is an example of a GripAction translation table:
+The following is an example of a translation table that uses the GripAction:
 .LP
 .Ds 0
 .TA .5i 2.5i
