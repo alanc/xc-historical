@@ -55,7 +55,7 @@ MultiObj(mfbigbwht,mfbimggblt,-DMFBIMAGEGLYPHBLT=mfbImageGlyphBltWhite -DOPEQ=\|
 
 MultiObj(mfbigbblak,mfbimggblt,-DMFBIMAGEGLYPHBLT=mfbImageGlyphBltBlack -DOPEQ=\&=~)
 
-MultiObj(mfbpawhite,mfbpntarea,-DMFBSOLIDFILLAREA=mfbSolidWhiteArea -DMFBSTIPPLEFILLAREA=mfbStippleWhiteArea -DOPEQ=\!= -DEQWHOLEWORD=\=~0)
+MultiObj(mfbpawhite,mfbpntarea,-DMFBSOLIDFILLAREA=mfbSolidWhiteArea -DMFBSTIPPLEFILLAREA=mfbStippleWhiteArea -DOPEQ=\|= -DEQWHOLEWORD=\=~0)
 
 MultiObj(mfbpablack,mfbpntarea,-DMFBSOLIDFILLAREA=mfbSolidBlackArea -DMFBSTIPPLEFILLAREA=mfbStippleBlackArea -DOPEQ=\&=~ -DEQWHOLEWORD=\=0)
 
@@ -63,7 +63,7 @@ MultiObj(mfbpainv,mfbpntarea,-DMFBSOLIDFILLAREA=mfbSolidInvertArea -DMFBSTIPPLEF
 
 MultiObj(mfbtewhite,mfbtegblt,-DMFBTEGLYPHBLT=mfbTEGlyphBltWhite -DOP= -DCLIPTETEXT=mfbImageGlyphBltWhite)
 
-MultiObj(mfbteblack,mfbtegblt,-DMFBTEGLYPHBLT=mfbTEGlyphBltBlack -DOP= -DCLIPTETEXT=mfbImageGlyphBltBlack)
+MultiObj(mfbteblack,mfbtegblt,-DMFBTEGLYPHBLT=mfbTEGlyphBltBlack -DOP=~ -DCLIPTETEXT=mfbImageGlyphBltBlack)
 
 MultiObj(mfbbltC,mfbblt,-DMROP=Mcopy)
 
