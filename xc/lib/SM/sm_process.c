@@ -1,4 +1,4 @@
-/* $XConsortium: sm_process.c,v 1.14 93/09/28 10:39:00 mor Exp $ */
+/* $XConsortium: sm_process.c,v 1.15 93/09/28 14:15:57 mor Exp $ */
 /******************************************************************************
 Copyright 1993 by the Massachusetts Institute of Technology,
 
@@ -109,19 +109,21 @@ IceReplyWaitInfo *replyWait;
         else
 	{
 	    smRegisterClientReplyMsg 	*pMsg;
-	    char			*pData;
+	    char			*pData, *pStart;
 	    _SmcRegisterClientReply 	*reply = 
 	        (_SmcRegisterClientReply *) (replyWait->reply);
 
 	    IceReadCompleteMessage (iceConn, SIZEOF (smRegisterClientReplyMsg),
-		smRegisterClientReplyMsg, pMsg, pData);
+		smRegisterClientReplyMsg, pMsg, pStart);
+
+	    pData = pStart;
 
 	    EXTRACT_ARRAY8_AS_STRING (pData, swap, reply->client_id);
 
 	    reply->status = 1;
 	    replyReady = True;
 
-	    IceDisposeCompleteMessage (iceConn, pData);
+	    IceDisposeCompleteMessage (iceConn, pStart);
 	}
 	break;
 
@@ -196,13 +198,15 @@ IceReplyWaitInfo *replyWait;
         else
 	{
 	    smPropertiesReplyMsg 	*pMsg;
-	    char 			*pData;
+	    char 			*pData, *pStart;
 	    int				numProps;
 	    SmProp			**props = NULL;
 	    _SmcPropReplyWait 		*next;
 
 	    IceReadCompleteMessage (iceConn, SIZEOF (smPropertiesReplyMsg),
-		smPropertiesReplyMsg, pMsg, pData);
+		smPropertiesReplyMsg, pMsg, pStart);
+
+	    pData = pStart;
 
 	    EXTRACT_LISTOF_PROPERTY (pData, swap, numProps, props);
 
@@ -214,7 +218,7 @@ IceReplyWaitInfo *replyWait;
 	    free ((char *) smcConn->prop_reply_waits);
 	    smcConn->prop_reply_waits = next;
 
-	    IceDisposeCompleteMessage (iceConn, pData);
+	    IceDisposeCompleteMessage (iceConn, pStart);
 	}
 	break;
 
@@ -297,14 +301,13 @@ Bool		 swap;
     case SM_RegisterClient:
     {
 	smRegisterClientMsg 	*pMsg;
-	char 			*pData;
-	char 			*savePtr;
+	char 			*pData, *pStart;
 	char 			*previousId;
 
 	IceReadCompleteMessage (iceConn, SIZEOF (smRegisterClientMsg),
-	    smRegisterClientMsg, pMsg, pData);
+	    smRegisterClientMsg, pMsg, pStart);
 
-	savePtr = pData;
+	pData = pStart;
 
 	EXTRACT_ARRAY8_AS_STRING (pData, swap, previousId);
 
@@ -325,10 +328,10 @@ Bool		 swap;
 	    int bytes = ARRAY8_BYTES (length);
 
 	    _IceErrorBadValue (smsConn->iceConn, _SmsOpcode, SM_RegisterClient,
-		8, bytes, (IcePointer) savePtr);
+		8, bytes, (IcePointer) pStart);
 	}
 
-	IceDisposeCompleteMessage (iceConn, pData);
+	IceDisposeCompleteMessage (iceConn, pStart);
 	break;
     }
 
@@ -415,13 +418,15 @@ Bool		 swap;
     case SM_CloseConnection:
     {
 	smCloseConnectionMsg 	*pMsg;
-	char 			*pData;
+	char 			*pData, *pStart;
 	char 			*locale = NULL;
 	int 			count, i;
 	char 			**reasonMsgs = NULL;
 
 	IceReadCompleteMessage (iceConn, SIZEOF (smCloseConnectionMsg),
-	    smCloseConnectionMsg, pMsg, pData);
+	    smCloseConnectionMsg, pMsg, pStart);
+
+	pData = pStart;
 
 	EXTRACT_ARRAY8_AS_STRING (pData, swap, locale);
 
@@ -432,7 +437,7 @@ Bool		 swap;
 	for (i = 0; i < count; i++)
 	    EXTRACT_ARRAY8_AS_STRING (pData, swap, reasonMsgs[i]);
 
-	IceDisposeCompleteMessage (iceConn, pData);
+	IceDisposeCompleteMessage (iceConn, pStart);
 
 	(*smsConn->callbacks.close_connection.callback) (smsConn,
 	    smsConn->callbacks.close_connection.manager_data,
@@ -443,12 +448,14 @@ Bool		 swap;
     case SM_SetProperties:
     {
 	smSetPropertiesMsg 	*pMsg;
-	char 			*pData;
+	char 			*pData, *pStart;
 	SmProp			**props = NULL;
 	int 			numProps;
 	
 	IceReadCompleteMessage (iceConn, SIZEOF (smSetPropertiesMsg),
-	    smSetPropertiesMsg, pMsg, pData);
+	    smSetPropertiesMsg, pMsg, pStart);
+
+	pData = pStart;
 
 	if (swap)
 	    pMsg->sequenceRef = lswapl (pMsg->sequenceRef);
@@ -459,7 +466,7 @@ Bool		 swap;
 	    smsConn->callbacks.set_properties.manager_data,
             pMsg->sequenceRef, numProps, props);
 
-	IceDisposeCompleteMessage (iceConn, pData);
+	IceDisposeCompleteMessage (iceConn, pStart);
 	break;
     }
 
