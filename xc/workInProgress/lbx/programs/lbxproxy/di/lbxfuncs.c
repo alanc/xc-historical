@@ -22,7 +22,7 @@
  * $NCDId: @(#)lbxfuncs.c,v 1.43 1995/03/09 00:54:06 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.7 94/12/01 20:50:00 mor Exp $ */
+/* $XConsortium: lbxfuncs.c,v 1.8 95/04/04 21:06:19 dpw Exp mor $ */
 
 /*
  * top level LBX request & reply handling
@@ -346,25 +346,29 @@ get_atom_name_reply(client, data)
     Atom        atom;
     char       *s;
     xGetAtomNameReply *reply;
-    int         len;
+    CARD16	len;
     ReplyStuffPtr nr;
+    char	n;
 
     reply = (xGetAtomNameReply *) data;
 
-    if ((reply->length << 2) > MAX_ATOM_LENGTH)
-	return FALSE;
+    len = reply->nameLength;
 
-    len = (reply->length << 2) + sizeof(xGetAtomNameReply);
+    if (client->swapped) {
+	swaps(&len, n);
+    }
+
+    if (len > MAX_ATOM_LENGTH)
+	return FALSE;
 
     s = data + sizeof(xGetAtomNameReply);
 
-    len -= sizeof(xGetAtomNameReply);
     nr = GetMatchingReply(client, reply->sequenceNumber);
     assert(nr);
     atom = nr->request_info.lbxatom.atom;
 
     /* make sure it gets stuffed in the DB */
-    (void) LbxMakeAtom(s, len, atom, TRUE);
+    (void) LbxMakeAtom(s, (unsigned) len, atom, TRUE);
     return TRUE;
 }
 
@@ -1182,6 +1186,109 @@ FinishQueryFontReply(client, seqnum, length, data)
     }
 }
 
+static INT16
+unpack_val(val, mask, sft, bts)
+    CARD32      val;
+    CARD32      mask;
+    int         sft,
+                bts;
+{
+    CARD32      tmpl;
+    CARD16      utmp;
+    INT16       sval;
+
+    /* get the proper value */
+    utmp = (val & mask) >> sft;
+    /* push the sign bit to the right spot */
+    utmp <<= (16 - bts);
+    /* cast it so sign bit takes effect */
+    sval = (INT16) utmp;
+    /* shift back down */
+    sval >>= (16 - bts);
+
+    return sval;
+}
+
+int
+UnsquishFontInfo(compression, fdata, dlen, qfr)
+    int	compression;
+    xLbxFontInfo	*fdata;
+    int		dlen;
+    pointer	*qfr;
+{
+    int         len,
+                hlen,
+                junklen = sizeof(BYTE) * 2 + sizeof(CARD16) + sizeof(CARD32);
+    char *t;
+    pointer	ndata;
+    int         nchars;
+    int         i;
+    xCharInfo  *maxb,
+               *minb;
+    xQueryFontReply *new;
+    xLbxCharInfo *lci,
+                tlci;
+    xCharInfo  *ci;
+    CARD16       attrs;
+
+    maxb = &fdata->maxBounds;
+    minb = &fdata->minBounds;
+
+    nchars = fdata->nCharInfos;
+    hlen = sizeof(xQueryFontReply) + fdata->nFontProps * sizeof(xFontProp);
+    len = hlen + nchars * sizeof(xCharInfo);
+
+    new = (xQueryFontReply *) xalloc(len);
+    *qfr = (pointer) new;
+
+    if (!new)			/* XXX bad stuff... */
+	return 0;
+
+    /* copy the header & props parts */
+    t = (char *) new;
+    t += junklen;
+    if (compression) {
+	bcopy((char *) fdata, (char *) t, hlen - junklen);
+    } else {
+	bcopy((char *) fdata, (char *) t, len - junklen);
+	return len;
+    }
+
+    attrs = maxb->attributes;
+
+    t = (char *) fdata;
+    t += hlen - junklen;
+    lci = (xLbxCharInfo *) t;
+
+    t = (char *) new;
+    t += hlen;
+    ci = (xCharInfo *) t;
+
+    /* now expand the chars */
+    for (i = 0; i < nchars; i++, lci++, ci++) {
+	if (lci->metrics == 0) {
+	    /* empty char */
+	    ci->characterWidth = ci->leftSideBearing = ci->rightSideBearing =
+		ci->ascent = ci->descent = ci->attributes = 0;
+	} else {
+	    ci->characterWidth =
+	        unpack_val(lci->metrics, LBX_WIDTH_MASK,
+		       LBX_WIDTH_SHIFT, LBX_WIDTH_BITS);
+	    ci->leftSideBearing = unpack_val(lci->metrics, LBX_LEFT_MASK,
+					 LBX_LEFT_SHIFT, LBX_LEFT_BITS);
+	    ci->rightSideBearing = unpack_val(lci->metrics, LBX_RIGHT_MASK,
+					  LBX_RIGHT_SHIFT, LBX_RIGHT_BITS);
+	    ci->ascent = unpack_val(lci->metrics, LBX_ASCENT_MASK,
+				LBX_ASCENT_SHIFT, LBX_ASCENT_BITS);
+	    ci->descent = unpack_val(lci->metrics, LBX_DESCENT_MASK,
+				 LBX_DESCENT_SHIFT, LBX_DESCENT_BITS);
+	    ci->attributes = attrs;
+	}
+    }
+
+    return len;
+}
+
 
 static Bool
 get_queryfont_reply(client, data)
@@ -1189,13 +1296,16 @@ get_queryfont_reply(client, data)
     char       *data;
 {
     xLbxQueryFontReply *rep;
-    int         len;
-    pointer     tag_data;
+    int         len,
+                sqlen;
+    pointer     tag_data,
+                sqtag_data;
     TagData     td;
     ReplyStuffPtr nr;
     QueryTagRec qt;
     CARD32      tag;
     char        n;
+    Bool	free_fi = FALSE;
 
     rep = (xLbxQueryFontReply *) data;
 
@@ -1213,30 +1323,44 @@ get_queryfont_reply(client, data)
 	    queryfont_full++;
 #endif
 
-	    tag_data = (pointer) &rep[1];
-	    len = rep->length << 2;
+	    sqtag_data = (pointer) &rep[1];
+	    sqlen = rep->length << 2;
 	    if (client->swapped) {
-		SwapFont((xQueryFontReply *) tag_data, FALSE);
+		LbxSwapFontInfo(sqtag_data, rep->compression);
 	    }
-	    if (!TagStoreData(global_cache, tag, len,
-			      LbxTagTypeFont, tag_data)) {
+
+	    free_fi = TRUE;
+	    /*
+	     * store squished version of data, since that's what comes through
+	     * through QueryTag
+	     */
+	    if (!TagStoreData(global_cache, tag, sqlen,
+				      LbxTagTypeFont, sqtag_data)) {
 		/* tell server we lost it */
 		SendInvalidateTag(client, tag);
 	    }
+	    len = UnsquishFontInfo(rep->compression, sqtag_data, sqlen,
+							&tag_data);
+	    if (!len)
+	    	goto fetch_tag;
 	} else {
 	    td = TagGetTag(global_cache, tag);
 	    if (!td) {
+	fetch_tag:
 		/* lost data -- ask again for tag value */
 
 		qt.tag = tag;
 		qt.tagtype = LbxTagTypeFont;
+		qt.typedata.query_font.compression = rep->compression;
 		QueryTag(client, &qt);
 
 		/* XXX what is the right way to stack Queries? */
 		return TRUE;
 	    }
-	    len = td->size;
-	    tag_data = td->tdata;
+	    sqlen = td->size;
+	    sqtag_data = td->tdata;
+	    len = UnsquishFontInfo(rep->compression, sqtag_data, sqlen,
+						&tag_data);
 
 #ifdef LBX_STATS
 	    queryfont_tag++;
@@ -1250,14 +1374,18 @@ get_queryfont_reply(client, data)
 #endif
 
 	/* server didn't send us a tag for some reason -- just pass on data */
-	tag_data = (pointer) &rep[1];
+	sqtag_data = (pointer) &rep[1];
 	if (client->swapped) {
-	    SwapFont((xQueryFontReply *) tag_data, FALSE);
+	    LbxSwapFontInfo(sqtag_data, FALSE);
 	}
-	len = rep->length << 2;
+	sqlen = rep->length << 2;
+	len = UnsquishFontInfo(rep->compression, sqtag_data, sqlen, &tag_data);
     }
 
     FinishQueryFontReply(client, rep->sequenceNumber, len, tag_data);
+
+    if (free_fi)		/* free unsquished version */
+    	xfree(tag_data);
 
     return TRUE;
 }
@@ -1456,7 +1584,8 @@ FinishLBXRequest(client, yank)
 	    LBXCanDelayReply(client) = TRUE;
 	else
 	    LBXCanDelayReply(client) = FALSE;
-    } else {	/* always true if cacheable, so we get a chance to write */
+    } else {			/* always true if cacheable, so we get a
+				 * chance to write */
 	LBXCanDelayReply(client) = TRUE;
     }
     	

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxswap.c,v 1.3 94/11/08 20:26:14 mor Exp mor $ */
+/* $XConsortium: lbxswap.c,v 1.4 94/12/01 20:31:47 mor Exp mor $ */
 /*
  * $NCDId: @(#)lbxswap.c,v 1.7 1994/11/18 20:32:42 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $
@@ -706,4 +706,48 @@ LbxWriteSConnSetupPrefix(pClient, pcsp)
     cpswapl(pcsp->tag, cspT.tag);
 
     (void)WriteToClient(pClient, sizeof(cspT), (char *) &cspT);
+}
+
+void
+LbxSwapFontInfo(pr, compressed)
+    xLbxFontInfo	*pr;
+    Bool	compressed;
+{
+    unsigned    i;
+    xCharInfo  *pxci;
+    unsigned    nchars,
+                nprops;
+    char       *pby;
+    register char n;
+
+    nchars = pr->nCharInfos;
+    nprops = pr->nFontProps;
+    swaps(&pr->minCharOrByte2, n);
+    swaps(&pr->maxCharOrByte2, n);
+    swaps(&pr->defaultChar, n);
+    swaps(&pr->nFontProps, n);
+    swaps(&pr->fontAscent, n);
+    swaps(&pr->fontDescent, n);
+    SwapCharInfo(&pr->minBounds);
+    SwapCharInfo(&pr->maxBounds);
+    swapl(&pr->nCharInfos, n);
+
+    pby = (char *) &pr[1];
+    /*
+     * Font properties are an atom and either an int32 or a CARD32, so they
+     * are always 2 4 byte values
+     */
+    for (i = 0; i < nprops; i++) {
+	swapl(pby, n);
+	pby += 4;
+	swapl(pby, n);
+	pby += 4;
+    }
+    if (!compressed) {
+	pxci = (xCharInfo *) pby;
+	for (i = 0; i < nchars; i++, pxci++)
+	    SwapCharInfo(pxci);
+    } else {
+    	SwapLongs((CARD32 *) pby, nchars);
+    }
 }
