@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.14 93/07/12 09:29:49 dpw Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.15 93/07/12 16:27:14 dpw Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */
@@ -35,6 +35,7 @@ SOFTWARE.
 #include "dix.h"
 #include "mi.h"
 #include "mibstore.h"
+#include "migc.h"
 #include "servermd.h"
 
 #ifdef PIXMAP_PER_WINDOW
@@ -76,6 +77,7 @@ mfbAllocatePrivates(pScreen, pWinIndex, pGCIndex)
 #endif
 	mfbWindowPrivateIndex = AllocateWindowPrivateIndex();
 	mfbGCPrivateIndex = AllocateGCPrivateIndex();
+	miRegisterGCPrivateIndex(mfbGCPrivateIndex);
 	visual.vid = FakeClientID(0);
 	VID = visual.vid;
 	mfbGeneration = serverGeneration;
