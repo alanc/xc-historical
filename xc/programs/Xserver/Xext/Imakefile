@@ -1,14 +1,14 @@
-XCOMM $XConsortium: Imakefile,v 5.26 93/09/04 17:14:51 rws Exp $
+XCOMM $XConsortium: Imakefile,v 5.27 93/09/04 19:15:01 rws Exp $
 #include <Server.tmpl>
 
 #if HasShm
   SHMSRCS = shm.c
   SHMOBJS = shm.o
 #endif
-       SRCS = shape.c $(SHMSRCS) multibuf.c multibufpx.c multibufbf.c	\
+       SRCS = shape.c $(SHMSRCS) mbuf.c mbufpx.c mbufbf.c	\
               mitmisc.c xtest.c xtest1di.c xtest1dd.c sleepuntil.c	\
 	      bigreq.c sync.c saver.c
-       OBJS = shape.o $(SHMOBJS) multibuf.o multibufpx.o multibufbf.o	\
+       OBJS = shape.o $(SHMOBJS) mbuf.o mbufpx.o mbufbf.o	\
               mitmisc.o xtest.o xtest1di.o xtest1dd.o sleepuntil.o	\
               bigreq.o sync.o saver.o
    INCLUDES = -I../include -I$(INCLUDESRC) -I$(EXTINCSRC)
