@@ -56,7 +56,8 @@ create_planemask_choice(w)
     {XtNwidth,             (XtArgVal) 10},
     {XtNheight,            (XtArgVal) 10},
     {XtNhighlightThickness,(XtArgVal) 1},
-    {XtNstate,             (XtArgVal) True}
+    {XtNstate,             (XtArgVal) True},
+    {XtNlabel,             (XtArgVal) ""}
   };
 
   static Widget label;		/* the label, of course */
@@ -68,6 +69,7 @@ create_planemask_choice(w)
   int i, num_planes;
 
   char buf[40];
+  char name[12];
 
   num_planes = PlanesOfScreen(X.scr);
 
@@ -102,15 +104,17 @@ create_planemask_choice(w)
     ** of the planemask */
 
     if (planemask & 1<<i)
-      pmargs[6].value = True;
+      pmargs[6].value = (XtArgVal) True;
     else
-      pmargs[6].value = False;
+      pmargs[6].value = (XtArgVal) False;
+
+    sprintf(name,"planemask%d",i);
 
     pminfo[i] = i;		/* which bit we're on; this is needed in
 				   choose_plane (the callback) */
     callbacklist[0].closure = (caddr_t) &pminfo[i];
 
-    pm[i] = XtCreateManagedWidget(NULL,toggleWidgetClass,w,
+    pm[i] = XtCreateManagedWidget(name,toggleWidgetClass,w,
 				  pmargs,XtNumber(pmargs));
   }
 }
