@@ -1,4 +1,4 @@
-/* $XConsortium: sunCursor.c,v 5.12 93/06/24 10:36:06 dpw Exp $ */
+/* $XConsortium: sunCursor.c,v 5.13 93/07/12 09:30:47 dpw Exp $ */
 /*-
  * sunCursor.c --
  *	Functions for maintaining the Sun software cursor...
@@ -7,15 +7,6 @@
 
 #define NEED_EVENTS
 #include    "sun.h"
-#include    <windowstr.h>
-#include    <regionstr.h>
-#include    <dix.h>
-#include    <dixstruct.h>
-#include    <opaque.h>
-
-#include    <servermd.h>
-#include    "mipointer.h"
-#include    "cursorstr.h"
 
 #ifdef FBIOGCURMAX  /* has hardware cursor kernel support */
 
@@ -61,6 +52,7 @@ sunCursorRepad (pScreen, bits, src_bits, dst_bits, ptSrc, w, h)
     PixmapPtr	src, dst;
     BoxRec	box;
     RegionRec	rgnDst;
+    extern int mfbDoBitblt();
 
     if (!(src = GetScratchPixmapHeader(pScreen, bits->width, bits->height,
 				       /*bpp*/ 1, /*depth*/ 1,
@@ -157,7 +149,6 @@ sunMoveCursor (pScreen, x, y)
     int		x, y;
 {
     SetupCursor(pScreen);
-    struct fbcursor fbcursor;
     struct fbcurpos pos;
 
     pos.x = x;
@@ -208,12 +199,7 @@ sunCursorInitialize (pScreen)
 {
 #ifdef FBIOGCURMAX
     SetupCursor (pScreen);
-    int	    fd;
-    struct fbcursor fbcursor;
     struct fbcurpos maxsize;
-    char    *source, *mask;
-    int	    h, w;
-    int	    size;
 
     pCurPriv->has_cursor = FALSE;
     if (ioctl (sunFbs[pScreen->myNum].fd, FBIOGCURMAX, &maxsize) == -1)
@@ -233,7 +219,7 @@ sunCursorInitialize (pScreen)
 #endif
 }
 
-sunDisableCursor (pScreen)
+void sunDisableCursor (pScreen)
     ScreenPtr	pScreen;
 {
 #ifdef FBIOGCURMAX
@@ -250,75 +236,3 @@ sunDisableCursor (pScreen)
 #endif
 }
 
-/*
- * The following struct is from win_cursor.h.  This file can't be included 
- * directly, because it drags in all of the SunView attribute stuff along 
- * with it.
- */
-
-#ifdef SUN_WINDOWS
-
-struct cursor {
-    short       cur_xhot, cur_yhot;	/* offset of mouse position from shape */
-    int         cur_function;		/* relationship of shape to screen */
-    struct pixrect *cur_shape;		/* memory image to use */
-    int         flags;			/* various options */
-    short       horiz_hair_thickness;	/* horizontal crosshair height */
-    int         horiz_hair_op;		/* drawing op       */
-    int         horiz_hair_color;	/* color            */
-    short       horiz_hair_length;	/* width           */
-    short       horiz_hair_gap;		/* gap             */
-    short       vert_hair_thickness;	/* vertical crosshair width  */
-    int         vert_hair_op;		/* drawing op       */
-    int         vert_hair_color;	/* color            */
-    short       vert_hair_length;	/* height           */
-    short       vert_hair_gap;		/* gap              */
-};
-#endif /* SUN_WINDOWS */
-
-void
-sunInitCursor ()
-{
-    if ( sunUseSunWindows() ) {
-#ifdef SUN_WINDOWS
-	static struct cursor cs;
-	static struct pixrect pr;
-	/* 
-	 * Give the pixwin an empty cursor so that the kernel's cursor drawing 
-	 * doesn't conflict with our cursor drawing.
-	 */
-	cs.cur_xhot = cs.cur_yhot = cs.cur_function = 0;
-	cs.flags = 0;
-	cs.cur_shape = &pr;
-	pr.pr_size.x = pr.pr_size.y = 0;
-	win_setcursor( windowFd, &cs );
-#endif /* SUN_WINDOWS */
-    }
-}
-
-
-#ifdef SUN_WINDOWS
-/*
- * We need to find out when dix warps the mouse so we can
- * keep SunWindows in sync.
- */
-
-extern int sunIgnoreEvent;
-
-Bool
-sunSetCursorPosition(pScreen, x, y, generateEvent)
-	ScreenPtr pScreen;
-	int x, y;
-	Bool generateEvent;
-{
-    SetupScreen(pScreen);
-
-    pScreen->SetCursorPosition = pPrivate->SetCursorPosition;
-    (*pScreen->SetCursorPosition) (pScreen, x, y, generateEvent);
-    if (sunUseSunWindows())
-	if (!sunIgnoreEvent)
-	    win_setmouseposition(windowFd, x, y);
-    pScreen->SetCursorPosition = sunSetCursorPosition;
-    return TRUE;
-}
-#endif
