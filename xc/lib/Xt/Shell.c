@@ -1,6 +1,6 @@
 #ifndef lint
 static char rcsid[] =
-    "$XConsortium: Shell.c,v 1.36 88/09/03 11:38:11 swick Exp $";
+    "$XConsortium: Shell.c,v 1.37 88/09/04 15:21:45 swick Exp $";
 /* $oHeader: Shell.c,v 1.7 88/09/01 11:57:00 asente Exp $ */
 #endif lint
 
@@ -1430,8 +1430,7 @@ static Boolean SetValues(old, ref, new)
 	w1->core.border_width = w2->core.border_width;	}
 
 	if (!XtIsRealized((Widget)ow)) { 
-	    if (nw->shell.client_specified) COPY_GEOMETRY(nw,ow)
- 	    else COPY_GEOMETRY(ow,nw)
+	    COPY_GEOMETRY(ow,nw)
 	} else {
 	    if (nw->shell.allow_shell_resize) {
 		mask = 0;

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
+* $XConsortium: ShellP.h,v 1.17 88/09/04 12:21:52 swick Exp $
 * $oHeader: ShellP.h,v 1.2 88/08/18 15:56:19 asente Exp $
 */
 
@@ -74,7 +74,6 @@ typedef struct {
 	Boolean	    spring_loaded;
 	Boolean	    popped_up;
 	Boolean	    allow_shell_resize;
-	Boolean	    client_specified;
 	Boolean	    save_under;
 	Boolean	    override_redirect;
 
