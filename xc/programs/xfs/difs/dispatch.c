@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.5 91/07/16 20:23:26 keith Exp $ */
+/* $XConsortium: dispatch.c,v 1.6 91/07/18 22:35:52 keith Exp $ */
 /*
  * protocol dispatcher
  */
@@ -126,6 +126,7 @@ Dispatch()
 		    break;
 		}
 	    }
+	    FlushAllOutput ();
 	}
 	/* reset if server is a drone and has run out of clients */
 	if (drone_server && nClients == 0) {
@@ -546,13 +547,21 @@ alloc_failure:
 	return FSBadAlloc;
     }
     DEALLOCATE_LOCAL(acp);
+    rep.type = FS_Reply;
     rep.status = accept;
+    if (index < 0)
+    {
+	size = 0;
+	index = 0;
+    }
     rep.auth_index = index;
     rep.sequenceNumber = client->sequence;
     rep.length = (sizeof(fsCreateACReply) + size) >> 2;
+    rep.status = AuthSuccess;
 
     WriteReplyToClient(client, sizeof(fsCreateACReply), &rep);
-    (void) WriteToClient(client, size, auth_data);
+    if (size)
+	(void) WriteToClient(client, size, auth_data);
 
     return client->noClientException;
 }
