@@ -1,5 +1,5 @@
 #ifndef lint
-static char rcs_id[] = "$XConsortium: main.c,v 1.132 89/12/06 15:31:42 jim Exp $";
+static char rcs_id[] = "$XConsortium: main.c,v 1.133 89/12/06 17:33:01 jim Exp $";
 #endif	/* lint */
 
 /*
@@ -159,6 +159,7 @@ extern void exit();
 extern void sleep();
 extern void bcopy();
 extern long lseek();
+extern void HandlePopupMenu();
 
 int switchfb[] = {0, 2, 1, 3};
 
@@ -712,6 +713,9 @@ char **argv;
 	}
 
 	XawSimpleMenuAddGlobalActions (XtWidgetToApplicationContext(toplevel));
+	XtRegisterGrabAction (HandlePopupMenu, True,
+			      (ButtonPressMask|ButtonReleaseMask),
+			      GrabModeAsync, GrabModeAsync);
 
         term = (XtermWidget) XtCreateManagedWidget(
 	    "vt100", xtermWidgetClass, toplevel, NULL, 0);
