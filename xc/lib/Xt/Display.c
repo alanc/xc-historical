@@ -1,5 +1,5 @@
 #ifndef lint
-static char Xrcsid[] = "$XConsortium: Display.c,v 1.35 89/09/29 12:07:31 swick Exp $";
+static char Xrcsid[] = "$XConsortium: Display.c,v 1.36 89/10/05 10:57:45 swick Exp $";
 /* $oHeader: Display.c,v 1.9 88/09/01 11:28:47 asente Exp $ */
 #endif /*lint*/
 
@@ -38,6 +38,7 @@ SOFTWARE.
 
 #ifndef HEAP_SEGMENT_SIZE
 #define HEAP_SEGMENT_SIZE 1492
+#endif
 
 static void _XtHeapInit();
 static void _XtHeapFree();
