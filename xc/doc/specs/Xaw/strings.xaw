@@ -29,7 +29,7 @@ may be queried.
 .de Bg \"background
 .ie 'Bold'\\$1' .IP \fBbackground\fP 1.5i
 .el .IP background 1.5i
-A pixel value which indexs the widget's colormap to derive the
+A pixel value which indexes the widget's colormap to derive the
 background color of the widget's window.
 ..
 .de Gp \"backgroundPixmap
@@ -40,7 +40,7 @@ used instead of the background color.
 ..
 .de Bc \"borderColor
 .IP borderColor 1.5i
-A pixel value which indexs the widget's colormap to derive the border
+A pixel value which indexes the widget's colormap to derive the border
 color of the widget's window.
 ..
 .de Bp \"borderPixmap
@@ -108,11 +108,28 @@ The location of the upper left outside corner of this widget in its parent.
 The image that will be displayed as the pointer cursor whenever it is in
 this widget.
 ..
+.de Cn \"cursorName
+.ie 'Bold'\\$1' .IP\fBcursorName\fP 1.5i
+.el .IP cursorName 1.5i
+The name of the symbol to use to represent the pointer cursor.
+..
 .de Ib \"insensitiveBorder
 .ie 'Bold'\\$1' .IP \fBinsensitiveBorder\fP 1.5i
 .el .IP insensitiveBorder 1.5i
 This pixmap will be tiled into the widget's border if the widget becomes
 insensitive.
+..
+.de Pf \"pointerColor
+.ie 'Bold'\\$1' .IP\fBpointerColor\fP 1.5i
+.el .IP pointerColor 1.5i
+A pixel value which indexes the widget's colormap to derive the foreground
+color of the pointer symbol.
+..
+.de Pb \"pointerColorBackground
+.ie 'Bold'\\$1' .IP\fBpointerColorBackground\fP 1.5i
+.el .IP pointerColorBackground 1.5i
+A pixel value which indexes the widget's colormap to derive the background
+color of the pointer symbol.
 ..
 
 \" Label Widget Resource Definitions
@@ -128,6 +145,11 @@ Bitmaps\fP for details.)  If this bitmap is one bit deep then the 1's
 will be rendered in the foreground color, and the 0's in the background
 color.  If \fBbitmap\fP has a depth greater than one, it is copied
 directly into the window.
+..
+.de Le \"Label encoding
+.ie 'Bold'\\$1' .IP \fBencoding\fP 1.5i
+.el .IP encoding 1.5i
+The encoding method used in the string displayed in this widget.
 ..
 .de Lf \"Label font
 .ie 'Bold'\\$1' .IP \fBfont\fP 1.5i
@@ -167,6 +189,12 @@ is larger than necessary to display the \fBlabel\fP.
 Specifies the Latin1 text string to be displayed in the widget's window
 if no bitmap is specified.  The default is the name of this widget.
 Newline characters will cause line breaks.
+..
+.de Lb \"leftBitmap
+.ie 'Bold'\\$1' .IP \fBleftBitmap\fP 1.5i
+.el .IP leftBitmap 1.5i
+Specifies a bitmap to display to the left of the label in the widget's 
+window.  The default is none.
 ..
 .de Re \"resize
 .ie 'Bold'\\$1' .IP \fBresize\fP 1.5i
