@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.95 92/09/29 10:39:07 rws Exp $ */
+/* $XConsortium: a2x.c,v 1.96 92/09/29 11:45:31 rws Exp $ */
 /*
 
 Copyright 1992 by the Massachusetts Institute of Technology
@@ -254,6 +254,7 @@ JumpRec jump;
 MacroRec macros[10];
 LocationRec locations[10];
 Bool noecho = True;
+Bool fakeecho = False;
 char *hotwinname = "a2x";
 Window hotwin = None;
 char *hotkeyname = NULL;
@@ -430,7 +431,7 @@ xtrap_clean_up()
 void
 usage()
 {
-    printf("%s: [-d <display>] [-e] [-b] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>]\n",
+    printf("%s: [-d <display>] [-e] [-E] [-b] [-u <undofile>] [-h <keysym>] [-w <name>] [-f] [-g <geometry>]\n",
 	   progname);
     exit(1);
 }
@@ -2365,6 +2366,8 @@ process(buf, n, len)
 		    break;
 #ifndef MSDOS
 		n = read(0, buf+j, len-j);
+		if (fakeecho)
+		    write(1, "\177", 1);
 #else
 		buf[j] = i16getch();
 		if (!noecho) echo(buf[j]);
@@ -2496,6 +2499,9 @@ main(argc, argv)
 	case 'e':
 	    noecho = False;
 	    break;
+	case 'E':
+	    fakeecho = True;
+	    break;
 	case 'b':
 	    bs_is_del = False;
 	    break;
@@ -2615,6 +2621,8 @@ main(argc, argv)
 	    continue;
 #ifndef MSDOS
 	n = read(0, buf, sizeof(buf));
+	if (fakeecho)
+	    write(1, "\177", 1);
 #else
 	buf[0] = i16getch();
 	if (!noecho) echo(buf[0]);
