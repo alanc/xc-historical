@@ -1,4 +1,4 @@
-.\" $XConsortium: xman.man,v 1.22 94/04/11 16:03:38 matt Exp $
+.\" $XConsortium: xman.man,v 1.23 94/04/17 20:44:02 matt Exp $
 .TH XMAN 1 "Release 6" "X Version 11"
 .SH NAME
 xman \- Manual page display program for the X Window System

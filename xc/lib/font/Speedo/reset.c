@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: reset.c,v 1.2 91/05/11 09:53:59 rws Exp $ */
 
 /*
 

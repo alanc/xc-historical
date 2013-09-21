@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.4 95/01/05 19:39:23 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.5 95/04/07 19:42:53 kaleb Exp $
 
 #define OSName            FreeBSD 1.1
 #define OSVendor          /**/

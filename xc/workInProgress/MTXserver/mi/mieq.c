@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mieq.c,v 1.3 94/01/11 20:49:11 rob Exp $
+ * $XConsortium: mieq.c,v 1.4 94/04/17 21:16:04 rob Exp $
  *
 Copyright (c) 1990  X Consortium
 

@@ -1,4 +1,4 @@
-/* $XConsortium: grabs.c,v 5.9 94/02/16 11:39:59 dpw Exp $ */
+/* $XConsortium: grabs.c,v 5.10 94/04/17 20:26:39 dpw Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

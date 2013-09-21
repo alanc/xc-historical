@@ -1,4 +1,4 @@
-/* $XConsortium: misc.h,v 1.8 94/04/17 19:55:59 mor Exp gildea $ */
+/* $XConsortium: misc.h,v 1.9 95/06/08 23:20:39 gildea Exp $ */
 /*
  
 Copyright (c) 1990, 1991  X Consortium

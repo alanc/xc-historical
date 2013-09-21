@@ -1,5 +1,5 @@
 /*
- * $XConsortium: listres.c,v 1.31 91/02/16 18:30:40 dave Exp $
+ * $XConsortium: listres.c,v 1.32 94/04/17 20:43:22 dave Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

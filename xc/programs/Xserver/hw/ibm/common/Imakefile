@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.4 91/07/16 22:54:21 gildea Exp $
 #include <Server.tmpl>
 
 SRCS =		ibmColor.c \

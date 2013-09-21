@@ -1,4 +1,4 @@
-/* $XConsortium: StrToGrav.c,v 1.5 93/08/16 20:40:41 kaleb Exp $ */
+/* $XConsortium: StrToGrav.c,v 1.6 94/04/17 20:16:18 kaleb Exp $ */
 
 /* 
 

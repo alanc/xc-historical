@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: EWin.mc,v 1.4 92/06/11 18:07:21 rws Exp $
+ * $XConsortium: EWin.mc,v 1.5 94/04/17 21:15:00 rws Exp $
  */
 >>ASSERTION Bad A
 >>### Window

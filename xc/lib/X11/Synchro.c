@@ -1,4 +1,4 @@
-/* $XConsortium: Synchro.c,v 11.13 93/10/24 15:50:37 rws Exp $ */
+/* $XConsortium: Synchro.c,v 11.14 94/04/17 20:21:16 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

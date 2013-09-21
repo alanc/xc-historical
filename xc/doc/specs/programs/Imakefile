@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.2 94/09/02 20:24:39 gildea Exp dpw $
+XCOMM $XConsortium: Imakefile,v 1.3 95/01/24 14:53:01 dpw Exp $
 
 /* does not include manual pages under util (not X programs)
    or any of the library function manual pages under doc/man */

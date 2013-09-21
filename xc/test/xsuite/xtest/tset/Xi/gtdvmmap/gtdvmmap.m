@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtdvmmap.m,v 1.12 94/04/17 21:13:16 rws Exp dpw $
+ * $XConsortium: gtdvmmap.m,v 1.13 94/09/06 21:10:34 dpw Exp $
  */
 >>TITLE XGetDeviceModifierMapping EXTENSIONS
 XModifierKeymap	*

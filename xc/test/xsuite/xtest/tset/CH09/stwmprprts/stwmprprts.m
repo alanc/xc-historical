@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: stwmprprts.m,v 1.18 93/12/26 15:56:47 rws Exp $
+ * $XConsortium: stwmprprts.m,v 1.19 94/04/17 21:09:11 rws Exp $
  */
 >>TITLE XSetWMProperties CH09
 void

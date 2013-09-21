@@ -46,7 +46,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: inputstr.h,v 1.33 94/02/03 18:59:02 rws Exp $ */
+/* $XConsortium: inputstr.h,v 1.34 94/04/17 20:25:47 rws Exp $ */
 
 #ifndef INPUTSTRUCT_H
 #define INPUTSTRUCT_H

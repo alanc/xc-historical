@@ -1,4 +1,4 @@
-/* $XConsortium: brf_trv.c,v 5.1 91/02/16 10:07:20 rws Exp $ */
+/* $XConsortium: brf_trv.c,v 5.2 94/04/17 20:44:31 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

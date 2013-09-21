@@ -1,4 +1,4 @@
-/* $XConsortium: TMparse.c,v 1.141 94/06/01 15:36:09 converse Exp $ */
+/* $XConsortium: TMparse.c,v 1.142.1.1 95/07/14 19:15:16 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1738,8 +1738,8 @@ static String ParseAction(str, actionP, quarkP, error)
 }
 
 
-static String ParseActionSeq(parseTree, str, actionsP, error)
-    TMParseStateTree   	parseTree;
+static String ParseActionSeq(stateTree, str, actionsP, error)
+    TMStateTree   	stateTree;
     String 		str;
     ActionPtr 		*actionsP;
     Boolean		*error;
@@ -1759,7 +1759,7 @@ static String ParseActionSeq(parseTree, str, actionsP, error)
 	str = ParseAction(str, action, &quark, error);
 	if (*error) return PanicModeRecovery(str);
 
-	action->idx = _XtGetQuarkIndex(parseTree, quark);
+	action->idx = _XtGetQuarkIndex(stateTree, quark);
 	ScanWhitespace(str);
 	*nextActionP = action;
 	nextActionP = &action->next;
@@ -1793,8 +1793,8 @@ static void ShowProduction(currentProduction)
  * Parses one line of event bindings.
  ***********************************************************************/
 
-static String ParseTranslationTableProduction(parseTree, str)
-    TMParseStateTree	 parseTree;
+static String ParseTranslationTableProduction(stateTree, str)
+    TMStateTree	 stateTree;
     register String str;
 {
     EventSeqPtr	eventSeq = NULL;
@@ -1809,14 +1809,14 @@ static String ParseTranslationTableProduction(parseTree, str)
         return (str);
     }
     ScanWhitespace(str);
-    str = ParseActionSeq(parseTree, str, actionsP, &error);
+    str = ParseActionSeq(stateTree, str, actionsP, &error);
     if (error) {
 	ShowProduction(production);
         FreeEventSeq(eventSeq);
         return (str);
     }
 
-    _XtAddEventSeqToStateTree(eventSeq, parseTree);
+    _XtAddEventSeqToStateTree(eventSeq, stateTree);
     FreeEventSeq(eventSeq);
     return (str);
 }
@@ -1936,7 +1936,7 @@ static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp)
 {
     XtTranslations		xlations;
     TMStateTree			stateTrees[8];
-    TMParseStateTreeRec		parseTreeRec, *parseTree = &parseTreeRec;
+    union _TMStateTreeRec	parseTreeRec, *parseTree = &parseTreeRec;
     XrmQuark			stackQuarks[200];
     TMBranchHeadRec		stackBranchHeads[200];
     StatePtr			stackComplexBranchHeads[200];
@@ -1949,36 +1949,36 @@ static XtTranslations ParseTranslationTable(source, isAccelerator, defaultOp)
     if (isAccelerator && actualOp == XtTableReplace)
 	actualOp = defaultOp;
 
-    parseTree->isSimple = True;
-    parseTree->mappingNotifyInterest = False;
-    parseTree->isAccelerator = isAccelerator;
-    parseTree->isStackBranchHeads =
-      parseTree->isStackQuarks =
-	parseTree->isStackComplexBranchHeads = True;
+    parseTree->parse.isSimple = True;
+    parseTree->parse.mappingNotifyInterest = False;
+    parseTree->parse.isAccelerator = isAccelerator;
+    parseTree->parse.isStackBranchHeads =
+      parseTree->parse.isStackQuarks =
+	parseTree->parse.isStackComplexBranchHeads = True;
 
-    parseTree->numQuarks =
-      parseTree->numBranchHeads =
-	parseTree->numComplexBranchHeads = 0;
+    parseTree->parse.numQuarks =
+      parseTree->parse.numBranchHeads =
+	parseTree->parse.numComplexBranchHeads = 0;
 
-    parseTree->quarkTblSize =
-      parseTree->branchHeadTblSize =
-	parseTree->complexBranchHeadTblSize = 200;
+    parseTree->parse.quarkTblSize =
+      parseTree->parse.branchHeadTblSize =
+	parseTree->parse.complexBranchHeadTblSize = 200;
 
-    parseTree->quarkTbl = stackQuarks;
-    parseTree->branchHeadTbl = stackBranchHeads;
-    parseTree->complexBranchHeadTbl = stackComplexBranchHeads;
+    parseTree->parse.quarkTbl = stackQuarks;
+    parseTree->parse.branchHeadTbl = stackBranchHeads;
+    parseTree->parse.complexBranchHeadTbl = stackComplexBranchHeads;
 
     while (source != NULL && *source != '\0') {
 	source =  ParseTranslationTableProduction(parseTree, source);
     }
     stateTrees[0] = _XtParseTreeToStateTree(parseTree);
 
-    if (!parseTree->isStackQuarks)
-      XtFree((char *)parseTree->quarkTbl);
-    if (!parseTree->isStackBranchHeads)
-      XtFree((char *)parseTree->branchHeadTbl);
-    if (!parseTree->isStackComplexBranchHeads)
-      XtFree((char *)parseTree->complexBranchHeadTbl);
+    if (!parseTree->parse.isStackQuarks)
+      XtFree((char *)parseTree->parse.quarkTbl);
+    if (!parseTree->parse.isStackBranchHeads)
+      XtFree((char *)parseTree->parse.branchHeadTbl);
+    if (!parseTree->parse.isStackComplexBranchHeads)
+      XtFree((char *)parseTree->parse.complexBranchHeadTbl);
 
     xlations = _XtCreateXlations(stateTrees, 1, NULL, NULL);
     xlations->operation = actualOp;

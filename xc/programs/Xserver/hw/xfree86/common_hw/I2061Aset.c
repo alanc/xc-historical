@@ -1,4 +1,4 @@
-/* $XConsortium: ICD2061Aset.c,v 1.1 94/03/28 21:25:04 dpw Exp $ */
+/* $XConsortium: I2061Aset.c,v 1.1 95/01/26 15:25:49 kaleb Exp $ */
 /* Based on the number 9 Inc code */
 /* Copyright (c) 1992, Number Nine Computer Corp.  All Rights Reserved. 
  *

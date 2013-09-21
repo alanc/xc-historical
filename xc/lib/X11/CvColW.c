@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsCvColW.c,v 1.3 91/02/12 16:12:37 dave Exp $" */
+/* $XConsortium: CvColW.c,v 1.4 91/05/13 23:19:33 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

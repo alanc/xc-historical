@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunCfb24.c,v 1.2 94/02/21 10:21:05 kaleb Exp $ */
+/* $XConsortium: sunCfb24.c,v 1.3 94/04/05 11:29:31 dpw Exp $ */
 
 /*
 

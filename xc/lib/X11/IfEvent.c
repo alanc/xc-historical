@@ -1,4 +1,4 @@
-/* $XConsortium: IfEvent.c,v 11.14 93/11/05 11:12:56 kaleb Exp $ */
+/* $XConsortium: IfEvent.c,v 11.15 94/04/17 20:19:57 kaleb Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

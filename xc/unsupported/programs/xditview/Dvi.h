@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Dvi.h,v 1.4 89/07/21 14:22:06 jim Exp $
+* $XConsortium: Dvi.h,v 1.5 91/07/25 21:33:53 keith Exp $
 */
 
 #ifndef _XtDvi_h

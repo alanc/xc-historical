@@ -1,4 +1,4 @@
-/* $XConsortium: ImUtil.c,v 11.60 94/04/17 20:19:59 kaleb Exp gildea $ */
+/* $XConsortium: ImUtil.c,v 11.61 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

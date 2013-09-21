@@ -1,4 +1,4 @@
-/* $XConsortium: XlcPubI.h,v 1.3 94/01/20 18:03:11 rws Exp kaleb $ */
+/* $XConsortium: XlcPubI.h,v 1.4 95/02/22 22:02:55 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: VTsw_sco.c,v 1.1 94/03/28 21:30:26 dpw Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>

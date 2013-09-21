@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: xtest.h,v 1.37 92/06/11 15:32:01 rws Exp $
+ * $XConsortium: xtest.h,v 1.38 94/04/17 21:00:05 rws Exp $
  */
 
 #define TEST_ANSI (__STDC__ == 1)

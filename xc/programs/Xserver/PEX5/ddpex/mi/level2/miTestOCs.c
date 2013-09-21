@@ -1,4 +1,4 @@
-/* $XConsortium: miTestOCs.c,v 5.1 91/02/16 09:55:20 rws Exp $ */
+/* $XConsortium: miTestOCs.c,v 5.2 94/04/17 20:37:19 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

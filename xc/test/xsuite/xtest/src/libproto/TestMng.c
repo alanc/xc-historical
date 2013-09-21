@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: TestMng.c,v 1.10 94/01/29 15:00:26 rws Exp $
+ * $XConsortium: TestMng.c,v 1.11 94/04/17 21:01:32 rws Exp $
  */
 /*
  * ***************************************************************************

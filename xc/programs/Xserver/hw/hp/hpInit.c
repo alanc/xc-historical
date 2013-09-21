@@ -1,4 +1,4 @@
-/* $XConsortium: hpInit.c,v 1.4 94/05/28 15:39:14 dpw Exp $ */
+/* $XConsortium: hpInit.c,v 1.5 95/01/24 01:43:05 dpw Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.

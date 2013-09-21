@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.14 94/04/28 16:38:12 gildea Exp $
+.\" $XConsortium: protocol.ms,v 1.15 94/04/28 16:58:32 gildea Exp $
 .\" Input Extension
 .EH ''''
 .OH ''''

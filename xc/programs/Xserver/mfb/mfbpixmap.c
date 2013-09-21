@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpixmap.c,v 5.12 94/03/11 17:12:41 dpw Exp $ */
+/* $XConsortium: mfbpixmap.c,v 5.13 94/04/17 20:28:28 dpw Exp $ */
 
 /* pixmap management
    written by drewry, september 1986

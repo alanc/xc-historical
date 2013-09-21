@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: nextvclass.c,v 1.9 92/06/11 15:42:27 rws Exp $
+ * $XConsortium: nextvclass.c,v 1.10 94/04/17 21:00:56 rws Exp $
  */
 /*
  * Functions to cycle through all the visual classes that are supposed to

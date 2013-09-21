@@ -1,4 +1,4 @@
-/* $XConsortium: imInsClbk.c,v 1.2 94/01/20 18:04:36 rws Exp $ */
+/* $XConsortium: imInsClbk.c,v 1.3 94/03/26 17:00:23 rws Exp $ */
 /******************************************************************
 
            Copyright 1993, 1994 by Sony Corporation

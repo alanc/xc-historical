@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: eqlrgn.m,v 1.5 92/06/11 17:34:18 rws Exp $
+ * $XConsortium: eqlrgn.m,v 1.6 94/04/17 21:09:30 rws Exp $
  */
 >>TITLE XEqualRegion CH10
 Bool

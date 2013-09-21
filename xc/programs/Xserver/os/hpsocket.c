@@ -1,4 +1,4 @@
-/* $XConsortium: hpsocket.c,v 1.2 94/04/12 17:23:43 dpw Exp $ */
+/* $XConsortium: hpsocket.c,v 1.3 94/04/17 20:26:58 dpw Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

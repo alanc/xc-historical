@@ -1,4 +1,4 @@
-/* $XConsortium: cachestr.h,v 1.3 94/04/12 21:59:17 dpw Exp $ */
+/* $XConsortium: cachestr.h,v 1.4 94/04/17 19:55:54 dpw Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 

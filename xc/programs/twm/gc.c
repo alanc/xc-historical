@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: gc.c,v 1.22 91/01/09 17:13:12 rws Exp $
+ * $XConsortium: gc.c,v 1.23 94/04/17 20:38:09 rws Exp $
  *
  * Open the fonts and create the GCs
  *

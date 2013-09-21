@@ -1,4 +1,4 @@
-/* $XConsortium: HPproto.h,v 3.1 93/11/22 12:07:05 rws Exp $ */
+/* $XConsortium: HPproto.h,v 3.2 94/04/17 20:53:52 rws Exp $ */
 
 /*
  * Copyright (c) 1992 by Sun Microsystems, Inc.

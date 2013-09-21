@@ -1,4 +1,4 @@
-/* $XConsortium: fsmasks.h,v 1.4 94/04/12 21:52:25 dpw Exp $ */
+/* $XConsortium: fsmasks.h,v 1.5 94/04/17 20:11:08 dpw Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation 

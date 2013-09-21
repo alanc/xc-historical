@@ -66,7 +66,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbgc.c,v 1.4 94/01/19 17:34:51 dpw Exp $ */
+/* $XConsortium: mfbgc.c,v 1.5 94/04/17 21:16:13 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"

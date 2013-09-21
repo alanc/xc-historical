@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xsetroot.c,v 1.22 93/09/15 17:39:17 hersh Exp $
+ * $XConsortium: xsetroot.c,v 1.23 94/04/17 20:24:34 hersh Exp $
  *
 Copyright (c) 1987,  X Consortium
 

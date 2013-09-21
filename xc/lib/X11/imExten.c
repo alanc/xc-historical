@@ -1,4 +1,4 @@
-/* $XConsortium: imExten.c,v 1.4 94/03/26 16:57:55 rws Exp $ */
+/* $XConsortium: imExten.c,v 1.5 94/07/08 10:38:20 kaleb Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED

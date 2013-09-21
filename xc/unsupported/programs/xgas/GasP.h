@@ -1,4 +1,4 @@
-/* $XConsortium: GasP.h,v 1.2 93/09/13 12:17:52 rws Exp $ */
+/* $XConsortium: GasP.h,v 1.3 94/04/17 20:45:26 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

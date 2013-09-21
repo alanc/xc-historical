@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtscrnsvr.m,v 1.4 92/06/11 17:14:32 rws Exp $
+ * $XConsortium: gtscrnsvr.m,v 1.5 94/04/17 21:06:36 rws Exp $
  */
 >>TITLE XGetScreenSaver CH07
 void

@@ -1,4 +1,4 @@
-/* $XConsortium: assert.h,v 1.3 94/02/20 11:12:26 dpw Exp $ */
+/* $XConsortium: assert.h,v 1.1 94/03/08 20:33:14 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

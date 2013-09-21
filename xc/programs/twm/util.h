@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: util.h,v 1.10 89/12/10 17:47:04 jim Exp $
+ * $XConsortium: util.h,v 1.11 94/04/17 20:38:27 jim Exp $
  *
  * utility routines header file
  *

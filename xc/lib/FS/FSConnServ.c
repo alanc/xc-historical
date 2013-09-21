@@ -1,4 +1,4 @@
-/* $XConsortium: FSConnServ.c,v 1.26 94/04/17 20:15:10 dpw Exp kaleb $ */
+/* $XConsortium: FSConnServ.c,v 1.27 95/04/05 19:58:15 kaleb Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;

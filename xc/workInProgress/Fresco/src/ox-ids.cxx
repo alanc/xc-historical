@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: ox-ids.cxx,v 1.3 94/04/01 16:52:36 matt Exp $
  */
 
 /*

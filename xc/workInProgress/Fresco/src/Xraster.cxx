@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Xraster.cxx,v 1.5 94/04/01 16:47:49 matt Exp $
  */
 
 /*

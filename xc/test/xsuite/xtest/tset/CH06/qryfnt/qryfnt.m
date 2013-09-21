@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: qryfnt.m,v 1.8 92/06/11 17:08:52 rws Exp $
+ * $XConsortium: qryfnt.m,v 1.9 94/04/17 21:05:46 rws Exp $
  */
 >>TITLE XQueryFont CH06
 XFontStruct *

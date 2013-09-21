@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: setdvmmap.m,v 1.11 94/04/17 21:12:52 rws Exp dpw $
+ * $XConsortium: setdvmmap.m,v 1.12 94/09/06 20:52:51 dpw Exp $
  */
 >>TITLE XSetDeviceModifierMapping XINPUT
 int

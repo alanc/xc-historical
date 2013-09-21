@@ -1,4 +1,4 @@
-/* $XConsortium: greet.c,v 1.40 94/04/17 20:03:54 gildea Exp converse $ */
+/* $XConsortium: greet.c,v 1.41 94/09/12 21:32:49 converse Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

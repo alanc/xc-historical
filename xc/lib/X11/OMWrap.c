@@ -1,4 +1,4 @@
-/* $XConsortium: OMWrap.c,v 1.1 94/01/20 17:55:00 rws Exp $ */
+/* $XConsortium: OMWrap.c,v 1.2 94/02/06 15:05:37 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

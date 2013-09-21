@@ -22,7 +22,7 @@
  * $NCDId: @(#)lbxfuncs.c,v 1.43 1995/03/09 00:54:06 lemke Exp $
  */
 
-/* $XConsortium: lbxfuncs.c,v 1.14 95/05/30 18:33:33 mor Exp mor $ */
+/* $XConsortium: lbxfuncs.c,v 1.15 95/05/31 15:13:35 mor Exp $ */
 
 /*
  * top level LBX request & reply handling

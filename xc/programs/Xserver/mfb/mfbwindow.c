@@ -1,4 +1,4 @@
-/* $XConsortium: mfbwindow.c,v 5.13 94/03/22 16:58:05 dpw Exp $ */
+/* $XConsortium: mfbwindow.c,v 5.14 94/04/17 20:28:36 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 

@@ -1,4 +1,4 @@
-/* $XConsortium: bmtoa.c,v 1.5 93/09/12 14:30:27 rws Exp $ */
+/* $XConsortium: bmtoa.c,v 1.6 94/04/17 20:23:49 rws Exp $ */
 /*
 
 Copyright (c) 1988, 1993  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: setvalues.c,v 1.5 93/09/20 18:06:37 hersh Exp $
+ * $XConsortium: setvalues.c,v 1.6 94/04/17 20:38:57 hersh Exp $
  *
 Copyright (c) 1989  X Consortium
 

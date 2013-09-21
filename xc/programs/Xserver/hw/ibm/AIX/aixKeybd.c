@@ -1,5 +1,5 @@
 /*
- * $XConsortium: aixKeybd.c,v 1.4 93/08/30 07:56:04 dpw Exp $
+ * $XConsortium: aixKeybd.c,v 1.5 94/02/23 15:55:05 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

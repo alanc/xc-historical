@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: cursor.c,v 1.11 92/08/24 15:34:51 rws Exp $
+ * $XConsortium: cursor.c,v 1.12 94/04/17 20:38:05 rws Exp $
  *
  * cursor creation code
  *

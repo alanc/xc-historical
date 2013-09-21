@@ -1,4 +1,4 @@
-/* $XConsortium: Init.c,v 1.2 93/12/13 17:40:05 dpw Exp ray $ */
+/* $XConsortium: Init.c,v 1.3 95/07/10 17:42:22 ray Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

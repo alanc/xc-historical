@@ -1,4 +1,4 @@
-/* $XConsortium: miCopy.c,v 5.8 94/04/17 20:37:04 hersh Exp gildea $ */
+/* $XConsortium: miCopy.c,v 5.9 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 

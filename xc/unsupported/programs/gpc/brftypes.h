@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: brftypes.h,v 5.1 91/02/16 10:07:24 rws Exp $ */
 
 /*
  */

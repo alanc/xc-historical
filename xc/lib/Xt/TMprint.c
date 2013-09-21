@@ -1,4 +1,4 @@
-/* $XConsortium: TMprint.c,v 1.13 93/10/06 17:38:53 kaleb Exp $ */
+/* $XConsortium: TMprint.c,v 1.14.1.1 95/07/14 19:17:44 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -448,7 +448,7 @@ static void PrintComplexState(sb, includeRHS, state, stateTree, accelWidget, dpy
 	    *sb->current++ = ':';
 	    PrintActions(sb, 
 			 state->actions,
-			 ((TMSimpleStateTree)stateTree)->quarkTbl,
+			 stateTree->simple.quarkTbl,
 			 accelWidget);
 	    *sb->current++ = '\n';
 	}
@@ -486,16 +486,15 @@ static int FindNextMatch(printData, numPrints, xlations,
     TMShortCard		startIndex;
 {
     TMShortCard		i;
-    TMComplexStateTree 	stateTree;
+    TMStateTree 	stateTree;
     StatePtr		currState, candState;
     Boolean		noMatch = True;
     TMBranchHead	prBranchHead;
 
     for (i = startIndex; noMatch && i < numPrints; i++) {
-	stateTree = (TMComplexStateTree)
-	  xlations->stateTreeTbl[printData[i].tIndex];
+	stateTree = xlations->stateTreeTbl[printData[i].tIndex];
 	prBranchHead = 
-	  &(stateTree->branchHeadTbl[printData[i].bIndex]);
+	  &(stateTree->complex.branchHeadTbl[printData[i].bIndex]);
 
 	if ((prBranchHead->typeIndex == branchHead->typeIndex) &&
 	    (prBranchHead->modIndex == branchHead->modIndex)) {
@@ -532,19 +531,19 @@ static void ProcessLaterMatches(printData,xlations,tIndex,bIndex,numPrintsRtn)
     int bIndex;
     TMShortCard	*numPrintsRtn;
 {
-    TMComplexStateTree 	stateTree; 
+    TMStateTree 	stateTree; 
     int			i, j;
     TMBranchHead	branchHead, matchBranch = NULL;
 
     for (i = tIndex; i < (int)xlations->numStateTrees; i++) {
-	stateTree = (TMComplexStateTree)xlations->stateTreeTbl[i];    
+	stateTree = xlations->stateTreeTbl[i];    
 	if (i == tIndex) {
-	    matchBranch = &stateTree->branchHeadTbl[bIndex];
+	    matchBranch = &stateTree->complex.branchHeadTbl[bIndex];
 	    j = bIndex+1;
 	}
 	else j = 0;
-	for (branchHead = &stateTree->branchHeadTbl[j];
-	     j < (int)stateTree->numBranchHeads;
+	for (branchHead = &stateTree->complex.branchHeadTbl[j];
+	     j < (int)stateTree->complex.numBranchHeads;
 	     j++, branchHead++) {
 	    if ((branchHead->typeIndex == matchBranch->typeIndex) &&
 		(branchHead->modIndex == matchBranch->modIndex)) {
@@ -575,14 +574,14 @@ static void ProcessStateTree(printData, xlations, tIndex, numPrintsRtn)
     TMShortCard	tIndex;
     TMShortCard	*numPrintsRtn;
 {
-    TMComplexStateTree stateTree; 
+    TMStateTree 	stateTree; 
     int			i;
     TMBranchHead	branchHead;
 
-    stateTree = (TMComplexStateTree)xlations->stateTreeTbl[tIndex];    
+    stateTree = xlations->stateTreeTbl[tIndex];    
     
-    for (i = 0, branchHead = stateTree->branchHeadTbl;
-	 i < (int)stateTree->numBranchHeads;
+    for (i = 0, branchHead = stateTree->complex.branchHeadTbl;
+	 i < (int)stateTree->complex.numBranchHeads;
 	 i++, branchHead++) {
 	StatePtr state;
 	if (!branchHead->isSimple)
@@ -617,7 +616,7 @@ static void PrintState(sb, tree, branchHead, includeRHS, accelWidget, dpy)
     Widget	accelWidget;
     Display 	*dpy;
 {
-    TMComplexStateTree stateTree = (TMComplexStateTree)tree;
+    TMStateTree stateTree = tree;
     LOCK_PROCESS;
     if (branchHead->isSimple) {
 	PrintEvent(sb,
@@ -635,7 +634,7 @@ static void PrintState(sb, tree, branchHead, includeRHS, accelWidget, dpy)
 	    actRec.next = NULL;
 	    PrintActions(sb, 
 			 &actRec,
-			 stateTree->quarkTbl,
+			 stateTree->complex.quarkTbl,
 			 accelWidget);
 	    *sb->current++ = '\n';
 	}
@@ -690,8 +689,7 @@ String _XtPrintXlations(w, xlations, accelWidget, includeRHS)
     sb->max = 1000;
     maxPrints = 0;
     for (i = 0; i < xlations->numStateTrees; i++)
-	maxPrints += 
-	  ((TMSimpleStateTree)(xlations->stateTreeTbl[i]))->numBranchHeads;
+	maxPrints += xlations->stateTreeTbl[i]->simple.numBranchHeads;
     prints = (PrintRec *)
       XtStackAlloc(maxPrints * sizeof(PrintRec), stackPrints);
 
@@ -700,10 +698,9 @@ String _XtPrintXlations(w, xlations, accelWidget, includeRHS)
       ProcessStateTree(prints, xlations, i, &numPrints);
 
     for (i = 0; i < numPrints; i++) {
-	TMSimpleStateTree stateTree = (TMSimpleStateTree)
-	  xlations->stateTreeTbl[prints[i].tIndex];
+	TMStateTree stateTree = xlations->stateTreeTbl[prints[i].tIndex];
 	TMBranchHead branchHead = 
-	  &stateTree->branchHeadTbl[prints[i].bIndex];
+	  &stateTree->simple.branchHeadTbl[prints[i].bIndex];
 #ifdef TRACE_TM	
 	TMComplexBindProcs	complexBindProcs;
 
@@ -715,7 +712,7 @@ String _XtPrintXlations(w, xlations, accelWidget, includeRHS)
 	    }
 	}
 #endif /* TRACE_TM */
-	PrintState(sb, (TMStateTree)stateTree, branchHead,
+	PrintState(sb, stateTree, branchHead,
 		   includeRHS, accelWidget, XtDisplay(w));
     }
     XtStackFree((XtPointer)prints, (XtPointer)stackPrints);
@@ -788,8 +785,7 @@ void _XtDisplayInstalledAccelerators(widget, event, params, num_params)
     sb->max = 1000;
     maxPrints = 0;
     for (i = 0; i < xlations->numStateTrees; i++)
-	maxPrints += 
-	  ((TMSimpleStateTree)xlations->stateTreeTbl[i])->numBranchHeads;
+	maxPrints += xlations->stateTreeTbl[i]->simple.numBranchHeads;
     prints = (PrintRec *)
       XtStackAlloc(maxPrints * sizeof(PrintRec), stackPrints);
 
@@ -805,14 +801,13 @@ void _XtDisplayInstalledAccelerators(widget, event, params, num_params)
 	  }
     }
     for (i = 0; i < numPrints; i++) {
-	TMSimpleStateTree stateTree = (TMSimpleStateTree)
-	  xlations->stateTreeTbl[prints[i].tIndex];
+	TMStateTree stateTree = xlations->stateTreeTbl[prints[i].tIndex];
 	TMBranchHead branchHead = 
-	  &stateTree->branchHeadTbl[prints[i].bIndex];
+	  &stateTree->simple.branchHeadTbl[prints[i].bIndex];
 
 	complexBindProcs = TMGetComplexBindEntry(bindData, 0);
 	
-	PrintState(sb, (TMStateTree)stateTree, branchHead, True, 
+	PrintState(sb, stateTree, branchHead, True, 
 		   complexBindProcs[prints[i].tIndex].widget, 
 		   XtDisplay(widget));
     }

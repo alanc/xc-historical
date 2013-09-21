@@ -1,5 +1,5 @@
 /*
- * $XConsortium: MITMisc.c,v 1.5 92/01/25 15:26:43 rws Exp $
+ * $XConsortium: MITMisc.c,v 1.6 94/04/17 20:22:53 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

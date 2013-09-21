@@ -1,5 +1,5 @@
 /*
- * $XConsortium: TextSink.h,v 1.9 94/01/31 10:50:29 kaleb Exp $
+ * $XConsortium: TextSink.h,v 1.10 94/04/17 20:13:12 kaleb Exp $
  */
 
 /***********************************************************

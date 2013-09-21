@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: dfltdpthof.m,v 1.5 92/06/11 15:56:55 rws Exp $
+ * $XConsortium: dfltdpthof.m,v 1.6 94/04/17 21:02:09 rws Exp $
  */
 >>SET   macro
 >>TITLE XDefaultDepthOfScreen CH02

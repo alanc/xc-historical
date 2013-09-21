@@ -1,4 +1,4 @@
-/* $XConsortium: miStrMacro.h,v 5.4 92/03/06 15:54:48 hersh Exp $ */
+/* $XConsortium: miStrMacro.h,v 5.5 94/04/17 20:36:46 hersh Exp $ */
 
 /***********************************************************
 

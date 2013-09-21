@@ -1,4 +1,4 @@
-/* $XConsortium: linklocale.c,v 1.1 94/01/29 15:56:45 rws Exp $ */
+/* $XConsortium: linklocale.c,v 1.2 94/04/17 21:01:45 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: makewin.c,v 1.17 92/07/07 17:40:55 rws Exp $
+ * $XConsortium: makewin.c,v 1.18 94/04/17 21:00:55 rws Exp $
  */
 
 #include	"stdlib.h"

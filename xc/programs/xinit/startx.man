@@ -1,4 +1,4 @@
-.\" $XConsortium: startx.man,v 1.5 94/04/13 17:25:38 gildea Exp $
+.\" $XConsortium: startx.man,v 1.6 94/04/17 20:24:29 gildea Exp $
 .\" Copyright (c) 1993  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining

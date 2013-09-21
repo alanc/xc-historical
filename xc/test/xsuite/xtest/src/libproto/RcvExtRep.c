@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  . purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: RcvExtRep.c,v 1.7 94/01/29 15:14:55 rws Exp $
+ * $XConsortium: RcvExtRep.c,v 1.8 94/04/17 21:01:19 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -64,11 +64,11 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /*
- *	$Header: RcvExtRep.c,v 1.7 94/01/29 15:14:55 rws Exp $
+ *	$Header: RcvExtRep.c,v 1.8 94/04/17 21:01:19 rws Exp $
  */
 
 #ifndef lint
-static char rcsid[]="$Header: RcvExtRep.c,v 1.7 94/01/29 15:14:55 rws Exp $";
+static char rcsid[]="$Header: RcvExtRep.c,v 1.8 94/04/17 21:01:19 rws Exp $";
 #endif
 
 #include "stdio.h"

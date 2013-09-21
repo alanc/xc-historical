@@ -1,4 +1,4 @@
-/* $XConsortium: xwud.c,v 1.57 94/03/27 15:44:05 rws Exp $ */
+/* $XConsortium: xwud.c,v 1.58 94/04/17 20:24:32 rws Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1988  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: vgaBank.s,v 1.1 94/10/05 13:51:06 kaleb Exp $ */
+/* $XConsortium: vgaBank.s,v 1.3 94/10/13 13:04:50 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.s,v 3.1 1994/05/06 08:27:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

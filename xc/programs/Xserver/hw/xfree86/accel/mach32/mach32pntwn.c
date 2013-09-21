@@ -1,4 +1,4 @@
-/* $XConsortium: mach32pntwn.c,v 1.3 94/10/12 19:59:09 kaleb Exp kaleb $ */
+/* $XConsortium: mach32pntwn.c,v 1.4 95/01/23 15:33:49 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32pntwn.c,v 3.4 1995/01/20 05:45:44 dawes Exp $ */
 /*
 

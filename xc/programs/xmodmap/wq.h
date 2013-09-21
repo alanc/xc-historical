@@ -1,4 +1,4 @@
-/* $XConsortium: wq.h,v 1.4 88/10/08 15:41:34 jim Exp $ */
+/* $XConsortium: wq.h,v 1.5 94/04/17 20:24:22 jim Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

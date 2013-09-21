@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 93/11/07 10:57:42 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/01/12 20:07:25 rws Exp $
 XCOMM build device dependent machine independent export element objs
 #include <Server.tmpl>
 

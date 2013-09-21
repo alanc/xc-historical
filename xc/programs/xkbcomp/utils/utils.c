@@ -1,6 +1,6 @@
 
   /*\
-   * $XConsortium: utils.c,v 1.2 94/04/04 15:31:43 rws Exp $
+   * $XConsortium: utils.c,v 1.3 94/04/05 15:13:12 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION

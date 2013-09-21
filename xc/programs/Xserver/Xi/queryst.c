@@ -1,4 +1,4 @@
-/* $XConsortium: queryst.c,v 1.12 94/04/12 17:27:37 dpw Exp $ */
+/* $XConsortium: queryst.c,v 1.13 94/04/17 20:33:19 dpw Exp $ */
 /*
 
 Copyright (c) 1998  X Consortium

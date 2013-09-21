@@ -1,4 +1,4 @@
-/* $XConsortium: Quarks.c,v 1.39 94/03/29 21:55:41 rws Exp $ */
+/* $XConsortium: Quarks.c,v 1.40 94/04/17 20:20:41 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,

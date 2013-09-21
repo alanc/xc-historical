@@ -1,4 +1,4 @@
-/* $XConsortium: toc.c,v 2.58 94/08/26 18:06:29 swick Exp swick $
+/* $XConsortium: toc.c,v 2.59 95/01/09 16:52:53 swick Exp $
  *
  *
  *			  COPYRIGHT 1987

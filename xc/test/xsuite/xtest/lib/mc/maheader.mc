@@ -1,4 +1,4 @@
-'\" $XConsortium$
+'\" $XConsortium: maheader.mc,v 1.2 92/06/29 19:40:45 rws Exp $
 '\" Simple table specification - to avoid the need to use tbl.
 .de tL \" table line
 .nf

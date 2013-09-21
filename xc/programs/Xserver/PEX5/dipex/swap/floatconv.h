@@ -1,4 +1,4 @@
-/* $XConsortium: floatconv.h,v 5.4 91/07/01 16:27:01 hersh Exp $ */
+/* $XConsortium: floatconv.h,v 5.5 91/12/30 18:23:15 hersh Exp $ */
 
 /*
  * Copyright (c) 1988-1991 by Sun Microsystems and the X Consortium.

@@ -1,5 +1,5 @@
 
-/* $XConsortium: miRender.h,v 5.3 92/11/09 18:51:43 hersh Exp $ */
+/* $XConsortium: miRender.h,v 5.4 94/04/17 20:36:46 hersh Exp $ */
 
 /***********************************************************
 

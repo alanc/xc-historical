@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibuf.h,v 1.17 94/03/31 17:59:52 dpw Exp $
+ * $XConsortium: multibuf.h,v 1.18 94/04/17 20:11:21 dpw Exp $
  *
 Copyright (c) 1989  X Consortium
 

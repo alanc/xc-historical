@@ -1,4 +1,4 @@
-/* $XConsortium: cfbglblt8.c,v 1.5 94/01/27 21:02:34 rob Exp $ */
+/* $XConsortium: cfbglblt8.c,v 1.6 94/04/17 21:16:23 rob Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicP.h,v 1.65 94/04/02 11:19:36 converse Exp $ */
+/* $XConsortium: IntrinsicP.h,v 1.66 94/04/17 20:14:25 converse Exp $ */
 
 /***********************************************************
 

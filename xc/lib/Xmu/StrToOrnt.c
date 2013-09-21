@@ -1,4 +1,4 @@
-/* $XConsortium: StrToOrnt.c,v 1.7 93/08/16 14:38:51 rws Exp $ */
+/* $XConsortium: StrToOrnt.c,v 1.8 94/04/17 20:16:19 rws Exp $ */
 
 /* 
  

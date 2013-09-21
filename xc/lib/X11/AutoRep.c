@@ -1,4 +1,4 @@
-/* $XConsortium: AutoRep.c,v 11.9 91/01/06 11:44:08 rws Exp $ */
+/* $XConsortium: AutoRep.c,v 11.10 94/04/17 20:18:33 rws Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium

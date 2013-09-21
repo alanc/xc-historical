@@ -1,4 +1,4 @@
-.\" $XConsortium: Xvfb.man,v 1.6 94/04/17 20:30:25 dpw Exp dpw $
+.\" $XConsortium: Xvfb.man,v 1.7 94/08/02 15:41:36 dpw Exp $
 .\" Copyright (c) 1993  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining

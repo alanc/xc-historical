@@ -1,4 +1,4 @@
-/* $XConsortium: fntfil.h,v 1.4 93/09/17 18:30:51 gildea Exp $ */
+/* $XConsortium: fntfil.h,v 1.5 94/04/17 20:17:28 gildea Exp $ */
 
 /*
 

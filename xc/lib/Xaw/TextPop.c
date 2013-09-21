@@ -1,4 +1,4 @@
-/* $XConsortium: TextPop.c,v 1.31 94/04/17 20:13:10 kaleb Exp kaleb $ */
+/* $XConsortium: TextPop.c,v 1.32 95/01/16 20:10:20 kaleb Exp $ */
 
 /*
 

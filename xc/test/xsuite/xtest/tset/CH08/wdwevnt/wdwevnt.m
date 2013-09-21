@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: wdwevnt.m,v 1.8 92/06/11 17:26:29 rws Exp $
+ * $XConsortium: wdwevnt.m,v 1.9 94/04/17 21:08:23 rws Exp $
  */
 >>TITLE XWindowEvent CH08
 void

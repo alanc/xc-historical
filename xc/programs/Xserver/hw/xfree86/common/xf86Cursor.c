@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Cursor.c,v 1.2 95/01/05 20:39:33 kaleb Exp kaleb $ */
+/* $XConsortium: xf86Cursor.c,v 1.3 95/01/06 20:57:31 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.3 1994/12/11 10:54:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

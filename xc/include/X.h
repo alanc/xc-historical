@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: X.h,v 1.68 94/01/21 22:12:36 dpw Exp $
+ *	$XConsortium: X.h,v 1.69 94/04/17 20:10:48 dpw Exp $
  */
 
 /* Definitions for the X window system likely to be used by applications */

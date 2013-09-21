@@ -1,5 +1,5 @@
 .\" Use eqn, tbl, and -ms
-.\" $XConsortium: xdmcp.ms,v 1.22 94/04/17 23:53:02 rws Exp $
+.\" $XConsortium: xdmcp.ms,v 1.23 94/04/18 13:54:41 rws Exp $
 .EQ
 delim @@
 define oc % "\\fR{\\fP" %

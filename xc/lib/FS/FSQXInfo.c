@@ -1,4 +1,4 @@
-/* $XConsortium: FSQXInfo.c,v 1.4 92/11/18 21:31:17 gildea Exp $ */
+/* $XConsortium: FSQXInfo.c,v 1.5 94/04/17 20:15:17 gildea Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;

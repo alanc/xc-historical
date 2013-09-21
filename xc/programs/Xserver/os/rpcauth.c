@@ -1,4 +1,4 @@
-/* $XConsortium: rpcauth.c,v 1.8 94/02/08 14:55:14 gildea Exp $ */
+/* $XConsortium: rpcauth.c,v 1.9 94/04/17 20:27:06 gildea Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

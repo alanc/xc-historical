@@ -1,4 +1,4 @@
-/* $XConsortium: pl_sc.c,v 1.11 94/03/31 19:18:01 rws Exp $ */
+/* $XConsortium: pl_sc.c,v 1.12 94/04/17 20:22:45 rws Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

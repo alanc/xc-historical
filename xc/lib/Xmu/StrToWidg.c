@@ -1,4 +1,4 @@
-/* $XConsortium: StrToWidg.c,v 1.9 93/08/16 14:39:19 rws Exp $ */
+/* $XConsortium: StrToWidg.c,v 1.10 94/04/17 20:16:20 rws Exp $ */
 
 /*
 

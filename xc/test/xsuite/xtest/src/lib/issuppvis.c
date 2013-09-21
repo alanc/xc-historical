@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: issuppvis.c,v 1.8 93/12/20 18:19:05 rws Exp $
+ * $XConsortium: issuppvis.c,v 1.9 94/04/17 21:00:50 rws Exp $
  */
 
 #include	"Xlib.h"

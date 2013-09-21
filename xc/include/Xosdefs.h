@@ -1,7 +1,7 @@
 /*
  * O/S-dependent (mis)feature macro definitions
  *
- * $XConsortium: Xosdefs.h,v 1.13 94/04/17 20:10:51 rws Exp kaleb $
+ * $XConsortium: Xosdefs.h,v 1.14 94/11/30 20:48:05 kaleb Exp $
  *
 Copyright (c) 1991  X Consortium
 

@@ -1,4 +1,4 @@
-/* $XConsortium: SelectionI.h,v 1.36 94/01/19 11:20:49 kaleb Exp $ */
+/* $XConsortium: SelectionI.h,v 1.37 94/04/17 20:14:44 kaleb Exp $ */
 
 /***********************************************************
 

@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: mmlink.mc,v 1.2 92/06/29 19:42:10 rws Exp $
 #
 # A version of the test that can be combined together with
 # all the other tests to make one executable.  This will save a

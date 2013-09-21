@@ -1,4 +1,4 @@
-/* $XConsortium: mivaltree.c,v 5.32 94/01/07 09:45:02 dpw Exp $ */
+/* $XConsortium: mivaltree.c,v 5.33 94/04/17 20:27:58 dpw Exp $ */
 /*
  * mivaltree.c --
  *	Functions for recalculating window clip lists. Main function

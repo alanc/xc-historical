@@ -1,4 +1,4 @@
-$XConsortium: README,v 1.41 95/05/23 21:38:11 matt Exp gildea $
+$XConsortium: README,v 1.42 95/06/16 19:26:55 gildea Exp $
 
 The easiest way to write an Imakefile is to find another one that does
 something similar and copy/modify it!

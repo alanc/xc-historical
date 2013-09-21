@@ -1,4 +1,4 @@
-/* $XConsortium: util.c,v 3.1 94/09/09 20:33:43 kaleb Exp $ */
+/* $XConsortium: util.c,v 3.3 94/09/14 21:26:09 gildea Exp $ */
 
 #include "EXTERN.h"
 #include "common.h"

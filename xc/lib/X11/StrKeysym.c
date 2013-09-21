@@ -1,4 +1,4 @@
-/* $XConsortium: StrKeysym.c,v 11.16 94/04/17 20:21:13 rws Exp gildea $ */
+/* $XConsortium: StrKeysym.c,v 11.17 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1985, 1987, 1990  X Consortium

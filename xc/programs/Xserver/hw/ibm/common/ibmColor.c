@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmColor.c,v 1.3 93/07/12 09:27:12 dpw Exp $
+ * $XConsortium: ibmColor.c,v 1.4 94/02/23 15:55:19 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

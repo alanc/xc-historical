@@ -34,7 +34,7 @@ IMPLIED.
  * software for any purpose.  It is provided "as is" without
  * express or implied warranty.
  *
- * $XConsortium: macII.h,v 1.17 91/05/14 16:25:08 rws Exp $
+ * $XConsortium: macII.h,v 1.19 94/01/28 22:30:02 rws Exp $
  */
 #ifndef _MACII_H_
 #define _MACII_H_

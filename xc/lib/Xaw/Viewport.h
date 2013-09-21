@@ -1,4 +1,4 @@
-/* $XConsortium: Viewport.h,v 1.22 94/01/31 10:50:37 kaleb Exp $ */
+/* $XConsortium: Viewport.h,v 1.23 94/04/17 20:13:27 kaleb Exp $ */
 
 /************************************************************
 

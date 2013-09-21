@@ -1,4 +1,4 @@
-/* $XConsortium: patcache.c,v 1.6 93/09/20 15:56:42 gildea Exp $ */
+/* $XConsortium: patcache.c,v 1.7 94/04/17 20:17:37 gildea Exp $ */
 
 /*
 

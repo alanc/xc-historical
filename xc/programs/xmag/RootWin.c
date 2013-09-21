@@ -1,4 +1,4 @@
-/* $XConsortium: RootWin.c,v 1.2 93/09/04 19:55:29 rws Exp $ */
+/* $XConsortium: RootWin.c,v 1.3 94/04/17 20:24:52 rws Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

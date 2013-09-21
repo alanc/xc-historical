@@ -1,4 +1,4 @@
-/* $XConsortium: QBlue.c,v 1.2 91/06/07 09:56:44 rws Exp $ */
+/* $XConsortium: QBlue.c,v 1.3 93/09/07 21:32:19 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

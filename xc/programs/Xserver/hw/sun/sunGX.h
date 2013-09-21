@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sunGX.h,v 1.3 92/11/24 11:36:13 rws Exp $
+ * $XConsortium: sunGX.h,v 1.4 94/04/17 20:29:39 rws Exp $
  *
 Copyright (c) 1991  X Consortium
 

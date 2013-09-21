@@ -1,4 +1,4 @@
-/* $XConsortium: os.h,v 1.9 94/09/16 19:00:32 kaleb Exp kaleb $ */
+/* $XConsortium: os.h,v 1.10 95/04/07 20:34:17 kaleb Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 

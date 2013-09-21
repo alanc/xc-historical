@@ -1,4 +1,4 @@
-/* $XConsortium: prop.c,v 1.5 94/12/14 16:53:57 mor Exp mor $ */
+/* $XConsortium: prop.c,v 1.6 94/12/16 17:30:38 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

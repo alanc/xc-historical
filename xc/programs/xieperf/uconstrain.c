@@ -1,4 +1,4 @@
-/* $XConsortium: uconstrain.c,v 1.7 94/02/13 12:03:15 rws Exp $ */
+/* $XConsortium: uconstrain.c,v 1.8 94/04/17 20:39:38 rws Exp $ */
 
 /**** module uconstrain.c ****/
 /******************************************************************************

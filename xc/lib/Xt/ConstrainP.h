@@ -1,4 +1,4 @@
-/* $XConsortium: ConstrainP.h,v 1.14 89/10/04 12:22:33 swick Exp $ */
+/* $XConsortium: ConstrainP.h,v 1.15 94/04/17 20:13:45 swick Exp $ */
 /* $oHeader: ConstrainP.h,v 1.2 88/08/18 15:54:15 asente Exp $ */
 /***********************************************************
 

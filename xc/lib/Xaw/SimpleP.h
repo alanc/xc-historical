@@ -1,6 +1,6 @@
 /***********************************************************
 
- $XConsortium: SimpleP.h,v 1.11 94/01/31 10:53:54 kaleb Exp $ 
+ $XConsortium: SimpleP.h,v 1.12 94/04/17 20:12:47 kaleb Exp $ 
 
 
 Copyright (c) 1987, 1988, 1994  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: rt.stdarg.h,v 1.0 93/10/25 15:35:10 kaleb Exp $ */
+/* $XConsortium: rt.stdarg.h,v 1.1 93/12/06 16:24:27 kaleb Exp $ */
 #ifndef _STDARG_H
 #define _STDARG_H
 typedef int *va_list;

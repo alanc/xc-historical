@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sony.cf,v 1.59 94/11/02 16:03:30 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: sony.cf,v 1.60 95/06/09 21:17:18 kaleb Exp $
 
 #ifdef SonyBsdArchitecture
 

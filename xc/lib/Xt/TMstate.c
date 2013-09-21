@@ -1,4 +1,4 @@
-/* $XConsortium: TMstate.c,v 1.175 94/09/16 19:17:43 kaleb Exp kaleb $ */
+/* $XConsortium: TMstate.c,v 1.176.1.1 95/07/14 19:19:13 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -88,8 +88,8 @@ TMGlobalRec _XtGlobalTM; /* initialized to zero K&R */
 #define NumStateTrees(xlations) \
   ((translateData->isSimple) ? 1 : (TMComplexXlations(xlations))->numTrees)
 
-static TMShortCard GetBranchHead(parseTree, typeIndex, modIndex, isDummy)
-    TMParseStateTree	parseTree;
+static TMShortCard GetBranchHead(stateTree, typeIndex, modIndex, isDummy)
+    TMStateTree		stateTree;
     TMShortCard		typeIndex;
     TMShortCard		modIndex;
     Boolean		isDummy;
@@ -97,7 +97,7 @@ static TMShortCard GetBranchHead(parseTree, typeIndex, modIndex, isDummy)
 #define TM_BRANCH_HEAD_TBL_ALLOC 	8
 #define TM_BRANCH_HEAD_TBL_REALLOC 	8
 
-    TMBranchHead branchHead = parseTree->branchHeadTbl;
+    TMBranchHead branchHead = stateTree->parse.branchHeadTbl;
     TMShortCard	newSize, i;
 
     /*
@@ -106,30 +106,30 @@ static TMShortCard GetBranchHead(parseTree, typeIndex, modIndex, isDummy)
      * another dummy.
      */
     if (isDummy) {
-	for (i = 0; i < parseTree->numBranchHeads; i++, branchHead++) {
+	for (i = 0; i < stateTree->parse.numBranchHeads; i++, branchHead++) {
 	    if ((branchHead->typeIndex == typeIndex) &&
 		(branchHead->modIndex == modIndex))
 	      return i;
 	}
     }
-    if (parseTree->numBranchHeads == parseTree->branchHeadTblSize)
+    if (stateTree->parse.numBranchHeads == stateTree->parse.branchHeadTblSize)
       {
-	  if (parseTree->branchHeadTblSize == 0)
-	    parseTree->branchHeadTblSize += TM_BRANCH_HEAD_TBL_ALLOC;
+	  if (stateTree->parse.branchHeadTblSize == 0)
+	    stateTree->parse.branchHeadTblSize += TM_BRANCH_HEAD_TBL_ALLOC;
 	  else
-	    parseTree->branchHeadTblSize +=
+	    stateTree->parse.branchHeadTblSize +=
 	      TM_BRANCH_HEAD_TBL_REALLOC;
-	  newSize = (parseTree->branchHeadTblSize * sizeof(TMBranchHeadRec));
-	  if (parseTree->isStackBranchHeads) {
-	      TMBranchHead	oldBranchHeadTbl = parseTree->branchHeadTbl;
-	      parseTree->branchHeadTbl = (TMBranchHead) XtMalloc(newSize);
-	      XtMemmove(parseTree->branchHeadTbl, oldBranchHeadTbl, newSize);
-	      parseTree->isStackBranchHeads = False;
+	  newSize = (stateTree->parse.branchHeadTblSize * sizeof(TMBranchHeadRec));
+	  if (stateTree->parse.isStackBranchHeads) {
+	      TMBranchHead	oldBranchHeadTbl = stateTree->parse.branchHeadTbl;
+	      stateTree->parse.branchHeadTbl = (TMBranchHead) XtMalloc(newSize);
+	      XtMemmove(stateTree->parse.branchHeadTbl, oldBranchHeadTbl, newSize);
+	      stateTree->parse.isStackBranchHeads = False;
 	  }
 	  else {
-	      parseTree->branchHeadTbl = (TMBranchHead) 
-		XtRealloc((char *)parseTree->branchHeadTbl, 
-			  (parseTree->branchHeadTblSize *
+	      stateTree->parse.branchHeadTbl = (TMBranchHead) 
+		XtRealloc((char *)stateTree->parse.branchHeadTbl, 
+			  (stateTree->parse.branchHeadTblSize *
 			   sizeof(TMBranchHeadRec)));
 	  }
       }
@@ -139,54 +139,54 @@ static TMShortCard GetBranchHead(parseTree, typeIndex, modIndex, isDummy)
     UNLOCK_PROCESS;
 #endif /* TRACE_TM */
     branchHead = 
-      &parseTree->branchHeadTbl[parseTree->numBranchHeads++];
+      &stateTree->parse.branchHeadTbl[stateTree->parse.numBranchHeads++];
     branchHead->typeIndex = typeIndex;
     branchHead->modIndex = modIndex;
     branchHead->more = 0;
     branchHead->isSimple = True;
     branchHead->hasActions = False;
     branchHead->hasCycles = False;
-    return parseTree->numBranchHeads-1;
+    return stateTree->parse.numBranchHeads-1;
 }
 
-TMShortCard _XtGetQuarkIndex(parseTree, quark)
-    TMParseStateTree	parseTree;
+TMShortCard _XtGetQuarkIndex(stateTree, quark)
+    TMStateTree		stateTree;
     XrmQuark		quark;
 {
 #define TM_QUARK_TBL_ALLOC 	16
 #define TM_QUARK_TBL_REALLOC 	16
-    TMShortCard  i = parseTree->numQuarks;
+    TMShortCard  i = stateTree->parse.numQuarks;
 
-    for (i=0; i < parseTree->numQuarks; i++)
-      if (parseTree->quarkTbl[i] == quark)
+    for (i=0; i < stateTree->parse.numQuarks; i++)
+      if (stateTree->parse.quarkTbl[i] == quark)
 	    break;
 
-    if (i == parseTree->numQuarks)
+    if (i == stateTree->parse.numQuarks)
       {
-	  if (parseTree->numQuarks == parseTree->quarkTblSize)
+	  if (stateTree->parse.numQuarks == stateTree->parse.quarkTblSize)
 	    {
 		TMShortCard	newSize;
 
-		if (parseTree->quarkTblSize == 0)
-		  parseTree->quarkTblSize += TM_QUARK_TBL_ALLOC;
+		if (stateTree->parse.quarkTblSize == 0)
+		  stateTree->parse.quarkTblSize += TM_QUARK_TBL_ALLOC;
 		else
-		  parseTree->quarkTblSize += TM_QUARK_TBL_REALLOC;
-		newSize = (parseTree->quarkTblSize * sizeof(XrmQuark));
+		  stateTree->parse.quarkTblSize += TM_QUARK_TBL_REALLOC;
+		newSize = (stateTree->parse.quarkTblSize * sizeof(XrmQuark));
 
-		if (parseTree->isStackQuarks) {
-		    XrmQuark	*oldquarkTbl = parseTree->quarkTbl;
-		    parseTree->quarkTbl = (XrmQuark *) XtMalloc(newSize);
-		    XtMemmove(parseTree->quarkTbl, oldquarkTbl, newSize);
-		    parseTree->isStackQuarks = False;
+		if (stateTree->parse.isStackQuarks) {
+		    XrmQuark	*oldquarkTbl = stateTree->parse.quarkTbl;
+		    stateTree->parse.quarkTbl = (XrmQuark *) XtMalloc(newSize);
+		    XtMemmove(stateTree->parse.quarkTbl, oldquarkTbl, newSize);
+		    stateTree->parse.isStackQuarks = False;
 		}
 		else {
-		    parseTree->quarkTbl = (XrmQuark *) 
-		      XtRealloc((char *)parseTree->quarkTbl, 
-				(parseTree->quarkTblSize *
+		    stateTree->parse.quarkTbl = (XrmQuark *) 
+		      XtRealloc((char *)stateTree->parse.quarkTbl, 
+				(stateTree->parse.quarkTblSize *
 				 sizeof(XrmQuark)));
 		}
 	    }
-	  parseTree->quarkTbl[parseTree->numQuarks++] = quark;
+	  stateTree->parse.quarkTbl[stateTree->parse.numQuarks++] = quark;
       }
     return i;
 }
@@ -196,41 +196,42 @@ TMShortCard _XtGetQuarkIndex(parseTree, quark)
  * there then allocate one
  */
 /*ARGSUSED*/
-static TMShortCard GetComplexBranchIndex(parseTree, typeIndex, modIndex)
-    TMParseStateTree	parseTree;
+static TMShortCard GetComplexBranchIndex(stateTree, typeIndex, modIndex)
+    TMStateTree		stateTree;
     TMShortCard		typeIndex;
     TMShortCard		modIndex;
 {
 #define TM_COMPLEXBRANCH_HEAD_TBL_ALLOC 8
 #define TM_COMPLEXBRANCH_HEAD_TBL_REALLOC 4
     
-    if (parseTree->numComplexBranchHeads == parseTree->complexBranchHeadTblSize) {
+    if (stateTree->parse.numComplexBranchHeads == 
+	stateTree->parse.complexBranchHeadTblSize) {
 	TMShortCard	newSize;
 	
-	if (parseTree->complexBranchHeadTblSize == 0)
-	  parseTree->complexBranchHeadTblSize += TM_COMPLEXBRANCH_HEAD_TBL_ALLOC;
+	if (stateTree->parse.complexBranchHeadTblSize == 0)
+	  stateTree->parse.complexBranchHeadTblSize += TM_COMPLEXBRANCH_HEAD_TBL_ALLOC;
 	else
-	  parseTree->complexBranchHeadTblSize += TM_COMPLEXBRANCH_HEAD_TBL_REALLOC;
+	  stateTree->parse.complexBranchHeadTblSize += TM_COMPLEXBRANCH_HEAD_TBL_REALLOC;
 	
-	newSize = (parseTree->complexBranchHeadTblSize * sizeof(StatePtr));
+	newSize = (stateTree->parse.complexBranchHeadTblSize * sizeof(StatePtr));
 	
-	if (parseTree->isStackComplexBranchHeads) {
+	if (stateTree->parse.isStackComplexBranchHeads) {
 	    StatePtr *oldcomplexBranchHeadTbl 
-	      = parseTree->complexBranchHeadTbl;
-	    parseTree->complexBranchHeadTbl = (StatePtr *) XtMalloc(newSize);
-	    XtMemmove(parseTree->complexBranchHeadTbl, 
+	      = stateTree->parse.complexBranchHeadTbl;
+	    stateTree->parse.complexBranchHeadTbl = (StatePtr *) XtMalloc(newSize);
+	    XtMemmove(stateTree->parse.complexBranchHeadTbl, 
 		      oldcomplexBranchHeadTbl, newSize);
-	    parseTree->isStackComplexBranchHeads = False;
+	    stateTree->parse.isStackComplexBranchHeads = False;
 	}
 	else {
-	    parseTree->complexBranchHeadTbl = (StatePtr *) 
-	      XtRealloc((char *)parseTree->complexBranchHeadTbl, 
-			(parseTree->complexBranchHeadTblSize *
+	    stateTree->parse.complexBranchHeadTbl = (StatePtr *) 
+	      XtRealloc((char *)stateTree->parse.complexBranchHeadTbl, 
+			(stateTree->parse.complexBranchHeadTblSize *
 			 sizeof(StatePtr)));	
 	}
     }
-    parseTree->complexBranchHeadTbl[parseTree->numComplexBranchHeads++] = NULL;
-    return parseTree->numComplexBranchHeads-1;
+    stateTree->parse.complexBranchHeadTbl[stateTree->parse.numComplexBranchHeads++] = NULL;
+    return stateTree->parse.numComplexBranchHeads-1;
 }
 
 TMShortCard _XtGetTypeIndex(event)
@@ -388,16 +389,16 @@ TMShortCard _XtGetModifierIndex(event)
  * entry to the event coming in
  */
 static int MatchBranchHead(stateTree, startIndex, event) 
-    TMSimpleStateTree 	stateTree;
+    TMStateTree 	stateTree;
     int			startIndex;
     TMEventPtr		event;
 {
-    TMBranchHead branchHead = &stateTree->branchHeadTbl[startIndex];
+    TMBranchHead branchHead = &stateTree->simple.branchHeadTbl[startIndex];
     int i;
 
     LOCK_PROCESS;
     for (i = startIndex;
-	 i < (int)stateTree->numBranchHeads; 
+	 i < (int)stateTree->simple.numBranchHeads; 
 	 i++, branchHead++)
       {
 	  TMTypeMatch 		typeMatch;
@@ -580,7 +581,7 @@ static unsigned long GetTime(tm, event)
 static void HandleActions(w, event, stateTree, accelWidget, procs, actions)
     Widget		w;
     XEvent		*event;
-    TMSimpleStateTree	stateTree;
+    TMStateTree		stateTree;
     Widget		accelWidget;
     XtActionProc	*procs;
     ActionRec		*actions;
@@ -605,7 +606,7 @@ static void HandleActions(w, event, stateTree, accelWidget, procs, actions)
 	    if (actionHookList) {
 		ActionHook hook;
 		String procName =
-		    XrmQuarkToString(stateTree->quarkTbl[actions->idx] );
+		    XrmQuarkToString(stateTree->simple.quarkTbl[actions->idx] );
 	    
 		for (hook = actionHookList; hook != NULL; hook = hook->next) {
 		    (*hook->proc)(bindWidget,
@@ -722,15 +723,15 @@ static void FreeContext(contextPtr)
 }
 
 static int MatchExact(stateTree, startIndex, typeIndex, modIndex) 
-    TMSimpleStateTree 	stateTree;
+    TMStateTree 	stateTree;
     int			startIndex;
     TMShortCard		typeIndex, modIndex;
 {
-    TMBranchHead branchHead = &(stateTree->branchHeadTbl[startIndex]);
+    TMBranchHead branchHead = &(stateTree->simple.branchHeadTbl[startIndex]);
     int i;
 
     for (i = startIndex;
-	 i < (int)stateTree->numBranchHeads; 
+	 i < (int)stateTree->simple.numBranchHeads; 
 	 i++, branchHead++)
       {
 	  if ((branchHead->typeIndex == typeIndex) &&
@@ -748,7 +749,7 @@ static void HandleSimpleState(w, tmRecPtr, curEventPtr)
     TMEventRec	*curEventPtr;
 {  
     XtTranslations	xlations = tmRecPtr->translations;
-    TMSimpleStateTree	stateTree;
+    TMStateTree		stateTree;
     TMContext		*contextPtr = GetContextPtr(tmRecPtr);
     TMShortCard		i;
     ActionRec		*actions;
@@ -760,18 +761,18 @@ static void HandleSimpleState(w, tmRecPtr, curEventPtr)
     int			matchTreeIndex = TM_NO_MATCH;
     
     LOCK_PROCESS;
-    stateTree = (TMSimpleStateTree)xlations->stateTreeTbl[0];
+    stateTree = xlations->stateTreeTbl[0];
     
     for (i = 0; 
 	 ((!match || !complexMatchState) && (i < xlations->numStateTrees));
 	 i++){
-	stateTree = (TMSimpleStateTree)xlations->stateTreeTbl[i];
+	stateTree = xlations->stateTreeTbl[i];
 	currIndex = -1;
 	/*
 	 * don't process this tree if we're only looking for a
 	 * complexMatchState and there are no complex states
 	 */
-	while (!(match && stateTree->isSimple) &&
+	while (!(match && stateTree->simple.isSimple) &&
 	       ((!match || !complexMatchState) && (currIndex != TM_NO_MATCH))) {
 	    currIndex++;
 	    if (matchExact)
@@ -782,12 +783,11 @@ static void HandleSimpleState(w, tmRecPtr, curEventPtr)
 		TMBranchHead branchHead;
 		StatePtr currState;
 		
-		branchHead = &stateTree->branchHeadTbl[currIndex];
+		branchHead = &stateTree->simple.branchHeadTbl[currIndex];
 		if (branchHead->isSimple)
 		  currState = NULL;
 		else
-		  currState = ((TMComplexStateTree)stateTree)
-		    ->complexBranchHeadTbl[TMBranchMore(branchHead)];
+		  currState = stateTree->complex.complexBranchHeadTbl[TMBranchMore(branchHead)];
 		
 		/*
 		 * first check for a complete match
@@ -852,7 +852,7 @@ static void HandleSimpleState(w, tmRecPtr, curEventPtr)
 	  HandleActions
 	    (w, 
 	     curEventPtr->xev, 
-	     (TMSimpleStateTree)xlations->stateTreeTbl[matchTreeIndex],
+	     xlations->stateTreeTbl[matchTreeIndex],
 	     accelWidget,
 	     procs,
 	     actions);
@@ -863,7 +863,7 @@ static void HandleSimpleState(w, tmRecPtr, curEventPtr)
 }
 
 static int MatchComplexBranch(stateTree, startIndex, context, leafStateRtn)
-    TMComplexStateTree	stateTree;
+    TMStateTree		stateTree;
     int			startIndex;
     TMContext		context;
     StatePtr		*leafStateRtn;
@@ -871,13 +871,13 @@ static int MatchComplexBranch(stateTree, startIndex, context, leafStateRtn)
     TMShortCard	i;
 
     LOCK_PROCESS;
-    for (i = startIndex; i < stateTree->numComplexBranchHeads; i++)
+    for (i = startIndex; i < stateTree->complex.numComplexBranchHeads; i++)
       {
 	  StatePtr	candState;
 	  TMShortCard	numMatches = context->numMatches;
 	  MatchPair	statMatch = context->matches;
 
-	  for (candState = stateTree->complexBranchHeadTbl[i];
+	  for (candState = stateTree->complex.complexBranchHeadTbl[i];
 	       numMatches && candState;
 	       numMatches--, statMatch++, candState = candState->nextLevel)
 	    {
@@ -896,8 +896,8 @@ static int MatchComplexBranch(stateTree, startIndex, context, leafStateRtn)
     return (TM_NO_MATCH);
 }
 
-static StatePtr TryCurrentTree(stateTreePtr, tmRecPtr, curEventPtr)
-    TMComplexStateTree	*stateTreePtr;
+static StatePtr TryCurrentTree(stateTree, tmRecPtr, curEventPtr)
+    TMStateTree		stateTree;
     XtTM		tmRecPtr;
     TMEventRec		*curEventPtr;
 {
@@ -913,7 +913,7 @@ static StatePtr TryCurrentTree(stateTreePtr, tmRecPtr, curEventPtr)
      */
     LOCK_PROCESS;
     while ((currIndex = 
-	    MatchComplexBranch(*stateTreePtr,
+	    MatchComplexBranch(stateTree,
 			       ++currIndex,
 			       (*contextPtr),
 			       &candState))
@@ -979,19 +979,17 @@ static void HandleComplexState(w, tmRecPtr, curEventPtr)
     TMContext		*contextPtr = GetContextPtr(tmRecPtr);
     TMShortCard		i, matchTreeIndex;
     StatePtr		matchState = NULL, candState;
-    TMComplexStateTree 	*stateTreePtr = 
-      (TMComplexStateTree *)&xlations->stateTreeTbl[0];
+    TMStateTree 	stateTree;
 
     LOCK_PROCESS;
-    for (i = 0;
-	 i < xlations->numStateTrees;
-	 i++, stateTreePtr++) {
+    for (i = 0; i < xlations->numStateTrees; i++) {
+	stateTree = xlations->stateTreeTbl[i];
 	/* 
 	 * some compilers sign extend Boolean bit fields so test for
 	 * false |||
 	 */
-	if (((*stateTreePtr)->isSimple == False) &&
-	    (candState = TryCurrentTree(stateTreePtr,
+	if ((stateTree->simple.isSimple == False) &&
+	    (candState = TryCurrentTree(stateTree,
 				       tmRecPtr,
 				       curEventPtr))) {
 	    if (!matchState || candState->actions) {
@@ -1039,7 +1037,6 @@ static void HandleComplexState(w, tmRecPtr, curEventPtr)
 	}
 	HandleActions(w, 
 		      curEventPtr->xev, 
-		      (TMSimpleStateTree)
 		      xlations->stateTreeTbl[matchTreeIndex],
 		      accelWidget,
 		      procs,
@@ -1074,8 +1071,7 @@ void _XtTranslateEvent (w, event)
 
 
 /*ARGSUSED*/
-static StatePtr NewState(stateTree, typeIndex, modIndex)
-    TMParseStateTree stateTree;
+static StatePtr NewState(typeIndex, modIndex)
     TMShortCard	typeIndex, modIndex;
 {
     StatePtr state = XtNew(StateRec);
@@ -1102,7 +1098,7 @@ void _XtTraverseStateTree(tree, func, data)
     _XtTraversalProc func;
     XtPointer 	data;
 {
-    TMComplexStateTree stateTree = (TMComplexStateTree)tree;
+    TMStateTree 	stateTree = tree;
     TMBranchHead	currBH;
     TMShortCard		i;
     StateRec		dummyStateRec, *dummyState = &dummyStateRec;
@@ -1111,9 +1107,9 @@ void _XtTraverseStateTree(tree, func, data)
     StatePtr 		currState;
 
     /* first traverse the complex states */
-    if (stateTree->isSimple == False)
-      for (i = 0; i < stateTree->numComplexBranchHeads; i++) {
-	  currState = stateTree->complexBranchHeadTbl[i];
+    if (stateTree->complex.isSimple == False)
+      for (i = 0; i < stateTree->complex.numComplexBranchHeads; i++) {
+	  currState = stateTree->complex.complexBranchHeadTbl[i];
 	  for (; currState; currState = currState->nextLevel) {
 	      if (func(currState, data))
 		return;
@@ -1123,8 +1119,8 @@ void _XtTraverseStateTree(tree, func, data)
       }
 
     /* now traverse the simple ones */
-    for (i = 0, currBH = stateTree->branchHeadTbl;
-	 i < stateTree->numBranchHeads;
+    for (i = 0, currBH = stateTree->complex.branchHeadTbl;
+	 i < stateTree->complex.numBranchHeads;
 	 i++, currBH++)
       {
 	  if (currBH->isSimple && currBH->hasActions)
@@ -1295,20 +1291,18 @@ void _XtInstallTranslations(widget)
 void _XtRemoveTranslations(widget)
     Widget widget;
 {
-    Cardinal	i;
-    TMSimpleStateTree	stateTree;
+    Cardinal		i;
+    TMStateTree		stateTree;
     Boolean  		mappingNotifyInterest = False;
     XtTranslations		xlations = widget->core.tm.translations;
     
     if (xlations == NULL) 
       return;
 
-    for (i = 0;
-	 i < xlations->numStateTrees;
-	 i++)
+    for (i = 0; i < xlations->numStateTrees; i++)
       {
-	  stateTree = (TMSimpleStateTree)xlations->stateTreeTbl[i];
-	  mappingNotifyInterest |= stateTree->mappingNotifyInterest;
+	  stateTree = xlations->stateTreeTbl[i];
+	  mappingNotifyInterest |= stateTree->simple.mappingNotifyInterest;
       }
     if (mappingNotifyInterest)
       RemoveFromMappingCallbacks(widget, (XtPointer)widget, NULL);
@@ -1384,13 +1378,13 @@ void XtUninstallTranslations(widget)
 
 #if NeedFunctionPrototypes
 XtTranslations _XtCreateXlations(
-    TMStateTree		*stateTrees,
+    TMStateTreeList	stateTrees,
     TMShortCard		numStateTrees,
     XtTranslations	first,
     XtTranslations	second)
 #else
 XtTranslations _XtCreateXlations(stateTrees, numStateTrees, first, second)
-    TMStateTree		*stateTrees;
+    TMStateTreeList	stateTrees;
     TMShortCard		numStateTrees;
     XtTranslations	first, second;
 #endif
@@ -1429,45 +1423,44 @@ XtTranslations _XtCreateXlations(stateTrees, numStateTrees, first, second)
 }
 
 TMStateTree _XtParseTreeToStateTree(parseTree)
-    TMParseStateTree	parseTree;
+    TMStateTree		parseTree;
 {
-    TMSimpleStateTree  simpleTree;
+    TMStateTree  	simpleTree;
     unsigned int	tableSize;
 
-    if (parseTree->numComplexBranchHeads) {
-	TMComplexStateTree complexTree;
+    if (parseTree->parse.numComplexBranchHeads) {
+	TMStateTree	complexTree;
 
-	complexTree = XtNew(TMComplexStateTreeRec);
-	complexTree->isSimple = False;
-	tableSize = parseTree->numComplexBranchHeads * sizeof(StatePtr); 
-	complexTree->complexBranchHeadTbl = (StatePtr *)
+	complexTree = (TMStateTree) XtNew(TMComplexStateTreeRec);
+	complexTree->complex.isSimple = False;
+	tableSize = parseTree->complex.numComplexBranchHeads * sizeof(StatePtr); 
+	complexTree->complex.complexBranchHeadTbl = (StatePtr *)
 	  XtMalloc(tableSize);
-	XtMemmove(complexTree->complexBranchHeadTbl,
-		  parseTree->complexBranchHeadTbl, tableSize);
-	complexTree->numComplexBranchHeads = 
-	  parseTree->numComplexBranchHeads;
-	simpleTree = (TMSimpleStateTree)complexTree;
+	XtMemmove(complexTree->complex.complexBranchHeadTbl,
+		  parseTree->parse.complexBranchHeadTbl, tableSize);
+	complexTree->complex.numComplexBranchHeads = 
+	  parseTree->parse.numComplexBranchHeads;
+	simpleTree = complexTree;
     }
     else {
-	simpleTree = XtNew(TMSimpleStateTreeRec);
-	simpleTree->isSimple = True;
+	simpleTree = (TMStateTree) XtNew(TMSimpleStateTreeRec);
+	simpleTree->simple.isSimple = True;
     }
-    simpleTree->isAccelerator = parseTree->isAccelerator;
-    simpleTree->refCount = 0;
-    simpleTree->mappingNotifyInterest = parseTree->mappingNotifyInterest;
+    simpleTree->simple.isAccelerator = parseTree->parse.isAccelerator;
+    simpleTree->simple.refCount = 0;
+    simpleTree->simple.mappingNotifyInterest = parseTree->parse.mappingNotifyInterest;
 
-    tableSize = parseTree->numBranchHeads * sizeof(TMBranchHeadRec);
-    simpleTree->branchHeadTbl = (TMBranchHead)
-      XtMalloc(tableSize);
-    XtMemmove(simpleTree->branchHeadTbl, parseTree->branchHeadTbl, tableSize);
-    simpleTree->numBranchHeads = parseTree->numBranchHeads;
+    tableSize = parseTree->parse.numBranchHeads * sizeof(TMBranchHeadRec);
+    simpleTree->simple.branchHeadTbl = (TMBranchHead) XtMalloc(tableSize);
+    XtMemmove(simpleTree->simple.branchHeadTbl, parseTree->parse.branchHeadTbl, tableSize);
+    simpleTree->simple.numBranchHeads = parseTree->parse.numBranchHeads;
 
-    tableSize = parseTree->numQuarks * sizeof(XrmQuark);
-    simpleTree->quarkTbl = (XrmQuark *) XtMalloc(tableSize);
-    XtMemmove(simpleTree->quarkTbl, parseTree->quarkTbl, tableSize);
-    simpleTree->numQuarks = parseTree->numQuarks;
+    tableSize = parseTree->parse.numQuarks * sizeof(XrmQuark);
+    simpleTree->simple.quarkTbl = (XrmQuark *) XtMalloc(tableSize);
+    XtMemmove(simpleTree->simple.quarkTbl, parseTree->parse.quarkTbl, tableSize);
+    simpleTree->simple.numQuarks = parseTree->parse.numQuarks;
 
-    return (TMStateTree)simpleTree;
+    return simpleTree;
 }
 
 static void FreeActions(actions)
@@ -1490,21 +1483,21 @@ static void FreeActions(actions)
 static void AmbigActions(initialEvent, state, stateTree)
     EventSeqPtr	initialEvent;
     StatePtr	*state;
-    TMParseStateTree stateTree;
+    TMStateTree stateTree;
 {
     String 	params[3];
     Cardinal 	numParams = 0;
 
     params[numParams++] = _XtPrintEventSeq(initialEvent, NULL);
     params[numParams++] = _XtPrintActions((*state)->actions,
-					  stateTree->quarkTbl);
+					  stateTree->parse.quarkTbl);
     XtWarningMsg (XtNtranslationError,"oldActions",XtCXtToolkitError,
 		  "Previous entry was: %s %s", params, &numParams);
     XtFree((char *)params[0]);
     XtFree((char *)params[1]);
     numParams = 0;
     params[numParams++]  = _XtPrintActions(initialEvent->actions,
-					   stateTree->quarkTbl);
+					   stateTree->parse.quarkTbl);
     XtWarningMsg (XtNtranslationError,"newActions",XtCXtToolkitError,
 		  "New actions are:%s", params, &numParams);
     XtFree((char *)params[0]);
@@ -1520,7 +1513,7 @@ static void AmbigActions(initialEvent, state, stateTree)
 
 void _XtAddEventSeqToStateTree(eventSeq, stateTree)
     EventSeqPtr 	eventSeq;
-    TMParseStateTree	stateTree;
+    TMStateTree		stateTree;
 {
     StatePtr		*state;
     EventSeqPtr		initialEvent = eventSeq;
@@ -1539,7 +1532,7 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
     typeIndex = _XtGetTypeIndex(&eventSeq->event);
     modIndex = _XtGetModifierIndex(&eventSeq->event);
     idx = GetBranchHead(stateTree, typeIndex, modIndex, False);
-    branchHead = &stateTree->branchHeadTbl[idx];
+    branchHead = &stateTree->parse.branchHeadTbl[idx];
 
     /*
      * Need to check for pre-existing actions with same lhs |||
@@ -1554,7 +1547,7 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
 	!eventSeq->actions->num_params)
       {
 	  if (eventSeq->event.eventType == MappingNotify)
-	    stateTree->mappingNotifyInterest = True;
+	    stateTree->parse.mappingNotifyInterest = True;
 	  branchHead->hasActions = True;
 	  branchHead->more = eventSeq->actions->idx;
 	  FreeActions(eventSeq->actions);
@@ -1566,13 +1559,13 @@ void _XtAddEventSeqToStateTree(eventSeq, stateTree)
     if (!eventSeq->next)
       branchHead->hasActions = True;
     branchHead->more = GetComplexBranchIndex(stateTree, typeIndex, modIndex);
-    state = &stateTree->complexBranchHeadTbl[TMBranchMore(branchHead)];
+    state = &stateTree->parse.complexBranchHeadTbl[TMBranchMore(branchHead)];
     
     for (;;) {
-	*state = NewState(stateTree, typeIndex, modIndex);
+	*state = NewState(typeIndex, modIndex);
 	
 	if (eventSeq->event.eventType == MappingNotify)
-	    stateTree->mappingNotifyInterest = True;
+	    stateTree->parse.mappingNotifyInterest = True;
 	
 	/* *state now points at state record matching event */
 	eventSeq->state = *state;
@@ -1628,7 +1621,7 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
     XtPointer	*closure_ret;
 {
     XtTranslations 	first, second, xlations;
-    TMStateTree		*stateTrees, stackStateTrees[16];
+    TMStateTreeList	stateTrees, stackStateTrees[16];
     TMShortCard		numStateTrees, i;
 
     if (*num_args != 0)
@@ -1646,7 +1639,7 @@ Boolean _XtCvtMergeTranslations(dpy, args, num_args, from, to, closure_ret)
 
     numStateTrees = first->numStateTrees + second->numStateTrees;
 
-    stateTrees = (TMStateTree *)
+    stateTrees = (TMStateTreeList)
       XtStackAlloc(numStateTrees * sizeof(TMStateTree), stackStateTrees);
 
     for (i = 0; i < first->numStateTrees; i++)
@@ -1794,7 +1787,7 @@ static XtTranslations MergeTranslations(widget, oldXlations, newXlations,
     XtTranslations      newTable, xlations;
     TMComplexBindProcs	bindings;
     TMShortCard		i, j;
-    TMStateTree 	*treePtr;
+    TMStateTree 	stateTree;
     TMShortCard		numNew = *numNewRtn;
     MergeBindRec	bindPair[2];
 
@@ -1851,9 +1844,10 @@ static XtTranslations MergeTranslations(widget, oldXlations, newXlations,
 	  }
     }
     *numNewRtn = numNew;
-    treePtr = &newTable->stateTreeTbl[0];
-    for (i = 0; i < newTable->numStateTrees; i++, treePtr++)
-      (*treePtr)->simple.refCount++;
+    for (i = 0; i < newTable->numStateTrees; i++) {
+	stateTree = newTable->stateTreeTbl[i];
+	stateTree->simple.refCount++;
+    }
     return newTable;
 }
 
@@ -2133,7 +2127,7 @@ void _XtRemoveStateTreeByIndex(xlations, i)
     XtTranslations	xlations;
     TMShortCard	i;
 {
-    TMStateTree		*stateTrees = xlations->stateTreeTbl;
+    TMStateTreeList	stateTrees = xlations->stateTreeTbl;
 
     RemoveStateTree(stateTrees[i]);
     xlations->numStateTrees--;

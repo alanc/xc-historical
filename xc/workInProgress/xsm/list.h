@@ -1,4 +1,4 @@
-/* $XConsortium: list.h,v 1.5 94/12/12 21:31:12 mor Exp mor $ */
+/* $XConsortium: list.h,v 1.6 94/12/16 17:27:47 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

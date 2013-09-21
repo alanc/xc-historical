@@ -1,4 +1,4 @@
-/* $XConsortium: objects.h,v 1.7 94/02/03 19:45:58 gildea Exp $ */
+/* $XConsortium: objects.h,v 1.8 94/03/22 19:08:58 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991

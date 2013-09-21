@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSrc.h,v 1.14 94/01/31 10:48:04 kaleb Exp $ */
+/* $XConsortium: AsciiSrc.h,v 1.15 94/04/17 20:11:46 kaleb Exp $ */
 
 /*
 

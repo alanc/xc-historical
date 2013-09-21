@@ -1,4 +1,4 @@
-/* $XConsortium: pexInfo.c,v 5.5 94/04/17 20:36:08 hersh Exp hersh $ */
+/* $XConsortium: pexInfo.c,v 5.6 94/09/09 20:32:50 hersh Exp $ */
 
 /***********************************************************
 

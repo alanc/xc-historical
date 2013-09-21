@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: crtgc.m,v 1.14 92/06/11 16:15:35 rws Exp $
+ * $XConsortium: crtgc.m,v 1.15 94/04/17 21:03:52 rws Exp $
  */
 >>TITLE XCreateGC CH05
 GC

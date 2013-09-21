@@ -1,4 +1,4 @@
-/* $XConsortium: useropt.h,v 1.3 94/04/13 17:09:34 gildea Exp $ */
+/* $XConsortium: useropt.h,v 1.4 94/04/17 20:17:52 gildea Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

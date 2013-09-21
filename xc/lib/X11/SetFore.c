@@ -1,4 +1,4 @@
-/* $XConsortium: SetFore.c,v 11.9 91/01/06 11:48:00 rws Exp $ */
+/* $XConsortium: SetFore.c,v 11.10 94/04/17 20:20:56 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

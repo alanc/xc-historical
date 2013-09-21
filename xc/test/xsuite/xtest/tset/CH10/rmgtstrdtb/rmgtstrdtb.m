@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rmgtstrdtb.m,v 1.5 92/06/11 17:39:49 rws Exp $
+ * $XConsortium: rmgtstrdtb.m,v 1.6 94/04/17 21:10:06 rws Exp $
  */
 >>TITLE XrmGetStringDatabase CH10
 XrmDatabase

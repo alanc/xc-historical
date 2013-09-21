@@ -1,4 +1,4 @@
-.\" $XConsortium: design.ms,v 1.5 93/02/04 18:37:03 gildea Exp $
+.\" $XConsortium: design.ms,v 1.6 94/04/17 20:06:15 gildea Exp $
 .\" roff -ms
 .de Ip
 .IP \(bu 3

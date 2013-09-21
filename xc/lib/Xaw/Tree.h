@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tree.h,v 1.12 94/01/31 10:50:43 kaleb Exp $
+ * $XConsortium: Tree.h,v 1.13 94/04/17 20:13:22 kaleb Exp $
  *
 
 Copyright (c) 1990, 1994  X Consortium

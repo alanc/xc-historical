@@ -1,4 +1,4 @@
-/* $XConsortium: ObjectP.h,v 1.13 94/03/31 15:32:12 converse Exp $ */
+/* $XConsortium: ObjectP.h,v 1.14 94/04/17 20:14:32 converse Exp $ */
 
 /***********************************************************
 

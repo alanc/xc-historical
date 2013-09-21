@@ -1,4 +1,4 @@
-/* $XConsortium: SetDashes.c,v 11.12 91/01/06 11:47:57 rws Exp $ */
+/* $XConsortium: SetDashes.c,v 11.13 94/04/17 20:20:54 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

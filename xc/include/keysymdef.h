@@ -1,4 +1,4 @@
-/* $XConsortium: keysymdef.h,v 1.20 94/04/17 18:57:37 rws Exp rws $ */
+/* $XConsortium: keysymdef.h,v 1.21 94/08/28 16:17:06 rws Exp $ */
 
 /***********************************************************
 Copyright (c) 1987, 1994  X Consortium

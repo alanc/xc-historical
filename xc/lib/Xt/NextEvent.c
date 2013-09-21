@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 1.148 95/06/16 19:25:22 kaleb Exp kaleb $ */
+/* $XConsortium: NextEvent.c,v 1.149 95/06/26 20:39:12 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

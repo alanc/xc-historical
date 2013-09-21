@@ -1,4 +1,4 @@
-/* $XConsortium: xkbInit.c,v 1.7 94/05/11 18:32:14 kaleb Exp $ */
+/* $XConsortium: xkbInit.c,v 1.8 94/05/16 10:49:53 dpw Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

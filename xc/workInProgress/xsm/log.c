@@ -1,4 +1,4 @@
-/* $XConsortium: log.c,v 1.3 94/12/27 17:44:30 mor Exp mor $ */
+/* $XConsortium: log.c,v 1.4 95/01/26 19:38:24 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium

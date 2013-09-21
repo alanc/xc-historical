@@ -75,7 +75,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.23 94/02/23 15:51:16 dpw Exp $ */
+/* $XConsortium: cfbfillsp.c,v 5.24 94/04/17 20:28:48 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

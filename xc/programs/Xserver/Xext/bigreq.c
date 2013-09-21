@@ -1,4 +1,4 @@
-/* $XConsortium: bigreq.c,v 1.3 92/11/07 16:57:09 rws Exp $ */
+/* $XConsortium: bigreq.c,v 1.4 94/04/17 20:32:51 rws Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: bsd_VTsw.c,v 1.1 94/03/28 21:27:54 dpw Exp kaleb $ */
+/* $XConsortium: bsd_VTsw.c,v 1.2 95/01/16 13:17:56 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_VTsw.c,v 3.1 1995/01/10 11:14:09 dawes Exp $ */
 /*
  * Derived from VTsw_usl.c which is

@@ -1,4 +1,4 @@
-/* $XConsortium: imDefLkup.c,v 1.13 95/02/24 22:53:53 kaleb Exp kaleb $ */
+/* $XConsortium: imDefLkup.c,v 1.14 95/06/07 22:41:51 kaleb Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED

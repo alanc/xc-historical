@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbsolid.c,v 1.3 94/01/11 20:43:09 rob Exp $
+ * $XConsortium: cfbsolid.c,v 1.4 94/04/17 21:16:26 rob Exp $
  *
 Copyright (c) 1990  X Consortium
 

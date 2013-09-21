@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chckmskevn.m,v 1.8 92/06/11 17:18:40 rws Exp $
+ * $XConsortium: chckmskevn.m,v 1.9 94/04/17 21:07:13 rws Exp $
  */
 >>TITLE XCheckMaskEvent CH08
 Bool

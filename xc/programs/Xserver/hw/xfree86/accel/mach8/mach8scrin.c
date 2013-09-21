@@ -1,4 +1,4 @@
-/* $XConsortium: mach8scrin.c,v 1.3 95/01/06 20:57:10 kaleb Exp kaleb $ */
+/* $XConsortium: mach8scrin.c,v 1.4 95/01/16 20:07:03 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8scrin.c,v 3.1 1994/12/10 03:00:30 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: devcntl.c,v 1.8 94/01/29 15:07:48 rws Exp $
+ * $XConsortium: devcntl.c,v 1.9 94/04/17 21:00:42 rws Exp $
  */
 
 #include	"xtest.h"

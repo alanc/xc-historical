@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: kllclnt.m,v 1.4 92/06/11 17:53:10 rws Exp $
+ * $XConsortium: kllclnt.m,v 1.5 94/04/17 21:11:45 rws Exp $
  */
 >>TITLE KillClient XPROTO
 >>SET startup protostartup

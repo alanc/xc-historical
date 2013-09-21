@@ -1,4 +1,4 @@
-/* $XConsortium: cache.h,v 1.5 94/12/01 20:52:35 mor Exp $ */
+/* $XConsortium: cache.h,v 1.6 95/05/17 18:23:24 dpw Exp $ */
 /*
 
 Copyright (c) 1994  X Consortium

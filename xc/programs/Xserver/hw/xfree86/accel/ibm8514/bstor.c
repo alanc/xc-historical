@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514bsto.c,v 1.1 94/03/28 21:03:20 dpw Exp $ */
+/* $XConsortium: bstor.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
 /*-
  * ibm8514bstore.c --
  *	Functions required by the backing-store implementation in MI.

@@ -1,4 +1,4 @@
-/* $XConsortium: lex.l,v 1.7 93/07/29 14:12:08 rws Exp $ */
+/* $XConsortium: lex.l,v 1.8 94/03/31 20:40:44 rws Exp $ */
 /*
 ** lex file for xgc syntax
 */

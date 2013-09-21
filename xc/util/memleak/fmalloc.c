@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fmalloc.c,v 1.5 93/12/03 09:29:04 kaleb Exp $
+ * $XConsortium: fmalloc.c,v 1.6 94/04/17 20:59:43 kaleb Exp $
  *
 Copyright (c) 1992  X Consortium
 

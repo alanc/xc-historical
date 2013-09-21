@@ -1,13 +1,17 @@
-XCOMM platform:  $XConsortium: linux.cf,v 1.10 95/01/16 18:31:04 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: linux.cf,v 1.11 95/01/23 18:32:03 kaleb Exp kaleb $
 
 #define OSName			Linux
-#define OSVendor		/**/
+#define OSVendor		Slackware 2.3.0 ELF
 #define OSMajorVersion		1
-#define OSMinorVersion		0
-#define OSTeenyVersion		0
+#define OSMinorVersion		2
+#define OSTeenyVersion		11
 
 #ifndef UseElfFormat
+#if OSMinorVersion > 1
+#define UseElfFormat		YES
+#else
 #define UseElfFormat		NO
+#endif
 #endif
 #define HasGcc			YES
 #define HasGcc2			YES
@@ -34,15 +38,26 @@ XCOMM platform:  $XConsortium: linux.cf,v 1.10 95/01/16 18:31:04 kaleb Exp kaleb
 #define NeedWidePrototypes	NO
 
 #if UseElfFormat
+#if OSMinorVersion > 1
+#define CcCmd			gcc
+#define AsCmd			as
+#define LdCmd			ld
+#else
 #define CcCmd			gcc -b i486-linuxelf
 #define AsCmd			/usr/i486-linuxelf/bin/as
 #define LdCmd			ld -m elf_i386
+#endif
 #define AsmDefines		-D__ELF__
 #define CplusplusCmd		g++ -b i486-linuxelf
 #else
 #define CcCmd			gcc
+#if OSMinorVersion < 2
 #define AsCmd			as
 #define LdCmd			ld
+#else
+#define AsCmd			/usr/i486-linuxaout/bin/as
+#define LdCmd			ld -m i386linux
+#endif
 #define AsmDefines		-DUSE_GAS
 #endif
 #define CppCmd			/lib/cpp

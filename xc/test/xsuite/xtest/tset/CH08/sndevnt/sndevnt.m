@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: sndevnt.m,v 1.20 93/12/24 11:51:42 rws Exp $
+ * $XConsortium: sndevnt.m,v 1.21 94/04/17 21:08:15 rws Exp $
  */
 >>TITLE XSendEvent CH08
 Status

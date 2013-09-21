@@ -1,4 +1,4 @@
-/* $XConsortium: difsfn.h,v 1.5 94/04/12 21:59:22 dpw Exp $ */
+/* $XConsortium: difsfn.h,v 1.6 94/04/17 19:55:56 dpw Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 

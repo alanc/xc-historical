@@ -2,7 +2,7 @@
  * fsinfo -- report info about a font server
  */
 
-/* $XConsortium: fsinfo.c,v 1.5 94/04/17 20:24:18 dpw Exp mor $ */
+/* $XConsortium: fsinfo.c,v 1.6 95/04/06 19:50:32 mor Exp $ */
 /*
 
 Portions Copyright (c) 1987  X Consortium

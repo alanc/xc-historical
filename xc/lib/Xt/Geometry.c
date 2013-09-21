@@ -1,4 +1,4 @@
-/* $XConsortium: Geometry.c,v 1.62 94/04/13 19:29:12 kaleb Exp $ */
+/* $XConsortium: Geometry.c,v 1.63 94/04/17 20:14:07 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

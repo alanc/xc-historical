@@ -1,6 +1,6 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
-.\" $XConsortium: ctlseqs.ms,v 1.15 94/07/21 16:37:12 gildea Exp gildea $
+.\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
 .\"
 .\" Copyright 1991, 1994 X Consortium
 .\"

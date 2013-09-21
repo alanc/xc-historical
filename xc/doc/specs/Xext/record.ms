@@ -1,4 +1,4 @@
-.\" $XConsortium: record.ms,v 1.3 94/04/11 23:05:57 rws Exp $
+.\" $XConsortium: record.ms,v 1.4 94/04/17 20:06:11 rws Exp $
 .\" Use tbl, -ms and macros.t
 .\" -----------------------------------------------
 .de Ip

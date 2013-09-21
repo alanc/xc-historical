@@ -1,4 +1,4 @@
-/* $XConsortium: bitmap.h,v 1.4 93/09/17 18:27:03 gildea Exp $ */
+/* $XConsortium: bitmap.h,v 1.5 94/04/17 20:17:27 gildea Exp $ */
 
 /*
 

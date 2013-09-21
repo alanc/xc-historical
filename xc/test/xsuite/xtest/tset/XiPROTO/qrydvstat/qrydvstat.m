@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: qrydvstat.m,v 1.4 94/01/30 11:53:30 rws Exp $
+ * $XConsortium: qrydvstat.m,v 1.5 94/04/17 21:13:45 rws Exp $
  */
 >>TITLE QueryDeviceState XIPROTO
 >>SET startup protostartup

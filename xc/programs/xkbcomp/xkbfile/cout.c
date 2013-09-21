@@ -1,4 +1,4 @@
-/* $XConsortium: cout.c,v 1.2 94/04/04 15:28:12 rws Exp $ */
+/* $XConsortium: cout.c,v 1.1 94/04/08 15:46:53 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

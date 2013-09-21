@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsfonts.c,v 1.33 93/08/20 15:46:29 rws Exp $
+ * $XConsortium: xlsfonts.c,v 1.34 94/04/17 20:24:37 rws Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: daemon.c,v 1.15 94/11/21 18:33:11 kaleb Exp kaleb $ */
+/* $XConsortium: daemon.c,v 1.16 94/12/01 17:10:49 kaleb Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

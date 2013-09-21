@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: grbdvky.m,v 1.4 94/01/30 11:52:59 rws Exp $
+ * $XConsortium: grbdvky.m,v 1.5 94/04/17 21:13:20 rws Exp $
  */
 >>TITLE GrabDeviceKey XIPROTO
 >>SET startup protostartup

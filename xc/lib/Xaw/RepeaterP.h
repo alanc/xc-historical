@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RepeaterP.h,v 1.3 90/03/02 15:47:00 jim Exp $
+ * $XConsortium: RepeaterP.h,v 1.4 94/04/17 20:12:39 jim Exp $
  *
 Copyright (c) 1989  X Consortium
 

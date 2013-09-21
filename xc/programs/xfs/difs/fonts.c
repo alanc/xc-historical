@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.c,v 1.25 94/04/17 19:56:15 gildea Exp $ */
+/* $XConsortium: fonts.c,v 1.27 95/05/19 19:14:19 dpw Exp $ */
 /*
  * font control
  */

@@ -1,4 +1,4 @@
-/* $XConsortium: bufio.h,v 1.3 94/04/13 17:06:42 gildea Exp $ */
+/* $XConsortium: bufio.h,v 1.4 94/04/17 20:17:27 gildea Exp $ */
 
 /*
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: strnm.m,v 1.7 92/06/11 17:30:38 rws Exp $
+ * $XConsortium: strnm.m,v 1.8 94/04/17 21:08:58 rws Exp $
  */
 >>TITLE XStoreName CH09
 void

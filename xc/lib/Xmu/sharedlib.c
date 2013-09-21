@@ -1,4 +1,4 @@
-/* $XConsortium: sharedlib.c,v 1.8 94/04/17 20:16:27 rws Exp gildea $ */
+/* $XConsortium: sharedlib.c,v 1.9 95/06/08 23:20:39 gildea Exp $ */
 
 /*
 

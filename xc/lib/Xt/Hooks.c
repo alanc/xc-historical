@@ -1,4 +1,4 @@
-/* $XConsortium: Hooks.c,v 1.7 94/04/12 16:44:56 kaleb Exp $ */
+/* $XConsortium: Hooks.c,v 1.8 94/04/17 20:14:10 kaleb Exp $ */
 
 /*
 

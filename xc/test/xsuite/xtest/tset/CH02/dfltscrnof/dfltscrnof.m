@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: dfltscrnof.m,v 1.4 92/06/11 15:57:34 rws Exp $
+ * $XConsortium: dfltscrnof.m,v 1.5 94/04/17 21:02:13 rws Exp $
  */
 >>SET   macro
 >>TITLE XDefaultScreenOfDisplay CH02

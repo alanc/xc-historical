@@ -1,4 +1,4 @@
-/* $XConsortium: genauth.c,v 1.22 94/11/21 19:58:57 kaleb Exp gildea $ */
+/* $XConsortium: genauth.c,v 1.23 95/07/10 21:18:07 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

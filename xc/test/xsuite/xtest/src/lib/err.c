@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: err.c,v 1.12 94/01/29 15:01:01 rws Exp $
+ * $XConsortium: err.c,v 1.13 94/04/17 21:00:44 rws Exp $
  */
 
 #include	<unistd.h>

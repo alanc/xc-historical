@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: wrtbtmpfl.m,v 1.8 93/02/23 16:26:01 rws Exp $
+ * $XConsortium: wrtbtmpfl.m,v 1.9 94/04/17 21:10:40 rws Exp $
  */
 >>TITLE XWriteBitmapFile CH10
 int

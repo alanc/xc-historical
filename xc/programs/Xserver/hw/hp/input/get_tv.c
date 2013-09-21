@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: get_tv.c,v 1.1 93/08/08 12:58:41 rws Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-/* $XConsortium: MultiSink.h,v 1.1 94/01/31 09:51:33 kaleb Exp $ */
+/* $XConsortium: MultiSink.h,v 1.2 94/04/17 20:12:23 kaleb Exp $ */
 
 /*
  * Copyright 1991 by OMRON Corporation

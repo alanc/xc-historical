@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyFillRct.c,v 1.4 94/01/07 09:51:37 dpw Exp $
+ * $XConsortium: skyFillRct.c,v 1.5 94/04/17 20:29:21 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *

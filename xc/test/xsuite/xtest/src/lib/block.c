@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: block.c,v 1.9 92/06/11 15:48:05 rws Exp $
+ * $XConsortium: block.c,v 1.10 94/04/17 21:00:35 rws Exp $
  */
 
 #include	"xtest.h"

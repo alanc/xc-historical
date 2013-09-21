@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.15 94/02/02 15:03:02 gildea Exp $ */
+/* $XConsortium: error.c,v 1.16 94/04/17 20:03:38 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

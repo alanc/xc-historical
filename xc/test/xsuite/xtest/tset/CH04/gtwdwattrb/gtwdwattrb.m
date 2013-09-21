@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtwdwattrb.m,v 1.9 92/06/29 18:53:28 rws Exp $
+ * $XConsortium: gtwdwattrb.m,v 1.10 94/04/17 21:03:32 rws Exp $
  */
 >>TITLE XGetWindowAttributes CH04
 Status

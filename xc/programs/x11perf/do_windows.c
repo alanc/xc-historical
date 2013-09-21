@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_windows.c,v 2.7 94/02/06 20:17:37 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

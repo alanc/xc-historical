@@ -1,4 +1,4 @@
-/* $XConsortium: defaults.c,v 1.2 93/08/24 10:56:49 rws Exp $ */
+/* $XConsortium: defaults.c,v 1.3 94/04/17 20:17:01 rws Exp $ */
 
 /*
 

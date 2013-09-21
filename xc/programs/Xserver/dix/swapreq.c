@@ -46,7 +46,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swapreq.c,v 1.38 94/02/23 15:48:37 dpw Exp $ */
+/* $XConsortium: swapreq.c,v 1.39 94/04/17 20:26:45 dpw Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS

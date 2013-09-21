@@ -1,4 +1,4 @@
-/* $XConsortium: tables.c,v 1.5 92/05/28 16:43:08 gildea Exp $ */
+/* $XConsortium: tables.c,v 1.6 94/04/17 19:56:20 gildea Exp $ */
 /*
  * all the dispatch, error, event and reply vectors
  */

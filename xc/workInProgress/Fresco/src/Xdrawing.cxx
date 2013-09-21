@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xdrawing.cxx,v 1.4 94/04/07 11:29:29 matt Exp matt $
+ * $XConsortium: Xdrawing.cxx,v 1.5 94/09/01 18:45:46 matt Exp $
  */
 
 /*

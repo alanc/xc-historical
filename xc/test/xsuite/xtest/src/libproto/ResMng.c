@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ResMng.c,v 1.2 92/06/11 15:51:29 rws Exp $
+ * $XConsortium: ResMng.c,v 1.3 94/04/17 21:01:21 rws Exp $
  */
 /****************************************************************************
  * Copyright 1988 by Sequent Computer Systems, Inc., Portland, Oregon       *

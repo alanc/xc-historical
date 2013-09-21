@@ -1,5 +1,5 @@
 /*
-* $XConsortium: BoxP.h,v 1.17 94/01/31 10:48:08 kaleb Exp $
+* $XConsortium: BoxP.h,v 1.18 94/04/17 20:11:56 kaleb Exp $
 */
 
 

@@ -4,7 +4,7 @@
  * mi sprite structures
  */
 
-/* $XConsortium: mispritest.h,v 1.3 94/01/11 20:50:06 rob Exp $ */
+/* $XConsortium: mispritest.h,v 1.4 94/04/17 21:16:09 rob Exp $ */
 
 /*
 

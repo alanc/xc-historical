@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 94/02/10 17:13:58 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 94/05/01 20:39:20 gildea Exp $
 EVERYWHERE=strings.mit strings.xaw
 CHAPTER1=CH1
 CHAPTER2=CH2

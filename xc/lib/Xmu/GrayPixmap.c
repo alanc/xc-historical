@@ -1,4 +1,4 @@
-/* $XConsortium: GrayPixmap.c,v 1.7 92/03/06 14:06:02 converse Exp $ */
+/* $XConsortium: GrayPixmap.c,v 1.8 94/04/17 20:16:08 converse Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-// $XConsortium: basic,v 1.3 94/04/08 15:54:51 erik Exp $
+// $XConsortium: pc101-NG,v 1.2 94/04/08 15:56:05 erik Exp $
 xkb_geometry "pc101-NG"
 
 description= "Omnikey 101"

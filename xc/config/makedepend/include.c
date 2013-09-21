@@ -1,4 +1,4 @@
-/* $XConsortium: include.c,v 1.16 94/04/17 20:10:34 gildea Exp gildea $ */
+/* $XConsortium: include.c,v 1.17 94/12/05 19:33:08 gildea Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

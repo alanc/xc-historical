@@ -1,4 +1,4 @@
-/* $XConsortium: am_io.c,v 1.2 95/06/09 20:57:00 gildea Exp kaleb $ */
+/* $XConsortium: am_io.c,v 1.3 95/06/14 15:19:17 kaleb Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>

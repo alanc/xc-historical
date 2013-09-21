@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: Makefile,v 1.1 92/06/11 15:40:51 rws Exp $
 
 MCDIR=$(XTESTROOT)/lib/mc
 

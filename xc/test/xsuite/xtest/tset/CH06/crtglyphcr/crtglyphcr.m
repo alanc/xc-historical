@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: crtglyphcr.m,v 1.15 92/06/11 16:22:06 rws Exp $
+ * $XConsortium: crtglyphcr.m,v 1.16 94/04/17 21:04:32 rws Exp $
  */
 >>TITLE XCreateGlyphCursor CH06
 Cursor

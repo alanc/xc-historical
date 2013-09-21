@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ungrbdvbtn.m,v 1.8 94/02/21 18:23:28 rws Exp $
+ * $XConsortium: ungrbdvbtn.m,v 1.9 94/04/17 21:12:51 rws Exp $
  */
 >>TITLE XUngrabDeviceButton XINPUT
 void

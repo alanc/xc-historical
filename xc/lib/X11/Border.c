@@ -1,4 +1,4 @@
-/* $XConsortium: Border.c,v 11.8 91/01/06 11:44:13 rws Exp $ */
+/* $XConsortium: Border.c,v 11.9 94/04/17 20:18:35 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

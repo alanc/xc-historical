@@ -1,4 +1,4 @@
-/* $XConsortium: FillRct.c,v 11.14 91/01/06 11:45:36 rws Exp $ */
+/* $XConsortium: FillRct.c,v 11.15 94/04/17 20:19:20 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

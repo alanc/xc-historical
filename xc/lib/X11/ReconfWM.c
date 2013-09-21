@@ -1,4 +1,4 @@
-/* $XConsortium: ReconfWM.c,v 1.8 93/09/22 21:25:46 rws Exp $ */
+/* $XConsortium: ReconfWM.c,v 1.9 94/04/17 20:20:45 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: elements.h,v 1.4 94/04/17 20:18:22 mor Exp gildea $ */
+/* $XConsortium: elements.h,v 1.5 95/06/08 23:20:39 gildea Exp $ */
 
 /*
 

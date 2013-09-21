@@ -1,5 +1,5 @@
 /*
- * $XConsortium: PortholeP.h,v 1.2 94/01/31 10:48:35 kaleb Exp $
+ * $XConsortium: PortholeP.h,v 1.3 94/04/17 20:12:36 kaleb Exp $
  *
 Copyright (c) 1990, 1994  X Consortium
 

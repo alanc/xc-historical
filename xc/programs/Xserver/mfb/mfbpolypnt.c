@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpolypnt.c,v 5.5 94/01/12 18:05:23 dpw Exp $ */
+/* $XConsortium: mfbpolypnt.c,v 5.6 94/04/17 20:28:30 dpw Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"

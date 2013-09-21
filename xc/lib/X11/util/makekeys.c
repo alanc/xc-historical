@@ -1,4 +1,4 @@
-/* $XConsortium: makekeys.c,v 11.7 94/03/30 12:13:45 gildea Exp $ */
+/* $XConsortium: makekeys.c,v 11.8 94/04/17 20:22:22 gildea Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

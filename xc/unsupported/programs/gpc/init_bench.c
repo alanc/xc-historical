@@ -1,4 +1,4 @@
-/* $XConsortium: init_bench.c,v 5.6 93/01/04 18:23:15 hersh Exp $ */
+/* $XConsortium: init_bench.c,v 5.7 94/04/17 20:44:37 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

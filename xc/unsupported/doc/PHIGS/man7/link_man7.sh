@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##
-# $XConsortium: link_man7.sh,v 5.2 91/07/26 15:53:09 hersh Exp $
+# $XConsortium: link_man7.sh,v 5.3 94/04/17 20:59:12 hersh Exp $
 ##
 ## 
 ## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.

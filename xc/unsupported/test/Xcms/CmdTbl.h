@@ -1,4 +1,4 @@
-/* $XConsortium: CmdTbl.h,v 1.4 91/02/16 17:14:10 rws Exp $ */
+/* $XConsortium: CmdTbl.h,v 1.6 91/05/14 15:03:18 dave Exp $ */
 
 #ifndef TEKCMS_LT
 #define TEKCMS_LT

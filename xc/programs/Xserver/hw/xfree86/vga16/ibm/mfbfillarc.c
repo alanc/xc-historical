@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 /* GJA -- Took mfb code and modified it. */
 
-/* $XConsortium: mfbfillarc.c,v 5.7 94/03/28 21:34:59 dpw Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.8 94/04/17 20:31:44 dpw Exp $ */
 
 #define BANKING_MODS
 #include "X.h"

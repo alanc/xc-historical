@@ -1,4 +1,4 @@
-/* $XConsortium: colormap.c,v 1.8 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: colormap.c,v 1.9 95/05/24 16:14:13 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

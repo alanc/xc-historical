@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 5.27 94/04/17 20:26:36 dpw Exp $ */
+/* $XConsortium: gc.c,v 5.28 95/02/27 16:42:14 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

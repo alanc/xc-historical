@@ -1,4 +1,4 @@
-/* $XConsortium: Scale.h,v 1.5 94/04/13 17:49:22 gildea Exp $ */
+/* $XConsortium: Scale.h,v 1.6 94/04/17 20:24:59 gildea Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

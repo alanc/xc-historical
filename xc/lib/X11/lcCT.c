@@ -1,4 +1,4 @@
-/* $XConsortium: lcCT.c,v 1.4 94/07/18 10:17:11 kaleb Exp kaleb $ */
+/* $XConsortium: lcCT.c,v 1.5 95/02/22 22:03:04 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

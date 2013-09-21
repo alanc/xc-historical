@@ -1,4 +1,4 @@
-/* $XConsortium: ESpex.h,v 3.1 93/11/22 12:06:42 rws Exp $ */
+/* $XConsortium: ESpex.h,v 3.2 94/04/17 20:53:50 rws Exp $ */
 
 /*
  * Copyright (c) 1992 by Sun Microsystems, Inc.

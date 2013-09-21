@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: mpsbws.m,v 1.10 92/06/11 16:08:33 rws Exp $
+ * $XConsortium: mpsbws.m,v 1.11 94/04/17 21:03:07 rws Exp $
  */
 >>TITLE XMapSubwindows CH03
 void

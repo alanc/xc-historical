@@ -1,5 +1,5 @@
 .\" Abbreviated xtest assertions list macros, can be substituted for head.t
-.\" $XConsortium: head.t,v 1.1 92/06/11 15:32:55 rws Exp $
+.\" $XConsortium: abbrev.t,v 1.1 94/03/06 19:48:11 rws Exp $
 '\" Simple table specification - to avoid the need to use tbl.
 .de tL \" table line
 .nf

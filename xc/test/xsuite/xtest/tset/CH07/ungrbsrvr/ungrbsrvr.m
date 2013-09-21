@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ungrbsrvr.m,v 1.3 92/06/11 17:17:37 rws Exp $
+ * $XConsortium: ungrbsrvr.m,v 1.4 94/04/17 21:07:05 rws Exp $
  */
 >>TITLE XUngrabServer CH07
 void

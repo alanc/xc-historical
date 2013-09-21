@@ -1,4 +1,4 @@
-/* $XConsortium: FreeCmap.c,v 11.10 91/05/13 22:51:31 rws Exp $ */
+/* $XConsortium: FreeCmap.c,v 11.11 94/04/17 20:19:24 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

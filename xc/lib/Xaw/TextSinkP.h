@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSinkP.h,v 1.5 94/01/31 10:50:30 kaleb Exp $
+* $XConsortium: TextSinkP.h,v 1.6 94/04/17 20:13:13 kaleb Exp $
 */
 
 

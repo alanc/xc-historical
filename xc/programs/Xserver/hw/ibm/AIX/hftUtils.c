@@ -1,5 +1,5 @@
 /*
- * $XConsortium: hftUtils.c,v 1.3 91/07/16 13:02:54 jap Exp $
+ * $XConsortium: hftUtils.c,v 1.4 91/09/09 13:22:24 rws Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

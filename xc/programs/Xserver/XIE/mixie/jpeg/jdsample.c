@@ -1,4 +1,4 @@
-/* $XConsortium: jdsample.c,v 1.3 94/01/12 20:19:27 rws Exp $ */
+/* $XConsortium: jdsample.c,v 1.4 94/04/17 20:35:36 rws Exp $ */
 /* Module jdsample.c */
 
 /****************************************************************************

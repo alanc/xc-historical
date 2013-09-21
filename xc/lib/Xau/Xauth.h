@@ -1,4 +1,4 @@
-/* $XConsortium: Xauth.h,v 1.16 94/04/17 20:15:46 gildea Exp gildea $ */
+/* $XConsortium: Xauth.h,v 1.17 95/07/10 21:18:07 gildea Exp $ */
 
 /*
 

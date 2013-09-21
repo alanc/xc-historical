@@ -1,4 +1,4 @@
-/* $XConsortium: miLineLUT.c,v 5.1 91/02/16 09:56:30 rws Exp $ */
+/* $XConsortium: miLineLUT.c,v 5.2 94/04/17 20:37:43 rws Exp $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium

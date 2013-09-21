@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: crechild.c,v 1.14 92/06/11 15:43:33 rws Exp $
+ * $XConsortium: crechild.c,v 1.15 94/04/17 21:00:40 rws Exp $
  */
 
 #include	"xtest.h"

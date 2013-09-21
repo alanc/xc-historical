@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: iconmgr.h,v 1.11 89/12/10 17:47:02 jim Exp $
+ * $XConsortium: iconmgr.h,v 1.12 94/04/17 20:38:13 jim Exp $
  *
  * Icon Manager includes
  *

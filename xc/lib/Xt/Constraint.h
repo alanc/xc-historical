@@ -1,4 +1,4 @@
-/* $XConsortium: Constraint.h,v 1.9 89/06/16 18:08:57 jim Exp $ */
+/* $XConsortium: Constraint.h,v 1.10 94/04/17 20:13:46 jim Exp $ */
 /* $oHeader: Constraint.h,v 1.2 88/08/18 15:54:18 asente Exp $ */
 /***********************************************************
 

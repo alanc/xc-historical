@@ -1,4 +1,4 @@
-/* $XConsortium: Pending.c,v 11.14 91/01/06 11:47:16 rws Exp $ */
+/* $XConsortium: Pending.c,v 11.15 94/04/17 20:20:25 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

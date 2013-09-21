@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: todis1.sed,v 1.1 91/02/16 09:51:44 rws Exp $
 #  Copyright (c) 1990 by Sun Microsystems, Inc.
 #  A Sed script for converting to the PHIGS DIS C binding 
 #

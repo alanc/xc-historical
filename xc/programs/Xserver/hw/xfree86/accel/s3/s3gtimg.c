@@ -1,4 +1,4 @@
-/* $XConsortium: s3gtimg.c,v 1.2 94/10/12 20:07:37 kaleb Exp kaleb $ */
+/* $XConsortium: s3gtimg.c,v 1.3 94/12/27 11:29:42 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.4 1994/08/20 07:34:09 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>

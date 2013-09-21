@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: nglecopy.h,v 1.1 93/08/08 12:57:01 rws Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.

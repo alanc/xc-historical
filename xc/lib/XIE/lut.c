@@ -1,4 +1,4 @@
-/* $XConsortium: lut.c,v 1.1 93/07/19 11:39:27 mor Exp $ */
+/* $XConsortium: lut.c,v 1.2 94/04/17 20:18:26 mor Exp $ */
 
 /*
 

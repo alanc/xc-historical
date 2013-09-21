@@ -1,4 +1,4 @@
-/* $XConsortium: s3frect.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XConsortium: s3frect.c,v 1.3 94/10/12 20:07:37 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3frect.c,v 3.3 1994/08/20 07:33:58 dawes Exp $ */
 /*
 

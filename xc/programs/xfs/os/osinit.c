@@ -1,4 +1,4 @@
-/* $XConsortium: osinit.c,v 1.5 94/04/12 22:00:27 dpw Exp $ */
+/* $XConsortium: osinit.c,v 1.6 94/04/17 19:56:08 dpw Exp $ */
 /*
  * os init code
  */

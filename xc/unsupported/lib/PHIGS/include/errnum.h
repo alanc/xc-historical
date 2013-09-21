@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: errnum.h,v 1.1 91/07/19 19:43:21 rws Exp $ */
 /*
  * Copyright (c) 1988-1991 by Sun Microsystems, Inc.
  * Automatically generated file, do not edit.

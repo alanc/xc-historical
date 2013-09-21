@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mispans.c,v 5.4 93/09/18 10:16:47 dpw Exp $ */
+/* $XConsortium: mispans.c,v 5.5 94/04/17 20:27:52 dpw Exp $ */
 
 #include "misc.h"
 #include "pixmapstr.h"

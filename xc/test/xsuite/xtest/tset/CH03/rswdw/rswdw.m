@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rswdw.m,v 1.6 92/06/11 16:10:02 rws Exp $
+ * $XConsortium: rswdw.m,v 1.7 94/04/17 21:03:16 rws Exp $
  */
 >>TITLE XRaiseWindow CH03
 void

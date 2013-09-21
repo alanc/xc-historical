@@ -1,4 +1,4 @@
-/* $XConsortium: keycodes.h,v 1.1 94/04/02 17:06:16 erik Exp $ */
+/* $XConsortium: keycodes.h,v 1.2 94/04/04 15:28:21 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

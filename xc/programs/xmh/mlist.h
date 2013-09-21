@@ -1,4 +1,4 @@
-/* $XConsortium: mlist.h,v 2.3 88/09/06 17:23:23 jim Exp $ */
+/* $XConsortium: mlist.h,v 2.4 89/05/04 15:11:31 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: screen.h,v 1.63 92/08/24 15:35:14 rws Exp $
+ * $XConsortium: screen.h,v 1.64 94/04/17 20:38:22 rws Exp $
  *
  * twm per-screen data include file
  *

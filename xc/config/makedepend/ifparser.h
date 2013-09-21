@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: ifparser.h,v 1.1 92/08/22 13:05:39 rws Exp kaleb $
  *
  * Copyright 1992 Network Computing Devices, Inc.
  * 
@@ -72,5 +72,11 @@ typedef struct _if_parser {
     char *data;
 } IfParser;
 
-char *ParseIfExpression (/* IfParser *, const char *, int * */);
+char *ParseIfExpression (
+#ifdef __STDC__
+    IfParser *, 
+    const char *, 
+    long *
+#endif
+);
 

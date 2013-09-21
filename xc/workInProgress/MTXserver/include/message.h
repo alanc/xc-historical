@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: message.h,v 1.6 94/01/11 20:54:45 rob Exp $ */
+/* $XConsortium: message.h,v 1.1 94/03/17 11:35:32 dpw Exp $ */
 
 #ifndef _message_h
 #define _message_h

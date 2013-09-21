@@ -1,4 +1,4 @@
-XCOMM $XConsortium: ibmLib.rules,v 1.9 93/12/24 11:28:07 rws Exp Kaleb $
+XCOMM $XConsortium: ibmLib.rules,v 1.10 95/04/07 19:22:32 kaleb Exp $
 
 /*
  * AIX shared library rules

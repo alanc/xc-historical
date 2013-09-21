@@ -3,7 +3,7 @@
 #
 # This accepts bsd-style install arguments and makes the appropriate calls
 # to the System V install.
-# $XConsortium$
+# $XConsortium: bsdinst.sh,v 1.7 94/12/09 22:51:37 gildea Exp $
 
 flags=""
 dst=""

@@ -1,4 +1,4 @@
-/* $XConsortium: kbd_mode.c,v 4.6 94/04/17 20:29:33 kaleb Exp kaleb $ */
+/* $XConsortium: kbd_mode.c,v 4.7 95/01/05 20:03:44 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 

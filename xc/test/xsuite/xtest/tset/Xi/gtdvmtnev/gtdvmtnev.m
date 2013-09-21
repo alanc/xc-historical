@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtdvmtnev.m,v 1.13 94/04/17 21:13:17 rws Exp dpw $
+ * $XConsortium: gtdvmtnev.m,v 1.14 94/09/06 21:11:08 dpw Exp $
  */
 >>TITLE XGetDeviceMotionEvents XINPUT
 XDeviceTimeCoord *

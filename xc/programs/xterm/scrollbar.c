@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: scrollbar.c,v 1.43 93/09/20 17:42:21 hersh Exp $
+ *	$XConsortium: scrollbar.c,v 1.44 94/04/02 12:42:01 gildea Exp $
  */
 
 /*

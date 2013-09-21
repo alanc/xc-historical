@@ -3,7 +3,7 @@
  *
  */
 
-/* $XConsortium: mipointrst.h,v 1.3 94/01/11 20:49:50 rob Exp $ */
+/* $XConsortium: mipointrst.h,v 1.4 94/04/17 21:16:06 rob Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-/* $XConsortium: events.h,v 1.4 94/04/12 21:59:25 dpw Exp $ */
+/* $XConsortium: events.h,v 1.5 94/04/17 19:55:57 dpw Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 

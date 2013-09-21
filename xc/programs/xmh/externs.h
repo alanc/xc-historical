@@ -1,5 +1,5 @@
 /*
- * $XConsortium: externs.h,v 2.39 93/09/20 17:52:05 hersh Exp swick $
+ * $XConsortium: externs.h,v 2.40 94/08/26 18:07:47 swick Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989

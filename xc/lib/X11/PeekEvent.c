@@ -1,4 +1,4 @@
-/* $XConsortium: PeekEvent.c,v 11.15 93/01/28 13:16:59 gildea Exp $ */
+/* $XConsortium: PeekEvent.c,v 11.16 94/04/17 20:20:24 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

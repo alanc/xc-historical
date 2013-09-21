@@ -1,4 +1,4 @@
-/* $XConsortium: header.c,v 1.4 93/09/20 17:54:34 hersh Exp $ */
+/* $XConsortium: header.c,v 1.5 94/04/17 20:24:28 hersh Exp $ */
 /*
  
 Copyright (c) 1990  X Consortium

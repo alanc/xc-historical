@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 93/09/04 16:44:00 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 93/09/04 19:48:32 rws Exp $
 #include <Server.tmpl>
 
         INCLUDES = -I$(FONTINCSRC) -I../include

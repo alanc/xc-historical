@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.43 94/04/17 20:17:39 mor Exp kaleb $ */
+/* $XConsortium: fserve.c,v 1.44 95/04/05 19:58:07 kaleb Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

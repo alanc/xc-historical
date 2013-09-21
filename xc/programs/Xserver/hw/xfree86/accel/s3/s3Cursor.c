@@ -1,5 +1,5 @@
 /*
- * $XConsortium: s3Cursor.c,v 1.4 95/01/16 13:16:49 kaleb Exp kaleb $
+ * $XConsortium: s3Cursor.c,v 1.5 95/01/23 15:33:57 kaleb Exp $
  * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.13 1995/01/21 14:07:34 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.

@@ -1,4 +1,4 @@
-/* $XConsortium: util.h,v 1.2 91/10/10 11:20:14 rws Exp $ */
+/* $XConsortium: util.h,v 1.3 92/03/26 16:42:29 eswu Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

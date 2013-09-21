@@ -1,4 +1,4 @@
-/* $XConsortium: parse.c,v 1.29 94/04/13 16:54:14 gildea Exp $ */
+/* $XConsortium: parse.c,v 1.30 94/04/17 20:10:38 gildea Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

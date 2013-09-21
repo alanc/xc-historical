@@ -1,4 +1,4 @@
-/* $XConsortium: miInfo.h,v 5.3 92/04/23 16:00:42 hersh Exp $ */
+/* $XConsortium: miInfo.h,v 5.4 94/04/17 20:36:41 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

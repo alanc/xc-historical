@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: RcvExtErr.c,v 1.3 94/01/29 15:14:42 rws Exp $
+ * $XConsortium: RcvExtErr.c,v 1.4 94/04/17 21:01:18 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -64,11 +64,11 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /*
- *	$Header: RcvExtErr.c,v 1.3 94/01/29 15:14:42 rws Exp $
+ *	$Header: RcvExtErr.c,v 1.4 94/04/17 21:01:18 rws Exp $
  */
 
 #ifndef lint
-static char rcsid[]="$Header: RcvExtErr.c,v 1.3 94/01/29 15:14:42 rws Exp $";
+static char rcsid[]="$Header: RcvExtErr.c,v 1.4 94/04/17 21:01:18 rws Exp $";
 #endif
 
 #define ERROR_HEADER	4	/* size of constant header */

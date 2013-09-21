@@ -1,4 +1,4 @@
-.\" $XConsortium: xload.man,v 1.28 94/04/11 16:03:35 matt Exp $
+.\" $XConsortium: xload.man,v 1.29 94/04/17 20:43:44 matt Exp $
 .TH XLOAD 1 "Release 6" "X Version 11"
 .SH NAME
 xload \- system load average display for X

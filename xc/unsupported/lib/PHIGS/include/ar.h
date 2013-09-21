@@ -1,4 +1,4 @@
-/* $XConsortium: ar.h,v 5.6 91/12/11 16:05:26 hersh Exp $ */
+/* $XConsortium: ar.h,v 5.7 94/04/17 20:41:37 hersh Exp $ */
 /*
 
 Copyright (c) 1988-1991  X Consortium

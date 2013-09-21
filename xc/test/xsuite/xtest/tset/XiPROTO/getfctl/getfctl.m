@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: getfctl.m,v 1.4 94/01/30 11:52:47 rws Exp $
+ * $XConsortium: getfctl.m,v 1.5 94/04/17 21:13:44 rws Exp $
  */
 >>TITLE GetFeedbackControl XIPROTO
 >>SET startup protostartup

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsIdOfPr.c,v 1.5 91/11/05 13:48:45 rws Exp $" */
+/* $XConsortium: IdOfPr.c,v 1.6 91/11/06 16:45:23 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AllWidgets.h,v 1.2 90/02/26 12:00:56 jim Exp $
+ * $XConsortium: AllWidgets.h,v 1.3 94/04/17 20:11:40 jim Exp $
  *
 Copyright (c) 1990  X Consortium
 

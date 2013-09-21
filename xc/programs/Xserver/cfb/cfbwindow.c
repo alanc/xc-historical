@@ -1,4 +1,4 @@
-/* $XConsortium: cfbwindow.c,v 5.21 94/03/22 16:56:29 dpw Exp $ */
+/* $XConsortium: cfbwindow.c,v 5.22 94/04/17 20:29:07 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: strclrs.m,v 1.7 92/06/11 17:59:28 rws Exp $
+ * $XConsortium: strclrs.m,v 1.8 94/04/17 21:12:22 rws Exp $
  */
 >>TITLE StoreColors XPROTO
 >>SET startup protostartup

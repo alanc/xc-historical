@@ -1,4 +1,4 @@
-/* $XConsortium: SetSens.c,v 1.5 93/10/06 17:36:12 kaleb Exp $ */
+/* $XConsortium: SetSens.c,v 1.6 94/04/17 20:14:44 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

@@ -1,4 +1,4 @@
-/* $XConsortium: FSErrHndlr.c,v 1.3 94/04/12 21:55:37 dpw Exp $ */
+/* $XConsortium: FSErrHndlr.c,v 1.4 94/04/17 20:15:11 dpw Exp $ */
 
 /* @(#)FSErrHndlr.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;

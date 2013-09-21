@@ -1,4 +1,4 @@
-.\" $XConsortium: protocol.ms,v 1.17 94/05/02 09:55:38 gildea Exp $
+.\" $XConsortium: protocol.ms,v 1.18 94/05/16 15:04:55 gildea Exp $
 .\" Use tbl, -ms, and macros.t
 .EH ''''
 .OH ''''

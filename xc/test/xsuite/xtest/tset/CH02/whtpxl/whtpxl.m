@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: whtpxl.m,v 1.8 92/06/11 16:02:55 rws Exp $
+ * $XConsortium: whtpxl.m,v 1.9 94/04/17 21:02:48 rws Exp $
  */
 >>SET   macro
 >>TITLE XWhitePixel CH02

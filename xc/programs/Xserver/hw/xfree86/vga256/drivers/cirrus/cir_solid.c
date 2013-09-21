@@ -1,4 +1,4 @@
-/* $XConsortium: cir_solid.c,v 1.1 95/01/06 20:37:49 kaleb Exp kaleb $ */
+/* $XConsortium: cir_solid.c,v 1.2 95/01/26 15:38:28 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_solid.c,v 3.2 1995/01/26 02:21:03 dawes Exp $ */
 
 /*

@@ -23,7 +23,7 @@
  */
 /* Copyright 1988, 1989, 1990 Network Computing Devices, Inc.  All rights reserved. */
 
-/* $XConsortium: compress_lzw.c,v 1.6 94/03/27 11:54:09 dpw Exp mor $ */
+/* $XConsortium: compress_lzw.c,v 1.7 94/12/01 20:14:02 mor Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>

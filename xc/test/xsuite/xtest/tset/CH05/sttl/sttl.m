@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: sttl.m,v 1.5 92/06/11 16:20:02 rws Exp $
+ * $XConsortium: sttl.m,v 1.6 94/04/17 21:04:23 rws Exp $
  */
 >>TITLE XSetTile CH05
 void

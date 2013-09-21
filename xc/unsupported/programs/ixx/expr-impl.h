@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: expr-impl.h,v 1.5 94/06/03 21:41:04 matt Exp $ */
 
 /*
  * Copyright (c) 1992-1993 Silicon Graphics, Inc.

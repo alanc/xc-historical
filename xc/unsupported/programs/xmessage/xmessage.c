@@ -1,4 +1,4 @@
-static char*id="$XConsortium: xmessage.c,v 1.5 94/08/30 00:11:27 gildea Exp gildea $";
+static char*id="$XConsortium: xmessage.c,v 1.6 95/01/04 16:29:54 gildea Exp $";
 /*
 
 Copyright (c) 1988, 1991, 1994  X Consortium

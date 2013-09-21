@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipoly.c,v 5.0 89/06/09 15:08:32 keith Exp $ */
+/* $XConsortium: mipoly.c,v 5.1 94/04/17 20:27:41 keith Exp $ */
 /*
  *  mipoly.c
  *

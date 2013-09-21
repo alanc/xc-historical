@@ -53,7 +53,7 @@ SOFTWARE.
  *
  */
 
-/* $XConsortium: ext_device.c,v 1.2 91/07/08 11:16:24 keith Exp $ */
+/* $XConsortium: ext_device.c,v 1.3 94/04/17 20:29:54 keith Exp $ */
 
 #ifdef XINPUT
 

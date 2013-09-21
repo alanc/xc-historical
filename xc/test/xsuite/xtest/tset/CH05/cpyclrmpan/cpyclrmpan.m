@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: cpyclrmpan.m,v 1.12 94/03/06 19:29:42 rws Exp $
+ * $XConsortium: cpyclrmpan.m,v 1.13 94/04/17 21:03:50 rws Exp $
  */
 >>TITLE XCopyColormapAndFree CH05
 Colormap

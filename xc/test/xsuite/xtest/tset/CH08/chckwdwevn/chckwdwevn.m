@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chckwdwevn.m,v 1.7 92/06/11 17:19:03 rws Exp $
+ * $XConsortium: chckwdwevn.m,v 1.8 94/04/17 21:07:15 rws Exp $
  */
 >>TITLE XCheckWindowEvent CH08
 Bool

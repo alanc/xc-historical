@@ -1,4 +1,4 @@
-/* $XConsortium: looper.lex,v 5.1 91/02/16 09:59:57 rws Exp $ */
+/* $XConsortium: looper.lex,v 5.2 94/04/17 20:46:22 rws Exp $ */
 /* copyright notice at the end of file */
 
 /*looper.lex: scanner rules for Newt				*/

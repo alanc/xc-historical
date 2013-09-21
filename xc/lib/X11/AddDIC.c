@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAddDIC.c,v 1.4 91/05/13 23:01:51 rws Exp $" */
+/* $XConsortium: AddDIC.c,v 1.5 91/05/15 15:40:22 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

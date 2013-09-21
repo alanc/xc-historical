@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: line-widt.mc,v 1.12 92/06/11 18:04:04 rws Exp $
+ * $XConsortium: line-widt.mc,v 1.13 94/04/17 21:14:46 rws Exp $
  */
 >># >>ASSERTION Good A
 >># 	suppressed during drafting stage

@@ -1,4 +1,4 @@
-/* $XConsortium: brfexmacro.h,v 5.2 91/04/04 13:32:56 gildea Exp $ */
+/* $XConsortium: brfexmacro.h,v 5.3 91/10/21 14:33:06 eswu Exp $ */
 
 /*--------------------------------------------------------------------*\
 |

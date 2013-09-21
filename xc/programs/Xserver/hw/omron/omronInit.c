@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronInit.c,v 1.2 93/09/26 12:29:39 rws Exp $
+ * $XConsortium: omronInit.c,v 1.3 94/02/23 15:56:12 dpw Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 

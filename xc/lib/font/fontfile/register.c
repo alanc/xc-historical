@@ -1,4 +1,4 @@
-/* $XConsortium: register.c,v 1.2 94/04/05 17:14:54 gildea Exp $ */
+/* $XConsortium: register.c,v 1.3 94/04/17 20:17:07 gildea Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XRecord.c,v 1.9 94/04/08 22:08:01 rws Exp $ */
+/* $XConsortium: XRecord.c,v 1.10 94/04/17 21:17:26 rws Exp $ */
 /***************************************************************************
 Copyright (c) 1994  X Consortium
 

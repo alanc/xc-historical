@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextSrcP.h,v 1.19 94/01/31 10:50:34 kaleb Exp $
+* $XConsortium: TextSrcP.h,v 1.20 94/04/17 20:13:15 kaleb Exp $
 */
 
 

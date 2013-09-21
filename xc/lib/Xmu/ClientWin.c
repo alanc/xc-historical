@@ -1,4 +1,4 @@
-/* $XConsortium: ClientWin.c,v 1.3 89/12/10 10:26:35 rws Exp $ */
+/* $XConsortium: ClientWin.c,v 1.4 94/04/17 20:15:50 rws Exp $ */
 
 /* 
  

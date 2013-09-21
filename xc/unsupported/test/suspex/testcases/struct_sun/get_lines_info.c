@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: get_lines_info.c,v 1.0 93/11/22 12:52:23 rws Exp $ */
 
 /*
         NOTICE TO USER: The source code in this file is copyrighted under

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: compfuncs.c,v 2.17 89/10/06 15:02:26 converse Exp $
+ * $XConsortium: compfuncs.c,v 2.18 92/04/08 12:20:08 rws Exp $
  *
  *
  * 		      COPYRIGHT 1987, 1989

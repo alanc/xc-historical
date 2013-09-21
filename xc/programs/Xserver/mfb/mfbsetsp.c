@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbsetsp.c,v 5.7 94/01/12 18:05:29 dpw Exp $ */
+/* $XConsortium: mfbsetsp.c,v 5.8 94/04/17 20:28:34 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

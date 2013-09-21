@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyHdwr.h,v 1.5 92/01/27 18:03:02 eswu Exp $
+ * $XConsortium: skyHdwr.h,v 1.6 92/11/23 10:24:12 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

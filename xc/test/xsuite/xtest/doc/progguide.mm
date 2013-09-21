@@ -1,4 +1,4 @@
-.\" $XConsortium: progguide.mm,v 1.4 94/04/17 21:00:09 rws Exp $
+.\" $XConsortium: progguide.mm,v 1.5 94/04/18 21:04:07 rws Exp $
 .\" Copyright (c) 1992  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining a

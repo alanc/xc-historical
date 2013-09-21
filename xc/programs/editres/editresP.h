@@ -1,6 +1,6 @@
 
 /*
- * $XConsortium: editresP.h,v 1.13 92/03/20 18:12:50 dave Exp $
+ * $XConsortium: editresP.h,v 1.14 94/04/17 20:38:54 dave Exp $
  *
 Copyright (c) 1989  X Consortium
 

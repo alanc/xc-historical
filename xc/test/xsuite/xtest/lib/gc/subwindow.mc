@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: subwindow.mc,v 1.15 93/07/05 17:30:13 rws Exp $
+ * $XConsortium: subwindow.mc,v 1.16 94/04/17 21:14:48 rws Exp $
  */
 >>EXTERN
 #ifdef A_WINDOW2

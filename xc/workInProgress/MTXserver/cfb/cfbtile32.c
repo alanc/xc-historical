@@ -51,7 +51,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbtile32.c,v 1.3 94/01/11 20:43:11 rob Exp $ */
+/* $XConsortium: cfbtile32.c,v 1.4 94/04/17 21:16:27 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: gcstruct.h,v 5.9 94/03/18 12:25:44 dpw Exp $ */
+/* $XConsortium: gcstruct.h,v 5.10 94/04/17 20:25:45 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

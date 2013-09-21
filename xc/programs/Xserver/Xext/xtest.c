@@ -1,4 +1,4 @@
-/* $XConsortium: xtest.c,v 1.21 94/04/01 17:40:37 dpw Exp $ */
+/* $XConsortium: xtest.c,v 1.22 94/04/17 20:32:59 dpw Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

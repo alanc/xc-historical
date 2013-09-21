@@ -1,4 +1,4 @@
-/* $XConsortium: util.h,v 1.3 94/02/20 11:14:24 dpw Exp $ */
+/* $XConsortium: util.h,v 1.4 95/05/17 18:23:24 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

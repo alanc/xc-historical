@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pgcWindow.c,v 1.2 91/07/16 13:13:11 jap Exp $
+ * $XConsortium: pgcWindow.c,v 1.3 94/01/07 09:51:04 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

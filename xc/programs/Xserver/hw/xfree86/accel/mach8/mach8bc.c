@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mach8bc.c,v 1.1 94/03/28 21:10:09 dpw Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 

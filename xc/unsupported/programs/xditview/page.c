@@ -1,4 +1,4 @@
-/* $XConsortium: page.c,v 1.4 91/04/01 21:23:58 gildea Exp $ */
+/* $XConsortium: page.c,v 1.5 91/07/26 00:40:20 keith Exp $ */
 
 /*
  * page.c

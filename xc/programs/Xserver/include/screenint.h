@@ -1,4 +1,4 @@
-/* $XConsortium: screenint.h,v 1.4 93/09/24 12:17:45 rws Exp $ */
+/* $XConsortium: screenint.h,v 1.5 94/04/17 20:26:05 rws Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

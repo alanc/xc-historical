@@ -1,4 +1,4 @@
-/* $XConsortium: mach8.c,v 1.6 95/01/06 20:57:07 kaleb Exp kaleb $ */
+/* $XConsortium: mach8.c,v 1.7 95/01/16 13:16:36 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.15 1995/01/15 10:31:37 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

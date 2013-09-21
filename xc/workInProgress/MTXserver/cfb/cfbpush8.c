@@ -49,7 +49,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 */
-/* $XConsortium: cfbpush8.c,v 1.4 94/01/11 20:43:04 rob Exp $ */
+/* $XConsortium: cfbpush8.c,v 1.5 94/04/17 21:16:25 rob Exp $ */
 
 #if PSZ == 8
 

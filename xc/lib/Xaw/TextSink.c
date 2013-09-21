@@ -1,4 +1,4 @@
-/* $XConsortium: TextSink.c,v 1.18 94/01/31 10:50:27 kaleb Exp $ */
+/* $XConsortium: TextSink.c,v 1.19 94/04/17 20:13:11 kaleb Exp $ */
 /*
 
 Copyright (c) 1989, 1994  X Consortium

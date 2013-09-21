@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: qrykymp.m,v 1.4 92/06/11 17:57:12 rws Exp $
+ * $XConsortium: qrykymp.m,v 1.5 94/04/17 21:12:11 rws Exp $
  */
 >>TITLE QueryKeymap XPROTO
 >>SET startup protostartup

@@ -1,4 +1,4 @@
-/* $XConsortium: windowstr.h,v 1.1 94/03/17 11:36:11 dpw Exp $ */
+/* $XConsortium: windowstr.h,v 1.2 94/04/17 21:16:56 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

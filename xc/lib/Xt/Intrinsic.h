@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.h,v 1.199 94/04/17 20:14:22 converse Exp gildea $ */
+/* $XConsortium: Intrinsic.h,v 1.200 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

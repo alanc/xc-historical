@@ -1,4 +1,4 @@
-/* $XConsortium: mi.h,v 1.16 94/03/17 18:14:10 dpw Exp $ */
+/* $XConsortium: mi.h,v 1.17 94/04/17 20:27:10 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: LookupCmap.c,v 1.9 93/09/13 14:20:51 rws Exp $ */
+/* $XConsortium: LookupCmap.c,v 1.10 94/04/17 20:16:11 rws Exp $ */
 
 /* 
  

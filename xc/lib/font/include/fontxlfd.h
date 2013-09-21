@@ -1,4 +1,4 @@
-/* $XConsortium: fontxlfd.h,v 1.5 94/02/08 12:30:02 gildea Exp $ */
+/* $XConsortium: fontxlfd.h,v 1.6 94/04/17 20:17:30 gildea Exp $ */
 
 /*
 

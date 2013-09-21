@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/02/17 15:20:58 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/04/13 18:04:53 rws Exp $
 
 #include <Library.tmpl>
 

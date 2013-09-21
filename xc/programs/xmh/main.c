@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 2.29 95/01/06 16:39:19 swick Exp swick $
+/* $XConsortium: main.c,v 2.30 95/01/25 14:33:57 swick Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989

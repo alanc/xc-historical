@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: util.c,v 1.48 92/08/24 15:35:32 rws Exp $
+ * $XConsortium: util.c,v 1.49 94/04/17 20:38:26 rws Exp $
  *
  * utility routines for twm
  *

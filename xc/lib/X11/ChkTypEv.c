@@ -1,4 +1,4 @@
-/* $XConsortium: ChkTypEv.c,v 11.9 93/01/28 13:16:46 gildea Exp $ */
+/* $XConsortium: ChkTypEv.c,v 11.10 94/04/17 20:18:46 gildea Exp $ */
 /*
 
 Copyright (c) 1985, 1987  X Consortium

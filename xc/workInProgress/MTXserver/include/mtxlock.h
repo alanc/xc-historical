@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: mtxlock.h,v 1.12 94/01/11 23:09:55 rob Exp $ */
+/* $XConsortium: mtxlock.h,v 1.1 94/03/17 11:35:36 dpw Exp $ */
 
 #ifndef MTXLOCK_H
 #define MTXLOCK_H

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rdbtmpfl.m,v 1.11 92/06/11 17:39:01 rws Exp $
+ * $XConsortium: rdbtmpfl.m,v 1.12 94/04/17 21:10:01 rws Exp $
  */
 >>TITLE XReadBitmapFile CH10
 int

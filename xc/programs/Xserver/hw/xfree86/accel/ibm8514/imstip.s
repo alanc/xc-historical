@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514imst.s,v 1.2 94/03/29 09:37:45 dpw Exp $ */
+/* $XConsortium: imstip.s,v 1.1 95/01/26 15:30:17 kaleb Exp $ */
 /******************************************************************************
 
 This is a assembly language version of the ibm8514ImageStipple routine.

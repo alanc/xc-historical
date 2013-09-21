@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: checkevent.c,v 1.10 94/01/29 15:08:33 rws Exp $
+ * $XConsortium: checkevent.c,v 1.11 94/04/17 21:00:36 rws Exp $
  */
 /***********************************************************
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,

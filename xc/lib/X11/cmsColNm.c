@@ -1,4 +1,4 @@
-/* $XConsortium: cmsColNm.c,v 1.29 95/03/31 18:18:54 converse Exp gildea $" */
+/* $XConsortium: cmsColNm.c,v 1.30 95/06/08 23:20:39 gildea Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

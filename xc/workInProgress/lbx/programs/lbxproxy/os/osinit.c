@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.4 95/04/04 21:40:46 dpw Exp $ */
+/* $XConsortium: osinit.c,v 1.5 95/05/17 18:25:37 dpw Exp $ */
 
 #include <stdio.h>
 #include "misc.h"

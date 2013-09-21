@@ -1,4 +1,4 @@
-XCOMM $XConsortium: hpLib.rules,v 1.4 93/09/11 17:57:18 rws Exp kaleb $
+XCOMM $XConsortium: hpLib.rules,v 1.5 95/01/16 19:50:38 kaleb Exp $
 
 /*
  * HP shared library rules

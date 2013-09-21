@@ -1,6 +1,6 @@
 
   /*\
-   * $XConsortium: strtbl.c,v 1.1 94/04/02 17:11:33 erik Exp $
+   * $XConsortium: strtbl.c,v 1.2 94/04/04 15:31:35 rws Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION

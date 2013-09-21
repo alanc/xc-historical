@@ -1,4 +1,4 @@
-/* $XConsortium: rpcauth.c,v 1.3 93/09/20 18:03:31 hersh Exp $ */
+/* $XConsortium: rpcauth.c,v 1.4 94/04/17 20:03:44 hersh Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

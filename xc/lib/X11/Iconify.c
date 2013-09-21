@@ -1,4 +1,4 @@
-/* $XConsortium: Iconify.c,v 1.7 91/03/29 13:45:36 gildea Exp $ */
+/* $XConsortium: Iconify.c,v 1.8 94/04/17 20:19:56 gildea Exp $ */
 
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.

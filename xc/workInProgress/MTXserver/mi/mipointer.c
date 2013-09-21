@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 1.4 94/01/11 20:59:43 rob Exp $ */
+/* $XConsortium: mipointer.c,v 1.5 94/04/17 21:16:06 rob Exp $ */
 
 /*
 

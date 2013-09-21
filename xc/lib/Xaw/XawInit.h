@@ -1,4 +1,4 @@
-/* $XConsortium: XawInit.h,v 1.5 94/01/31 10:50:39 kaleb Exp $
+/* $XConsortium: XawInit.h,v 1.6 94/04/17 20:13:33 kaleb Exp $
  *
 Copyright (c) 1989, 1994  X Consortium
 

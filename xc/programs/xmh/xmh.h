@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmh.h,v 2.31 91/04/02 19:28:34 gildea Exp $
+ * $XConsortium: xmh.h,v 2.32 93/09/08 15:31:11 kaleb Exp $
  *
  *
  *			  COPYRIGHT 1987

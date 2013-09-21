@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: w32polypnt.c,v 1.1 94/12/27 10:52:22 kaleb Exp kaleb $ */
+/* $XConsortium: w32polypnt.c,v 1.2 95/01/12 20:04:59 kaleb Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"

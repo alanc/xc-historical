@@ -1,4 +1,4 @@
-/* $XConsortium: version.h,v 1.3 95/01/10 15:59:31 swick Exp swick $ */
+/* $XConsortium: version.h,v 1.4 95/01/10 21:59:40 swick Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

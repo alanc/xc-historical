@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronDtBm.c,v 1.1 91/06/29 13:48:53 xguest Exp $
+ * $XConsortium: omronDtBm.c,v 1.2 93/09/03 19:50:05 dpw Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 

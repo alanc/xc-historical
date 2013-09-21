@@ -1,4 +1,4 @@
-/* $XConsortium: search.c,v 1.20 91/07/21 21:28:09 rws Exp $ */
+/* $XConsortium: search.c,v 1.21 94/04/17 20:43:58 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

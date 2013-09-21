@@ -34,7 +34,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cfb8bit.h,v 1.2 94/01/27 21:03:45 rob Exp $ */
+/* $XConsortium: cfb8bit.h,v 1.3 94/04/17 21:16:18 rob Exp $ */
 
 #include "servermd.h"
 

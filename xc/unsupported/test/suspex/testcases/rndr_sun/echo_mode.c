@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: echo_mode.c,v 1.0 93/11/22 12:54:00 rws Exp $ */
 
 /*
         NOTICE TO USER: The source code in this file is copyrighted under

@@ -1,4 +1,4 @@
-/* $XConsortium: FSproto.h,v 1.10 94/03/22 19:10:32 gildea Exp $ */
+/* $XConsortium: FSproto.h,v 1.11 94/04/17 20:11:05 gildea Exp $ */
 /*
  
 Copyright (c) 1990, 1991  X Consortium

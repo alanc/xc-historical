@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.19 94/03/28 18:31:46 gildea Exp $ */
+/* $XConsortium: utils.c,v 1.20 94/04/17 19:56:08 gildea Exp $ */
 /*
  * misc os utilities
  */

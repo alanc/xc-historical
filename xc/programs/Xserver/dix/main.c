@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: main.c,v 5.32 95/01/03 14:32:03 dpw Exp kaleb $ */
+/* $XConsortium: main.c,v 5.33 95/04/07 18:59:06 kaleb Exp $ */
 
 #include "X.h"
 #include "Xproto.h"

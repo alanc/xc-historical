@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: lk201kbd.h,v 1.1 93/12/02 17:29:28 dpw Exp $ */
+/* $XConsortium: lk201kbd.h,v 1.2 94/04/17 20:30:26 dpw Exp $ */
 
 #define MIN_LK201_KEY            86
 #define MAX_LK201_KEY           251

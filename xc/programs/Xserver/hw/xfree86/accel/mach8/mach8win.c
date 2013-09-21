@@ -1,4 +1,4 @@
-/* $XConsortium: mach8win.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XConsortium: mach8win.c,v 1.3 94/10/12 20:01:59 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8win.c,v 3.0 1994/05/31 08:04:46 dawes Exp $ */
 /*
 

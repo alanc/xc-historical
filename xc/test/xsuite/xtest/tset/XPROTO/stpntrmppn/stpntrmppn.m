@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: stpntrmppn.m,v 1.8 92/06/11 17:59:35 rws Exp $
+ * $XConsortium: stpntrmppn.m,v 1.9 94/04/17 21:12:23 rws Exp $
  */
 >>TITLE SetPointerMapping XPROTO
 >>SET startup protostartup

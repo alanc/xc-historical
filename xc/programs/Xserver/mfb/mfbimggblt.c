@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimggblt.c,v 5.16 94/03/31 14:10:26 dpw Exp $ */
+/* $XConsortium: mfbimggblt.c,v 5.17 94/04/17 20:28:25 dpw Exp $ */
 #include	"X.h"
 #include	"Xmd.h"
 #include	"Xproto.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: XimImSw.h,v 1.2 94/01/20 18:02:19 rws Exp $ */
+/* $XConsortium: XimImSw.h,v 1.3 94/03/31 22:01:03 rws Exp $ */
 /******************************************************************
 
                 Copyright 1992, 1993 by FUJITSU LIMITED

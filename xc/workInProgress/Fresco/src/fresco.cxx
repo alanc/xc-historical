@@ -1,5 +1,5 @@
 /*
- * $XConsortium: fresco.cxx,v 1.11 94/09/01 18:53:16 matt Exp $
+ * $XConsortium: fresco.cxx,v 1.12 94/09/14 20:17:37 matt Exp $
  */
 
 /*

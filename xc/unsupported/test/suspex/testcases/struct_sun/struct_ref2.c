@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: struct_ref2.c,v 1.0 93/11/22 12:52:57 rws Exp $ */
 
 /*
         NOTICE TO USER: The source code in this file is copyrighted under

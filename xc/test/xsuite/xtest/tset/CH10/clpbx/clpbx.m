@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: clpbx.m,v 1.8 92/06/11 17:33:08 rws Exp $
+ * $XConsortium: clpbx.m,v 1.9 94/04/17 21:09:22 rws Exp $
  */
 >>TITLE XClipBox CH10
 

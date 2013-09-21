@@ -34,7 +34,7 @@
 # make no representations about the suitability of this software for any
 # purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium: Makefile,v 1.12 94/01/29 14:53:59 rws Exp $
+# $XConsortium: Makefile,v 1.13 94/04/17 21:01:16 rws Exp $
 #
 #
 #	Makefile for server tester library

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mach8cmap.c,v 1.1 94/03/28 21:10:33 dpw Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *

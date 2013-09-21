@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Box.h,v 1.21 91/05/04 18:58:58 rws Exp $
+* $XConsortium: Box.h,v 1.22 94/04/17 20:11:55 rws Exp $
 */
 
 

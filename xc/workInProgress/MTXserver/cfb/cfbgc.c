@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 1.6 94/01/23 02:01:27 rob Exp $ */
+/* $XConsortium: cfbgc.c,v 1.7 94/04/17 21:16:22 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

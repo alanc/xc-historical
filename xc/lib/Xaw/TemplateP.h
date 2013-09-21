@@ -1,4 +1,4 @@
-/* $XConsortium: TemplateP.h,v 1.6 91/03/13 20:12:07 rws Exp $ */
+/* $XConsortium: TemplateP.h,v 1.7 94/04/17 20:13:00 rws Exp $ */
 
 /*
 

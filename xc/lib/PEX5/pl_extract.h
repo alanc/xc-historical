@@ -1,4 +1,4 @@
-/* $XConsortium: pl_extract.h,v 1.4 94/04/17 20:22:29 mor Exp gildea $ */
+/* $XConsortium: pl_extract.h,v 1.5 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

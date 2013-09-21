@@ -1,4 +1,4 @@
-/* $XConsortium: FSListExt.c,v 1.3 94/04/12 21:55:41 dpw Exp $ */
+/* $XConsortium: FSListExt.c,v 1.4 94/04/17 20:15:14 dpw Exp $ */
 
 /* @(#)FSListExt.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;

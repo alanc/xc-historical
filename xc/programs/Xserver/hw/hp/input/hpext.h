@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: hpext.h,v 1.1 93/08/08 12:59:01 rws Exp $ */
 
 /*
 
@@ -29,7 +29,7 @@ University of California.
 
 #ifndef HPEXT_H
 #define HPEXT_H
-/* $Header: hpext.h,v 1.1 92/07/29 16:30:18 xbuild Exp $ */
+/* $Header: hpext.h,v 1.1 94/07/22 11:27:28 xbuild Exp $ */
 
 #define  NEED_EVENTS
 #define  NEED_REPLIES

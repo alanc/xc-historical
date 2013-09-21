@@ -1,4 +1,4 @@
-/* $XConsortium: CharSet.h,v 1.4 91/07/22 23:45:26 converse Exp $ */
+/* $XConsortium: CharSet.h,v 1.5 94/04/17 20:15:50 converse Exp $ */
 
 /* 
 

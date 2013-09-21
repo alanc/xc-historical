@@ -1,4 +1,4 @@
-.\" $XConsortium: ico.man,v 1.13 94/04/11 14:30:06 gildea Exp $
+.\" $XConsortium: ico.man,v 1.14 94/04/17 20:45:16 gildea Exp $
 .TH ICO 1 "Release 6" "X Version 11"
 .SH NAME
 ico \- animate an icosahedron or other polyhedron

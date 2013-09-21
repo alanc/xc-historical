@@ -1,6 +1,6 @@
 #! /bin/sh
 # Copyright 1985,1988 Massacusetts Institute of Technology.
-# $XConsortium: xdpr.script,v 1.4 88/09/06 17:20:32 jim Exp $
+# $XConsortium: xdpr.script,v 1.9 91/06/30 19:20:16 rws Exp $
 # origin: William Kucharski, Solbourne Computer, Inc. 3/24/90
 #         translated from csh script xdpr.script "paul 4/12/88"
 

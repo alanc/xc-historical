@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xclipboard.c,v 1.27 93/09/20 17:59:01 hersh Exp $
+ * $XConsortium: xclipboard.c,v 1.28 94/04/17 20:25:08 hersh Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

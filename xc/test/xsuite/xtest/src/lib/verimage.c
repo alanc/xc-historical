@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: verimage.c,v 1.16 92/11/05 13:56:26 rws Exp $
+ * $XConsortium: verimage.c,v 1.17 94/04/17 21:01:08 rws Exp $
  */
 
 #include	"stdio.h"

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xmbufinfo.c,v 1.3 92/01/27 11:18:48 rws Exp $
+ * $XConsortium: xmbufinfo.c,v 1.4 94/04/17 20:46:05 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: qrykymp.m,v 1.7 92/06/11 17:15:26 rws Exp $
+ * $XConsortium: qrykymp.m,v 1.8 94/04/17 21:06:42 rws Exp $
  */
 >>TITLE XQueryKeymap CH07
 void

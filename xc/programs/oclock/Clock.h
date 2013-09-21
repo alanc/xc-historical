@@ -1,4 +1,4 @@
-/* $XConsortium: Clock.h,v 1.8 94/04/13 18:00:12 gildea Exp $ */
+/* $XConsortium: Clock.h,v 1.9 94/04/17 20:37:56 gildea Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: do_simple.c,v 2.10 94/02/28 21:56:40 dpw Exp $ */
+/* $XConsortium: do_simple.c,v 2.11 94/03/17 20:24:36 dpw Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

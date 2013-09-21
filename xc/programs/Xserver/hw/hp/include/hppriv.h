@@ -1,4 +1,4 @@
-/* $XConsortium: hppriv.h,v 1.1 93/08/08 12:56:09 rws Exp $ */
+/* $XConsortium: hppriv.h,v 1.2 94/04/17 20:30:06 rws Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.

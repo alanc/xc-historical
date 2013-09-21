@@ -1,4 +1,4 @@
-/* $XConsortium: lbxtags.c,v 1.5 94/03/27 13:11:47 dpw Exp mor $ */
+/* $XConsortium: lbxtags.c,v 1.6 95/05/02 19:36:04 mor Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *

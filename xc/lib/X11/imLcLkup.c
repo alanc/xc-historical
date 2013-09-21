@@ -1,4 +1,4 @@
-/* $XConsortium: imLcLkup.c,v 1.6 94/07/06 14:46:59 kaleb Exp kaleb $ */
+/* $XConsortium: imLcLkup.c,v 1.7 95/06/07 22:41:51 kaleb Exp $ */
 /******************************************************************
 
               Copyright 1992 by Fuji Xerox Co., Ltd.

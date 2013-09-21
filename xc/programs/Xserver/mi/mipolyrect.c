@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyrect.c,v 5.7 91/05/29 14:56:38 keith Exp $ */
+/* $XConsortium: mipolyrect.c,v 5.8 94/04/17 20:27:44 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"

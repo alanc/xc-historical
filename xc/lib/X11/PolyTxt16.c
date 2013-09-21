@@ -1,4 +1,4 @@
-/* $XConsortium: PolyTxt16.c,v 11.24 93/09/07 21:32:11 rws Exp $ */
+/* $XConsortium: PolyTxt16.c,v 11.25 94/04/17 20:20:29 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

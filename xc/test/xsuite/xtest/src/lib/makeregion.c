@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: makeregion.c,v 1.2 92/06/11 15:48:55 rws Exp $
+ * $XConsortium: makeregion.c,v 1.3 94/04/17 21:00:54 rws Exp $
  */
 
 #include	"xtest.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: mach_io.c,v 1.1 94/03/28 21:29:27 dpw Exp kaleb $ */
+/* $XConsortium: mach_io.c,v 1.2 95/06/14 15:19:17 kaleb Exp $ */
 /*
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>

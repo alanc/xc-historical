@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: Test4.c,v 1.2 92/06/11 17:35:18 rws Exp $
+ * $XConsortium: Test4.c,v 1.3 94/04/17 21:09:34 rws Exp $
  */
 
 #include	<stdlib.h>

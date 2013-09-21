@@ -1,4 +1,4 @@
-/* $XConsortium: svgaFb.c,v 1.3 93/09/20 14:05:32 rws Exp $ */
+/* $XConsortium: svgaFb.c,v 1.4 93/10/12 11:26:00 dpw Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.

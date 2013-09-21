@@ -1,4 +1,4 @@
-/* $XConsortium: client.h,v 1.4 92/11/18 21:00:40 gildea Exp $ */
+/* $XConsortium: client.h,v 1.5 94/04/17 19:55:54 gildea Exp $ */
 /*
  
 Copyright (c) 1990, 1991  X Consortium

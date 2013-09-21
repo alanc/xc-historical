@@ -1,4 +1,4 @@
-/* $XConsortium: bifbuild.c,v 5.4 91/08/23 16:45:28 rws Exp $ */
+/* $XConsortium: bifbuild.c,v 5.5 94/04/17 20:44:20 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

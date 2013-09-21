@@ -1,4 +1,4 @@
-/* $XConsortium: GC.c,v 1.6 94/03/31 17:50:26 dpw Exp ray $ */
+/* $XConsortium: GC.c,v 1.7 95/07/10 17:42:22 ray Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

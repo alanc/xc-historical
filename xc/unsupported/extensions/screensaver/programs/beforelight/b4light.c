@@ -1,5 +1,5 @@
 /*
- * $XConsortium: b4light.c,v 1.2 93/09/18 16:21:15 rws Exp $
+ * $XConsortium: b4light.c,v 1.3 94/04/17 20:59:38 rws Exp $
  *
 Copyright (c) 1992  X Consortium
 

@@ -1,4 +1,4 @@
-/* $XConsortium: transport.c,v 1.5 94/03/30 10:38:43 mor Exp $ */
+/* $XConsortium: transport.c,v 1.6 94/04/17 20:23:07 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

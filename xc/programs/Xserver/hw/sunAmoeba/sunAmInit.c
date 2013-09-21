@@ -1,4 +1,4 @@
-/* $XConsortium: sunAmInit.c,v 1.1 94/04/01 17:54:43 dpw Exp $ */
+/* $XConsortium: sunAmInit.c,v 1.2 94/04/17 20:32:46 dpw Exp $ */
 /*
  * sunAmInit.c --
  *	Amoeba implementation of initialization functions

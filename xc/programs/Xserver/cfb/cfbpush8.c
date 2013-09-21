@@ -27,7 +27,7 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
-/* $XConsortium: cfbpush8.c,v 5.13 94/01/07 09:42:27 dpw Exp $ */
+/* $XConsortium: cfbpush8.c,v 5.14 94/04/17 20:28:58 dpw Exp $ */
 
 #if PSZ == 8
 

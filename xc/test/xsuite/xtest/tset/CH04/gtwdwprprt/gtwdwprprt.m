@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtwdwprprt.m,v 1.9 92/06/11 16:13:17 rws Exp $
+ * $XConsortium: gtwdwprprt.m,v 1.10 94/04/17 21:03:33 rws Exp $
  */
 >>TITLE XGetWindowProperty CH04
 int

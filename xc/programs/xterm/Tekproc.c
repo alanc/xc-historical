@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Tekproc.c,v 1.115 94/04/17 20:23:23 rws Exp kaleb $
+ * $XConsortium: Tekproc.c,v 1.116 95/04/05 19:58:57 kaleb Exp $
  *
  * Warning, there be crufty dragons here.
  */

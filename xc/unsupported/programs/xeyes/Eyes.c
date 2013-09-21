@@ -1,4 +1,4 @@
-/* $XConsortium: Eyes.c,v 1.27 91/10/21 14:32:48 eswu Exp $ */
+/* $XConsortium: Eyes.c,v 1.28 94/04/17 20:45:22 eswu Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

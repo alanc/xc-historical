@@ -1,4 +1,4 @@
-/* $XConsortium: imLcPrs.c,v 1.5 94/03/26 17:00:38 rws Exp $ */
+/* $XConsortium: imLcPrs.c,v 1.6 94/06/03 17:48:24 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Oki Technosystems Laboratory, Inc.

@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: mfbzerarc.c,v 5.18 94/03/31 14:07:57 dpw Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.19 94/04/17 20:28:37 dpw Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"

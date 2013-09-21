@@ -86,7 +86,7 @@ SOFTWARE.
  *
 */
 
-/* $Header: osdep.h,v 1.1 89/06/14 15:49:18 jim Exp $ */
+/* $Header: osdep.h,v 1.2 94/04/17 20:59:27 jim Exp $ */
 
 #ifndef NULL
 #define NULL 0

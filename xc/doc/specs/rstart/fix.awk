@@ -1,5 +1,5 @@
 #! /bin/awk -f
-# $XConsortium$
+# $XConsortium: fix.awk,v 1.2 94/02/06 16:37:59 mor Exp $
 #
 
 BEGIN {

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: fcsot.m,v 1.10 92/06/11 17:21:14 rws Exp $
+ * $XConsortium: fcsot.m,v 1.11 94/04/17 21:07:38 rws Exp $
  */
 >>TITLE FocusOut CH08
 >>SET startup focusstartup

@@ -1,4 +1,4 @@
-# $XConsortium: ReqSame.awk,v 5.2 91/03/15 19:00:47 hersh Exp $
+# $XConsortium: ReqSame.awk,v 5.3 94/04/17 20:36:38 hersh Exp $
 ###########################################################################
 ## Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 ## 

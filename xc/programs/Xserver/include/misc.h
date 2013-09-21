@@ -66,7 +66,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: misc.h,v 1.68 94/04/17 20:25:48 dpw Exp $ */
+/* $XConsortium: misc.h,v 1.69 95/03/03 01:54:22 dpw Exp $ */
 #ifndef MISC_H
 #define MISC_H 1
 /*

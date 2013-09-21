@@ -1,4 +1,4 @@
-/* $XConsortium: LuvMxL.c,v 1.2 91/07/25 01:07:42 rws Exp $ */
+/* $XConsortium: LuvMxL.c,v 1.3 93/09/07 21:31:56 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saverproto.h,v 1.4 92/03/05 19:33:08 keith Exp $
+ * $XConsortium: saverproto.h,v 1.5 94/04/17 20:59:33 keith Exp $
  *
 Copyright (c) 1992  X Consortium
 

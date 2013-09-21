@@ -1,4 +1,4 @@
-/* $XConsortium: fslsfonts.c,v 1.6 93/09/11 18:04:20 rws Exp $ */
+/* $XConsortium: fslsfonts.c,v 1.7 94/04/17 20:38:29 rws Exp $ */
 /*
  
 Copyright (c) 1990  X Consortium

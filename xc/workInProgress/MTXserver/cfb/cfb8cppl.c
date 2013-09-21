@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.3 94/01/11 20:42:32 rob Exp $
+ * $XConsortium: cfb8cppl.c,v 1.4 94/04/17 21:16:19 rob Exp $
  *
 Copyright (c) 1990  X Consortium
 

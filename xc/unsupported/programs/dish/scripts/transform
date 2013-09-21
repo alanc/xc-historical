@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: transform,v 1.2 94/04/01 16:33:18 matt Exp $
 #  This dish script uses inout params to transform a vector with a matrix
 
 set circle [figure_kit circle 0 [figure_kit default_style] 0 0 100]

@@ -1,4 +1,4 @@
-/* $XConsortium: XIE.h,v 1.3 94/01/12 19:36:23 rws Exp $ */
+/* $XConsortium: assert.h,v 1.3 94/02/20 11:12:26 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

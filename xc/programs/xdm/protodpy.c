@@ -1,5 +1,5 @@
 /*
- * $XConsortium: protodpy.c,v 1.14 94/04/17 20:03:42 rws Exp gildea $
+ * $XConsortium: protodpy.c,v 1.15 95/07/10 21:18:07 gildea Exp $
  *
 Copyright (c) 1989  X Consortium
 

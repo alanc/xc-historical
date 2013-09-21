@@ -1,4 +1,4 @@
-/* $XConsortium: jrevdct.c,v 1.3 94/01/12 20:20:37 rws Exp $ */
+/* $XConsortium: jrevdct.c,v 1.4 94/04/17 20:35:45 rws Exp $ */
 /* Module jrevdct.c */
 
 /****************************************************************************

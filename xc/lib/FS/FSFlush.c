@@ -1,4 +1,4 @@
-/* $XConsortium: FSFlush.c,v 1.3 94/04/12 21:55:39 dpw Exp $ */
+/* $XConsortium: FSFlush.c,v 1.4 94/04/17 20:15:11 dpw Exp $ */
 
 /* @(#)FSFlush.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;

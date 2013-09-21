@@ -1,4 +1,4 @@
-/* $XConsortium: basestat.c,v 5.2 91/07/19 14:13:23 hersh Exp $ */
+/* $XConsortium: basestat.c,v 5.3 94/04/17 20:44:16 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

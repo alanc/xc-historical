@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: mncmpsofsc.m,v 1.7 93/07/09 14:08:11 rws Exp $
+ * $XConsortium: mncmpsofsc.m,v 1.8 94/04/17 21:02:30 rws Exp $
  */
 >>SET   macro
 >>TITLE XMinCmapsOfScreen CH02

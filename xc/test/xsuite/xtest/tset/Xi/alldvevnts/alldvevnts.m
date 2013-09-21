@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: alldvevnts.m,v 1.5 94/01/30 12:08:38 rws Exp $
+ * $XConsortium: alldvevnts.m,v 1.6 94/04/17 21:13:06 rws Exp $
  */
 >>TITLE XAllowDeviceEvents XINPUT
 void

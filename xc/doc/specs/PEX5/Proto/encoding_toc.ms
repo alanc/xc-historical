@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: encoding_toc.ms,v 1.2 94/04/18 18:02:22 rws Exp $
 .nr LL 6.5i
 .nr PD 0.1i
 .nr HM 1.2i

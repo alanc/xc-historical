@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: drwarcs.m,v 1.11 92/06/11 16:26:01 rws Exp $
+ * $XConsortium: drwarcs.m,v 1.12 94/04/17 21:04:42 rws Exp $
  */
 >>TITLE XDrawArcs CH06
 void

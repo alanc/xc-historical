@@ -1,4 +1,4 @@
-/* $XConsortium: readfile.c,v 1.4 94/06/03 15:58:34 gildea Exp gildea $ */
+/* $XConsortium: readfile.c,v 1.5 94/12/11 14:25:48 gildea Exp $ */
 /*
 
 Copyright (c) 1988, 1991  X Consortium

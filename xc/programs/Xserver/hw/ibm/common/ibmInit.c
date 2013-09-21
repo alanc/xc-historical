@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmInit.c,v 1.7 93/08/30 08:03:15 dpw Exp $
+ * $XConsortium: ibmInit.c,v 1.8 94/02/23 15:55:22 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

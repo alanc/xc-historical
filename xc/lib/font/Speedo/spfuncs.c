@@ -1,4 +1,4 @@
-/* $XConsortium: spfuncs.c,v 1.12 94/04/17 20:17:49 gildea Exp $ */
+/* $XConsortium: spfuncs.c,v 1.13 94/06/06 17:42:26 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation

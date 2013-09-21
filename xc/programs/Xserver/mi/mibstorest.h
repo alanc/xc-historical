@@ -4,7 +4,7 @@
  * internal structure definitions for mi backing store
  */
 
-/* $XConsortium: mibstorest.h,v 5.9 93/10/12 11:41:18 dpw Exp $ */
+/* $XConsortium: mibstorest.h,v 5.10 94/04/17 20:27:25 dpw Exp $ */
 
 /*
 

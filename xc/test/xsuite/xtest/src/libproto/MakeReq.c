@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: MakeReq.c,v 1.20 93/12/22 16:44:12 rws Exp $
+ * $XConsortium: MakeReq.c,v 1.21 94/04/17 21:01:14 rws Exp $
  */
 /*
  * ***************************************************************************

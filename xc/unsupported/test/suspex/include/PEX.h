@@ -1,7 +1,7 @@
 #ifndef PEX_H
 #define PEX_H
 
-/* $XConsortium$ */
+/* $XConsortium: PEX.h,v 1.1 93/11/22 13:12:13 rws Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */

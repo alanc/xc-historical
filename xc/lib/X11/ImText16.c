@@ -1,4 +1,4 @@
-/* $XConsortium: ImText16.c,v 11.21 94/03/30 11:57:31 rws Exp $ */
+/* $XConsortium: ImText16.c,v 11.22 94/04/17 20:19:58 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: StrToShap.c,v 1.4 91/09/18 14:23:52 converse Exp $ */
+/* $XConsortium: StrToShap.c,v 1.5 94/04/17 20:16:20 converse Exp $ */
 
 /* 
  

@@ -1,4 +1,4 @@
-/* $XConsortium: lcPublic.c,v 1.4 94/01/20 18:07:14 rws Exp $ */
+/* $XConsortium: lcPublic.c,v 1.5 94/02/08 11:41:49 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

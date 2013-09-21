@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: dispatch.c,v 1.9 94/01/23 01:47:49 rob Exp $ */
+/* $XConsortium: dispatch.c,v 1.10 94/04/17 21:15:42 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

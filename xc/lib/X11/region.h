@@ -1,4 +1,4 @@
-/* $XConsortium: region.h,v 11.13 91/09/10 08:21:49 rws Exp $ */
+/* $XConsortium: region.h,v 11.14 94/04/17 20:22:20 rws Exp $ */
 /************************************************************************
 
 Copyright (c) 1987  X Consortium

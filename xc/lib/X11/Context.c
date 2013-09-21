@@ -1,4 +1,4 @@
-/* $XConsortium: Context.c,v 1.20 94/04/02 17:40:46 rws Exp $ */
+/* $XConsortium: Context.c,v 1.21 94/04/17 20:18:54 rws Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard,

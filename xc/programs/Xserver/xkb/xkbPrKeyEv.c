@@ -1,4 +1,4 @@
-/* $XConsortium: xkbPrKeyEv.c,v 1.7 93/09/29 20:53:34 rws Exp $ */
+/* $XConsortium: xkbPrKeyEv.c,v 1.1 94/04/01 18:46:13 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

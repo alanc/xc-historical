@@ -1,4 +1,4 @@
-/* $XConsortium: FSSaver.c,v 1.5 91/01/06 11:45:26 rws Exp $ */
+/* $XConsortium: FSSaver.c,v 1.6 94/04/17 20:19:16 rws Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

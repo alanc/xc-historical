@@ -1,4 +1,4 @@
-/* $XConsortium: Mailbox.h,v 1.20 91/05/04 18:58:42 rws Exp $ */
+/* $XConsortium: Mailbox.h,v 1.21 94/04/17 20:43:27 rws Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

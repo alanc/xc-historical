@@ -1,4 +1,4 @@
-/* $XConsortium: list.c,v 1.6 94/08/30 17:33:56 mor Exp mor $ */
+/* $XConsortium: list.c,v 1.7 94/12/16 17:27:27 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

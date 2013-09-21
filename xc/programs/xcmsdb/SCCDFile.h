@@ -1,4 +1,4 @@
-/* $XConsortium: SCCDFile.h,v 1.4 94/02/06 20:15:35 rws Exp $ */
+/* $XConsortium: SCCDFile.h,v 1.5 94/02/07 23:20:33 rws Exp $ */
 /*
  * (c) Copyright 1990 Tektronix Inc.
  * 	All Rights Reserved

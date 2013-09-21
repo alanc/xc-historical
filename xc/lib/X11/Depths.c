@@ -1,4 +1,4 @@
-/* $XConsortium: Depths.c,v 1.6 91/02/01 16:32:55 gildea Exp $ */
+/* $XConsortium: Depths.c,v 1.7 94/04/17 20:19:05 gildea Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

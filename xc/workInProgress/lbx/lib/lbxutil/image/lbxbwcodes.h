@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lbxbwcodes.h,v 1.1 95/01/17 18:17:40 mor Exp $ */
 
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler

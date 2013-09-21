@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: crtpxmp.m,v 1.5 92/06/11 17:48:22 rws Exp $
+ * $XConsortium: crtpxmp.m,v 1.6 94/04/17 21:11:14 rws Exp $
  */
 >>TITLE CreatePixmap XPROTO
 >>SET startup protostartup

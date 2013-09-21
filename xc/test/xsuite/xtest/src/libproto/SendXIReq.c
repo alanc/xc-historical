@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  . purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: SendXIReq.c,v 1.9 94/01/29 15:38:38 rws Exp $
+ * $XConsortium: SendXIReq.c,v 1.10 94/04/17 21:01:24 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -65,11 +65,11 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /*
- *	$Header: SendXIReq.c,v 1.9 94/01/29 15:38:38 rws Exp $
+ *	$Header: SendXIReq.c,v 1.10 94/04/17 21:01:24 rws Exp $
  */
 
 #ifndef lint
-static char rcsid[]="$Header: SendXIReq.c,v 1.9 94/01/29 15:38:38 rws Exp $";
+static char rcsid[]="$Header: SendXIReq.c,v 1.10 94/04/17 21:01:24 rws Exp $";
 #endif
 
 #include "XstlibInt.h"

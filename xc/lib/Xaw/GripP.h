@@ -1,5 +1,5 @@
 /*
-* $XConsortium: GripP.h,v 1.14 89/05/11 01:05:27 kit Exp $
+* $XConsortium: GripP.h,v 1.15 94/04/17 20:12:11 kit Exp $
 */
 
 

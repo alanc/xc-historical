@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: stwmicnnm.m,v 1.8 92/06/11 17:31:24 rws Exp $
+ * $XConsortium: stwmicnnm.m,v 1.9 94/04/17 21:09:03 rws Exp $
  */
 >>TITLE XSetWMIconName CH09
 void

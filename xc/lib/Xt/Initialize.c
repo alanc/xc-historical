@@ -1,4 +1,4 @@
-/* $XConsortium: Initialize.c,v 1.222 94/12/12 18:59:11 kaleb Exp gildea $ */
+/* $XConsortium: Initialize.c,v 1.223 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

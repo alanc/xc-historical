@@ -1,4 +1,4 @@
-/* $XConsortium: jmemsys.h,v 1.3 94/01/12 20:20:16 rws Exp $ */
+/* $XConsortium: jmemsys.h,v 1.4 94/04/17 20:35:43 rws Exp $ */
 /* Module jmemsys.h */
 
 /****************************************************************************

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: mprsd.m,v 1.8 92/06/11 16:08:08 rws Exp $
+ * $XConsortium: mprsd.m,v 1.9 94/04/17 21:03:06 rws Exp $
  */
 >>TITLE XMapRaised CH03
 void

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_lines.c,v 2.11 92/11/11 16:58:34 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

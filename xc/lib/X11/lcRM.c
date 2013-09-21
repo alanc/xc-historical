@@ -1,4 +1,4 @@
-/* $XConsortium: lcRM.c,v 1.2 93/09/17 14:24:17 rws Exp $ */
+/* $XConsortium: lcRM.c,v 1.3 94/01/20 18:07:18 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

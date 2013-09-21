@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lut_dynamics.c,v 1.0 93/11/22 12:54:17 rws Exp $ */
 
 /*
 	NOTICE TO USER: The source code in this file is copyrighted under

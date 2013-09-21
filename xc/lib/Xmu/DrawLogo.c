@@ -1,4 +1,4 @@
-/* $XConsortium: DrawLogo.c,v 1.4 94/04/17 20:16:03 rws Exp $ */
+/* $XConsortium: DrawLogo.c,v 1.5 94/07/05 14:57:15 gildea Exp $ */
 
 /*
 

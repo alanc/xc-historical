@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: Expect.c,v 1.18 94/01/29 14:55:00 rws Exp $
+ * $XConsortium: Expect.c,v 1.19 94/04/17 21:01:13 rws Exp $
  */
 /*
  * ***************************************************************************

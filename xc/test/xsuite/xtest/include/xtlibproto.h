@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: xtlibproto.h,v 1.3 92/07/01 11:04:14 rws Exp $
+ * $XConsortium: xtlibproto.h,v 1.4 94/04/17 21:00:06 rws Exp $
  */
 
 /*

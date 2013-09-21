@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShape.c,v 1.24 94/03/30 12:28:59 rws Exp $
+ * $XConsortium: XShape.c,v 1.25 94/04/17 20:22:55 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

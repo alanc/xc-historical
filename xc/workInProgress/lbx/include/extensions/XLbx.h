@@ -1,4 +1,4 @@
-/* $XConsortium: XLbx.h,v 1.1 95/03/02 18:23:55 mor Exp $ */
+/* $XConsortium: XLbx.h,v 1.10 95/03/21 19:57:12 mor Exp $ */
 /*
  * $NCDId: @(#)XLbx.h,v 1.21 1994/11/18 20:29:53 lemke Exp $
  *

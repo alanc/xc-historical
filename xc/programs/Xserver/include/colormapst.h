@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: colormapst.h,v 1.6 88/09/06 15:49:00 jim Exp $ */
+/* $XConsortium: colormapst.h,v 1.7 94/04/17 20:25:33 jim Exp $ */
 #ifndef CMAPSTRUCT_H
 #define CMAPSTRUCT_H 1
 

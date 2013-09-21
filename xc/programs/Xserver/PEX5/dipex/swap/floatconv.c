@@ -1,4 +1,4 @@
-/* $XConsortium: floatconv.c,v 5.5 91/12/30 18:23:51 hersh Exp $ */
+/* $XConsortium: floatconv.c,v 5.6 94/04/17 20:36:32 hersh Exp $ */
 
 /***********************************************************
 

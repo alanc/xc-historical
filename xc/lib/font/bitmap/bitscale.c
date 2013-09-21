@@ -1,4 +1,4 @@
-/* $XConsortium: bitscale.c,v 1.27 94/04/17 20:17:13 gildea Exp $ */
+/* $XConsortium: bitscale.c,v 1.28 94/07/25 13:50:59 kaleb Exp $ */
 
 /*
 

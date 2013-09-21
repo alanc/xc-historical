@@ -1,4 +1,4 @@
-/* $XConsortium: Intrinsic.c,v 1.196 94/11/21 18:20:56 kaleb Exp kaleb $ */
+/* $XConsortium: Intrinsic.c,v 1.197 95/04/07 19:51:22 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

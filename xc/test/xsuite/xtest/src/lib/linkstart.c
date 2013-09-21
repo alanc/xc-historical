@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: linkstart.c,v 1.10 92/06/11 15:43:56 rws Exp $
+ * $XConsortium: linkstart.c,v 1.11 94/04/17 21:00:50 rws Exp $
  */
 
 #include	"xtest.h"

@@ -38,7 +38,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: alldvevnts.m,v 1.4 94/01/30 11:52:16 rws Exp $
+ * $XConsortium: alldvevnts.m,v 1.5 94/04/17 21:13:50 rws Exp $
  */
 >>TITLE AllowDeviceEvents XIPROTO
 >>SET startup protostartup

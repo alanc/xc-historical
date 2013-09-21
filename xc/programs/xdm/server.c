@@ -1,4 +1,4 @@
-/* $XConsortium: server.c,v 1.19 94/04/17 20:03:44 hersh Exp $ */
+/* $XConsortium: server.c,v 1.20 94/10/17 18:29:34 converse Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

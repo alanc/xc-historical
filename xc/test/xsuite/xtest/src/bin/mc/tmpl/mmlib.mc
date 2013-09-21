@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: mmlib.mc,v 1.2 92/06/11 19:34:14 rws Exp $
 # 
 # This part of the makefile checks for the existance of the libraries
 # and creates them if necessary.

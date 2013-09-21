@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: head.t,v 1.1 92/06/11 15:32:55 rws Exp $
 '\" Simple table specification - to avoid the need to use tbl.
 .de tL \" table line
 .nf

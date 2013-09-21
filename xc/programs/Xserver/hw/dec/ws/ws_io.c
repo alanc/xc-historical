@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: ws_io.c,v 1.13 94/04/17 20:29:57 dpw Exp kaleb $ */
+/* $XConsortium: ws_io.c,v 1.14 94/11/02 16:01:29 kaleb Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>

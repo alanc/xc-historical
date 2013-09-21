@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: gc.h,v 1.5 89/10/27 14:01:17 jim Exp $
+ * $XConsortium: gc.h,v 1.6 94/04/17 20:38:10 jim Exp $
  *
  * GC related externs
  *

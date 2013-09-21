@@ -66,7 +66,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpushpxl.c,v 1.5 94/01/19 17:34:36 dpw Exp $ */
+/* $XConsortium: mfbpushpxl.c,v 1.6 94/04/17 21:16:14 dpw Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"

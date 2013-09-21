@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: reg8514.h,v 1.1 94/03/28 21:06:17 dpw Exp $ */
 /* REG8514.H
  *
  * Written by Jake Richter

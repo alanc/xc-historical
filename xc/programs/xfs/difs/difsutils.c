@@ -1,4 +1,4 @@
-/* $XConsortium: difsutils.c,v 1.11 94/03/17 18:11:48 gildea Exp $ */
+/* $XConsortium: difsutils.c,v 1.12 94/04/17 19:56:12 gildea Exp $ */
 /*
  * misc utility routines
  */

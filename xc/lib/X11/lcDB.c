@@ -1,4 +1,4 @@
-/* $XConsortium: lcDB.c,v 1.6 94/03/26 17:01:07 rws Exp $ */
+/* $XConsortium: lcDB.c,v 1.7 94/04/01 17:51:18 rws Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: OfCCC.c,v 1.1 91/05/13 22:37:17 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

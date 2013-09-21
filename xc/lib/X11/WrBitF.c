@@ -1,4 +1,4 @@
-/* $XConsortium: WrBitF.c,v 1.12 93/09/07 20:03:27 rws Exp $ */
+/* $XConsortium: WrBitF.c,v 1.13 94/04/17 20:21:32 rws Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

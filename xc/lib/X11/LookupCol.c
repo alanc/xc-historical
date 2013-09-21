@@ -1,4 +1,4 @@
-/* $XConsortium: LookupCol.c,v 11.22 94/03/31 21:49:48 rws Exp $ */
+/* $XConsortium: LookupCol.c,v 11.23 94/04/17 20:20:10 rws Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium

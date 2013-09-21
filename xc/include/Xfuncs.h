@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xfuncs.h,v 1.15 94/04/17 20:10:50 rws Exp kaleb $
+ * $XConsortium: Xfuncs.h,v 1.16 94/12/01 16:25:53 kaleb Exp $
  * 
  * 
 Copyright (c) 1990  X Consortium

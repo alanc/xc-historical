@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: unnstllclr.m,v 1.4 92/06/11 17:17:46 rws Exp $
+ * $XConsortium: unnstllclr.m,v 1.5 94/04/17 21:07:06 rws Exp $
  */
 >>TITLE XUninstallColormap CH07
 void

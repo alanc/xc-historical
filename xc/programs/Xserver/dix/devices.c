@@ -47,7 +47,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: devices.c,v 5.45 94/04/17 20:26:22 frob Exp $ */
+/* $XConsortium: devices.c,v 5.46 94/08/16 13:45:06 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"

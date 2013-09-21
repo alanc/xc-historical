@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.20 94/02/23 15:49:28 dpw Exp $ */
+/* $XConsortium: auth.c,v 1.21 94/04/17 20:26:54 dpw Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

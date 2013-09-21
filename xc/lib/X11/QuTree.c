@@ -1,4 +1,4 @@
-/* $XConsortium: QuTree.c,v 11.19 91/01/06 11:47:41 rws Exp $ */
+/* $XConsortium: QuTree.c,v 11.20 94/04/17 20:20:40 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

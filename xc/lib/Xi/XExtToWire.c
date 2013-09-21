@@ -1,4 +1,4 @@
-/* $XConsortium: XExtToWire.c,v 1.16 94/02/21 11:12:59 rws Exp $ */
+/* $XConsortium: XExtToWire.c,v 1.17 94/04/17 20:18:00 rws Exp $ */
 
 /************************************************************
 

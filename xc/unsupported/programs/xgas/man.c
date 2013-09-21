@@ -1,4 +1,4 @@
-/* $XConsortium: man.c,v 1.5 91/09/13 17:59:51 dave Exp $ */
+/* $XConsortium: man.c,v 1.6 94/04/17 20:45:28 dave Exp $ */
 char *man[]={"\
 \n\
 \n\

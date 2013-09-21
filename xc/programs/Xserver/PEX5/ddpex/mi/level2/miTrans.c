@@ -1,4 +1,4 @@
-/* $XConsortium: miTrans.c,v 5.2 91/05/01 14:34:41 hersh Exp $ */
+/* $XConsortium: miTrans.c,v 5.3 94/04/17 20:37:21 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

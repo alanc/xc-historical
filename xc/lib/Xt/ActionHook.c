@@ -1,4 +1,4 @@
-/* $XConsortium: ActionHook.c,v 1.7 94/04/17 20:13:35 kaleb Exp $ */
+/* $XConsortium: ActionHook.c,v 1.8 94/06/01 15:38:29 converse Exp $ */
 
 /*LINTLIBRARY*/
 

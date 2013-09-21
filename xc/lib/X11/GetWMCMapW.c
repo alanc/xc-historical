@@ -1,4 +1,4 @@
-/* $XConsortium: GetWMCMapW.c,v 1.5 91/02/01 16:33:05 gildea Exp $ */
+/* $XConsortium: GetWMCMapW.c,v 1.6 94/04/17 20:19:46 gildea Exp $ */
 
 /***********************************************************
 

@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: grbbttn.m,v 1.13 92/06/11 17:12:59 rws Exp $
+ * $XConsortium: grbbttn.m,v 1.14 94/04/17 21:06:21 rws Exp $
  */
 >>TITLE XGrabButton CH07
 void

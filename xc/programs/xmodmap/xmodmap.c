@@ -1,4 +1,4 @@
-/* $XConsortium: xmodmap.c,v 1.23 94/03/16 18:39:13 converse Exp $ */
+/* $XConsortium: xmodmap.c,v 1.24 94/04/17 20:24:24 converse Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: jrdjfif.c,v 1.3 94/01/12 20:20:30 rws Exp $ */
+/* $XConsortium: jrdjfif.c,v 1.4 94/04/17 20:35:44 rws Exp $ */
 /* Module jrdjfif.c */
 
 /****************************************************************************

@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: todis6.sed,v 1.1 91/02/16 09:51:49 rws Exp $
 #  Copyright (c) 1990 by Sun Microsystems, Inc.
 #  A Sed script for converting to the PHIGS DIS C binding
 #  This file should each be kept sorted in inverse order, so

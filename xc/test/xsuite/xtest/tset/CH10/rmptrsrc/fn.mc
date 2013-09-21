@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: fn.mc,v 1.8 92/06/11 17:40:50 rws Exp $
+ * $XConsortium: fn.mc,v 1.9 94/04/17 21:10:12 rws Exp $
  */
 
 >># resource manager test common functions

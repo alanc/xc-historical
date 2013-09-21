@@ -1,4 +1,4 @@
-/* $XConsortium: pexExtract.h,v 5.8 93/09/03 14:47:03 hersh Exp $ */
+/* $XConsortium: pexExtract.h,v 5.9 94/04/17 20:35:58 hersh Exp $ */
 
 
 /***********************************************************

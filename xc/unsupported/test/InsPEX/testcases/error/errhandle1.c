@@ -1,5 +1,5 @@
 
-/* $XConsortium: errhandle1.c,v 5.2 91/07/12 18:27:56 hersh Exp $ */
+/* $XConsortium: errhandle1.c,v 5.3 94/04/17 20:48:47 hersh Exp $ */
 
 /*****************************************************************
 

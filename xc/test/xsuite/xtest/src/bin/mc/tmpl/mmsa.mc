@@ -1,4 +1,4 @@
-# $XConsortium: mmsa.mc,v 1.2 92/06/11 19:34:26 rws Exp $
+# $XConsortium: mmsa.mc,v 1.3 94/01/29 16:24:30 rws Exp $
 #
 # Build a standalone version of the test case.
 #

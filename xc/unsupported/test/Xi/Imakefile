@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.14 91/07/12 17:06:55 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.15 93/08/20 17:22:06 rws Exp $
 
    LOCLIBS = $(XILIB) $(XLIB)
    DEPLIBS = $(DEPXILIB) $(DEPXLIB)

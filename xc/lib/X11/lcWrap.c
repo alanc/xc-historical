@@ -1,4 +1,4 @@
-/* $XConsortium: lcWrap.c,v 11.22 95/05/11 22:16:09 kaleb Exp gildea $ */
+/* $XConsortium: lcWrap.c,v 11.23 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

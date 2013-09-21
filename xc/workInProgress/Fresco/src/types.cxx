@@ -1,5 +1,5 @@
 /*
- * $XConsortium: types.cxx,v 1.8 94/09/01 18:45:46 matt Exp matt $
+ * $XConsortium: types.cxx,v 1.9 94/09/14 20:31:38 matt Exp $
  */
 
 /*

@@ -1,4 +1,4 @@
-/* $XConsortium: out_scrn.c,v 1.4 94/02/07 10:01:18 gildea Exp $ */
+/* $XConsortium: out_scrn.c,v 1.5 94/02/10 14:15:39 gildea Exp $ */
 
 /*
 

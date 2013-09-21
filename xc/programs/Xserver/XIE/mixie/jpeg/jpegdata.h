@@ -1,4 +1,4 @@
-/* $XConsortium: jpegdata.h,v 1.3 94/01/12 20:20:22 rws Exp $ */
+/* $XConsortium: jpegdata.h,v 1.4 94/04/17 20:35:43 rws Exp $ */
 /* Module jpegdata.h */
 
 /****************************************************************************

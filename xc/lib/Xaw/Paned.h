@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Paned.h,v 1.14 94/01/31 10:48:31 kaleb Exp $
+* $XConsortium: Paned.h,v 1.15 94/04/17 20:12:29 kaleb Exp $
 */
 
 

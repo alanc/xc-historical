@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wsx_util.c,v 5.7 94/04/17 20:42:34 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

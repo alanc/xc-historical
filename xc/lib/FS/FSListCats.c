@@ -1,4 +1,4 @@
-/* $XConsortium: FSListCats.c,v 1.2 92/11/18 21:31:20 gildea Exp $ */
+/* $XConsortium: FSListCats.c,v 1.3 94/04/17 20:15:13 gildea Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;

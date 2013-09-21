@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.1 93/07/19 11:39:34 mor Exp $ */
+/* $XConsortium: utils.c,v 1.2 94/04/17 20:18:30 mor Exp $ */
 
 /*
 

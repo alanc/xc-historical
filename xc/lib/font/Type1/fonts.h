@@ -1,4 +1,4 @@
-/* $XConsortium: fonts.h,v 1.2 91/10/10 11:18:09 rws Exp $ */
+/* $XConsortium: fonts.h,v 1.3 94/04/17 20:17:19 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

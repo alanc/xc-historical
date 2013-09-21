@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: parse.h,v 1.15 93/09/02 11:11:46 dpw Exp $
+ * $XConsortium: parse.h,v 1.16 94/04/17 20:38:20 dpw Exp $
  *
  * .twmrc parsing externs
  *

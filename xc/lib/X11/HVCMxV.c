@@ -1,4 +1,4 @@
-/* $XConsortium: HVCMxV.c,v 1.8 91/07/25 01:08:14 rws Exp $" */
+/* $XConsortium: HVCMxV.c,v 1.9 93/09/07 21:30:58 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

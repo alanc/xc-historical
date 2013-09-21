@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: auth.c,v 1.4 94/02/06 16:16:13 mor Exp $ */
 
 /************************************************************************/
 /* Copyright (c) 1993 Quarterdeck Office Systems			*/

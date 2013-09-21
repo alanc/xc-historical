@@ -1,4 +1,4 @@
-/* $XConsortium: waitfor.c,v 1.13 94/04/17 19:56:09 dpw Exp kaleb $ */
+/* $XConsortium: waitfor.c,v 1.14 95/04/05 19:58:24 kaleb Exp $ */
 /*
  * waits for input
  */

@@ -1,4 +1,4 @@
-/* $XConsortium: CrCmap.c,v 11.11 91/02/12 16:10:51 dave Exp $ */
+/* $XConsortium: CrCmap.c,v 11.12 94/04/17 20:18:58 dave Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

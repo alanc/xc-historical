@@ -1,4 +1,4 @@
-/* $XConsortium: WMGeom.c,v 1.4 91/01/06 11:43:59 rws Exp $ */
+/* $XConsortium: WMGeom.c,v 1.5 94/04/17 20:21:28 rws Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

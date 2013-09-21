@@ -1,4 +1,4 @@
-/* $XConsortium: $ */
+/* $XConsortium: mach64pntwn.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pntwn.c,v 3.0 1994/11/26 12:42:58 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

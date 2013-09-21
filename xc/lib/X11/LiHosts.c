@@ -1,4 +1,4 @@
-/* $XConsortium: LiHosts.c,v 11.21 93/09/07 21:31:38 rws Exp $ */
+/* $XConsortium: LiHosts.c,v 11.22 94/04/17 20:20:06 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

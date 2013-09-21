@@ -1,4 +1,4 @@
-/* $XConsortium: mbtxtextnt.m,v 1.1 94/01/29 16:03:16 rws Exp $ */
+/* $XConsortium: mbtxtextnt.m,v 1.2 94/04/17 21:14:19 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

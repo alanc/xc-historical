@@ -1,4 +1,4 @@
-/* $XConsortium: Graphics.c,v 1.17 93/09/20 17:44:20 hersh Exp $ */
+/* $XConsortium: Graphics.c,v 1.18 94/04/17 20:23:44 hersh Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: CrWindow.c,v 11.14 93/10/25 19:09:01 rws Exp $ */
+/* $XConsortium: CrWindow.c,v 11.15 94/04/17 20:19:02 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

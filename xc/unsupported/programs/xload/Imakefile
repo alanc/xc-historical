@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.27 92/03/11 21:52:58 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.28 93/07/29 14:01:59 rws Exp $
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
 #if defined(SunArchitecture) && defined(i386Architecture)

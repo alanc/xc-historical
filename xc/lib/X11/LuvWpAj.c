@@ -1,4 +1,4 @@
-/* $XConsortium: CIELuvWpAj.c,v 1.3 91/02/12 16:09:22 dave Exp $" */
+/* $XConsortium: LuvWpAj.c,v 1.4 91/05/13 22:22:56 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

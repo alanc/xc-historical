@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: unldfnt.m,v 1.8 92/06/11 17:10:10 rws Exp $
+ * $XConsortium: unldfnt.m,v 1.9 94/04/17 21:05:58 rws Exp $
  */
 >>TITLE XUnloadFont CH06
 void

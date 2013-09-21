@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ws_color.c,v 1.5 92/04/06 18:19:34 keith Exp $ */
+/* $XConsortium: ws_color.c,v 1.6 94/04/17 20:29:57 keith Exp $ */
 
 /* 
  * ws_color.c - device specific color routines, stored in screen

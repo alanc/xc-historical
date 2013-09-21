@@ -1,5 +1,5 @@
 /*
- * $XConsortium: menu.c,v 1.6 94/02/08 15:06:37 kaleb Exp $
+ * $XConsortium: menu.c,v 1.7 94/04/17 20:24:02 kaleb Exp $
  *
 Copyright (c) 1989  X Consortium
 

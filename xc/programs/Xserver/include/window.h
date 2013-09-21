@@ -1,4 +1,4 @@
-/* $XConsortium: window.h,v 1.6 93/09/29 17:12:04 dpw Exp $ */
+/* $XConsortium: window.h,v 1.7 94/04/17 20:26:12 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

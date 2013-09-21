@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: gen-hdr.cxx,v 1.5 94/11/08 20:57:08 matt Exp $ */
 /*
  * Copyright (c) 1992-1993 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.

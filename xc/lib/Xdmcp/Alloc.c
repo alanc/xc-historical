@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Alloc.c,v 1.1 89/09/14 17:11:04 keith Exp $
+ * $XConsortium: Alloc.c,v 1.2 94/04/17 20:16:29 keith Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

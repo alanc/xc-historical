@@ -1,4 +1,4 @@
-/* $XConsortium: FSErrDis.c,v 1.4 94/04/12 21:55:36 dpw Exp $ */
+/* $XConsortium: FSErrDis.c,v 1.5 94/04/17 20:15:10 dpw Exp $ */
 
 /* @(#)FSErrDis.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;

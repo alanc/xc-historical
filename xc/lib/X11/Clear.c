@@ -1,4 +1,4 @@
-/* $XConsortium: Clear.c,v 11.8 91/01/06 11:44:38 rws Exp $ */
+/* $XConsortium: Clear.c,v 11.9 94/04/17 20:18:51 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

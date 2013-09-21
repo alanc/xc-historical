@@ -1,4 +1,4 @@
-/* $XConsortium: access.h,v 1.3 94/04/12 21:59:06 dpw Exp $ */
+/* $XConsortium: access.h,v 1.4 94/04/17 19:55:51 dpw Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 

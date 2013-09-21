@@ -1,4 +1,4 @@
-/* $XConsortium: streams.c,v 1.4 94/04/17 20:03:47 rws Exp $ */
+/* $XConsortium: streams.c,v 1.5 94/06/03 16:34:41 mor Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

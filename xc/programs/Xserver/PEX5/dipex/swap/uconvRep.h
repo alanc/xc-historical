@@ -1,4 +1,4 @@
-/* $XConsortium: uconvRep.h,v 5.2 92/03/04 14:19:18 hersh Exp $ */
+/* $XConsortium: uconvRep.h,v 5.3 94/04/17 20:36:35 hersh Exp $ */
 
 /***********************************************************
 

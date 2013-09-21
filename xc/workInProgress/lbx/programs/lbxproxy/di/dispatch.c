@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.9 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: dispatch.c,v 1.10 95/05/24 16:14:13 mor Exp $ */
 /*
  * $NCDOr: dispatch.c,v 1.2 1993/11/19 21:28:48 keithp Exp keithp $
  * $NCDId: @(#)dispatch.c,v 1.27 1994/11/18 20:35:09 lemke Exp $

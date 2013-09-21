@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: _enter.h,v 1.3 94/06/03 21:42:38 matt Exp $ */
 
 /*
  * Copyright (c) 1987-91 Stanford University

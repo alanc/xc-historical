@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: cnfgrwdw.m,v 1.11 92/06/11 16:04:01 rws Exp $
+ * $XConsortium: cnfgrwdw.m,v 1.12 94/04/17 21:02:55 rws Exp $
  */
 >>TITLE XConfigureWindow CH03
 void

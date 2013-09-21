@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: unmpwdw.m,v 1.6 92/06/11 16:11:54 rws Exp $
+ * $XConsortium: unmpwdw.m,v 1.7 94/04/17 21:03:24 rws Exp $
  */
 >>TITLE XUnmapWindow CH03
 void

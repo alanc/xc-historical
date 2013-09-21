@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtgmtry.m,v 1.4 92/06/11 17:50:54 rws Exp $
+ * $XConsortium: gtgmtry.m,v 1.5 94/04/17 21:11:32 rws Exp $
  */
 >>TITLE GetGeometry XPROTO
 >>SET startup protostartup

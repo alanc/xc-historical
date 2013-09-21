@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.8 93/08/20 11:39:58 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.9 93/09/04 17:42:06 rws Exp $
 LOCAL_LIBRARIES = $(FSLIB) $(XLIB)
 DEPLIBS = $(DEPFSLIB) $(DEPXLIB)
 INCLUDES = -I$(BUILDINCDIR)/fonts -I$(FONTINCSRC)

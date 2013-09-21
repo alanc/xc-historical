@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: devices.c,v 1.5 94/01/22 23:48:54 rob Exp $ */
+/* $XConsortium: devices.c,v 1.6 94/04/17 21:15:41 rob Exp $ */
 
 #include "X.h"
 #include "misc.h"

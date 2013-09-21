@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: drwpnts.m,v 1.5 92/06/11 16:40:35 rws Exp $
+ * $XConsortium: drwpnts.m,v 1.6 94/04/17 21:04:58 rws Exp $
  */
 >>TITLE XDrawPoints CH06
 void

@@ -1,4 +1,4 @@
-/* $XConsortium: XIEproto.h,v 1.5 94/03/18 10:32:03 mor Exp $ */
+/* $XConsortium: XIEproto.h,v 1.6 94/04/17 20:11:12 mor Exp $ */
 /******************************************************************************
 Copyright (c) 1993, 1994  X Consortium
 

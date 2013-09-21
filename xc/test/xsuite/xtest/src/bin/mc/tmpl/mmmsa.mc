@@ -1,4 +1,4 @@
-# $XConsortium: mmmsa.mc,v 1.2 92/06/11 19:34:22 rws Exp $
+# $XConsortium: mmmsa.mc,v 1.3 94/01/29 16:23:51 rws Exp $
 #
 # Build a standalone version of the test case using the macro version
 # of the function.

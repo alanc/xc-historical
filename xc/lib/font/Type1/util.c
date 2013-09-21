@@ -1,4 +1,4 @@
-/* $XConsortium: util.c,v 1.6 92/03/26 16:42:26 eswu Exp $ */
+/* $XConsortium: util.c,v 1.7 94/01/27 15:21:15 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: GetStCmap.c,v 1.10 91/01/08 14:41:00 gildea Exp $ */
+/* $XConsortium: GetStCmap.c,v 1.11 94/04/17 20:19:44 gildea Exp $ */
 
 /***********************************************************
 

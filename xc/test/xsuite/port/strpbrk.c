@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: strpbrk.c,v 1.2 92/07/01 11:59:20 rws Exp $
+ * $XConsortium: strpbrk.c,v 1.3 94/04/17 20:59:51 rws Exp $
  */
 /* A version of strpbrk for systems without it. */
 

@@ -1,4 +1,4 @@
-.\" $XConsortium: xdpr.man,v 1.14 94/04/11 14:29:55 gildea Exp $
+.\" $XConsortium: xdpr.man,v 1.15 94/04/17 20:44:04 gildea Exp $
 .TH XDPR 1 "Release 6" "X Version 11"
 .SH NAME
 xdpr \- dump an X window directly to a printer

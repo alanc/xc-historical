@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbplygblt.c,v 5.13 94/03/31 14:10:30 dpw Exp $ */
+/* $XConsortium: mfbplygblt.c,v 5.14 94/04/17 20:28:29 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

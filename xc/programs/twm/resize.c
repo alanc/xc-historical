@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: resize.c,v 1.81 94/04/17 20:38:21 dave Exp mor $
+ * $XConsortium: resize.c,v 1.82 94/12/27 19:07:15 mor Exp $
  *
  * window resizing borrowed from the "wm" window manager
  *

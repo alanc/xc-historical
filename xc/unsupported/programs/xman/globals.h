@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 1.8 91/09/03 17:42:51 dave Exp $ */
+/* $XConsortium: globals.h,v 1.9 94/04/17 20:43:51 dave Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

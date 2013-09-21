@@ -1,5 +1,5 @@
 /*
- * $XConsortium: iceauth.h,v 1.2 94/02/06 15:34:00 mor Exp $
+ * $XConsortium: iceauth.h,v 1.3 94/04/17 20:39:55 mor Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

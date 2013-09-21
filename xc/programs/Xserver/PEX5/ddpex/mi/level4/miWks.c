@@ -1,4 +1,4 @@
-/* $XConsortium: miWks.c,v 5.14 94/04/17 20:37:35 rws Exp dpw $ */
+/* $XConsortium: miWks.c,v 5.15 94/10/31 15:14:01 dpw Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

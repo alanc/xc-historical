@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ultrix.cf,v 1.63 94/03/28 09:11:49 kaleb Exp $
+XCOMM platform:  $XConsortium: ultrix.cf,v 1.64 94/04/09 20:44:15 rws Exp $
 
 #define OSName            Ultrix-32 4.3
 XCOMM operating system:  OSName

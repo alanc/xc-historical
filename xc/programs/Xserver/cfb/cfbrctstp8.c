@@ -30,7 +30,7 @@ Author: Keith Packard, MIT X Consortium
 
 */
 
-/* $XConsortium: cfbrctstp8.c,v 1.16 93/12/13 17:22:25 dpw Exp $ */
+/* $XConsortium: cfbrctstp8.c,v 1.17 94/04/17 20:28:59 dpw Exp $ */
 
 #if PSZ == 8
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xteststr.h,v 1.8 93/09/11 15:07:20 rws Exp $ */
+/* $XConsortium: xteststr.h,v 1.9 94/04/17 20:11:30 rws Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

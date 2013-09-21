@@ -1,4 +1,4 @@
-/* $XConsortium: osPexFont.c,v 5.7 93/09/24 12:03:11 rws Exp $ */
+/* $XConsortium: osPexFont.c,v 5.8 94/04/17 20:36:01 rws Exp $ */
 
 /*
 

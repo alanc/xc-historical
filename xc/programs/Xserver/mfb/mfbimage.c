@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbimage.c,v 5.9 94/01/07 09:43:25 dpw Exp $ */
+/* $XConsortium: mfbimage.c,v 5.10 94/04/17 20:28:25 dpw Exp $ */
 
 #include "X.h"
 

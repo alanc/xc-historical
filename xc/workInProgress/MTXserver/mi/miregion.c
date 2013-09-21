@@ -67,7 +67,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.4 94/01/11 17:14:20 rob Exp $ */
+/* $XConsortium: miregion.c,v 1.5 94/04/17 21:16:07 rob Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"

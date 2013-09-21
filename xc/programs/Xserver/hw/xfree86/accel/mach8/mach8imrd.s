@@ -1,4 +1,4 @@
-/* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
+/* $XConsortium: mach8imrd.s,v 1.2 94/03/29 09:51:12 dpw Exp $ */
 /******************************************************************************
 
 This is a assembly language version of the mach8ImageRead routine.

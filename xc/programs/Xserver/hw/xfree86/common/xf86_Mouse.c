@@ -1,4 +1,4 @@
-/* $XConsortium: xf86_Mouse.c,v 1.1 94/10/05 13:34:15 kaleb Exp $ */
+/* $XConsortium: xf86_Mouse.c,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.0 1994/09/23 10:13:17 dawes Exp $ */
 /*
  *

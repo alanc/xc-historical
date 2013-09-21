@@ -1,4 +1,4 @@
-/* $XConsortium: cfbsetsp.c,v 5.9 94/03/18 16:07:03 dpw Exp $ */
+/* $XConsortium: cfbsetsp.c,v 5.10 94/04/17 20:29:01 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

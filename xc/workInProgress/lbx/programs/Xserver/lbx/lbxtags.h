@@ -1,4 +1,4 @@
-/* $XConsortium: lbxtags.h,v 1.4 94/03/27 13:13:40 dpw Exp $ */
+/* $XConsortium: lbxtags.h,v 1.5 95/04/04 21:23:52 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *

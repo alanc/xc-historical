@@ -1,4 +1,4 @@
-/* $XConsortium: save.c,v 1.4 94/12/27 18:46:57 mor Exp mor $ */
+/* $XConsortium: save.c,v 1.5 94/12/30 15:38:08 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium

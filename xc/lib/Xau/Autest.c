@@ -1,4 +1,4 @@
-/* $XConsortium: Autest.c,v 1.3 94/04/12 17:36:36 dpw Exp $ */
+/* $XConsortium: Autest.c,v 1.4 94/04/17 20:15:46 dpw Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Ximint.h,v 1.8 94/07/06 14:46:42 kaleb Exp kaleb $ */
+/* $XConsortium: Ximint.h,v 1.9 94/10/10 18:33:16 kaleb Exp $ */
 /******************************************************************
 
                 Copyright 1992, 1993, 1994 by FUJITSU LIMITED

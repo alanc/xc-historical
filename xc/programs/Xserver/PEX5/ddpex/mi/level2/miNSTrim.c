@@ -1,4 +1,4 @@
-/* $XConsortium: miNSTrim.c,v 5.4 93/09/03 15:06:26 hersh Exp $ */
+/* $XConsortium: miNSTrim.c,v 5.5 94/04/17 20:37:11 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

@@ -82,7 +82,7 @@ Author:  Adobe Systems Incorporated
 
 */
 
-/* $XConsortium: dixutils.c,v 1.49 94/02/10 17:27:19 dpw Exp $ */
+/* $XConsortium: dixutils.c,v 1.50 94/04/17 20:26:31 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: Xproto.h,v 1.90 95/03/03 01:56:06 dpw Exp gildea $
+ *	$XConsortium: Xproto.h,v 1.91 95/06/03 00:10:10 gildea Exp $
  */
 
 /* Definitions for the X window system used by server and c bindings */

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XConsortium: mfbfont.c,v 1.17 91/01/27 13:02:13 keith Exp $ */
+/* $XConsortium: mfbfont.c,v 1.18 94/04/17 20:28:22 keith Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "Xproto.h"

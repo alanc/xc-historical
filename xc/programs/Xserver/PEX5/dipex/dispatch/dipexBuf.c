@@ -1,4 +1,4 @@
-/* $XConsortium: dipexBuf.c,v 5.2 93/01/25 16:11:56 hersh Exp $ */
+/* $XConsortium: dipexBuf.c,v 5.3 94/04/17 20:36:03 hersh Exp $ */
 
 /***********************************************************
 

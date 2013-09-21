@@ -1,4 +1,4 @@
-/* $XConsortium: command.c,v 2.48 94/11/28 23:43:16 gildea Exp kaleb $ */
+/* $XConsortium: command.c,v 2.49 95/04/05 19:59:06 kaleb Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989

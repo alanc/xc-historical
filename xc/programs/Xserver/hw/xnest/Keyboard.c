@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.2 94/02/23 15:56:46 dpw Exp ray $ */
+/* $XConsortium: Keyboard.c,v 1.3 95/07/10 17:42:22 ray Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

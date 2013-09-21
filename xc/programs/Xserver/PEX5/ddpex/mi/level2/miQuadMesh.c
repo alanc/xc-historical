@@ -1,4 +1,4 @@
-/* $XConsortium: miQuadMesh.c,v 5.4 93/09/03 15:06:10 hersh Exp $ */
+/* $XConsortium: miQuadMesh.c,v 5.5 94/04/17 20:37:16 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

@@ -1,5 +1,5 @@
 /*
- *	rcs_id[] = "$XConsortium: xedit.h,v 1.18 89/07/21 19:52:58 kit Exp $";
+ *	rcs_id[] = "$XConsortium: xedit.h,v 1.19 89/10/07 14:59:46 kit Exp $";
  */
  
 /*

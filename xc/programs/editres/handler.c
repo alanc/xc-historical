@@ -1,5 +1,5 @@
 /*
- * $XConsortium: handler.c,v 1.28 93/04/22 14:12:55 dave Exp $
+ * $XConsortium: handler.c,v 1.29 94/04/17 20:38:56 dave Exp $
  *
 Copyright (c) 1989  X Consortium
 

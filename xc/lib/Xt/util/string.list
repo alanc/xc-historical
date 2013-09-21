@@ -1,4 +1,4 @@
-! $XConsortium: string.list,v 1.14 95/05/10 15:35:07 kaleb Exp kaleb $
+! $XConsortium: string.list,v 1.12 95/05/11 22:32:57 kaleb Exp $
 ! NOTE: To maintain binary compatibility, you can only APPEND items within
 !	a given list!!!!
 !

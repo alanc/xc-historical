@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: sunGX.c,v 1.26 94/04/17 20:29:38 kaleb Exp dpw $";
+static char *rid="$XConsortium: sunGX.c,v 1.27 95/06/15 18:32:58 dpw Exp $";
 #endif /* lint */
 /*
 Copyright (c) 1991  X Consortium

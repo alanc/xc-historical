@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewfuncs.c,v 2.22 91/07/17 21:25:48 converse Exp $
+ * $XConsortium: viewfuncs.c,v 2.23 92/04/08 12:18:41 rws Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989

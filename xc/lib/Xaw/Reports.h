@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Reports.h,v 1.3 90/02/28 18:46:46 jim Exp $
+ * $XConsortium: Reports.h,v 1.4 94/04/17 20:12:39 jim Exp $
  *
 Copyright (c) 1990  X Consortium
 

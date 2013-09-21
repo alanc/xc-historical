@@ -1,4 +1,4 @@
-/* $XConsortium: fontscale.c,v 1.13 94/04/17 20:17:07 gildea Exp $ */
+/* $XConsortium: fontscale.c,v 1.14 94/07/25 13:52:04 kaleb Exp $ */
 
 /*
 

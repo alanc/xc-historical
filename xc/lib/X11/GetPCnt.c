@@ -1,4 +1,4 @@
-/* $XConsortium: GetPCnt.c,v 11.11 91/01/06 11:46:12 rws Exp $ */
+/* $XConsortium: GetPCnt.c,v 11.12 94/04/17 20:19:38 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

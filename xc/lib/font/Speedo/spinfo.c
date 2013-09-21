@@ -1,4 +1,4 @@
-/* $XConsortium: spinfo.c,v 1.14 94/03/08 15:55:41 gildea Exp $ */
+/* $XConsortium: spinfo.c,v 1.15 94/04/17 20:17:50 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation

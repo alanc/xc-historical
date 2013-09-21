@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mizerline.c,v 5.8 94/07/28 14:11:16 dpw Exp dpw $ */
+/* $XConsortium: mizerline.c,v 5.9 94/08/02 15:01:29 dpw Exp $ */
 #include "X.h"
 
 #include "misc.h"

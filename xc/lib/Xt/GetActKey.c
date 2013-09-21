@@ -1,4 +1,4 @@
-/* $XConsortium: GetActKey.c,v 1.6 93/10/06 17:20:24 kaleb Exp $ */
+/* $XConsortium: GetActKey.c,v 1.7 94/04/17 20:14:08 kaleb Exp $ */
 
 /*LINTLIBRARY*/
 

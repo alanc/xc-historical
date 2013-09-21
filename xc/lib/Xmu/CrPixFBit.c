@@ -1,4 +1,4 @@
-/* $XConsortium: CrPixFBit.c,v 1.3 90/12/19 18:58:49 converse Exp $ */
+/* $XConsortium: CrPixFBit.c,v 1.4 94/04/17 20:15:54 converse Exp $ */
 
 /*
 

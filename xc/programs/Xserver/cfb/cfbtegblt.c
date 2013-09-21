@@ -1,4 +1,4 @@
-/* $XConsortium: cfbtegblt.c,v 5.8 94/01/07 09:42:33 dpw Exp $ */
+/* $XConsortium: cfbtegblt.c,v 5.9 94/04/17 20:29:03 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

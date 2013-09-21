@@ -1,4 +1,4 @@
-/* $XConsortium: pl_free.c,v 1.9 93/09/23 14:39:46 mor Exp $ */
+/* $XConsortium: pl_free.c,v 1.10 94/04/17 20:22:31 mor Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

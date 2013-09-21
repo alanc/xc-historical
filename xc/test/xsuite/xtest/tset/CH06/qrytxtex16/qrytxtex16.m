@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: qrytxtex16.m,v 1.11 92/06/11 17:09:00 rws Exp $
+ * $XConsortium: qrytxtex16.m,v 1.12 94/04/17 21:05:47 rws Exp $
  */
 >>TITLE XQueryTextExtents16 CH06
 >># Xlib.h says return is an int, spec does not mention return.

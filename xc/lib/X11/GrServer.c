@@ -1,4 +1,4 @@
-/* $XConsortium: GrServer.c,v 11.7 91/01/06 11:46:27 rws Exp $ */
+/* $XConsortium: GrServer.c,v 11.8 94/04/17 20:19:50 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: oscolor.c,v 1.22 94/03/31 14:01:00 dpw Exp $ */
+/* $XConsortium: oscolor.c,v 1.23 94/04/17 20:27:04 dpw Exp $ */
 
 #ifndef USE_RGB_TXT
 

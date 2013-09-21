@@ -1,4 +1,4 @@
-/* $XConsortium: snfread.c,v 1.16 94/02/07 14:49:19 gildea Exp $ */
+/* $XConsortium: snfread.c,v 1.17 94/04/17 20:17:16 gildea Exp $ */
 /************************************************************************
 Copyright 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

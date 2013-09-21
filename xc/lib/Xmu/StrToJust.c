@@ -1,4 +1,4 @@
-/* $XConsortium: StrToJust.c,v 1.7 93/08/16 14:38:05 rws Exp $ */
+/* $XConsortium: StrToJust.c,v 1.8 94/04/17 20:16:18 rws Exp $ */
 
 /* 
  

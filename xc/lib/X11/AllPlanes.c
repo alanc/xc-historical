@@ -1,4 +1,4 @@
-/* $XConsortium: AllPlanes.c,v 11.17 91/01/06 11:44:04 rws Exp $ */
+/* $XConsortium: AllPlanes.c,v 11.18 94/04/17 20:18:32 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: property.c,v 1.4 94/01/22 23:51:16 rob Exp $ */
+/* $XConsortium: property.c,v 1.5 94/04/17 21:15:51 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

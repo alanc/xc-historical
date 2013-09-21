@@ -1,4 +1,4 @@
-/* $XConsortium: x11perf.c,v 2.53 94/03/28 18:30:54 gildea Exp $ */
+/* $XConsortium: x11perf.c,v 2.54 94/03/30 19:40:27 gildea Exp $ */
 /****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

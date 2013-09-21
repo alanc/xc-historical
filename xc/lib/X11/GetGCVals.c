@@ -1,4 +1,4 @@
-/* $XConsortium: GetGCVals.c,v 1.3 91/01/06 11:43:35 rws Exp $ */
+/* $XConsortium: GetGCVals.c,v 1.4 94/04/17 20:19:32 rws Exp $ */
 
 /*
 

@@ -38,7 +38,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ShowExtErr.c,v 1.3 94/01/29 15:15:07 rws Exp $
+ * $XConsortium: ShowExtErr.c,v 1.4 94/04/17 21:01:26 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -66,11 +66,11 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /*
- *	$Header: ShowExtErr.c,v 1.3 94/01/29 15:15:07 rws Exp $
+ *	$Header: ShowExtErr.c,v 1.4 94/04/17 21:01:26 rws Exp $
  */
 
 #ifndef lint
-static char rcsid[]="$Header: ShowExtErr.c,v 1.3 94/01/29 15:15:07 rws Exp $";
+static char rcsid[]="$Header: ShowExtErr.c,v 1.4 94/04/17 21:01:26 rws Exp $";
 #endif
 
 #define XInputNumErrors 5

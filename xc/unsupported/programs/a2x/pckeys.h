@@ -1,4 +1,4 @@
-	/* $XConsortium: pckeys.h,v 1.2 93/04/12 20:05:18 rws Exp $ */
+	/* $XConsortium: pckeys.h,v 1.3 93/04/12 21:13:02 rws Exp $ */
 
 {
 {None, None},			/* 100 */

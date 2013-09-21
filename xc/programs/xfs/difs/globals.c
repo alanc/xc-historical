@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.4 94/04/12 22:00:48 dpw Exp $ */
+/* $XConsortium: globals.c,v 1.5 94/04/17 19:56:17 dpw Exp $ */
 /*
  * various font server globals
  */

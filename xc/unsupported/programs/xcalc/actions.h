@@ -1,4 +1,4 @@
-/* $XConsortium: actions.h,v 1.5 91/01/10 11:51:05 rws Exp $ */
+/* $XConsortium: actions.h,v 1.6 94/04/17 20:43:31 rws Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

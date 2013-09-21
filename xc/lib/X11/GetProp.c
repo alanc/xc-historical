@@ -1,4 +1,4 @@
-/* $XConsortium: GetProp.c,v 11.18 92/01/27 20:14:23 gildea Exp $ */
+/* $XConsortium: GetProp.c,v 11.19 94/04/17 20:19:41 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

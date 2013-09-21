@@ -1,4 +1,4 @@
-/* $XConsortium: GCManager.c,v 1.47 94/02/02 12:16:40 kaleb Exp $ */
+/* $XConsortium: GCManager.c,v 1.48 94/04/17 20:14:05 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard, Massachusetts

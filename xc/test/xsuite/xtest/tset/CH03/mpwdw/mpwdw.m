@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: mpwdw.m,v 1.9 92/06/11 16:08:51 rws Exp $
+ * $XConsortium: mpwdw.m,v 1.10 94/04/17 21:03:11 rws Exp $
  */
 >>TITLE XMapWindow CH03
 void

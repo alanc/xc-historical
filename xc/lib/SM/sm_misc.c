@@ -1,4 +1,4 @@
-/* $XConsortium: sm_misc.c,v 1.6 94/03/30 19:56:25 mor Exp $ */
+/* $XConsortium: sm_misc.c,v 1.7 94/04/17 20:16:57 mor Exp $ */
 
 /*
 

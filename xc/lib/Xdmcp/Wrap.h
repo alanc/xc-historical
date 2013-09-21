@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Wrap.h,v 1.3 94/02/06 20:09:49 rws Exp $ */
 /*
  * header file for compatibility with something useful
  */

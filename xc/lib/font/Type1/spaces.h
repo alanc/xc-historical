@@ -1,4 +1,4 @@
-/* $XConsortium: spaces.h,v 1.3 91/10/10 11:19:22 rws Exp $ */
+/* $XConsortium: spaces.h,v 1.4 94/02/06 16:27:06 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991

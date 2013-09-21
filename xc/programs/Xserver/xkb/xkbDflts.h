@@ -1,4 +1,4 @@
-/* $XConsortium: xkbDflts.h,v 1.3 94/04/12 17:35:00 dpw Exp $ */
+/* $XConsortium: xkbDflts.h,v 1.4 94/05/11 18:33:27 kaleb Exp $ */
 /* THIS FILE GENERATED AUTOMATICALLY BY XKBCOMP */
 #ifndef DFLT_H
 #define DFLT_H 1

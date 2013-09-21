@@ -1,4 +1,4 @@
-/* $XConsortium: mdepthinit.c,v 1.6 93/12/13 17:41:46 dpw Exp $ */
+/* $XConsortium: mdepthinit.c,v 1.7 94/04/17 20:29:56 dpw Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

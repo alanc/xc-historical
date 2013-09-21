@@ -1,4 +1,4 @@
-/* $XConsortium: Manage.c,v 1.34 95/03/30 19:15:14 converse Exp $ */
+/* $XConsortium: Manage.c,v 1.35 95/06/29 19:19:29 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

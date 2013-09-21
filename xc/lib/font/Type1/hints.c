@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: hints.c,v 1.4 91/10/10 11:18:13 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991

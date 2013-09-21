@@ -1,4 +1,4 @@
-/* $XConsortium: StName.c,v 11.15 91/01/08 14:42:00 gildea Exp $ */
+/* $XConsortium: StName.c,v 11.16 94/04/17 20:21:12 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

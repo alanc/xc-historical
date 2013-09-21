@@ -1,4 +1,4 @@
-/* $XConsortium: bld_prim.c,v 5.3 91/07/12 18:05:26 hersh Exp $ */
+/* $XConsortium: bld_prim.c,v 5.4 94/04/17 20:44:24 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

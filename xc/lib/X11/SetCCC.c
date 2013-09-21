@@ -1,4 +1,4 @@
-/* $XConsortium: SetCCC.c,v 1.4 91/11/09 15:40:09 keith Exp $ */
+/* $XConsortium: SetCCC.c,v 1.5 93/09/07 21:32:37 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

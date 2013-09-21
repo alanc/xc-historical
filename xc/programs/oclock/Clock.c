@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Clock.c,v 1.27 94/01/18 21:31:35 rws Exp $
+ * $XConsortium: Clock.c,v 1.28 94/04/17 20:37:56 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbscan.c,v 1.1 94/04/02 17:09:37 erik Exp $ */
+/* $XConsortium: xkbscan.c,v 1.2 94/04/04 15:28:49 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

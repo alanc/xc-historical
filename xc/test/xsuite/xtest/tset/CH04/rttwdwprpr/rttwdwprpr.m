@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rttwdwprpr.m,v 1.11 92/06/11 16:13:57 rws Exp $
+ * $XConsortium: rttwdwprpr.m,v 1.12 94/04/17 21:03:37 rws Exp $
  */
 >>TITLE XRotateWindowProperties CH04
 void

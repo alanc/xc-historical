@@ -1,4 +1,4 @@
-/* $XConsortium: cfb.h,v 1.3 94/01/27 21:03:55 rob Exp $ */
+/* $XConsortium: cfb.h,v 1.4 94/04/17 21:16:17 rob Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 

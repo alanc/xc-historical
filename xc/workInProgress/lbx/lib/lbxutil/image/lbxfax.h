@@ -1,4 +1,4 @@
-/* $XConsortium: lbxfax.h,v 1.1 94/11/08 19:57:48 mor Exp mor $ */
+/* $XConsortium: lbxfax.h,v 1.2 94/11/22 22:26:19 mor Exp $ */
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.

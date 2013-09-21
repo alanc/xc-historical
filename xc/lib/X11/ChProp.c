@@ -1,4 +1,4 @@
-/* $XConsortium: ChProp.c,v 11.25 93/11/05 15:04:07 kaleb Exp $ */
+/* $XConsortium: ChProp.c,v 11.26 94/04/17 20:18:43 kaleb Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

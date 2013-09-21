@@ -1,4 +1,4 @@
-/* $XConsortium: mach32init.c,v 1.3 95/01/05 20:27:25 kaleb Exp kaleb $ */
+/* $XConsortium: mach32init.c,v 1.4 95/01/06 20:57:03 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.6 1994/12/25 12:23:21 dawes Exp $ */
 /*
  * Written by Jake Richter

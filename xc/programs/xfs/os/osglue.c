@@ -1,4 +1,4 @@
-/* $XConsortium: osglue.c,v 1.11 95/03/02 20:13:00 kaleb Exp kaleb $ */
+/* $XConsortium: osglue.c,v 1.12 95/04/07 19:42:57 kaleb Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 

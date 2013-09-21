@@ -1,5 +1,5 @@
 /*
- * $XConsortium: $
+ * $XConsortium: skyPriv.h,v 1.2 91/12/11 21:40:52 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

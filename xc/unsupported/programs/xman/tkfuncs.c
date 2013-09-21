@@ -1,4 +1,4 @@
-/* $XConsortium: tkfuncs.c,v 1.5 91/01/09 17:31:46 rws Exp $ */
+/* $XConsortium: tkfuncs.c,v 1.6 94/04/17 20:43:59 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

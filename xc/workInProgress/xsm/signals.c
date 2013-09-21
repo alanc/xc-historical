@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: signals.c,v 1.1 94/12/16 17:47:12 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium

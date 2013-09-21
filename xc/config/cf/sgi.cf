@@ -1,14 +1,14 @@
-XCOMM platform:  $XConsortium: sgi.cf,v 1.49 95/04/07 18:59:01 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: sgi.cf,v 1.50 95/06/16 20:08:22 kaleb Exp kaleb $
 
 #ifndef OSName
-#define OSName			IRIX 5.2
+#define OSName			IRIX 5.3
 #endif
 XCOMM operating system:  OSName
 #ifndef OSMajorVersion
 #define OSMajorVersion		5
 #endif
 #ifndef OSMinorVersion
-#define OSMinorVersion		2
+#define OSMinorVersion		3
 #endif
 #ifndef OSTeenyVersion
 #define OSTeenyVersion          0

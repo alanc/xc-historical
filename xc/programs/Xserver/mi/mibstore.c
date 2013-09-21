@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 5.62 94/04/17 20:27:23 dpw Exp $ */
+/* $XConsortium: mibstore.c,v 5.63 94/10/21 20:25:08 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

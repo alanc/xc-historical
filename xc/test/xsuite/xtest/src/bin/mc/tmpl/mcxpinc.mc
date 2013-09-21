@@ -1,4 +1,4 @@
-/* $XConsortium: mcxpinc.mc,v 1.3 92/07/07 17:07:17 rws Exp $ */
+/* $XConsortium: mcxpinc.mc,v 1.4 94/01/30 12:37:23 rws Exp $ */
 
 #include	<stdlib.h>
 #include	"xtest.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: vgaFasm.h,v 1.3 95/01/05 20:50:47 kaleb Exp gildea $ */
+/* $XConsortium: vgaFasm.h,v 1.4 95/06/09 20:57:00 gildea Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/vgaFasm.h,v 3.2 1994/10/21 11:24:26 dawes Exp $ */
 /* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
 

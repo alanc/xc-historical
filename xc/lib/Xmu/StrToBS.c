@@ -1,4 +1,4 @@
-/* $XConsortium: StrToBS.c,v 1.3 93/04/09 15:16:11 converse Exp $ */
+/* $XConsortium: StrToBS.c,v 1.4 94/04/17 20:16:16 converse Exp $ */
 
 /* 
  

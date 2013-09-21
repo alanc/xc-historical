@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: cray.cf,v 1.48 94/04/02 18:01:58 rws Exp $
+XCOMM platform:  $XConsortium: cray.cf,v 1.49 94/04/04 21:28:10 rws Exp $
 
 #define OSName			UNICOS 8.0
 XCOMM operating system:  OSName

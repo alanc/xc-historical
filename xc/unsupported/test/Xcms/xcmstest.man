@@ -1,4 +1,4 @@
-.\" $XConsortium: xcmstest.man,v 1.5 94/04/11 14:30:42 gildea Exp $
+.\" $XConsortium: xcmstest.man,v 1.6 94/04/17 20:54:00 gildea Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1

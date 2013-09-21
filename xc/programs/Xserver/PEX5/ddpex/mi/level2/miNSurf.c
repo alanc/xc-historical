@@ -1,4 +1,4 @@
-/* $XConsortium: miNSurf.c,v 5.9 93/09/03 15:06:29 hersh Exp $ */
+/* $XConsortium: miNSurf.c,v 5.10 94/04/17 20:37:12 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

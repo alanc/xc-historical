@@ -1,4 +1,4 @@
-/* $XConsortium: FSQuExt.c,v 1.3 92/11/18 21:31:16 gildea Exp $ */
+/* $XConsortium: FSQuExt.c,v 1.4 94/04/17 20:15:18 gildea Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: swapreq.c,v 1.3 94/12/01 20:54:00 mor Exp $
+ * $XConsortium: swapreq.c,v 1.4 95/05/17 18:26:41 dpw Exp $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *

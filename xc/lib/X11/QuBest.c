@@ -1,4 +1,4 @@
-/* $XConsortium: QuBest.c,v 1.8 91/01/06 11:47:27 rws Exp $ */
+/* $XConsortium: QuBest.c,v 1.9 94/04/17 20:20:33 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

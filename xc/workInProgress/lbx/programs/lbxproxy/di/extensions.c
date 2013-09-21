@@ -1,4 +1,4 @@
-/* $XConsortium: extensions.c,v 1.3 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: extensions.c,v 1.4 95/05/30 19:01:23 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: AllowEv.c,v 1.13 91/01/06 11:44:05 rws Exp $ */
+/* $XConsortium: AllowEv.c,v 1.14 94/04/17 20:18:32 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

@@ -1,4 +1,4 @@
-.\" $XConsortium: newt.man,v 5.3 94/04/11 16:03:39 matt Exp $
+.\" $XConsortium: newt.man,v 5.4 94/04/17 20:46:25 matt Exp $
 .\"
 .\" Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 .\" 

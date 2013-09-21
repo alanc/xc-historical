@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: line-styl.mc,v 1.14 92/06/11 18:03:56 rws Exp $
+ * $XConsortium: line-styl.mc,v 1.15 94/04/17 21:14:46 rws Exp $
  */
 >>EXTERN
 static	int 	linestyles[] = {LineSolid, LineOnOffDash, LineDoubleDash};

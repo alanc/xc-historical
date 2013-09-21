@@ -1,4 +1,4 @@
-/* $XConsortium: brf_ents.c,v 5.2 91/07/18 17:30:08 rws Exp $ */
+/* $XConsortium: brf_ents.c,v 5.3 94/04/17 20:44:27 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

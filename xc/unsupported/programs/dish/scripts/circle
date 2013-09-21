@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: circle,v 1.2 94/04/01 16:33:15 matt Exp $
 # This dish script draws a single circle
 
 set style [figure_kit default_style]

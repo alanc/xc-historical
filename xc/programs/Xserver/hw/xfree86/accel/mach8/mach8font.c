@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mach8font.c,v 1.1 94/03/28 21:11:04 dpw Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *

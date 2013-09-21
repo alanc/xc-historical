@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_tris.c,v 2.8 94/02/06 20:17:44 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

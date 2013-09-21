@@ -1,4 +1,4 @@
-/* $XConsortium: font.h,v 1.12 94/02/09 18:28:17 gildea Exp $ */
+/* $XConsortium: font.h,v 1.13 94/04/17 20:11:07 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 

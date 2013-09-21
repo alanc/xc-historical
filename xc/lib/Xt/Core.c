@@ -1,4 +1,4 @@
-/* $XConsortium: Core.c,v 1.61 93/10/25 15:32:09 kaleb Exp $ */
+/* $XConsortium: Core.c,v 1.62 94/04/17 20:13:52 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: lstpxmpfrm.m,v 1.9 92/06/11 16:00:19 rws Exp $
+ * $XConsortium: lstpxmpfrm.m,v 1.10 94/04/17 21:02:29 rws Exp $
  */
 >>TITLE XListPixmapFormats CH02
 XPixmapFormatValues *

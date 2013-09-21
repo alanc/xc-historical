@@ -1,4 +1,4 @@
-/* $XConsortium: miPickPrim.c,v 5.7 93/09/03 15:06:23 hersh Exp $ */
+/* $XConsortium: miPickPrim.c,v 5.8 94/04/17 20:37:15 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

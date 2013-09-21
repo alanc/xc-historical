@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: XItest.h,v 1.1 94/01/29 15:13:44 rws Exp $ */
 /*
  * Copyright 1992 by Hewlett-Packard.
  * 

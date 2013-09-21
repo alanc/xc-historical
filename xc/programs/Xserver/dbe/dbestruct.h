@@ -1,4 +1,4 @@
-/* $XConsortium: Xdbeproto.h,v 1.1 95/05/25 17:29:33 dpw Exp dpw $ */
+/* $XConsortium: dbestruct.h,v 1.2 95/06/07 20:19:57 dpw Exp $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -27,7 +27,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization from the Hewlett-Packard Company.
  * 
- * $Header: dbestruct.h,v 55.11 95/05/18 14:12:47 yip Exp $
+ * $Header: /x/programs/Xserver/dbe/RCS/dbestruct.h,v 1.2 95/06/07 20:19:57 dpw Exp $
  *
  *     Header file for DIX-related DBE
  *

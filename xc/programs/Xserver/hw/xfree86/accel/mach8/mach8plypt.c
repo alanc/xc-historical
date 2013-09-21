@@ -1,4 +1,4 @@
-/* $XConsortium: mach8plypt.c,v 1.2 94/04/17 20:31:00 dpw Exp kaleb $ */
+/* $XConsortium: mach8plypt.c,v 1.3 95/06/19 16:14:01 kaleb Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium

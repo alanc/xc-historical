@@ -1,4 +1,4 @@
-/* $XConsortium: CmapAlloc.c,v 1.8 94/04/02 12:27:08 rws Exp $ */
+/* $XConsortium: CmapAlloc.c,v 1.9 94/04/17 20:15:52 rws Exp $ */
 
 /* 
 

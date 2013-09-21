@@ -1,4 +1,4 @@
-/* $XConsortium: ChPntCon.c,v 11.9 91/01/06 11:44:21 rws Exp $ */
+/* $XConsortium: ChPntCon.c,v 11.10 94/04/17 20:18:42 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.92 95/03/03 01:32:45 dpw Exp kaleb $ */
+/* $XConsortium: io.c,v 1.93 95/04/05 19:58:31 kaleb Exp $ */
 /*****************************************************************
  * i/o functions
  *

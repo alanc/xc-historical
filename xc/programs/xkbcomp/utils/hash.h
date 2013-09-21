@@ -6,7 +6,7 @@
 _XFUNCPROTOBEGIN
 
   /*\
-   * $XConsortium: hash.h,v 1.1 94/04/02 17:10:37 erik Exp $
+   * $XConsortium: hash.h,v 1.2 94/04/04 15:31:20 rws Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION

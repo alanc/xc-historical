@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtkybrdmpp.m,v 1.10 92/06/11 17:13:59 rws Exp $
+ * $XConsortium: gtkybrdmpp.m,v 1.11 94/04/17 21:06:32 rws Exp $
  */
 >>TITLE XGetKeyboardMapping CH07
 KeySym *

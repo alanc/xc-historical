@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: XShm.h,v 1.6 94/04/17 20:11:16 rws Exp dpw $ */
+/* $XConsortium: XShm.h,v 1.7 94/09/22 21:25:20 dpw Exp $ */
 
 #ifndef _XSHM_H_
 #define _XSHM_H_

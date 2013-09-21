@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: checktile.c,v 1.5 92/06/11 15:43:11 rws Exp $
+ * $XConsortium: checktile.c,v 1.6 94/04/17 21:00:39 rws Exp $
  */
 
 #include	"xtest.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbleds.c,v 1.2 93/09/28 23:51:45 rws Exp $ */
+/* $XConsortium: xkbleds.c,v 1.4 94/04/01 18:50:14 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

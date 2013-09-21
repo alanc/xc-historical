@@ -1,4 +1,4 @@
-/* $XConsortium: CloseHook.c,v 1.8 93/08/16 14:33:44 rws Exp $ */
+/* $XConsortium: CloseHook.c,v 1.9 94/04/17 20:15:51 rws Exp $ */
 
 /* 
 Copyright (c) 1989  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: Text.c,v 11.24 93/11/05 11:13:19 kaleb Exp $ */
+/* $XConsortium: Text.c,v 11.25 94/04/17 20:21:17 kaleb Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

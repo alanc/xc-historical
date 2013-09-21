@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: buildtree.c,v 1.5 92/06/11 15:45:59 rws Exp $
+ * $XConsortium: buildtree.c,v 1.6 94/04/17 21:00:35 rws Exp $
  */
 
 #include	"xtest.h"

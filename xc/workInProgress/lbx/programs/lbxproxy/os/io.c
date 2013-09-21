@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.6 95/05/17 18:25:37 dpw Exp mor $ */
+/* $XConsortium: io.c,v 1.7 95/05/30 19:53:19 mor Exp $ */
 /*****************************************************************
  * i/o functions
  *

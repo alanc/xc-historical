@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.14 94/03/02 12:17:23 mor Exp $ */
+/* $XConsortium: main.c,v 1.15 94/04/17 19:56:18 mor Exp $ */
 /*
  * Font server main routine
  */

@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.4 94/01/11 20:50:14 rob Exp $ */
+/* $XConsortium: connection.c,v 1.5 94/04/17 21:15:58 rob Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium

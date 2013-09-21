@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.37 94/04/07 15:03:02 rws Exp dpw $
+XCOMM $XConsortium: Imakefile,v 1.38 95/06/07 12:27:22 dpw Exp $
 
 HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h XI.h XInput.h XIproto.h \
 	XTest.h xtestext1.h XIE.h XIEproto.h XIEprotost.h \

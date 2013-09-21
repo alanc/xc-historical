@@ -1,4 +1,4 @@
-.\" $XConsortium: twm.man,v 1.62 94/04/12 17:47:41 gildea Exp $
+.\" $XConsortium: twm.man,v 1.63 94/04/17 20:38:25 gildea Exp $
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" Portions copyright 1988 Evans & Sutherland Computer Corporation.
 .\" Portions copyright 1989 Hewlett-Packard Company

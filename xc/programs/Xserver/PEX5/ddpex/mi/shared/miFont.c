@@ -1,4 +1,4 @@
-/* $XConsortium: miFont.c,v 5.6 93/09/23 16:16:08 rws Exp $ */
+/* $XConsortium: miFont.c,v 5.7 94/04/17 20:37:39 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

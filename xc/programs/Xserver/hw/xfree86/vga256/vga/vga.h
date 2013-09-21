@@ -1,4 +1,4 @@
-/* $XConsortium: vga.h,v 1.3 95/01/05 20:51:07 kaleb Exp kaleb $ */
+/* $XConsortium: vga.h,v 1.4 95/01/16 13:18:28 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.6 1995/01/10 10:35:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

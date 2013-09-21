@@ -1,4 +1,4 @@
-/* $XConsortium: private.c,v 1.3 94/02/07 14:06:13 gildea Exp $ */
+/* $XConsortium: private.c,v 1.4 94/04/17 20:17:37 gildea Exp $ */
 
 /*
 

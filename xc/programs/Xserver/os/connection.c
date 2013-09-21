@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.193 95/04/06 16:10:29 mor Exp dpw $ */
+/* $XConsortium: connection.c,v 1.195 95/04/25 20:33:53 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium

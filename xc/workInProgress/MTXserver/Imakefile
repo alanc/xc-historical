@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 2.4 94/01/21 14:07:22 rob Exp $
+XCOMM $XConsortium: Imakefile,v 2.5 94/01/23 02:36:41 rob Exp $
 /*
  * Merged X Server Master Makefile
  */

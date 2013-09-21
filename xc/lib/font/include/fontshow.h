@@ -1,4 +1,4 @@
-/* $XConsortium: fontshow.h,v 1.1 91/05/11 09:12:05 rws Exp $ */
+/* $XConsortium: fontshow.h,v 1.2 94/04/17 20:17:30 rws Exp $ */
 
 /*
 

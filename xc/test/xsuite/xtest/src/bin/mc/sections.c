@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: sections.c,v 1.13 94/01/30 11:30:20 rws Exp $
+ * $XConsortium: sections.c,v 1.14 94/04/17 21:00:24 rws Exp $
  *
  * Author: Steve Ratcliffe, UniSoft Ltd.
  */

@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: gc.c,v 1.3 94/01/11 20:46:03 rob Exp $ */
+/* $XConsortium: gc.c,v 1.4 94/04/17 21:15:49 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

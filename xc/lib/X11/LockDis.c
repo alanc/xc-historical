@@ -1,4 +1,4 @@
-/* $XConsortium: LockDis.c,v 1.9 94/03/19 19:53:45 gildea Exp $ */
+/* $XConsortium: LockDis.c,v 1.10 94/04/17 20:20:09 gildea Exp $ */
 
 /*
  

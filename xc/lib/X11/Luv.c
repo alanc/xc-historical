@@ -1,4 +1,4 @@
-/* $XConsortium: Luv.c,v 1.12 92/06/11 16:26:19 converse Exp $ */
+/* $XConsortium: Luv.c,v 1.13 93/09/07 21:31:42 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

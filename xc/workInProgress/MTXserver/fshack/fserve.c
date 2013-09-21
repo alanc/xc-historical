@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.c,v 1.1 94/01/21 13:56:20 rob Exp $ */
+/* $XConsortium: fserve.c,v 1.2 94/04/17 21:17:03 rob Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

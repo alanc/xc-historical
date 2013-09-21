@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.40 95/05/18 21:18:53 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 95/05/31 13:19:27 dpw Exp $
 #include <Server.tmpl>
 
        SRCS = dbe.c midbe.c

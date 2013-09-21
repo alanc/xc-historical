@@ -1,4 +1,4 @@
-/* $XConsortium: imTransR.c,v 1.7 94/06/03 17:34:28 rws Exp mor $ */
+/* $XConsortium: imTransR.c,v 1.8 95/02/10 17:52:50 mor Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.

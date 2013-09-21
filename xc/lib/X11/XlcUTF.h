@@ -1,4 +1,4 @@
-/* $XConsortium: XlcUTF.h,v 1.4 94/01/20 18:03:21 rws Exp $ */
+/* $XConsortium: XlcUTF.h,v 1.5 94/03/31 21:59:49 rws Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.

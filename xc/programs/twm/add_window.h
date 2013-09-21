@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: add_window.h,v 1.7 90/04/17 14:04:33 jim Exp $
+ * $XConsortium: add_window.h,v 1.8 94/04/17 20:38:05 jim Exp $
  *
  * AddWindow include file
  *

@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.69 94/11/21 18:33:32 kaleb Exp Kaleb $
+ * $XConsortium: lex.l,v 1.70 95/03/01 16:37:51 kaleb Exp $
  *
  * .twmrc lex file
  *

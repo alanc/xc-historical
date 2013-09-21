@@ -1,4 +1,4 @@
-/* $XConsortium: Cardinals.h,v 1.5 89/03/30 16:05:19 jim Exp $ */
+/* $XConsortium: Cardinals.h,v 1.6 94/04/17 20:11:57 jim Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium

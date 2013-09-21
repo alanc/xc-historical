@@ -1,4 +1,4 @@
-/* $XConsortium: miMisc.c,v 5.8 92/11/16 13:32:06 mor Exp $ */
+/* $XConsortium: miMisc.c,v 5.9 94/04/17 20:37:44 mor Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: vblowup_c.c,v 1.13 92/06/11 15:54:51 rws Exp $
+ * $XConsortium: vblowup_c.c,v 1.14 94/04/17 21:01:43 rws Exp $
  */
 /*************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts,

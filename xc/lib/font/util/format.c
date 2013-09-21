@@ -1,4 +1,4 @@
-/* $XConsortium: format.c,v 1.4 94/04/12 21:57:31 dpw Exp $ */
+/* $XConsortium: format.c,v 1.5 94/04/17 20:17:34 dpw Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation

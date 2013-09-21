@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbscrinit.c,v 5.16 93/12/13 17:26:27 dpw Exp $ */
+/* $XConsortium: mfbscrinit.c,v 5.17 94/04/17 20:28:34 dpw Exp $ */
 
 #include "X.h"
 #include "Xproto.h"	/* for xColorItem */

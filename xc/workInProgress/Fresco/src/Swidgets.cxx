@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Swidgets.cxx,v 1.2 94/04/01 16:48:36 matt Exp $
  */
 
 /*

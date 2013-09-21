@@ -1,4 +1,4 @@
-/* $XConsortium: CrGlCur.c,v 11.8 91/01/06 11:44:56 rws Exp $ */
+/* $XConsortium: CrGlCur.c,v 11.9 94/04/17 20:19:00 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

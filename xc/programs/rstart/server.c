@@ -1,4 +1,4 @@
-/* $XConsortium: server.c,v 1.11 94/10/04 20:36:38 mor Exp mor $ */
+/* $XConsortium: server.c,v 1.12 94/12/30 18:48:43 mor Exp $ */
 
 /************************************************************************/
 /* Copyright (c) 1993 Quarterdeck Office Systems			*/

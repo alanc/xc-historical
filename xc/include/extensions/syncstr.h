@@ -1,4 +1,4 @@
-/* $XConsortium: syncstr.h,v 1.3 94/02/06 20:07:59 rws Exp $ */
+/* $XConsortium: syncstr.h,v 1.4 94/04/17 20:11:27 rws Exp $ */
 /*
 
 Copyright (c) 1991, 1993, 1994  X Consortium

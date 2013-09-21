@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifillrct.c,v 5.0 89/06/09 15:08:22 keith Exp $ */
+/* $XConsortium: mifillrct.c,v 5.1 94/04/17 20:27:34 keith Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"

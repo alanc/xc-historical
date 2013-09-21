@@ -1,4 +1,4 @@
-/* $XConsortium: miscfuncs.c,v 1.6 91/07/13 17:52:59 gildea Exp kaleb $ */
+/* $XConsortium: miscfuncs.c,v 1.7 94/12/01 17:15:05 kaleb Exp $ */
 
 #include <X11/Xos.h>
 

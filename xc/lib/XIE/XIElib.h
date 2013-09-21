@@ -1,4 +1,4 @@
-/* $XConsortium: XIElib.h,v 1.11 94/12/19 16:57:13 mor Exp mor $ */
+/* $XConsortium: XIElib.h,v 1.12 95/04/28 18:01:11 mor Exp $ */
 
 /*
 

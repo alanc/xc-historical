@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Flush.c,v 1.9 94/04/02 13:25:02 rws Exp $
+ * $XConsortium: Flush.c,v 1.10 94/04/17 20:16:35 rws Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

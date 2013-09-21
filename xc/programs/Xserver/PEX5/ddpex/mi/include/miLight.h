@@ -1,4 +1,4 @@
-/* $XConsortium: miLight.h,v 5.3 93/01/25 17:20:52 hersh Exp $ */
+/* $XConsortium: miLight.h,v 5.4 94/04/17 20:36:43 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

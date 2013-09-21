@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/01/21 13:56:15 rob Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/01/21 14:06:55 rob Exp $
 XCOMM
 XCOMM Make file for font handling routines
 XCOMM

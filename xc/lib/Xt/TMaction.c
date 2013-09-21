@@ -1,4 +1,4 @@
-/* $XConsortium: TMaction.c,v 1.26 95/06/08 23:20:39 gildea Exp $ */
+/* $XConsortium: TMaction.c,v 1.27.1.1 95/07/14 19:07:29 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************
@@ -147,7 +147,7 @@ static void ReportUnboundActions(xlations, bindData)
     XtTranslations	xlations;
     TMBindData		bindData;
 {
-    TMSimpleStateTree	stateTree = (TMSimpleStateTree)xlations->stateTreeTbl[0];
+    TMStateTree	stateTree = xlations->stateTreeTbl[0];
     Cardinal num_unbound;
     char     message[10000];
     register Cardinal num_chars;
@@ -164,10 +164,10 @@ static void ReportUnboundActions(xlations, bindData)
 	  procs = TMGetComplexBindEntry(bindData, i)->procs;
 	else
 	  procs = TMGetSimpleBindEntry(bindData, i)->procs;
-	stateTree = (TMSimpleStateTree)xlations->stateTreeTbl[i];
-	for (j=0; j < stateTree->numQuarks; j++) {
+	stateTree = xlations->stateTreeTbl[i];
+	for (j=0; j < stateTree->simple.numQuarks; j++) {
 	    if (procs[j] == NULL) {
-		String s = XrmQuarkToString(stateTree->quarkTbl[j]);
+		String s = XrmQuarkToString(stateTree->simple.quarkTbl[j]);
 		if (num_unbound != 0) {
 		    (void) strcpy(&message[num_chars], ", ");
 		    num_chars = num_chars + 2;
@@ -210,21 +210,21 @@ static CompiledAction *SearchActionTable(signature, actionTable, numActions)
 }
 
 static int BindActions(stateTree, procs, compiledActionTable, numActions, ndxP)
-    TMSimpleStateTree	stateTree;
+    TMStateTree		stateTree;
     XtActionProc	*procs;
     CompiledActionTable compiledActionTable;
     TMShortCard		numActions;
     Cardinal 		*ndxP;
 {
-    register int unbound = stateTree->numQuarks - *ndxP;
+    register int unbound = stateTree->simple.numQuarks - *ndxP;
     CompiledAction* action;
     register Cardinal ndx;
     register Boolean savedNdx = False;
     
-    for (ndx = *ndxP; ndx < stateTree->numQuarks; ndx++) {
+    for (ndx = *ndxP; ndx < stateTree->simple.numQuarks; ndx++) {
 	if (procs[ndx] == NULL) {
 	    /* attempt to bind it */
-	    XrmQuark q = stateTree->quarkTbl[ndx];
+	    XrmQuark q = stateTree->simple.quarkTbl[ndx];
 
 	    action = SearchActionTable(q, compiledActionTable, numActions);
 	    if (action) {
@@ -277,7 +277,7 @@ typedef struct _TMClassCacheRec {
 
 static int  BindProcs(widget, stateTree, procs, bindStatus)
     Widget 		widget;
-    TMSimpleStateTree	stateTree;
+    TMStateTree		stateTree;
     XtActionProc	*procs;
     TMBindCacheStatus 	bindStatus;
 {
@@ -300,7 +300,7 @@ static int  BindProcs(widget, stateTree, procs, bindStatus)
 			    &ndx);
 	    class = class->core_class.superclass;
         } while (unbound != 0 && class != NULL);
-	if (unbound < (int)stateTree->numQuarks)
+	if (unbound < (int)stateTree->simple.numQuarks)
 	  bindStatus->boundInClass = True;
 	else
 	  bindStatus->boundInClass = False;
@@ -403,7 +403,7 @@ XtPointer _XtInitializeActionData(actions, count, inPlace)
 
 static XtActionProc *EnterBindCache(w, stateTree, procs, bindStatus)
     Widget		w;
-    TMSimpleStateTree	stateTree;
+    TMStateTree		stateTree;
     XtActionProc 	*procs;
     TMBindCacheStatus 	bindStatus;
 {
@@ -415,7 +415,7 @@ static XtActionProc *EnterBindCache(w, stateTree, procs, bindStatus)
     LOCK_PROCESS;
     classCache = GetClassCache(w);
     bindCachePtr = &classCache->bindCache;
-    procsSize = stateTree->numQuarks * sizeof(XtActionProc);
+    procsSize = stateTree->simple.numQuarks * sizeof(XtActionProc);
 
     for (bindCache = *bindCachePtr;
 	 (*bindCachePtr); 
@@ -426,7 +426,7 @@ static XtActionProc *EnterBindCache(w, stateTree, procs, bindStatus)
 	  if ((bindStatus->boundInClass == cacheStatus->boundInClass) &&
 	      (bindStatus->boundInHierarchy == cacheStatus->boundInHierarchy) &&
 	      (bindStatus->boundInContext == cacheStatus->boundInContext) &&
-	      (bindCache->stateTree == (TMStateTree)stateTree) &&
+	      (bindCache->stateTree == stateTree) &&
 	      !XtMemcmp(&bindCache->procs[0], procs, procsSize))
 	    {
 		bindCache->status.refCount++;
@@ -442,7 +442,7 @@ static XtActionProc *EnterBindCache(w, stateTree, procs, bindStatus)
 	  bindCache->next = NULL;
 	  bindCache->status = *bindStatus;
 	  bindCache->status.refCount = 1;
-	  bindCache->stateTree = (TMStateTree)stateTree;
+	  bindCache->stateTree = stateTree;
 #ifdef TRACE_TM	
 	  bindCache->widgetClass = XtClass(w);
 	  if (_XtGlobalTM.numBindCache == _XtGlobalTM.bindCacheTblSize)
@@ -566,7 +566,7 @@ void _XtBindActions(widget, tm)
     XtTM tm;
 {
     XtTranslations  		xlations = tm->translations;
-    TMSimpleStateTree		stateTree;
+    TMStateTree			stateTree;
     int				globalUnbound = 0;
     Cardinal 			i;
     TMBindData			bindData = (TMBindData)tm->proc_table;
@@ -578,11 +578,11 @@ void _XtBindActions(widget, tm)
     if ((xlations == NULL) || widget->core.being_destroyed) 
       return;
 
-    stateTree = (TMSimpleStateTree)xlations->stateTreeTbl[0];
+    stateTree = xlations->stateTreeTbl[0];
     
     for (i = 0; i < xlations->numStateTrees; i++)
       {
-	  stateTree = (TMSimpleStateTree)xlations->stateTreeTbl[i];
+	  stateTree = xlations->stateTreeTbl[i];
 	  if (bindData->simple.isComplex) {
 	      complexBindProcs = TMGetComplexBindEntry(bindData, i);
 	      if (complexBindProcs->widget) {
@@ -607,17 +607,17 @@ void _XtBindActions(widget, tm)
 	      bindWidget = widget;
 	  }
 	  if ((newProcs = 
-	       TryBindCache(bindWidget,(TMStateTree)stateTree)) == NULL)
+	       TryBindCache(bindWidget,stateTree)) == NULL)
 	    {
 		XtActionProc		*procs, stackProcs[256];
 		int			localUnbound;
 		TMBindCacheStatusRec	bcStatusRec;
 
 		procs = (XtActionProc *)
-		  XtStackAlloc(stateTree->numQuarks * sizeof(XtActionProc),
+		  XtStackAlloc(stateTree->simple.numQuarks * sizeof(XtActionProc),
 			       stackProcs);
 		XtBZero((XtPointer)procs,
-			stateTree->numQuarks * sizeof(XtActionProc));
+			stateTree->simple.numQuarks * sizeof(XtActionProc));
 
 		localUnbound = BindProcs(bindWidget, 
 					 stateTree, 

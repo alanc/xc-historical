@@ -1,4 +1,4 @@
-XCOMM $XConsortium: xfree86.cf,v 1.8 95/01/23 15:46:04 kaleb Exp kaleb $
+XCOMM $XConsortium: xfree86.cf,v 1.9 95/01/25 16:42:40 kaleb Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.

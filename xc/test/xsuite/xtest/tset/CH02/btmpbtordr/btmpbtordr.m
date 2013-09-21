@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: btmpbtordr.m,v 1.6 92/06/11 15:55:46 rws Exp $
+ * $XConsortium: btmpbtordr.m,v 1.7 94/04/17 21:01:58 rws Exp $
  */
 >>SET   macro
 >>TITLE XBitmapBitOrder CH02

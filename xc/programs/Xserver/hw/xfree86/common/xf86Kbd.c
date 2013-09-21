@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Kbd.c,v 1.5 95/01/10 14:58:26 kaleb Exp kaleb $ */
+/* $XConsortium: xf86Kbd.c,v 1.6 95/01/23 15:34:04 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.4 1995/01/21 07:15:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: showrgb.c,v 1.10 94/03/31 14:08:32 gildea Exp $
+ * $XConsortium: showrgb.c,v 1.11 94/04/17 20:24:46 gildea Exp $
  *
 Copyright (c) 1989  X Consortium
 

@@ -1,4 +1,4 @@
-/* $XConsortium: mach8ss.c,v 1.1 94/03/28 21:12:54 dpw Exp $ */
+/* $XConsortium: mach8ss.c,v 1.2 94/04/17 20:31:02 dpw Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

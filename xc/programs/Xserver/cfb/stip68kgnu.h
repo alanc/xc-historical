@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stip68kgnu.h,v 1.2 93/12/13 17:22:44 dpw Exp $
+ * $XConsortium: stip68kgnu.h,v 1.3 94/04/17 20:29:08 dpw Exp $
  *
 Copyright (c) 1990  X Consortium
 

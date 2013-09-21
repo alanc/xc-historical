@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: osf1.cf,v 1.48 95/04/24 19:33:49 gildea Exp gildea $
+XCOMM platform:  $XConsortium: osf1.cf,v 1.49 95/06/09 20:57:00 gildea Exp $
 /* only tested with Digital OSF/1 */
 
 #ifdef AlphaArchitecture

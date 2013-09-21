@@ -1,4 +1,4 @@
-/* $XConsortium: regions.c,v 1.5 92/07/07 17:14:47 gildea Exp $ */
+/* $XConsortium: regions.c,v 1.6 94/02/06 16:22:21 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991

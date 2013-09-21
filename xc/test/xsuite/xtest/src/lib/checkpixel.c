@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: checkpixel.c,v 1.8 92/06/11 15:44:46 rws Exp $
+ * $XConsortium: checkpixel.c,v 1.9 94/04/17 21:00:39 rws Exp $
  */
 
 #include	"xtest.h"

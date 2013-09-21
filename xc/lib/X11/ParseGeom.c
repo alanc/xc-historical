@@ -1,4 +1,4 @@
-/* $XConsortium: ParseGeom.c,v 11.18 91/02/21 17:23:05 rws Exp $ */
+/* $XConsortium: ParseGeom.c,v 11.19 94/04/17 20:20:23 rws Exp $ */
 
 /*
 

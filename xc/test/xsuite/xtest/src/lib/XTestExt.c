@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: XTestExt.c,v 1.7 94/01/29 15:06:16 rws Exp $
+ * $XConsortium: XTestExt.c,v 1.8 94/04/17 21:00:31 rws Exp $
  */
 #ifdef GENERATE_PIXMAPS
 /* in this case we never want to do anything like real buffer stuffing or

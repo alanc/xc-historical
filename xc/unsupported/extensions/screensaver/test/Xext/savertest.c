@@ -1,5 +1,5 @@
 /*
- * $XConsortium: savertest.c,v 1.4 92/03/20 23:40:01 eswu Exp $
+ * $XConsortium: savertest.c,v 1.5 94/04/17 20:59:39 eswu Exp $
  *
 Copyright (c) 1992  X Consortium
 

@@ -28,7 +28,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.17 94/01/07 09:42:18 dpw Exp $ */
+/* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

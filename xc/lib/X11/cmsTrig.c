@@ -1,4 +1,4 @@
-/* $XConsortium: cmsTrig.c,v 1.6 94/02/10 20:10:00 rws Exp gildea $" */
+/* $XConsortium: cmsTrig.c,v 1.7 95/06/08 23:20:39 gildea Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

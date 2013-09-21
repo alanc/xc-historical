@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.c,v 5.11 92/11/09 18:57:46 hersh Exp $ */
+/* $XConsortium: miStruct.c,v 5.12 94/04/17 20:37:33 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

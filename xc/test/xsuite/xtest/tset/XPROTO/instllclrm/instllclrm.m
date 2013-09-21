@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: instllclrm.m,v 1.4 92/06/11 17:52:52 rws Exp $
+ * $XConsortium: instllclrm.m,v 1.5 94/04/17 21:11:44 rws Exp $
  */
 >>TITLE InstallColormap XPROTO
 >>SET startup protostartup

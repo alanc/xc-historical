@@ -1,5 +1,5 @@
 
-/* $XConsortium$ */
+/* $XConsortium: NewTvararg.h,v 5.2 91/02/16 09:59:49 rws Exp $ */
 
 /*
  * Copyright (c) 1988-1991 by Sun Microsystems, Inc.

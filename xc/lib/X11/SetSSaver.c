@@ -1,4 +1,4 @@
-/* $XConsortium: SetSSaver.c,v 11.7 91/01/06 11:48:10 rws Exp $ */
+/* $XConsortium: SetSSaver.c,v 11.8 94/04/17 20:21:03 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

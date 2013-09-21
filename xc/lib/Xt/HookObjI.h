@@ -1,4 +1,4 @@
-/* $XConsortium: HookObjI.h,v 1.1 94/02/10 17:46:12 converse Exp $ */
+/* $XConsortium: HookObjI.h,v 1.2 94/04/12 13:45:51 kaleb Exp $ */
 
 /*
 

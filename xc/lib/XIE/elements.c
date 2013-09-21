@@ -1,4 +1,4 @@
-/* $XConsortium: elements.c,v 1.4 94/01/12 19:44:21 rws Exp $ */
+/* $XConsortium: elements.c,v 1.5 94/04/17 20:18:21 rws Exp $ */
 
 /*
 

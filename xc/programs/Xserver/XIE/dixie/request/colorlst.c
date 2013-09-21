@@ -1,4 +1,4 @@
-/* $XConsortium: colorlst.c,v 1.5 94/04/17 20:33:52 rws Exp $ */
+/* $XConsortium: colorlst.c,v 1.6 94/06/03 15:59:07 dpw Exp $ */
 /**** module colorlst.c ****/
 /****************************************************************************
 

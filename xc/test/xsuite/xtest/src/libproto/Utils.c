@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: Utils.c,v 1.4 92/12/22 09:13:38 rws Exp $
+ * $XConsortium: Utils.c,v 1.5 94/04/17 21:01:34 rws Exp $
  */
 /*
  * ***************************************************************************

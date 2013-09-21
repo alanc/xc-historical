@@ -1,4 +1,4 @@
-/* $XConsortium: QuTileShp.c,v 11.11 91/01/06 11:47:39 rws Exp $ */
+/* $XConsortium: QuTileShp.c,v 11.12 94/04/17 20:20:39 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

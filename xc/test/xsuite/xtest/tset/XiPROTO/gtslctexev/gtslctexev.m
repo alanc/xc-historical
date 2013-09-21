@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtslctexev.m,v 1.5 94/02/21 18:58:57 rws Exp $
+ * $XConsortium: gtslctexev.m,v 1.6 94/04/17 21:13:46 rws Exp $
  */
 >>TITLE GetSelectedExtensionEvents XIPROTO
 >>SET startup protostartup

@@ -1,4 +1,4 @@
-/* $XConsortium: SMlib.h,v 1.22 94/04/17 20:16:50 mor Exp $ */
+/* $XConsortium: SMlib.h,v 1.23 94/06/01 10:49:13 mor Exp $ */
 
 /*
 

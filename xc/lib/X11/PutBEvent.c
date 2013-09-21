@@ -1,4 +1,4 @@
-/* $XConsortium: PutBEvent.c,v 11.13 93/11/05 11:13:08 kaleb Exp $ */
+/* $XConsortium: PutBEvent.c,v 11.14 94/04/17 20:20:30 kaleb Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AofA8.c,v 1.3 92/05/19 17:54:44 rws Exp $
+ * $XConsortium: AofA8.c,v 1.4 94/04/17 20:16:30 rws Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

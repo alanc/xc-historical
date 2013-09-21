@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: SunPEXproto.h,v 3.1 93/11/22 12:08:03 rws Exp $ */
 
 /*
  * Copyright (c) 1992 by Sun Microsystems, Inc.

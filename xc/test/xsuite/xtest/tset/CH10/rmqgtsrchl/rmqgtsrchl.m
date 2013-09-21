@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rmqgtsrchl.m,v 1.6 92/06/11 17:41:12 rws Exp $
+ * $XConsortium: rmqgtsrchl.m,v 1.7 94/04/17 21:10:19 rws Exp $
  */
 >>TITLE XrmQGetSearchList CH10
 Bool

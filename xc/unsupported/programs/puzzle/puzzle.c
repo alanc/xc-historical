@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: puzzle.c,v 1.13 94/03/28 15:28:56 gildea Exp $
+ *	$XConsortium: puzzle.c,v 1.14 94/03/28 18:34:10 gildea Exp $
  */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.

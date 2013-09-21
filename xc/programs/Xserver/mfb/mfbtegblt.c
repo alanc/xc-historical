@@ -1,4 +1,4 @@
-/* $XConsortium: mfbtegblt.c,v 5.13 94/03/31 14:06:52 dpw Exp $ */
+/* $XConsortium: mfbtegblt.c,v 5.14 94/04/17 20:28:35 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 

@@ -1,4 +1,4 @@
-/* $XConsortium: phigscfunc.h,v 5.1 91/02/16 09:49:14 rws Exp $ */
+/* $XConsortium: phigscfunc.h,v 5.2 94/04/17 20:41:51 rws Exp $ */
 
 /***********************************************************
 

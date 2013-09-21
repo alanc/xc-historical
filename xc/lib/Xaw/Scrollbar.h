@@ -1,4 +1,4 @@
-/* $XConsortium: Scrollbar.h,v 1.7 91/07/26 21:59:31 converse Exp $ */
+/* $XConsortium: Scrollbar.h,v 1.8 94/04/17 20:12:41 converse Exp $ */
 
 
 /***********************************************************

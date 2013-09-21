@@ -1,5 +1,5 @@
 /*
- * $XConsortium: aixKeymap.h,v 1.2 91/07/16 13:00:30 jap Exp $
+ * $XConsortium: aixKeymap.h,v 1.3 91/11/22 17:06:56 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

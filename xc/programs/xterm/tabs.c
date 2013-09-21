@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: tabs.c,v 1.3 91/01/06 12:48:37 rws Exp $
+ *	$XConsortium: tabs.c,v 1.4 91/05/06 17:12:18 gildea Exp $
  */
 
 /*

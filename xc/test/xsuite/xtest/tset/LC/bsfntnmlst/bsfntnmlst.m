@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: bsfntnmlst.m,v 1.1 94/01/29 16:02:22 rws Exp $ */
 /*
  * Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.
  *

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: unnrctwthr.m,v 1.7 92/06/11 17:43:38 rws Exp $
+ * $XConsortium: unnrctwthr.m,v 1.8 94/04/17 21:10:37 rws Exp $
  */
 >>TITLE XUnionRectWithRegion CH10
 

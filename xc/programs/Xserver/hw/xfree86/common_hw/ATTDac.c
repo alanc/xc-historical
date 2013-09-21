@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ATTDac.c,v 1.1 94/03/28 21:24:32 dpw Exp $ */
 /*
  * Copyright 1994 by David Wexelblat <dwex@goblin.org>
  *

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xos.h,v 1.67 94/11/30 20:48:05 kaleb Exp gildea $
+ * $XConsortium: Xos.h,v 1.68 95/06/02 16:51:21 gildea Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium

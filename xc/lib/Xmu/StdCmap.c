@@ -1,4 +1,4 @@
-/* $XConsortium: StdCmap.c,v 1.13 92/11/24 14:16:21 rws Exp $ */
+/* $XConsortium: StdCmap.c,v 1.14 94/04/17 20:16:14 rws Exp $ */
 
 /* 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: FilterEv.c,v 1.9 94/04/17 20:19:21 rws Exp gildea $ */
+/* $XConsortium: FilterEv.c,v 1.10 95/06/08 23:20:39 gildea Exp $ */
 
  /*
   * Copyright 1990, 1991 by OMRON Corporation

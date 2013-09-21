@@ -810,7 +810,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XConsortium: README.sgml,v 1.3 95/01/23 15:34:48 kaleb Exp kaleb $
+$XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
 $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.16 1995/01/25 11:51:37 dawes Exp $
 </verb>
 

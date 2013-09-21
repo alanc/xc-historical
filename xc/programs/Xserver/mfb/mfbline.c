@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbline.c,v 5.18 94/04/17 20:28:26 dpw Exp $ */
+/* $XConsortium: mfbline.c,v 5.19 94/07/28 14:28:21 dpw Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"

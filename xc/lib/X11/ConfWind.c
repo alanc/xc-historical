@@ -1,4 +1,4 @@
-/* $XConsortium: ConfWind.c,v 11.11 93/10/25 19:08:58 rws Exp $ */
+/* $XConsortium: ConfWind.c,v 11.12 94/04/17 20:18:52 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

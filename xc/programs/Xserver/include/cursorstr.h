@@ -1,4 +1,4 @@
-/* $XConsortium: cursorstr.h,v 1.7 93/07/12 09:45:03 dpw Exp $ */
+/* $XConsortium: cursorstr.h,v 1.8 94/04/17 20:25:35 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

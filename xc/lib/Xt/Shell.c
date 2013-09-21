@@ -1,4 +1,4 @@
-/* $XConsortium: Shell.c,v 1.168 95/01/06 21:14:23 converse Exp converse $ */
+/* $XConsortium: Shell.c,v 1.169 95/06/22 22:31:11 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

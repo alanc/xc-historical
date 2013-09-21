@@ -1,4 +1,4 @@
-/* $XConsortium: reqtype.h,v 1.4 94/12/01 20:48:07 mor Exp $ */
+/* $XConsortium: reqtype.h,v 1.5 95/05/17 18:23:24 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

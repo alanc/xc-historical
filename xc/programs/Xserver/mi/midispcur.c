@@ -4,7 +4,7 @@
  * machine independent cursor display routines
  */
 
-/* $XConsortium: midispcur.c,v 5.13 93/10/12 11:41:20 dpw Exp $ */
+/* $XConsortium: midispcur.c,v 5.14 94/04/17 20:27:28 dpw Exp $ */
 
 /*
 

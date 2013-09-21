@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: flsh.m,v 1.13 92/06/11 17:21:23 rws Exp $
+ * $XConsortium: flsh.m,v 1.14 94/04/17 21:07:39 rws Exp $
  */
 >>TITLE XFlush CH08
 void

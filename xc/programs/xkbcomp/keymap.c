@@ -1,4 +1,4 @@
-/* $XConsortium: keymap.c,v 1.1 94/04/02 17:06:22 erik Exp $ */
+/* $XConsortium: keymap.c,v 1.2 94/04/08 15:26:16 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

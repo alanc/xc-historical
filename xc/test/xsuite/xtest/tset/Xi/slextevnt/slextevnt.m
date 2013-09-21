@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: slextevnt.m,v 1.16 94/04/17 21:12:49 rws Exp dpw $
+ * $XConsortium: slextevnt.m,v 1.17 94/09/06 20:52:11 dpw Exp $
  */
 >>TITLE XSelectExtensionEvent XINPUT
 void

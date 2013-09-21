@@ -1,4 +1,4 @@
-/* $XConsortium: pexTM.c,v 1.1 94/09/01 18:16:32 hersh Exp hersh $ */
+/* $XConsortium: pexTM.c,v 1.2 94/09/09 20:32:50 hersh Exp $ */
 /*
 
 Copyright (c) 1994  X Consortium

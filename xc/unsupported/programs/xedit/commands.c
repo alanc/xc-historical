@@ -1,4 +1,4 @@
-/* $XConsortium: commands.c,v 1.32 91/07/09 15:50:59 rws Exp $ */
+/* $XConsortium: commands.c,v 1.33 91/10/21 14:32:18 eswu Exp $ */
 
 /*
  *			  COPYRIGHT 1987

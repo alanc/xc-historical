@@ -1,4 +1,4 @@
-/* $XConsortium: miBldXform.c,v 5.6 94/01/07 09:47:48 dpw Exp $ */
+/* $XConsortium: miBldXform.c,v 5.7 94/04/17 20:37:01 dpw Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

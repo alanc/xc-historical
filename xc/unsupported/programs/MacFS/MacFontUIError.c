@@ -1,4 +1,4 @@
-/* $XConsortium: MacFontUIError.c,v 1.0 94/01/01 00:00:00 rws Exp $ */
+/* $XConsortium: MacFontUIError.c,v 1.2 94/04/17 21:51:41 rws Exp $ */
 /***********************************************************************
 Copyright 1991 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved

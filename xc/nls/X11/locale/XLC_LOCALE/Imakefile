@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 93/09/29 14:27:20 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 94/02/10 16:53:46 rws Exp $
 
   WCHAR32 = HasWChar32
    TBLDIR = $(XLOCALEDIR)/tbl_data

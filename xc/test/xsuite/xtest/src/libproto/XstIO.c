@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: XstIO.c,v 1.10 93/10/18 14:56:14 rws Exp $
+ * $XConsortium: XstIO.c,v 1.11 94/04/17 21:01:38 rws Exp $
  */
 /*
  * ***************************************************************************

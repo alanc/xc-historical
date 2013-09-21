@@ -1,4 +1,4 @@
-/* $XConsortium: $ */
+/* $XConsortium: ativga.h,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/ativga.h,v 3.0 1994/11/26 12:42:35 dawes Exp $ */
 /***************************************************************************
  * Start of VGA font saving and restoration code.

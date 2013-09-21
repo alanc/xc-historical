@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: atextAttr.c,v 1.0 93/11/22 12:49:06 rws Exp $ */
 
 
 /*

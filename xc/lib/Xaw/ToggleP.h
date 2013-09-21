@@ -1,4 +1,4 @@
-/* $XConsortium: ToggleP.h,v 1.8 91/06/20 16:15:51 converse Exp $ */
+/* $XConsortium: ToggleP.h,v 1.9 94/04/17 20:13:19 converse Exp $ */
 
 /*
 

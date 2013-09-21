@@ -1,4 +1,4 @@
-/* $XConsortium: AllCells.c,v 11.19 91/01/06 11:44:03 rws Exp $ */
+/* $XConsortium: AllCells.c,v 11.20 94/04/17 20:18:31 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

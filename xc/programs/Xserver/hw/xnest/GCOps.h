@@ -1,4 +1,4 @@
-/* $XConsortium: GCOps.h,v 1.1 93/07/12 15:28:27 rws Exp $ */
+/* $XConsortium: GCOps.h,v 1.2 93/09/20 20:18:48 dpw Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

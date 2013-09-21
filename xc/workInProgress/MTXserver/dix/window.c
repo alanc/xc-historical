@@ -65,7 +65,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: window.c,v 1.5 94/02/04 19:40:43 dpw Exp $ */
+/* $XConsortium: window.c,v 1.6 94/04/17 21:15:55 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

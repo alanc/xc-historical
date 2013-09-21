@@ -1,4 +1,4 @@
-/* $XConsortium: Berklib.c,v 1.24 94/04/17 20:23:08 dpw Exp kaleb $ */
+/* $XConsortium: Berklib.c,v 1.25 94/11/30 16:21:19 kaleb Exp $ */
 /*
 
 Copyright (c) 1987 X Consortium

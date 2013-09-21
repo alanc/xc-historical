@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyCur.c,v 1.3 91/07/16 13:14:04 jap Exp $
+ * $XConsortium: skyCur.c,v 1.4 91/12/11 21:23:51 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

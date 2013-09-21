@@ -1,4 +1,4 @@
-/* $XConsortium: imTrX.c,v 1.5 94/01/20 18:06:04 rws Exp $ */
+/* $XConsortium: imTrX.c,v 1.7 94/03/29 22:51:48 rws Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.

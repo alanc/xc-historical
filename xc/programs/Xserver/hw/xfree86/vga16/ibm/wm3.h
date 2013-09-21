@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wm3.h,v 1.1 94/03/28 21:40:31 dpw Exp $ */
 #include "vgaReg.h"
 
 /* Do call in Write Mode 3.

@@ -1,4 +1,4 @@
-/* $XConsortium: NextEvent.c,v 11.18 93/11/05 11:13:04 kaleb Exp $ */
+/* $XConsortium: NextEvent.c,v 11.19 94/04/17 20:20:19 kaleb Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

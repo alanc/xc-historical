@@ -1,4 +1,4 @@
-/* $XConsortium: tsource.c,v 2.23 91/07/05 18:56:14 converse Exp $ */
+/* $XConsortium: tsource.c,v 2.24 91/10/21 14:32:36 eswu Exp $ */
 
 /*
  *			  COPYRIGHT 1987

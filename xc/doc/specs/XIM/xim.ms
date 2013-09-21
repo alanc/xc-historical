@@ -1,4 +1,4 @@
-.\" $XConsortium: xim.ms,v 1.6 94/04/15 15:34:32 rws Exp $
+.\" $XConsortium: xim.ms,v 1.7 94/04/16 19:18:17 rws Exp $
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
 .EH ''''
 .OH ''''

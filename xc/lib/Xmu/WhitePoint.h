@@ -1,4 +1,4 @@
-/* $XConsortium: WhitePoint.h,v 1.3 94/04/12 17:37:10 dpw Exp $ */
+/* $XConsortium: WhitePoint.h,v 1.4 94/04/17 20:16:23 dpw Exp $ */
 
 /*
 

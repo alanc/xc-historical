@@ -1,4 +1,4 @@
-/* $XConsortium: GetFProp.c,v 11.7 91/01/06 11:45:56 rws Exp $ */
+/* $XConsortium: GetFProp.c,v 11.8 94/04/17 20:19:32 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

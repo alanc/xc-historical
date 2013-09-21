@@ -1,4 +1,4 @@
-.\" $XConsortium: XmacII.man,v 1.12 94/04/17 20:29:24 matt Exp $
+.\" $XConsortium: XmacII.man,v 1.13 94/04/18 18:05:17 rws Exp $
 .\" Copyright (c) 1989  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining

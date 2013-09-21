@@ -1,4 +1,4 @@
-/* $XConsortium: speedo.h,v 1.6 94/02/07 10:00:41 gildea Exp gildea $ */
+/* $XConsortium: speedo.h,v 1.7 95/06/08 23:20:39 gildea Exp $ */
 
 /*
 

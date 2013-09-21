@@ -1,4 +1,4 @@
-/* $XConsortium: mach32text.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XConsortium: mach32text.c,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32text.c,v 3.5 1994/09/11 00:49:09 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.

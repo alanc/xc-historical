@@ -1,4 +1,4 @@
-/* $XConsortium: SM.h,v 1.8 94/03/30 19:55:13 mor Exp $ */
+/* $XConsortium: SM.h,v 1.9 94/04/17 20:16:49 mor Exp $ */
 
 /*
 

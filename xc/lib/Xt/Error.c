@@ -1,4 +1,4 @@
-/* $XConsortium: Error.c,v 1.37 93/10/06 17:20:15 kaleb Exp $ */
+/* $XConsortium: Error.c,v 1.38 94/04/17 20:13:59 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

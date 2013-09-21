@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 93/09/04 17:31:05 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 93/09/06 15:26:16 rws Exp $
 #include <Server.tmpl>
 
 OSDEP_SRC = AIXV3.c AIXinit.c aixMsg.c aixError.c aixWrap.c

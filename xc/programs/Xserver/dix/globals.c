@@ -46,7 +46,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.52 93/09/23 16:54:17 rws Exp $ */
+/* $XConsortium: globals.c,v 1.53 94/04/17 20:26:37 rws Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

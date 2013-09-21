@@ -1,4 +1,4 @@
-/* $XConsortium: SelInput.c,v 11.9 91/01/06 11:47:50 rws Exp $ */
+/* $XConsortium: SelInput.c,v 11.10 94/04/17 20:20:50 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

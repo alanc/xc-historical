@@ -1,4 +1,4 @@
-/* $XConsortium: lock.c,v 1.4 94/12/16 17:32:57 mor Exp mor $ */
+/* $XConsortium: lock.c,v 1.5 95/05/24 20:43:29 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium

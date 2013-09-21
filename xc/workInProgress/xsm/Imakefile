@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.15 94/12/16 17:34:40 mor Exp mor $
+XCOMM $XConsortium: Imakefile,v 1.16 94/12/27 17:42:37 mor Exp $
 #if !defined(RshCmd)
 #if SystemV
 #ifdef HPArchitecture

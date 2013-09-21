@@ -1,4 +1,4 @@
-/* $XConsortium: AuWrite.c,v 1.5 91/01/30 12:28:19 gildea Exp $ */
+/* $XConsortium: AuWrite.c,v 1.6 94/04/17 20:15:45 gildea Exp $ */
 
 /*
 

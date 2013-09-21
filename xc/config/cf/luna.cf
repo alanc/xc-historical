@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: luna.cf,v 1.30 94/04/01 19:59:08 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: luna.cf,v 1.31 94/09/19 15:04:42 kaleb Exp $
 /*
  *	Please set the values for OSMajorVerion and OSMinorVersion
  *	before making makefiles.	 

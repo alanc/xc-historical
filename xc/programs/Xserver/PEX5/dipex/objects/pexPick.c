@@ -1,4 +1,4 @@
-/* $XConsortium: pexPick.c,v 5.2 92/03/04 14:16:12 hersh Exp $ */
+/* $XConsortium: pexPick.c,v 5.3 94/04/17 20:36:11 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

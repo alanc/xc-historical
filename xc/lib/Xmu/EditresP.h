@@ -1,4 +1,4 @@
-/* $XConsortium: EditresP.h,v 1.12 92/11/22 09:32:03 dave Exp $ */
+/* $XConsortium: EditresP.h,v 1.13 94/04/17 20:16:06 dave Exp $ */
 
 /*
 

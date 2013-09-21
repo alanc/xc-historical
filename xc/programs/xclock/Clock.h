@@ -1,5 +1,5 @@
 /*
-* $XConsortium: Clock.h,v 1.29 90/10/22 14:43:12 converse Exp $
+* $XConsortium: Clock.h,v 1.30 94/04/17 20:23:51 converse Exp $
 */
 
 

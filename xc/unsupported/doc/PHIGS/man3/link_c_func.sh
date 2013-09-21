@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ##
-## $XConsortium: link_c_func.sh,v 1.2 91/08/26 16:13:03 hersh Exp $
+## $XConsortium: link_c_func.sh,v 1.3 94/04/17 20:54:08 hersh Exp $
 ##
 ## 
 ## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.

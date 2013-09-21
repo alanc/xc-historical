@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.11 94/12/21 17:00:43 mor Exp mor $ */
+/* $XConsortium: auth.c,v 1.12 94/12/30 16:09:14 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

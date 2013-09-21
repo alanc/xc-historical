@@ -1,4 +1,4 @@
-/* $XConsortium: ChClMode.c,v 11.6 91/01/06 11:44:17 rws Exp $ */
+/* $XConsortium: ChClMode.c,v 11.7 94/04/17 20:18:40 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

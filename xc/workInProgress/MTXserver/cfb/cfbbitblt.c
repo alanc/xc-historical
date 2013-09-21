@@ -51,7 +51,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 OF THIS SOFTWARE.
 
 */
-/* $XConsortium: cfbbitblt.c,v 1.8 94/01/27 21:02:19 rob Exp $ */
+/* $XConsortium: cfbbitblt.c,v 1.9 94/04/17 21:16:20 rob Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"

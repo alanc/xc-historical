@@ -1,4 +1,4 @@
-.\" $XConsortium: xgc.man,v 1.5 94/04/11 14:30:27 gildea Exp $
+.\" $XConsortium: xgc.man,v 1.6 94/04/17 20:45:31 gildea Exp $
 .TH XGC 1 "Release 6" "X Version 11"
 .SH NAME
 xgc - X graphics demo

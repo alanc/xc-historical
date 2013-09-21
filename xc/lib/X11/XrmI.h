@@ -1,4 +1,4 @@
-/* $XConsortium: XrmI.h,v 1.8 93/08/14 10:08:16 rws Exp $ */
+/* $XConsortium: XrmI.h,v 1.9 94/04/17 20:21:55 rws Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

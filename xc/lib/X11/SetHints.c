@@ -1,4 +1,4 @@
-/* $XConsortium: SetHints.c,v 11.38 91/01/08 14:41:39 gildea Exp $ */
+/* $XConsortium: SetHints.c,v 11.39 94/04/17 20:20:57 gildea Exp $ */
 
 /***********************************************************
 

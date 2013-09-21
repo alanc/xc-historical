@@ -1,4 +1,4 @@
-/* $XConsortium: DisName.c,v 11.6 91/05/11 17:03:04 gildea Exp $ */
+/* $XConsortium: DisName.c,v 11.7 94/04/17 20:19:06 gildea Exp $ */
 
 /*
 

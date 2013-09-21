@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: XstDisplay.h,v 1.3 92/06/11 15:31:33 rws Exp $
+ * $XConsortium: XstDisplay.h,v 1.4 94/04/17 21:00:02 rws Exp $
  */
 
 #define XstConnectionNumber(dpy) 	((dpy)->fd)

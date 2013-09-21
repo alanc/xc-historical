@@ -1,4 +1,4 @@
-/* $XConsortium: nameserver.c,v 1.4 93/09/07 21:33:33 rws Exp $ */
+/* $XConsortium: nameserver.c,v 1.5 94/04/17 20:22:16 rws Exp $ */
 /*	nameserver.c - included by Xstreams.c			*/
 /*	Used for System V Release 3.2 networking code ONLY	*/
 /*

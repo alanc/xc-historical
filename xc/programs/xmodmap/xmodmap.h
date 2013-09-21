@@ -1,4 +1,4 @@
-/* $XConsortium: xmodmap.h,v 1.7 91/07/17 22:26:31 rws Exp $ */
+/* $XConsortium: xmodmap.h,v 1.8 94/04/17 20:24:25 rws Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

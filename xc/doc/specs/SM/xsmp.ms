@@ -1,5 +1,5 @@
 .\" Use tbl, -ms, and macros.t
-.\" $XConsortium: xsmp.ms,v 1.4 94/04/17 18:43:51 rws Exp $
+.\" $XConsortium: xsmp.ms,v 1.5 94/04/18 15:09:43 mor Exp $
 .EH ''''
 .OH ''''
 .EF ''''

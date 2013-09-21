@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mfbply1rct.c,v 1.8 94/01/21 22:02:18 dpw Exp $
+ * $XConsortium: mfbply1rct.c,v 1.9 94/04/17 20:28:28 dpw Exp $
  *
 Copyright (c) 1990  X Consortium
 

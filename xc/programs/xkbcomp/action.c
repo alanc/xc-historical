@@ -1,4 +1,4 @@
-/* $XConsortium: action.c,v 1.3 94/04/04 15:28:02 rws Exp $ */
+/* $XConsortium: action.c,v 1.5 94/04/08 15:21:53 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

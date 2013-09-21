@@ -1,4 +1,4 @@
-/* $XConsortium: FSlib.h,v 1.8 94/01/31 11:29:58 mor Exp $ */
+/* $XConsortium: FSlib.h,v 1.9 94/04/17 20:15:20 mor Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;

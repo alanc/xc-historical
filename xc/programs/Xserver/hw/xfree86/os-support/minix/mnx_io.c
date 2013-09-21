@@ -1,4 +1,4 @@
-/* $XConsortium: mnx_io.c,v 1.3 95/06/09 20:57:00 gildea Exp kaleb $ */
+/* $XConsortium: mnx_io.c,v 1.4 95/06/14 15:20:35 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.0 1994/05/08 05:23:49 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands

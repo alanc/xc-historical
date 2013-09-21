@@ -1,4 +1,4 @@
-/* $XConsortium: miInquire.c,v 5.9 94/04/17 20:37:06 hersh Exp gildea $ */
+/* $XConsortium: miInquire.c,v 5.10 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 

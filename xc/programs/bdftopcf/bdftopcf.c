@@ -1,4 +1,4 @@
-/* $XConsortium: bdftopcf.c,v 1.7 93/09/17 18:38:15 gildea Exp $ */
+/* $XConsortium: bdftopcf.c,v 1.8 94/04/17 20:23:59 gildea Exp $ */
 /*
 
 Copyright (c) 1991, 1993  X Consortium

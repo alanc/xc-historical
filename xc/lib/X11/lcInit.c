@@ -1,4 +1,4 @@
-/* $XConsortium: lcInit.c,v 1.1 93/09/17 13:30:42 rws Exp $ */
+/* $XConsortium: lcInit.c,v 1.2 94/01/20 18:06:58 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

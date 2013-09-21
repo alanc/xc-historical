@@ -1,4 +1,4 @@
-.\" $XConsortium: xkill.man,v 1.14 94/04/14 11:32:09 dpw Exp $
+.\" $XConsortium: xkill.man,v 1.15 94/04/17 20:24:50 dpw Exp $
 .\" Copyright (c) 1988  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining

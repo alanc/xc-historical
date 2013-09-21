@@ -1,4 +1,4 @@
-/* $XConsortium: expr.h,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: expr.h,v 1.2 94/04/05 15:14:19 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

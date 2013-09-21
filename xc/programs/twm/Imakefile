@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/06/14 20:11:42 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.41 94/07/06 16:15:19 mor Exp $
 
          YFLAGS = -d
         DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)

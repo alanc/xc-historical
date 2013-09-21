@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: crcltsbws.m,v 1.8 92/06/11 16:05:57 rws Exp $
+ * $XConsortium: crcltsbws.m,v 1.9 94/04/17 21:02:56 rws Exp $
  */
 >>TITLE XCirculateSubwindows CH03
 void

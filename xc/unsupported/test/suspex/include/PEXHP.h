@@ -1,7 +1,7 @@
 #ifndef PEXHP_H
 #define PEXHP_H
 
-/* $XConsortium$ */
+/* $XConsortium: PEXHP.h,v 1.1 93/11/22 13:13:09 rws Exp $ */
 
 /******************************************************************************/
 /*  (c) Copyright Hewlett-Packard Company, 1992,  Fort Collins, Colorado      */

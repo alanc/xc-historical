@@ -1,4 +1,4 @@
-/* $XConsortium: Atoms.h,v 1.8 91/07/23 14:39:51 converse Exp $ */
+/* $XConsortium: Atoms.h,v 1.9 94/04/17 20:15:49 converse Exp $ */
 
 /* 
 

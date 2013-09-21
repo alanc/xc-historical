@@ -1,4 +1,4 @@
-/* $XConsortium: ct_bank.s,v 1.1 94/12/15 21:08:14 kaleb Exp kaleb $ */
+/* $XConsortium: ct_bank.s,v 1.2 95/01/06 20:58:29 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_bank.s,v 3.1 1995/01/04 04:42:01 dawes Exp $ */
 /*
  * Copyright 1994 by Régis Cridlig <cridlig@dmi.ens.fr>

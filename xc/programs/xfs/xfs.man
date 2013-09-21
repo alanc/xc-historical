@@ -35,7 +35,7 @@
 .\" no representations about the
 .\" suitability of this software for any purpose.  It is provided "as is"
 .\" without express or implied warranty.
-.\" $XConsortium: xfs.man,v 1.10 94/04/17 19:55:50 dpw Exp gildea $
+.\" $XConsortium: xfs.man,v 1.11 94/10/03 23:13:21 gildea Exp $
 .TH XFS 1 "Release 6" "X Version 11"
 .SH NAME
 xfs \- X font server

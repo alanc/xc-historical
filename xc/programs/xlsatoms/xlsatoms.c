@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsatoms.c,v 1.4 93/09/20 18:05:42 hersh Exp $
+ * $XConsortium: xlsatoms.c,v 1.5 94/04/17 20:38:45 hersh Exp $
  *
 Copyright (c) 1989  X Consortium
 

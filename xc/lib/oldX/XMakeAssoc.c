@@ -1,4 +1,4 @@
-/* $XConsortium: XMakeAssoc.c,v 10.21 94/02/06 16:35:34 rws Exp $ */
+/* $XConsortium: XMakeAssoc.c,v 10.22 94/04/17 20:11:38 rws Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium

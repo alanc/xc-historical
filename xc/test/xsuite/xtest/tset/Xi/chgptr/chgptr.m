@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chgptr.m,v 1.9 94/04/17 21:12:45 rws Exp dpw $
+ * $XConsortium: chgptr.m,v 1.10 94/09/06 20:49:22 dpw Exp $
  */
 >>TITLE XChangePointerDevice XINPUT
 void

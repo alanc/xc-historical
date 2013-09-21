@@ -1,4 +1,4 @@
-/* $XConsortium: renderers.c,v 1.4 94/02/04 11:13:10 gildea Exp $ */
+/* $XConsortium: renderers.c,v 1.5 94/04/17 20:17:08 gildea Exp $ */
 
 /*
 

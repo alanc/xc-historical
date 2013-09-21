@@ -1,4 +1,4 @@
-/* $XConsortium: spdo_prv.h,v 1.3 93/10/28 15:27:13 gildea Exp $ */
+/* $XConsortium: spdo_prv.h,v 1.4 94/02/10 11:06:01 gildea Exp $ */
 
 /*
 

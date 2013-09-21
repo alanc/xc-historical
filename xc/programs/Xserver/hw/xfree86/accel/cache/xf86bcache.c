@@ -1,4 +1,4 @@
-/* $XConsortium: xf86bcache.c,v 1.1 94/10/05 13:27:54 kaleb Exp $ */
+/* $XConsortium: xf86bcache.c,v 1.2 94/10/12 19:48:30 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86bcache.c,v 3.1 1994/07/15 06:57:38 dawes Exp $ */
 /*
  * Based on the S3 block allocator code in XFree86-2.0 by Jon Tombs.

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexutext.h,v 1.0 93/11/22 12:24:13 rws Exp $ */
 
 
 #ifndef _PEXUTEXT_H_ /* [ */
@@ -29,9 +29,9 @@
 
 /******************************************************************************/
 /*                                                                            */
-/* $Source: /users/waitz/work/tmp/RCS/pexutext.h,v $                      	      */
-/* $Date: 93/03/02 16:39:31 $                                                 */
-/* $Revision: 1.1 $                                                           */
+/* $Source: /xsrc/xc/unsupported/test/suspex/src/pexut_hp/RCS/pexutext.h,v $                      	      */
+/* $Date: 93/11/22 12:24:13 $                                                 */
+/* $Revision: 1.0 $                                                           */
 /*                                                                            */
 /* Description:                                                               */
 /*   Internal header file for PEXUt ,                    		      */

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: opndsply.m,v 1.16 92/06/11 16:00:58 rws Exp $
+ * $XConsortium: opndsply.m,v 1.17 94/04/17 21:02:37 rws Exp $
  */
 >>TITLE XOpenDisplay CH02
 Display *

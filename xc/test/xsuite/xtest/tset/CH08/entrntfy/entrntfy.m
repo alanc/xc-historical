@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: entrntfy.m,v 1.18 92/06/11 17:20:38 rws Exp $
+ * $XConsortium: entrntfy.m,v 1.19 94/04/17 21:07:28 rws Exp $
  */
 >>TITLE EnterNotify CH08
 >>EXTERN

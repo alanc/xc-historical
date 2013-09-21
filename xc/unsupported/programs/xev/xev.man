@@ -1,4 +1,4 @@
-.\" $XConsortium: xev.man,v 1.9 94/04/11 14:30:17 gildea Exp $
+.\" $XConsortium: xev.man,v 1.10 94/04/17 20:45:20 gildea Exp $
 .TH XEV 1 "Release 6" "X Version 11"
 .SH NAME
 xev - print contents of X events

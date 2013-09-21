@@ -1,4 +1,4 @@
-/* $XConsortium: fontfile.c,v 1.27 94/04/17 20:17:06 gildea Exp mor $ */
+/* $XConsortium: fontfile.c,v 1.28 95/02/21 14:17:19 mor Exp $ */
 
 /*
 

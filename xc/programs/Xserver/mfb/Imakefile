@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.38 94/03/11 18:47:47 dpw Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.39 94/11/21 18:28:53 kaleb Exp $
 #include <Server.tmpl>
 
 SRCS1 =	 mfbgc.c mfbwindow.c mfbfont.c \

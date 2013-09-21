@@ -1,4 +1,4 @@
-/* $XConsortium: mach64pcach.c,v 1.1 94/12/14 15:04:34 kaleb Exp kaleb $ */
+/* $XConsortium: mach64pcach.c,v 1.2 95/01/16 13:16:35 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.3 1995/01/15 10:31:13 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.

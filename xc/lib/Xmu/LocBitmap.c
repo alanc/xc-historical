@@ -1,4 +1,4 @@
-/* $XConsortium: LocBitmap.c,v 1.18 93/08/16 14:45:11 rws Exp $ */
+/* $XConsortium: LocBitmap.c,v 1.19 94/04/17 20:16:10 rws Exp $ */
 
 /*
  

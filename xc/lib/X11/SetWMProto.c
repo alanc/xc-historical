@@ -1,4 +1,4 @@
-/* $XConsortium: SetWMProto.c,v 1.4 91/01/06 11:43:54 rws Exp $ */
+/* $XConsortium: SetWMProto.c,v 1.5 94/04/17 20:21:08 rws Exp $ */
 
 /***********************************************************
 

@@ -1,4 +1,4 @@
-/* $XConsortium: site.h,v 1.24 94/04/17 20:26:10 rws Exp gildea $ */
+/* $XConsortium: site.h,v 1.25 95/07/10 21:18:07 gildea Exp $ */
 /************************************************************
 
 Copyright (c) 1987  X Consortium

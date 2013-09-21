@@ -1,4 +1,4 @@
-/* $XConsortium: StrToLong.c,v 1.4 93/08/16 14:38:27 rws Exp $ */
+/* $XConsortium: StrToLong.c,v 1.5 94/04/17 20:16:19 rws Exp $ */
 
 /*
  

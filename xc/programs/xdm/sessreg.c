@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sessreg.c,v 1.16 95/01/25 16:02:40 kaleb Exp kaleb $
+ * $XConsortium: sessreg.c,v 1.17 95/01/29 12:07:22 kaleb Exp $
  *
  * Copyright (c) 1990  X Consortium
  * 

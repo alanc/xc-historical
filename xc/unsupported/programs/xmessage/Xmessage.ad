@@ -1,4 +1,4 @@
-! $XConsortium: Xmessage.ad,v 1.2 94/04/11 14:44:01 gildea Exp $
+! $XConsortium: Xmessage.ad,v 1.3 94/07/26 20:23:17 gildea Exp $
 *baseTranslations: 		#override :<Key>Return: default-exit()
 *message.Scroll: 		whenNeeded
 *Command.shapeStyle:		oval

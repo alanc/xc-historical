@@ -1,4 +1,4 @@
-/* $XConsortium: sunInit.c,v 5.53 94/08/16 13:45:30 dpw Exp kaleb $ */
+/* $XConsortium: sunInit.c,v 5.54 94/12/23 16:49:38 kaleb Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.

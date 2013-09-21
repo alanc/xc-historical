@@ -1,4 +1,4 @@
-/* $XConsortium: XimThai.h,v 1.3 94/01/20 18:02:29 rws Exp $ */
+/* $XConsortium: XimThai.h,v 1.4 94/04/17 20:21:39 rws Exp $ */
 /***********************************************************
 
 Copyright (c) 1993  X Consortium

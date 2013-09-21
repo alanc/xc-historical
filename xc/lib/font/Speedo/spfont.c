@@ -1,4 +1,4 @@
-/* $XConsortium: spfont.c,v 1.22 94/04/17 20:17:48 gildea Exp $ */
+/* $XConsortium: spfont.c,v 1.23 94/07/25 13:48:35 kaleb Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation

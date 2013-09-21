@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: bsdi.cf,v 1.13 95/01/05 19:33:32 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: bsdi.cf,v 1.14 95/01/11 18:27:52 kaleb Exp $
 
 #define OSName            BSD/386 1.1
 #define OSVendor          BSDI

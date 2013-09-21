@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.21 91/06/09 12:36:51 rws Exp $ */
+/* $XConsortium: main.c,v 1.22 94/04/17 20:45:30 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

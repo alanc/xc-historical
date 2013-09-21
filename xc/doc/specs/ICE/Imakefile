@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/02/10 18:04:42 rws Exp $
 
 MakeEqnDoc(ice,ice.ms)
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.3 94/01/11 20:54:41 rob Exp $ */
+/* $XConsortium: xdmcp.c,v 1.4 94/01/17 23:58:58 rob Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *

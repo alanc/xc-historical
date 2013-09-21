@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 94/10/28 20:47:10 dpw Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.5 95/01/16 15:53:55 kaleb Exp $
 #include <Server.tmpl>
 
 SRCS = 	Args.c \

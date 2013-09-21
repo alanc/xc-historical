@@ -1,4 +1,4 @@
-/* $XConsortium: handle.c,v 1.27 94/03/16 19:43:23 converse Exp $ */
+/* $XConsortium: handle.c,v 1.28 94/04/17 20:24:20 converse Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

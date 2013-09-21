@@ -1,4 +1,4 @@
-/* $XConsortium: SetStip.c,v 11.14 91/01/06 11:48:14 rws Exp $ */
+/* $XConsortium: SetStip.c,v 11.15 94/04/17 20:21:05 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

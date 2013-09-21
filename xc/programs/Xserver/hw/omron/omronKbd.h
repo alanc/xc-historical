@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: omronKbd.h,v 1.1 91/06/29 13:49:02 xguest Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 

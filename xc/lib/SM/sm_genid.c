@@ -1,4 +1,4 @@
-/* $XConsortium: sm_genid.c,v 1.6 94/04/17 20:16:56 gildea Exp $ */
+/* $XConsortium: sm_genid.c,v 1.7 94/05/02 11:14:45 mor Exp $ */
 
 /*
 

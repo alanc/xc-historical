@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexutcmapint.c,v 1.0 93/11/22 12:23:48 rws Exp $ */
 
 /******************************************************************************/
 /*                                                                            */
@@ -25,9 +25,9 @@
 
 /******************************************************************************/
 /*                                                                            */
-/* $Source: /users/waitz/work/tmp/RCS/pexutcmapint.c,v $                         */
-/* $Date: 93/04/01 13:30:40 $                                                 */
-/* $Revision: 1.2 $                                                   */
+/* $Source: /xsrc/xc/unsupported/test/suspex/src/pexut_hp/RCS/pexutcmapint.c,v $                         */
+/* $Date: 93/11/22 12:23:48 $                                                 */
+/* $Revision: 1.0 $                                                   */
 /*                                                                            */
 /* Description:                                                               */
 /*   Internal routine implementation file for PEXUt colormap/visual utilities.*/

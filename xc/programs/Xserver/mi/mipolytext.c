@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ************************************************************************/
-/* $XConsortium: mipolytext.c,v 5.3 92/05/15 13:58:20 keith Exp $ */
+/* $XConsortium: mipolytext.c,v 5.4 94/04/17 20:27:45 keith Exp $ */
 /*
  * mipolytext.c - text routines
  *

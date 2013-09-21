@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: stdshs.m,v 1.7 92/06/11 16:18:04 rws Exp $
+ * $XConsortium: stdshs.m,v 1.8 94/04/17 21:04:07 rws Exp $
  */
 >>TITLE XSetDashes CH05
 void

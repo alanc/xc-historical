@@ -1,4 +1,4 @@
-/* $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: XKMformat.h,v 1.4 94/04/08 15:08:20 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

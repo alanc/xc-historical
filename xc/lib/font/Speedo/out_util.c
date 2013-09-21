@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: out_util.c,v 1.2 91/05/11 09:53:35 rws Exp $ */
 
 /*
 

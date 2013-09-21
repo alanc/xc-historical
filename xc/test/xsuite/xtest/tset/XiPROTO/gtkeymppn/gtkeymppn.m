@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtkeymppn.m,v 1.7 94/01/30 11:53:16 rws Exp $
+ * $XConsortium: gtkeymppn.m,v 1.8 94/04/17 21:13:52 rws Exp $
  */
 >>TITLE GetDeviceKeyMapping XIPROTO
 >>SET startup protostartup

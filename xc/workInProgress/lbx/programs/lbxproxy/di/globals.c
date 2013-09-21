@@ -46,7 +46,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: globals.c,v 1.6 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: globals.c,v 1.7 95/05/24 16:14:13 mor Exp $ */
 /* $NCDId: @(#)globals.c,v 1.3 1994/03/24 17:54:39 lemke Exp $ */
   
 #include "misc.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: creatdstry.c,v 1.6 94/01/29 11:07:58 rws Exp $ */
+/* $XConsortium: creatdstry.c,v 1.7 94/04/17 20:39:13 rws Exp $ */
 
 /**** module creatdstry.c ****/
 /******************************************************************************

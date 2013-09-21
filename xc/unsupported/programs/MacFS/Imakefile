@@ -1,4 +1,4 @@
-/* $XConsortium: Imakefile,v 1.2 93/09/19 14:50:23 rws Exp $ */
+/* $XConsortium: Imakefile,v 1.3 93/09/25 21:24:20 rws Exp $ */
 #include <Server.tmpl>
 
 REZ = /mac/bin/rez -i /:mac:lib:rincludes -d AUX

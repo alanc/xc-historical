@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: lwrwdw.m,v 1.7 92/06/11 16:07:53 rws Exp $
+ * $XConsortium: lwrwdw.m,v 1.8 94/04/17 21:03:04 rws Exp $
  */
 >>TITLE XLowerWindow CH03
 void

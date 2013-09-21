@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyutil.c,v 1.15 93/10/12 11:42:04 dpw Exp $ */
+/* $XConsortium: mipolyutil.c,v 1.16 94/04/17 20:27:46 dpw Exp $ */
 #include "miscstruct.h"
 #include "gc.h"
 #include "miscanfill.h"

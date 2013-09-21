@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 2.23 94/02/04 14:42:02 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 2.24 94/02/10 19:54:10 rws Exp $
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
 #endif

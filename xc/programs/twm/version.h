@@ -52,7 +52,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: version.h,v 1.7 89/10/27 14:01:42 jim Exp $
+ * $XConsortium: version.h,v 1.8 94/04/17 20:38:28 jim Exp $
  *
  * TWM version externs
  *

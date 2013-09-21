@@ -1,4 +1,4 @@
-/* $XConsortium: xkbEvents.c,v 1.7 94/04/01 18:47:59 erik Exp $ */
+/* $XConsortium: xkbEvents.c,v 1.8 94/04/08 02:58:03 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

@@ -1,4 +1,4 @@
-/* $XConsortium: privates.c,v 1.3 94/02/04 16:20:27 rws Exp $ */
+/* $XConsortium: privates.c,v 1.4 94/04/17 20:26:41 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

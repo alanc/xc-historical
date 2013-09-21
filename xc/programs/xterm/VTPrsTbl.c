@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: VTPrsTbl.c,v 1.9 92/09/15 15:28:28 gildea Exp gildea $
+ *	$XConsortium: VTPrsTbl.c,v 1.10 95/06/09 22:17:06 gildea Exp $
  */
 
 /*

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: stgrphcsex.m,v 1.7 92/12/21 09:25:23 rws Exp $
+ * $XConsortium: stgrphcsex.m,v 1.8 94/04/17 21:04:12 rws Exp $
  */
 >>TITLE XSetGraphicsExposures CH05
 void

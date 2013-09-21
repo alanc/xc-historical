@@ -1,4 +1,4 @@
-/* $XConsortium: out_bl2d.c,v 1.4 94/02/03 17:20:59 gildea Exp $ */
+/* $XConsortium: out_bl2d.c,v 1.5 94/02/07 10:01:15 gildea Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbev.c,v 1.7 94/04/08 16:46:58 erik Exp $ */
+/* $XConsortium: xkbev.c,v 1.8 94/04/17 20:46:00 erik Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

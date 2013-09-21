@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: signal.h,v 1.1 92/06/11 15:29:43 rws Exp $ */
 #ifndef	SIG_DFL
 
 typedef	long	sigset_t;

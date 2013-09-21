@@ -8,7 +8,7 @@
 .\" suitability for any purpose of the information in this document.  It is 
 .\" provided \`\`as is'' without express or implied warranty.
 .\" 
-.\" $XConsortium: XListDev.man,v 1.5 94/04/17 20:07:37 dpw Exp $
+.\" $XConsortium: XListDev.man,v 1.6 94/06/04 17:31:20 rws Exp $
 .ds xL Programming with Xlib
 .TH XListInputDevices 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME

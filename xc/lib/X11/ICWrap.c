@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ICWrap.c,v 11.8 94/01/20 18:01:59 rws Exp $
+ * $XConsortium: ICWrap.c,v 11.9 94/04/17 20:19:54 rws Exp $
  */
 
 /*

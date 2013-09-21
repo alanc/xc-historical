@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: io.c,v 1.3 94/01/11 20:50:17 rob Exp $ */
+/* $XConsortium: io.c,v 1.4 94/04/17 21:15:59 rob Exp $ */
 /*****************************************************************
  * i/o functions
  *

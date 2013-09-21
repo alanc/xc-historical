@@ -1,4 +1,4 @@
-/* $XConsortium: sperr.c,v 1.5 94/04/12 21:57:58 dpw Exp $ */
+/* $XConsortium: sperr.c,v 1.6 94/04/17 20:17:47 dpw Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation

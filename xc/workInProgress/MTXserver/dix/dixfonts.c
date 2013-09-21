@@ -39,7 +39,7 @@ OF THIS SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.5 94/01/27 16:52:52 rob Exp $ */
+/* $XConsortium: dixfonts.c,v 1.6 94/04/17 21:15:44 rob Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"

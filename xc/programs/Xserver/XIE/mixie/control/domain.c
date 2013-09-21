@@ -1,4 +1,4 @@
-/* $XConsortium: domain.c,v 1.4 94/01/12 20:06:43 rws Exp $ */
+/* $XConsortium: domain.c,v 1.5 94/04/17 20:34:11 rws Exp $ */
 /**** module domain.c ****/
 /******************************************************************************
 Copyright (c) 1993, 1994  X Consortium

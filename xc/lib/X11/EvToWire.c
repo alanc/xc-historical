@@ -1,4 +1,4 @@
-/* $XConsortium: EvToWire.c,v 11.20 93/09/07 21:30:35 rws Exp $ */
+/* $XConsortium: EvToWire.c,v 11.21 94/04/17 20:19:15 rws Exp $ */
 
 /*
 

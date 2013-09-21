@@ -1,6 +1,6 @@
 #ifndef X_HILINIT_H
 #define X_HILINIT_H
-/* $XConsortium: x_hilinit.h,v 8.28 93/08/08 12:59:44 rws Exp $ */
+/* $XConsortium: x_hilinit.h,v 8.29 94/04/17 20:30:18 rws Exp $ */
 /*
 
 Copyright (c) 1986, 1987  X Consortium

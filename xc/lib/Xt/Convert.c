@@ -1,4 +1,4 @@
-/* $XConsortium: Convert.c,v 1.73 93/10/22 10:48:56 kaleb Exp $ */
+/* $XConsortium: Convert.c,v 1.74 94/04/17 20:13:48 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

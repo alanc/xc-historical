@@ -35,7 +35,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: getprop.m,v 1.6 94/01/30 12:09:48 rws Exp $
+ * $XConsortium: getprop.m,v 1.7 94/04/17 21:12:57 rws Exp $
  */
 
 >>TITLE XGetDeviceDontPropagateList XINPUT

@@ -1,4 +1,4 @@
-/* $XConsortium: mainwin.c,v 1.7 94/12/16 17:30:12 mor Exp mor $ */
+/* $XConsortium: mainwin.c,v 1.8 94/12/27 17:43:10 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

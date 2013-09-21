@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mach_video.c,v 1.1 94/03/28 21:29:32 dpw Exp $ */
 /*
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>

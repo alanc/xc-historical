@@ -1,4 +1,4 @@
-/* $XConsortium: x_hilinit.c,v 8.204 95/01/24 23:30:43 gildea Exp gildea $ */
+/* $XConsortium: x_hilinit.c,v 8.205 95/01/27 19:02:07 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

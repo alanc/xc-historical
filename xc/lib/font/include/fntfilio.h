@@ -1,4 +1,4 @@
-/* $XConsortium: fntfilio.h,v 1.2 93/09/17 18:27:43 gildea Exp $ */
+/* $XConsortium: fntfilio.h,v 1.3 94/04/17 20:17:28 gildea Exp $ */
 
 /*
 

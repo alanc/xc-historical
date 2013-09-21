@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 1.5 94/01/11 20:49:13 rob Exp $ */
+/* $XConsortium: miexpose.c,v 1.6 94/04/17 21:16:05 rob Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS

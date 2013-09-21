@@ -1,4 +1,4 @@
-/* $XConsortium: xnestPixmap.h,v 1.1 93/06/23 16:23:55 dmatic Exp $ */
+/* $XConsortium: Pixmap.h,v 1.1 93/07/12 15:28:41 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

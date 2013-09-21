@@ -1,4 +1,4 @@
-/* $XConsortium: s3fcach.c,v 1.3 95/01/06 20:57:18 kaleb Exp kaleb $ */
+/* $XConsortium: s3fcach.c,v 1.4 95/01/23 15:33:59 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.13 1995/01/21 13:04:19 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.

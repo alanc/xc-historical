@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 93/09/18 14:17:41 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 93/09/18 16:23:30 rws Exp $
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
            SRCS = b4light.c

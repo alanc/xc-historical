@@ -1,4 +1,4 @@
-/* $XConsortium: get_load.c,v 1.34 93/09/13 19:24:24 rws Exp $ */
+/* $XConsortium: get_load.c,v 1.35 94/04/17 20:43:43 rws Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmScreen.h,v 1.2 91/07/16 13:10:29 jap Exp $
+ * $XConsortium: ibmScreen.h,v 1.3 91/09/09 13:23:39 rws Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

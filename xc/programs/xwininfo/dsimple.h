@@ -1,4 +1,4 @@
-/* $XConsortium: dsimple.h,v 1.3 94/04/13 17:45:52 gildea Exp $ */
+/* $XConsortium: dsimple.h,v 1.4 94/04/17 20:24:39 gildea Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

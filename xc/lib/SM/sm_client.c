@@ -1,4 +1,4 @@
-/* $XConsortium: sm_client.c,v 1.29 94/04/07 18:28:37 mor Exp $ */
+/* $XConsortium: sm_client.c,v 1.30 94/04/17 20:16:54 mor Exp $ */
 
 /*
 

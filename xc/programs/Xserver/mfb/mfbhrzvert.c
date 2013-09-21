@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbhrzvert.c,v 1.14 94/01/12 18:05:00 dpw Exp $ */
+/* $XConsortium: mfbhrzvert.c,v 1.15 94/04/17 20:28:24 dpw Exp $ */
 #include "X.h"
 
 #include "gc.h"

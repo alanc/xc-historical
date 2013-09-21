@@ -1,4 +1,4 @@
-/* $XConsortium: Misc.h,v 1.1 89/05/10 16:00:25 jim Exp $ */
+/* $XConsortium: Misc.h,v 1.2 94/04/17 20:16:12 jim Exp $ */
 
 /*
 

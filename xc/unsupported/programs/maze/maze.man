@@ -1,4 +1,4 @@
-.\" $XConsortium: maze.man,v 1.8 94/04/11 14:30:11 gildea Exp $
+.\" $XConsortium: maze.man,v 1.9 94/04/17 20:45:18 gildea Exp $
 .TH MAZE 1 "Release 6" "X Version 11"
 .SH NAME
 maze \- an automated X11 demo repeatedly creating and solving a random maze

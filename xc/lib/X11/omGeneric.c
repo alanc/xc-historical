@@ -1,4 +1,4 @@
-/* $XConsortium: omGeneric.c,v 1.9 95/09/12 19:23:55 kaleb Exp kaleb $ */
+/* $XConsortium: omGeneric.c,v 1.10 95/09/12 19:53:45 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

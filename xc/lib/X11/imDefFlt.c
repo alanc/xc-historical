@@ -1,4 +1,4 @@
-/* $XConsortium: imDefFlt.c,v 1.5 94/05/14 15:27:52 rws Exp $ */
+/* $XConsortium: imDefFlt.c,v 1.6 94/07/06 14:46:48 kaleb Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED

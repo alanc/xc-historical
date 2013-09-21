@@ -1,4 +1,4 @@
-/* $XConsortium: Xlibint.h,v 11.145 95/06/02 23:42:52 gildea Exp gildea $ */
+/* $XConsortium: Xlibint.h,v 11.146 95/06/08 23:20:39 gildea Exp $ */
 
 /*
 

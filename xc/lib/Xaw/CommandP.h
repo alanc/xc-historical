@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CommandP.h,v 1.30 90/12/01 13:00:10 rws Exp $
+* $XConsortium: CommandP.h,v 1.31 94/04/17 20:12:01 rws Exp $
 */
 
 

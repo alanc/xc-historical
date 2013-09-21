@@ -1,4 +1,4 @@
-/* $XConsortium: miSC.c,v 5.3 92/11/19 15:14:55 hersh Exp $ */
+/* $XConsortium: miSC.c,v 5.4 94/04/17 20:37:32 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

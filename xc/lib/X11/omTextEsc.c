@@ -1,4 +1,4 @@
-/* $XConsortium: omTextEsc.c,v 1.1 93/09/17 13:32:45 rws Exp $ */
+/* $XConsortium: omTextEsc.c,v 1.2 94/01/20 18:08:18 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

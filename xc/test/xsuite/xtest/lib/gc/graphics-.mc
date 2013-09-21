@@ -36,5 +36,5 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: graphics-.mc,v 1.1 92/06/11 18:03:41 rws Exp $
+ * $XConsortium: graphics-.mc,v 1.2 94/04/17 21:14:44 rws Exp $
  */

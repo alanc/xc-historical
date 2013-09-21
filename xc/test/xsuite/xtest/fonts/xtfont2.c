@@ -1,4 +1,4 @@
-/* $XConsortium: xtfont2.c,v 1.1 92/06/11 15:36:25 rws Exp $ */
+/* $XConsortium: xtfont2.c,v 1.2 94/04/17 21:00:13 rws Exp $ */
 /*
  
 Copyright (c) 1990, 1991  X Consortium

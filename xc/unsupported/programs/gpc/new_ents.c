@@ -1,4 +1,4 @@
-/* $XConsortium: new_ents.c,v 5.3 91/08/23 16:45:45 rws Exp $ */
+/* $XConsortium: new_ents.c,v 5.4 94/04/17 20:44:41 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

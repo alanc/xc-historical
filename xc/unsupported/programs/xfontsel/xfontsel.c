@@ -1,4 +1,4 @@
-/* $XConsortium: xfontsel.c,v 1.34 93/08/19 09:34:19 rws Exp $ */
+/* $XConsortium: xfontsel.c,v 1.35 94/04/17 20:43:41 rws Exp $ */
 /*
 
 Copyright (c) 1985-1989  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lbxopts.h,v 1.1 94/12/01 20:04:44 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

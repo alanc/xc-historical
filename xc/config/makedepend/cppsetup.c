@@ -1,4 +1,4 @@
-/* $XConsortium: cppsetup.c,v 1.12 94/04/13 16:55:45 gildea Exp $ */
+/* $XConsortium: cppsetup.c,v 1.13 94/04/17 20:10:32 gildea Exp kaleb $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -222,7 +222,7 @@ cppsetup(line, filep, inc)
 {
     IfParser ip;
     struct _parse_data pd;
-    int val = 0;
+    long val = 0;
 
     pd.filep = filep;
     pd.inc = inc;

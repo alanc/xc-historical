@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Porthole.h,v 1.1 90/02/28 18:07:31 jim Exp $
+ * $XConsortium: Porthole.h,v 1.2 94/04/17 20:12:35 jim Exp $
  *
 Copyright (c) 1990  X Consortium
 

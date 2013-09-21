@@ -1,5 +1,5 @@
 /*
-* $XConsortium: tsourceP.h,v 1.1 89/09/01 17:36:46 kit Exp $
+* $XConsortium: tsourceP.h,v 1.2 94/04/17 20:24:05 kit Exp $
 */
 
 

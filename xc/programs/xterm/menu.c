@@ -1,4 +1,4 @@
-/* $XConsortium: menu.c,v 1.62 93/02/25 17:21:30 gildea Exp $ */
+/* $XConsortium: menu.c,v 1.63 94/04/17 20:23:30 gildea Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

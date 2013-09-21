@@ -1,5 +1,5 @@
 /*
- * $XConsortium: aixMouse.c,v 1.4 91/11/22 17:05:04 eswu Exp $
+ * $XConsortium: aixMouse.c,v 1.5 93/08/30 07:56:47 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

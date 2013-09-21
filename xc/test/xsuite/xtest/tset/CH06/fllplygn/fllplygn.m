@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: fllplygn.m,v 1.7 92/06/11 17:01:47 rws Exp $
+ * $XConsortium: fllplygn.m,v 1.8 94/04/17 21:05:26 rws Exp $
  */
 >>TITLE XFillPolygon CH06
 void

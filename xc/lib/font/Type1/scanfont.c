@@ -1,4 +1,4 @@
-/* $XConsortium: scanfont.c,v 1.9 92/07/07 17:14:56 gildea Exp $ */
+/* $XConsortium: scanfont.c,v 1.10 94/02/06 16:23:17 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: servermd.h,v 1.8 94/04/12 21:59:33 dpw Exp $ */
+/* $XConsortium: servermd.h,v 1.9 94/04/17 19:56:01 dpw Exp $ */
 /* 
 Copyright (c) 1987  X Consortium
 

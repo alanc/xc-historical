@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_dots.c,v 2.5 94/02/06 20:17:34 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

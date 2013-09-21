@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xext.h,v 1.3 91/11/09 15:40:44 keith Exp $
+ * $XConsortium: Xext.h,v 1.4 94/04/17 20:11:18 keith Exp $
  *
 Copyright (c) 1989  X Consortium
 

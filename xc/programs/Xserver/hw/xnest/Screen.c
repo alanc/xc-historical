@@ -1,4 +1,4 @@
-/* $XConsortium: Screen.c,v 1.4 94/02/06 17:52:40 rws Exp ray $ */
+/* $XConsortium: Screen.c,v 1.5 95/07/10 17:42:22 ray Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

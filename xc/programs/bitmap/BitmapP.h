@@ -1,4 +1,4 @@
-/* $XConsortium: BitmapP.h,v 1.12 93/08/19 09:25:33 rws Exp $ */
+/* $XConsortium: BitmapP.h,v 1.13 94/04/17 20:23:41 rws Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

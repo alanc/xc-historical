@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipmips.s,v 1.9 91/12/19 14:17:31 keith Exp $
+ * $XConsortium: stipmips.s,v 1.10 94/04/17 20:29:08 keith Exp $
  *
 Copyright (c) 1990  X Consortium
 

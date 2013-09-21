@@ -1,4 +1,4 @@
-/* $XConsortium: photoflo.c,v 1.5 94/05/06 15:09:49 mor Exp $ */
+/* $XConsortium: photoflo.c,v 1.6 94/05/13 10:30:17 mor Exp $ */
 
 /*
 

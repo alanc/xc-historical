@@ -1,4 +1,4 @@
-/* $XConsortium: dsplyofim.m,v 1.1 94/01/29 16:07:03 rws Exp $ */
+/* $XConsortium: dsplyofim.m,v 1.2 94/04/17 21:13:59 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

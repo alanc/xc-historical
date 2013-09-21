@@ -1,4 +1,4 @@
-/* $XConsortium: util.c,v 1.15 92/08/12 15:45:54 converse Exp $ */
+/* $XConsortium: util.c,v 1.16 92/08/12 16:46:22 converse Exp $ */
 
 /*
  *			  COPYRIGHT 1987

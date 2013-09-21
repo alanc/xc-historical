@@ -1,4 +1,4 @@
-/* $XConsortium: Xalloca.h,v 1.1 95/05/16 14:13:52 dpw Exp dpw $ */
+/* $XConsortium: Xalloca.h,v 1.2 95/05/17 16:18:29 dpw Exp $ */
 
 /*
 

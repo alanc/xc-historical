@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIm.c,v 1.14 94/08/23 18:10:17 kaleb Exp kaleb $ */
+/* $XConsortium: imDefIm.c,v 1.15 94/09/01 12:57:15 kaleb Exp $ */
 /******************************************************************
          Copyright 1990, 1991, 1992 by Sun Microsystems, Inc.
          Copyright 1992, 1993, 1994 by FUJITSU LIMITED

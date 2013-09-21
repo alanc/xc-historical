@@ -1,4 +1,4 @@
-/* $XConsortium: ScrollByLP.h,v 1.8 91/07/31 22:41:59 keith Exp $ */
+/* $XConsortium: ScrollByLP.h,v 1.9 94/04/17 20:43:49 keith Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

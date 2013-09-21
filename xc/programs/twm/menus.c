@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: menus.c,v 1.196 94/05/12 16:55:46 kaleb Exp mor $
+ * $XConsortium: menus.c,v 1.197 94/08/10 19:57:54 mor Exp $
  *
  * twm menu code
  *

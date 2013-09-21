@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514seg.c,v 1.2 94/04/17 20:30:37 dpw Exp $ */
+/* $XConsortium: seg.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

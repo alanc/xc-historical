@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: string.h,v 1.1 92/06/11 15:29:56 rws Exp $ */
 
 
 #include <strings.h>

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.6 93/08/20 11:38:16 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.7 93/09/04 17:40:56 rws Exp $
 LOCAL_LIBRARIES = $(FSLIB)
 DEPLIBS = $(DEPFSLIB)
 SRCS = fsinfo.c

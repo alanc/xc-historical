@@ -1,4 +1,4 @@
-/* $XConsortium: mibstore.c,v 1.6 94/01/11 20:49:08 rob Exp $ */
+/* $XConsortium: mibstore.c,v 1.7 94/04/17 21:16:03 rob Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

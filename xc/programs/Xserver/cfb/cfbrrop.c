@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.c,v 1.7 94/03/11 17:33:49 dpw Exp $
+ * $XConsortium: cfbrrop.c,v 1.8 94/04/17 20:28:59 dpw Exp $
  *
 Copyright (c) 1989  X Consortium
 

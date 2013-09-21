@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: crcltntfy.m,v 1.8 92/06/11 17:19:44 rws Exp $
+ * $XConsortium: crcltntfy.m,v 1.9 94/04/17 21:07:21 rws Exp $
  */
 >>TITLE CirculateNotify CH08
 >>EXTERN

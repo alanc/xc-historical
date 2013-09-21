@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranssock.c,v 1.35 95/03/28 19:49:02 mor Exp mor $ */
+/* $XConsortium: Xtranssock.c,v 1.36 95/04/28 15:23:33 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ICD2061A.h,v 1.1 94/03/28 21:24:45 dpw Exp $ */
 /* Based on the number 9 Inc code */
 /* Copyright (c) 1992, Number Nine Computer Corp.  All Rights Reserved.
  *

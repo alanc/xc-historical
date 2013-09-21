@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Repeater.c,v 1.10 94/01/31 10:50:26 kaleb Exp $
+ * $XConsortium: Repeater.c,v 1.11 94/04/17 20:12:37 kaleb Exp $
  *
 Copyright (c) 1990, 1994  X Consortium
 

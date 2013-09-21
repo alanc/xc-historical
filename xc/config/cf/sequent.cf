@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: fujitsu.cf,v 1.1 94/02/04 19:47:34 rws Exp $
+XCOMM platform:  $XConsortium: sequent.cf,v 1.1 94/02/04 21:35:31 rws Exp $
 /*
  * SET VERSION NUMBERS BEFORE MAKING MAKEFILES; also, you'll need to install
  * util/scripts/bsdinstall.sh before doing a "make install"

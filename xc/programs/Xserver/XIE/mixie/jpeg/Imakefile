@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 93/11/01 11:57:38 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 93/11/07 10:58:31 rws Exp $
 XCOMM build device dependent machine independent fax processing element objects
 #include <Server.tmpl>
 

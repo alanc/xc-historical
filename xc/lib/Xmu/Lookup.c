@@ -1,4 +1,4 @@
-/* $XConsortium: Lookup.c,v 1.14 94/04/17 20:16:10 rws Exp gildea $ */
+/* $XConsortium: Lookup.c,v 1.15 95/06/08 23:20:39 gildea Exp $ */
 
 /* 
  

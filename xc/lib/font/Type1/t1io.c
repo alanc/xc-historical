@@ -1,4 +1,4 @@
-/* $XConsortium: t1io.c,v 1.9 94/04/17 20:17:24 gildea Exp gildea $ */
+/* $XConsortium: t1io.c,v 1.10 95/06/09 22:29:35 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

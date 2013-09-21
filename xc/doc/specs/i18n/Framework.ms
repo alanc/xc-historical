@@ -1,4 +1,4 @@
-.\" $XConsortium: Framework.ms,v 1.2 94/04/17 20:05:59 rws Exp $
+.\" $XConsortium: Framework.ms,v 1.3 94/04/18 15:48:49 rws Exp $
 .\" To print this out, type tbl macros.t ThisFile | troff -ms
 .EH ''''
 .OH ''''

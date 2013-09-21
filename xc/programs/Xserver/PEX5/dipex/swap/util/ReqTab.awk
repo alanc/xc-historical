@@ -1,4 +1,4 @@
-# $XConsortium: ReqTab.awk,v 5.1 91/02/16 09:57:03 rws Exp $
+# $XConsortium: ReqTab.awk,v 5.2 94/04/17 20:36:38 rws Exp $
 ###########################################################################
 ## Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 ## 

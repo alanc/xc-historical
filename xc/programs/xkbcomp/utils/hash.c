@@ -1,6 +1,6 @@
 
   /*\
-   * $XConsortium: xkmformat.h,v 1.4 93/09/28 20:16:45 rws Exp $
+   * $XConsortium: hash.c,v 1.1 94/04/02 17:10:26 erik Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION

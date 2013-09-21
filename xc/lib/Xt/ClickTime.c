@@ -1,4 +1,4 @@
-/* $XConsortium: ClickTime.c,v 1.4 93/10/06 16:58:19 kaleb Exp $ */
+/* $XConsortium: ClickTime.c,v 1.5 94/04/17 20:13:40 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

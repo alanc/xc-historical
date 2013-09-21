@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.7 91/07/17 16:03:28 gildea Exp $
           SRCS1 = xhw0.c
           SRCS2 = xhw1.c
           SRCS3 = xhw3.c

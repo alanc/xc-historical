@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: cfbpolypnt.c,v 5.16 94/03/16 16:53:04 dpw Exp $ */
+/* $XConsortium: cfbpolypnt.c,v 5.17 94/04/17 20:28:57 dpw Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: xditview.c,v 1.31 91/10/21 14:32:11 eswu Exp $ */
+/* $XConsortium: xditview.c,v 1.32 94/04/17 20:43:36 eswu Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

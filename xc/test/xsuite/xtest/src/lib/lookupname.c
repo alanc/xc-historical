@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: lookupname.c,v 1.3 94/01/29 15:02:31 rws Exp $
+ * $XConsortium: lookupname.c,v 1.4 94/04/17 21:00:51 rws Exp $
  */
 #include "xtest.h"
 #include "Xlib.h"

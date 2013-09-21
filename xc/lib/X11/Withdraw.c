@@ -1,4 +1,4 @@
-/* $XConsortium: Withdraw.c,v 1.5 91/02/01 16:33:33 gildea Exp $ */
+/* $XConsortium: Withdraw.c,v 1.6 94/04/17 20:21:31 gildea Exp $ */
 
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca.,

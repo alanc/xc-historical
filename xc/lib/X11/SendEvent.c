@@ -1,4 +1,4 @@
-/* $XConsortium: SendEvent.c,v 11.12 93/09/07 21:32:35 rws Exp $ */
+/* $XConsortium: SendEvent.c,v 11.13 94/04/17 20:20:51 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

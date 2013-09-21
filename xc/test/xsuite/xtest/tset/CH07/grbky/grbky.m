@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: grbky.m,v 1.10 93/07/18 13:22:05 rws Exp $
+ * $XConsortium: grbky.m,v 1.11 94/04/17 21:06:22 rws Exp $
  */
 >>TITLE XGrabKey CH07
 void

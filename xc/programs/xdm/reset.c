@@ -1,4 +1,4 @@
-/* $XConsortium: reset.c,v 1.10 91/09/19 16:26:03 keith Exp $ */
+/* $XConsortium: reset.c,v 1.11 94/04/17 20:03:42 keith Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

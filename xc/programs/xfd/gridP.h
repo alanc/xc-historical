@@ -1,4 +1,4 @@
-/* $XConsortium: gridP.h,v 1.12 94/04/13 17:36:04 gildea Exp $ */
+/* $XConsortium: gridP.h,v 1.13 94/04/17 20:24:14 gildea Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

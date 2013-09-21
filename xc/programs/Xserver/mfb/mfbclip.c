@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbclip.c,v 5.5 94/01/12 18:04:43 dpw Exp $ */
+/* $XConsortium: mfbclip.c,v 5.6 94/04/17 20:28:19 dpw Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "pixmapstr.h"

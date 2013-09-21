@@ -1,4 +1,4 @@
-/* $XConsortium: lcPubWrap.c,v 1.2 93/09/17 14:24:11 rws Exp $ */
+/* $XConsortium: lcPubWrap.c,v 1.3 94/01/20 18:07:08 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

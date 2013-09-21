@@ -34,7 +34,7 @@
 # make no representations about the suitability of this software for any
 # purpose.  It is provided "as is" without express or implied warranty.
 #
-# $XConsortium: Makefile,v 1.7 92/07/07 19:26:59 rws Exp $
+# $XConsortium: Makefile,v 1.8 94/04/17 21:00:08 rws Exp $
 #
 
 # This Makefile can be used to print the documentation for the X test suite.

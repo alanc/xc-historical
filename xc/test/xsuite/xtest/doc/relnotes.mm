@@ -1,4 +1,4 @@
-.\" $XConsortium: relnotes.mm,v 1.6 92/07/04 17:54:18 rws Exp $
+.\" $XConsortium: relnotes.mm,v 1.7 92/07/07 16:59:43 rws Exp $
 .ds dD Release Notes for the X Test Suite
 .so 00.header
 '\"

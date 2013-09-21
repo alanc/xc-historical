@@ -1,4 +1,4 @@
-/* $XConsortium: cache.c,v 1.6 94/04/12 22:00:45 dpw Exp $ */
+/* $XConsortium: cache.c,v 1.7 94/04/17 19:56:11 dpw Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 

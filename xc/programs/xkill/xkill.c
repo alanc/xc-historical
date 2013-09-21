@@ -1,4 +1,4 @@
-/* $XConsortium: xkill.c,v 1.18 91/03/20 19:44:15 converse Exp $ */
+/* $XConsortium: xkill.c,v 1.19 94/04/17 20:24:50 converse Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

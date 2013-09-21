@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: htest.c,v 1.2 91/05/11 09:48:58 rws Exp $ */
 
 /*
 

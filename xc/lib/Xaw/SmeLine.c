@@ -1,4 +1,4 @@
-/* $XConsortium: SmeLine.c,v 1.14 91/10/16 21:40:03 eswu Exp $ */
+/* $XConsortium: SmeLine.c,v 1.15 94/04/17 20:12:51 eswu Exp $ */
 
 /*
 Copyright (c) 1989  X Consortium

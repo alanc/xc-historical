@@ -1,4 +1,4 @@
-/* $XConsortium: xkbctrl.c,v 1.2 93/09/28 23:51:33 rws Exp $ */
+/* $XConsortium: xkbctrl.c,v 1.5 94/04/02 01:07:06 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

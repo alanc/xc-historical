@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: checkarea.c,v 1.12 92/06/11 15:43:26 rws Exp $
+ * $XConsortium: checkarea.c,v 1.13 94/04/17 21:00:36 rws Exp $
  */
 
 #include	"xtest.h"

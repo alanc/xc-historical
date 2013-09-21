@@ -1,4 +1,4 @@
-/* $XConsortium: CrPixmap.c,v 11.7 91/01/06 11:44:58 rws Exp $ */
+/* $XConsortium: CrPixmap.c,v 11.8 94/04/17 20:19:01 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

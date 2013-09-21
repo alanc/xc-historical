@@ -1,4 +1,4 @@
-/* $XConsortium: xclock.c,v 1.38 94/04/17 20:23:54 converse Exp converse $ */
+/* $XConsortium: xclock.c,v 1.39 95/03/10 21:35:13 converse Exp $ */
 
 /*
  * xclock --  Hacked from Tony Della Fera's much hacked clock program.

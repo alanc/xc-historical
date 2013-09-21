@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mcinclude.mc,v 1.2 92/06/29 19:41:37 rws Exp $ */
 
 #include	<stdlib.h>
 #include	"xtest.h"

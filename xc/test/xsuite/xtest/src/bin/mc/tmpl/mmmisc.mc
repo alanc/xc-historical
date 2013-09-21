@@ -1,4 +1,4 @@
-# $XConsortium: mmmisc.mc,v 1.2 92/06/11 19:34:18 rws Exp $
+# $XConsortium: mmmisc.mc,v 1.3 92/06/29 18:00:45 rws Exp $
 #
 # Miscellaneous housekeeping functions.
 #

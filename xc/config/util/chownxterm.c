@@ -1,4 +1,4 @@
-/* $XConsortium: chownxterm.c,v 1.2 94/04/13 17:02:27 gildea Exp $ */
+/* $XConsortium: chownxterm.c,v 1.3 94/04/17 20:10:41 gildea Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

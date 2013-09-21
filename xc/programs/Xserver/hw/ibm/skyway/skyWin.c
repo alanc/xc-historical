@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyWin.c,v 1.3 94/01/07 09:51:40 dpw Exp $
+ * $XConsortium: skyWin.c,v 1.4 94/04/17 20:29:23 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *

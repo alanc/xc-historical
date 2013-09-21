@@ -1,4 +1,4 @@
-/* $XConsortium: cmsMath.c,v 1.10 94/04/17 20:21:59 rws Exp gildea $ */
+/* $XConsortium: cmsMath.c,v 1.11 95/06/08 23:20:39 gildea Exp $ */
 
 /*
 

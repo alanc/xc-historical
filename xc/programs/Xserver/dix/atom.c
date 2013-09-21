@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: atom.c,v 1.29 93/09/20 16:04:37 dpw Exp $ */
+/* $XConsortium: atom.c,v 1.30 94/04/17 20:26:16 dpw Exp $ */
 
 #include "X.h"
 #include "Xatom.h"

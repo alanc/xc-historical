@@ -2,7 +2,7 @@
  * mipointer.c
  */
 
-/* $XConsortium: mipointer.c,v 5.23 94/02/23 15:50:10 dpw Exp $ */
+/* $XConsortium: mipointer.c,v 5.24 94/04/17 20:27:39 dpw Exp $ */
 
 /*
 

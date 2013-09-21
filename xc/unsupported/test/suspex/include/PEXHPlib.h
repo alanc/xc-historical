@@ -1,7 +1,7 @@
 #ifndef _PEXHPLIB_H_
 #define _PEXHPLIB_H_
 
-/* $XConsortium$ */
+/* $XConsortium: PEXHPlib.h,v 1.1 93/11/22 13:13:31 rws Exp $ */
 
 /******************************************************************************/
 /*  (c) Copyright Hewlett-Packard Company, 1992,  Fort Collins, Colorado      */

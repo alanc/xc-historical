@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: unmpwdw.m,v 1.5 92/06/11 18:01:04 rws Exp $
+ * $XConsortium: unmpwdw.m,v 1.6 94/04/17 21:12:36 rws Exp $
  */
 >>TITLE UnmapWindow XPROTO
 >>SET startup protostartup

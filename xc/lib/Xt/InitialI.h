@@ -1,4 +1,4 @@
-/* $XConsortium: InitialI.h,v 1.84 95/06/06 21:00:38 kaleb Exp kaleb $ */
+/* $XConsortium: InitialI.h,v 1.85 95/06/16 19:25:22 kaleb Exp $ */
 
 /***********************************************************
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: drwtxt.m,v 1.9 92/06/11 16:55:01 rws Exp $
+ * $XConsortium: drwtxt.m,v 1.10 94/04/17 21:05:16 rws Exp $
  */
 >>TITLE XDrawText CH06
 void

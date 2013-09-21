@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: frpxmp.m,v 1.6 92/06/29 18:58:16 rws Exp $
+ * $XConsortium: frpxmp.m,v 1.7 94/04/17 21:03:56 rws Exp $
  */
 >>TITLE XFreePixmap CH05
 void

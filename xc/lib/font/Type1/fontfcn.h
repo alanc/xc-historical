@@ -1,4 +1,4 @@
-/* $XConsortium: fontfcn.h,v 1.2 91/10/10 11:18:06 rws Exp $ */
+/* $XConsortium: fontfcn.h,v 1.3 92/03/26 16:42:23 eswu Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: choose.h,v 1.3 94/07/15 10:04:05 mor Exp $ */
+/* $XConsortium: choose.h,v 1.4 94/07/15 14:12:58 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

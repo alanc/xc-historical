@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: wdthmmofsc.m,v 1.5 92/06/11 16:02:40 rws Exp $
+ * $XConsortium: wdthmmofsc.m,v 1.6 94/04/17 21:02:47 rws Exp $
  */
 >>SET   macro
 >>TITLE XWidthMMOfScreen CH02

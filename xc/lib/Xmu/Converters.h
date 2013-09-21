@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.h,v 1.15 93/08/16 20:39:57 kaleb Exp $ */
+/* $XConsortium: Converters.h,v 1.16 94/04/17 20:15:53 kaleb Exp $ */
 
 /*
  

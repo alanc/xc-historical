@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miwindow.c,v 5.15 94/02/04 04:17:14 dpw Exp $ */
+/* $XConsortium: miwindow.c,v 5.16 94/04/17 20:28:03 dpw Exp $ */
 #include "X.h"
 #include "miscstruct.h"
 #include "region.h"

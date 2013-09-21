@@ -1,4 +1,4 @@
-/* $XConsortium: checktree.c,v 1.6 94/03/31 11:31:39 gildea Exp $ */
+/* $XConsortium: checktree.c,v 1.7 94/04/17 20:10:40 gildea Exp $ */
 
 /*
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gcflush.c,v 1.4 92/06/11 15:45:01 rws Exp $
+ * $XConsortium: gcflush.c,v 1.5 94/04/17 21:00:47 rws Exp $
  */
 #include <sys/types.h>
 #include "Xlibint.h"

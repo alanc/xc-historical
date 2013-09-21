@@ -1,4 +1,4 @@
-/* $XConsortium: InsCmap.c,v 11.7 91/01/06 11:46:39 rws Exp $ */
+/* $XConsortium: InsCmap.c,v 11.8 94/04/17 20:20:01 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

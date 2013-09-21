@@ -1,4 +1,4 @@
-.\" $XConsortium: plbpex.man,v 1.4 94/04/11 14:30:03 gildea Exp $
+.\" $XConsortium: plbpex.man,v 1.5 94/04/17 20:44:44 gildea Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1

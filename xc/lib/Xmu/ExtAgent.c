@@ -1,4 +1,4 @@
-/* $XConsortium: ExtAgent.c,v 1.1 94/04/02 15:04:04 kaleb Exp $ */
+/* $XConsortium: ExtAgent.c,v 1.1 94/04/02 15:08:03 kaleb Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ativga.h,v 1.1 94/03/28 21:06:36 dpw Exp $ */
 /***************************************************************************
  * Start of VGA font saving and restoration code.
  * Created: Sun Jun 27 12:50:09 1993 by faith@cs.unc.edu

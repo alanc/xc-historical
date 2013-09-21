@@ -1,4 +1,4 @@
-/* $XConsortium: Varargs.c,v 1.29 95/06/15 18:34:20 converse Exp converse $ */
+/* $XConsortium: Varargs.c,v 1.30 95/06/15 19:30:38 converse Exp $ */
 
 /*
 

@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ungrbdvbtn.m,v 1.4 94/01/30 11:54:09 rws Exp $
+ * $XConsortium: ungrbdvbtn.m,v 1.5 94/04/17 21:13:29 rws Exp $
  */
 >>TITLE UngrabDeviceButton XIPROTO
 >>SET startup protostartup

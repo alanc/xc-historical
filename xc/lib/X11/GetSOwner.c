@@ -1,4 +1,4 @@
-/* $XConsortium: GetSOwner.c,v 11.14 91/01/06 11:46:17 rws Exp $ */
+/* $XConsortium: GetSOwner.c,v 11.15 94/04/17 20:19:43 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

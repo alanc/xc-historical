@@ -1,4 +1,4 @@
-/* $XConsortium: ScrOfWin.c,v 1.2 89/09/22 12:10:01 jim Exp $ */
+/* $XConsortium: ScrOfWin.c,v 1.3 94/04/17 20:16:13 jim Exp $ */
 
 /*
 

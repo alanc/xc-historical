@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ShowExtRep.c,v 1.3 94/01/29 15:15:20 rws Exp $
+ * $XConsortium: ShowExtRep.c,v 1.4 94/04/17 21:01:27 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -64,11 +64,11 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /*
- *	$Header: ShowExtRep.c,v 1.3 94/01/29 15:15:20 rws Exp $
+ *	$Header: ShowExtRep.c,v 1.4 94/04/17 21:01:27 rws Exp $
  */
 
 #ifndef lint
-static char rcsid[]="$Header: ShowExtRep.c,v 1.3 94/01/29 15:15:20 rws Exp $";
+static char rcsid[]="$Header: ShowExtRep.c,v 1.4 94/04/17 21:01:27 rws Exp $";
 #endif
 
 #include "XstlibInt.h"

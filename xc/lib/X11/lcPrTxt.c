@@ -1,4 +1,4 @@
-/* $XConsortium: lcPrTxt.c,v 1.2 93/09/17 14:24:09 rws Exp $ */
+/* $XConsortium: lcPrTxt.c,v 1.3 94/01/20 18:07:03 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

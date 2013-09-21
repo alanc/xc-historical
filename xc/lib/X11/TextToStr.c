@@ -1,4 +1,4 @@
-/* $XConsortium: TextToStr.c,v 1.4 93/09/07 21:32:48 rws Exp $ */
+/* $XConsortium: TextToStr.c,v 1.5 94/04/17 20:21:19 rws Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

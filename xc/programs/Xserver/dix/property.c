@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: property.c,v 5.15 94/04/04 18:04:04 dpw Exp $ */
+/* $XConsortium: property.c,v 5.16 94/04/17 20:26:42 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

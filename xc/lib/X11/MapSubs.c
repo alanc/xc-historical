@@ -1,4 +1,4 @@
-/* $XConsortium: MapSubs.c,v 11.6 91/01/06 11:46:58 rws Exp $ */
+/* $XConsortium: MapSubs.c,v 11.7 94/04/17 20:20:16 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

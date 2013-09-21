@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.16 92/01/30 20:10:55 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.17 94/02/10 16:51:00 rws Exp $
 
 OBJS1 =	FontObj(courB08) FontObj(courB10) FontObj(courB12) FontObj(courB14) \
 	FontObj(courB18) FontObj(courB24) FontObj(courBO08) \

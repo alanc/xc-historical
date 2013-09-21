@@ -1,4 +1,4 @@
-/* $XConsortium: loadData.c,v 1.11 94/02/07 23:21:38 rws Exp $ */
+/* $XConsortium: loadData.c,v 1.12 94/02/07 23:28:48 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.

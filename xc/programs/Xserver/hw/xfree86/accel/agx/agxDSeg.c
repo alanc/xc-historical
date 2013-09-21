@@ -1,4 +1,4 @@
-/* $XConsortium: agxDSeg.c,v 1.1 94/12/27 10:50:35 kaleb Exp kaleb $ */
+/* $XConsortium: agxDSeg.c,v 1.2 95/01/06 20:56:49 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.1 1994/12/25 12:19:14 dawes Exp $ */
 /*
 

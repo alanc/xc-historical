@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xqueue.c,v 1.1 94/03/28 21:33:22 dpw Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: getretspar.c,v 1.1 92/04/08 14:31:58 keith Exp $
+ * $XConsortium: getretspar.c,v 1.2 94/04/17 20:59:45 keith Exp $
  *
 Copyright (c) 1992  X Consortium
 

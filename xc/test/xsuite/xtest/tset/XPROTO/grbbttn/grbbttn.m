@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: grbbttn.m,v 1.4 92/06/11 17:49:58 rws Exp $
+ * $XConsortium: grbbttn.m,v 1.5 94/04/17 21:11:27 rws Exp $
  */
 >>TITLE GrabButton XPROTO
 >>SET startup protostartup

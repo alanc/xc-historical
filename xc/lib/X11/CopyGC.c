@@ -1,4 +1,4 @@
-/* $XConsortium: CopyGC.c,v 11.14 92/12/31 15:40:02 rws Exp $ */
+/* $XConsortium: CopyGC.c,v 11.15 94/04/17 20:18:56 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

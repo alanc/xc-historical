@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 1.23 94/02/09 21:33:06 gildea Exp $ */
+/* $XConsortium: dispatch.c,v 1.24 94/04/17 19:56:13 gildea Exp $ */
 /*
  * protocol dispatcher
  */

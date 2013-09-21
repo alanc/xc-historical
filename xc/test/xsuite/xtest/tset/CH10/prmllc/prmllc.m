@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: prmllc.m,v 1.5 92/06/11 17:38:14 rws Exp $
+ * $XConsortium: prmllc.m,v 1.6 94/04/17 21:09:55 rws Exp $
  */
 >>TITLE Xpermalloc CH10
 char *

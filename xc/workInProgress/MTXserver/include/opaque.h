@@ -1,4 +1,4 @@
-/* $XConsortium: opaque.h,v 1.2 94/04/12 17:35:59 dpw Exp $ */
+/* $XConsortium: opaque.h,v 1.3 94/04/17 21:16:45 dpw Exp $ */
 /*
 Copyright (c) 1994  X Consortium
 

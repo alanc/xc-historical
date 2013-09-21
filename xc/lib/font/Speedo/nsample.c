@@ -1,4 +1,4 @@
-/* $XConsortium: nsample.c,v 1.2 91/05/11 09:50:53 rws Exp $ */
+/* $XConsortium: nsample.c,v 1.3 93/10/28 15:27:12 gildea Exp $ */
 
 /*
 

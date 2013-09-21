@@ -16,7 +16,7 @@
  */
 #ifndef lint
 static char rcsid[] =
-"$XConsortium: cfbbstore.c,v 5.7 93/10/12 11:22:42 dpw Exp $ SPRITE (Berkeley)";
+"$XConsortium: cfbbstore.c,v 5.8 93/12/13 17:21:51 dpw Exp $ SPRITE (Berkeley)";
 #endif
 
 #include    "cfb.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: CallbackI.h,v 1.17 94/04/02 15:02:30 converse Exp $ */
+/* $XConsortium: CallbackI.h,v 1.18 94/04/17 20:13:39 converse Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1988  X Consortium

@@ -1,4 +1,4 @@
-.\" $XConsortium: xgas.man,v 1.6 94/04/11 14:30:23 gildea Exp $
+.\" $XConsortium: xgas.man,v 1.7 94/04/17 20:45:29 gildea Exp $
 .TH XGAS 1 "Release 6" "X Version 11"
 .SH NAME
 xgas - animated simulation of an ideal gas

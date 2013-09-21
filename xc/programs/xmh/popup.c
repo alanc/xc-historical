@@ -1,4 +1,4 @@
-/* $XConsortium: popup.c,v 2.37 93/09/20 17:52:11 hersh Exp swick $
+/* $XConsortium: popup.c,v 2.38 94/08/26 18:04:22 swick Exp $
  *
  *
  *			  COPYRIGHT 1989

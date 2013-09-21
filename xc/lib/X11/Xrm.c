@@ -1,4 +1,4 @@
-/* $XConsortium: Xrm.c,v 1.88 94/04/17 20:21:54 rws Exp gildea $ */
+/* $XConsortium: Xrm.c,v 1.89 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard

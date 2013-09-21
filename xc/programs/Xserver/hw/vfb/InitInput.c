@@ -1,4 +1,4 @@
-/* $XConsortium: InitInput.c,v 1.6 94/04/17 20:30:24 dpw Exp $ */
+/* $XConsortium: InitInput.c,v 1.7 94/09/16 01:31:57 dpw Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

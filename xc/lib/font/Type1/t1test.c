@@ -1,4 +1,4 @@
-/* $XConsortium: t1test.c,v 1.2 91/10/10 11:19:53 rws Exp $ */
+/* $XConsortium: t1test.c,v 1.3 93/09/17 18:27:01 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

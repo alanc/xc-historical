@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: clsdsply.m,v 1.24 93/07/05 14:44:28 rws Exp $
+ * $XConsortium: clsdsply.m,v 1.25 94/04/17 21:02:04 rws Exp $
  */
 >>TITLE XCloseDisplay CH02
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: winh.c,v 1.16 92/12/21 14:15:15 rws Exp $
+ * $XConsortium: winh.c,v 1.17 94/04/17 21:01:08 rws Exp $
  */
 /*LINTLIBRARY*/
 

@@ -1,4 +1,4 @@
-// $XConsortium: basic.h,v 1.2 94/04/04 15:28:46 erik Exp $
+// $XConsortium: complete,v 1.2 94/04/08 15:54:51 erik Exp $
 xkb_compatibility "default" 
 
 include "basic"

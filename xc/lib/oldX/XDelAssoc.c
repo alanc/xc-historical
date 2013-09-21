@@ -1,4 +1,4 @@
-/* $XConsortium: XDelAssoc.c,v 10.20 92/04/15 09:43:03 rws Exp $ */
+/* $XConsortium: XDelAssoc.c,v 10.21 94/04/17 20:11:34 rws Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium

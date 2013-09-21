@@ -1,4 +1,4 @@
-/* $XConsortium: FillArcs.c,v 11.16 92/12/30 12:14:34 rws Exp $ */
+/* $XConsortium: FillArcs.c,v 11.17 94/04/17 20:19:19 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

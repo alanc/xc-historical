@@ -1,4 +1,4 @@
-/* $XConsortium: Handlers.c,v 1.13 93/10/05 16:12:03 kaleb Exp $ */
+/* $XConsortium: Handlers.c,v 1.14 94/04/17 20:23:45 kaleb Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

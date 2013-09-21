@@ -1,4 +1,4 @@
-/* $XConsortium: imCallbk.c,v 1.12 95/05/22 19:38:09 kaleb Exp gildea $ */
+/* $XConsortium: imCallbk.c,v 1.13 95/06/08 23:20:39 gildea Exp $ */
 /***********************************************************************
 Copyright 1993 by Digital Equipment Corporation, Maynard, Massachusetts,
 Copyright 1994 by FUJITSU LIMITED

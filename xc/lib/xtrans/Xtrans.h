@@ -1,4 +1,4 @@
-/* $XConsortium: Xtrans.h,v 1.28 94/10/18 15:57:42 mor Exp gildea $ */
+/* $XConsortium: Xtrans.h,v 1.29 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

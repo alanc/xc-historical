@@ -1,4 +1,4 @@
-/* $XConsortium: ittserver.c,v 1.2 91/02/17 12:49:24 rws Exp $ */
+/* $XConsortium: itserver.c,v 1.3 91/02/17 15:20:18 rws Exp $ */
 
 /*
  * Copyright 1988, 1989 AT&T, Inc.

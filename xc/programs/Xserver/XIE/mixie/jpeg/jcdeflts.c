@@ -1,4 +1,4 @@
-/* $XConsortium: jcdeflts.c,v 1.3 94/01/12 20:18:12 rws Exp $ */
+/* $XConsortium: jcdeflts.c,v 1.4 94/04/17 20:35:27 rws Exp $ */
 /* Module jcdeflts.c */
 
 /****************************************************************************

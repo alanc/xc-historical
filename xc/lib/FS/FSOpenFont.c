@@ -1,4 +1,4 @@
-/* $XConsortium: FSOpenFont.c,v 1.5 94/02/04 15:57:04 gildea Exp $ */
+/* $XConsortium: FSOpenFont.c,v 1.6 94/04/17 20:15:15 gildea Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;

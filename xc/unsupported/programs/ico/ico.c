@@ -1,4 +1,4 @@
-/* $XConsortium: ico.c,v 1.46 94/03/30 11:47:23 gildea Exp $ */
+/* $XConsortium: ico.c,v 1.47 94/04/17 20:45:15 gildea Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

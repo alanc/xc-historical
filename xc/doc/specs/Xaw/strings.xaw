@@ -1,4 +1,4 @@
-.\" $XConsortium: strings.xaw,v 1.24 94/05/01 19:21:16 gildea Exp $
+.\" $XConsortium: strings.xaw,v 1.25 94/05/01 20:33:37 gildea Exp $
 \" These macros are not associated with any widget.
 
 .de Rs \" Resource Conversion message

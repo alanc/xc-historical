@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.48 94/10/16 16:10:44 kaleb Exp kaleb $ */
+/* $XConsortium: sunKbd.c,v 5.49 94/10/17 14:18:23 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *

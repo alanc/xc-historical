@@ -1,4 +1,4 @@
-/* $XConsortium: AuDispose.c,v 1.4 94/04/17 20:15:41 gildea Exp gildea $ */
+/* $XConsortium: AuDispose.c,v 1.5 95/07/10 21:18:07 gildea Exp $ */
 
 /*
 

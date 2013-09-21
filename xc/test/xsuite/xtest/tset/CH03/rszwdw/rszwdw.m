@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rszwdw.m,v 1.6 92/06/11 16:10:17 rws Exp $
+ * $XConsortium: rszwdw.m,v 1.7 94/04/17 21:03:17 rws Exp $
  */
 >>TITLE XResizeWindow CH03
 void

@@ -1,4 +1,4 @@
-/* $XConsortium: xtest1dd.c,v 1.4 94/03/28 18:32:42 gildea Exp $ */
+/* $XConsortium: xtest1dd.c,v 1.5 94/04/17 21:16:31 gildea Exp $ */
 /*
  *	File: xtest1dd.c
  *

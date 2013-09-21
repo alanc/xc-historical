@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ajax.c,v 1.15 93/12/20 17:58:21 rws Exp $
+ * $XConsortium: ajax.c,v 1.16 94/04/17 21:01:42 rws Exp $
  */
 
 #include	"stdlib.h"

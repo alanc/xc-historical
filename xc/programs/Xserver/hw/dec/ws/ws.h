@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: ws.h,v 1.3 92/04/06 18:19:32 keith Exp $ */
+/* $XConsortium: ws.h,v 1.4 94/04/17 20:29:56 keith Exp $ */
 
 #define NOMAPYET        (ColormapPtr) 1
 

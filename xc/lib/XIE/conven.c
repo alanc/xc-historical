@@ -1,4 +1,4 @@
-/* $XConsortium: conven.c,v 1.8 94/04/17 20:18:20 mor Exp $ */
+/* $XConsortium: conven.c,v 1.9 94/05/02 14:16:30 mor Exp $ */
 
 /*
 

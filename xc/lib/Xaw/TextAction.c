@@ -1,4 +1,4 @@
-/* $XConsortium: TextAction.c,v 1.52 95/06/06 20:50:30 kaleb Exp kaleb $ */
+/* $XConsortium: TextAction.c,v 1.53 95/06/14 15:07:27 kaleb Exp $ */
 
 /*
 

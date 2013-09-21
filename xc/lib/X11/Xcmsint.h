@@ -1,4 +1,4 @@
-/* $XConsortium: Xcmsint.h,v 1.18 92/06/05 16:47:53 converse Exp gildea $ */
+/* $XConsortium: Xcmsint.h,v 1.19 95/06/08 23:20:39 gildea Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

@@ -1,4 +1,4 @@
-/* $XConsortium: t1info.c,v 1.18 94/04/12 21:57:06 dpw Exp $ */
+/* $XConsortium: t1info.c,v 1.19 94/04/17 20:17:23 dpw Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

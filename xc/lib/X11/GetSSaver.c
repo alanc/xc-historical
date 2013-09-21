@@ -1,4 +1,4 @@
-/* $XConsortium: GetSSaver.c,v 11.11 91/01/06 11:46:18 rws Exp $ */
+/* $XConsortium: GetSSaver.c,v 11.12 94/04/17 20:19:43 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

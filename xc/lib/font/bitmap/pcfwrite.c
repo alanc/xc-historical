@@ -1,4 +1,4 @@
-/* $XConsortium: pcfwrite.c,v 1.5 94/02/06 16:05:13 gildea Exp $ */
+/* $XConsortium: pcfwrite.c,v 1.6 94/04/17 20:17:16 gildea Exp $ */
 
 /*
 

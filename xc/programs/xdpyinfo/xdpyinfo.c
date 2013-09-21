@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xdpyinfo.c,v 1.32 94/09/24 20:15:12 rws Exp dpw $
+ * $XConsortium: xdpyinfo.c,v 1.33 95/06/08 12:56:34 dpw Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *

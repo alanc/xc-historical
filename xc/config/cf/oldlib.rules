@@ -1,6 +1,6 @@
 /* You should not use these any more, use new Library.tmpl insead */
 
-XCOMM $XConsortium: oldlib.rules,v 1.1 91/03/25 15:08:40 rws Exp $
+XCOMM $XConsortium: oldlib.rules,v 1.2 91/04/09 19:15:13 rws Exp $
 
 /*
  * ProfiledLibraryObjectRule - generate make rules to build both profiled

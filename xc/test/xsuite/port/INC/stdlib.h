@@ -1,4 +1,4 @@
-/* $XConsortium: stdlib.h,v 1.1 92/06/11 15:29:49 rws Exp $ */
+/* $XConsortium: stdlib.h,v 1.2 92/06/12 09:32:40 rws Exp $ */
 
 #define EXIT_SUCCESS	0
 #define EXIT_FAILURE	1

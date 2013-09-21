@@ -1,4 +1,4 @@
-/* $XConsortium: xnestFont.h,v 1.1 93/06/23 16:23:50 dmatic Exp $ */
+/* $XConsortium: Font.h,v 1.1 93/07/12 15:28:20 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

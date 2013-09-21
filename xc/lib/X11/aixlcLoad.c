@@ -1,4 +1,4 @@
-/* $XConsortium: aixlcLoad.c,v 1.5 94/01/20 18:03:37 rws Exp Kaleb $ */
+/* $XConsortium: aixlcLoad.c,v 1.6 95/04/07 19:22:35 kaleb Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993

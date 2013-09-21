@@ -1,4 +1,4 @@
-/* $XConsortium: CIEXYZ.c,v 1.7 92/06/11 12:09:21 converse Exp $ */
+/* $XConsortium: XYZ.c,v 1.8 92/06/11 16:26:24 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skySGC.c,v 1.8 94/01/07 09:51:25 dpw Exp $
+ * $XConsortium: skySGC.c,v 1.9 94/04/17 20:29:22 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *

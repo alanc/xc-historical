@@ -1,4 +1,4 @@
-.\" $XConsortium: RELNOTES.ms,v 1.5 94/05/14 16:39:36 gildea Exp $
+.\" $XConsortium: RELNOTES.ms,v 1.6 94/05/16 14:35:14 gildea Exp $
 .\" X11R6 Release Notes.  Use troff -ms macros
 .\"
 .ie t \{

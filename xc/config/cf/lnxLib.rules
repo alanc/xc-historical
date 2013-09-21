@@ -1,4 +1,4 @@
-XCOMM $XConsortium: lnxLib.rules,v 1.7 95/01/16 20:20:30 kaleb Exp kaleb $
+XCOMM $XConsortium: lnxLib.rules,v 1.8 95/01/16 21:11:00 kaleb Exp kaleb $
 
 /*
  * Linux shared library rules (DLL & ELF versions)
@@ -27,13 +27,16 @@ XCOMM $XConsortium: lnxLib.rules,v 1.7 95/01/16 20:20:30 kaleb Exp kaleb $
 #define ShLibIncludeFile <lnxLib.tmpl>
 #endif
 #ifndef SharedLibraryLoadFlags
-#define SharedLibraryLoadFlags --shared
+#define SharedLibraryLoadFlags -shared
 #endif
 #ifndef PositionIndependentCFlags
 #define PositionIndependentCFlags -fPIC
 #endif
 #ifndef PositionIndependentCplusplusFlags
 #define PositionIndependentCplusplusFlags -fPIC
+#endif
+#ifndef ExtraLoadFlags
+#define ExtraLoadFlags -Wl,-rpath,$(USRLIBDIR)
 #endif
 
 /*
@@ -71,7 +74,7 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
 	(cd down; T=`echo $@ | sed 's/\.[^\.]*$$//'`; \
-		$(LD) -o up/$@~ $(SHLIBLDFLAGS) --soname $$T solist $(REQUIREDLIBS))	@@\
+		$(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$T solist $(REQUIREDLIBS))	@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
 	$(RM) Concat(lib,libname.so)					@@\

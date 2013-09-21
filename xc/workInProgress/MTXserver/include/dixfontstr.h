@@ -1,4 +1,4 @@
-/* $XConsortium: dixfontstr.h,v 1.1 94/03/17 11:35:21 dpw Exp $ */
+/* $XConsortium: dixfontstr.h,v 1.2 94/04/17 21:16:39 dpw Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 

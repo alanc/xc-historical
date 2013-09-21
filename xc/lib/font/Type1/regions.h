@@ -1,4 +1,4 @@
-/* $XConsortium: regions.h,v 1.5 94/02/06 21:22:40 rws Exp $ */
+/* $XConsortium: regions.h,v 1.6 94/04/02 15:49:51 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991

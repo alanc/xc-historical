@@ -1,4 +1,4 @@
-/* $XConsortium: xprop.c,v 1.42 94/03/27 14:37:44 rws Exp $*/
+/* $XConsortium: xprop.c,v 1.43 94/04/17 20:24:43 rws Exp $*/
 /*
 
 Copyright (c) 1990  X Consortium

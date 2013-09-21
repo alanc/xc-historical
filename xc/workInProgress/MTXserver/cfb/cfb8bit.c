@@ -30,7 +30,7 @@
  *
  */
 
-/* $XConsortium: cfb8bit.c,v 1.3 94/01/11 20:42:31 rob Exp $ */
+/* $XConsortium: cfb8bit.c,v 1.4 94/01/23 02:00:10 rob Exp $ */
 
 #if PSZ == 8
 

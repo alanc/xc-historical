@@ -1,4 +1,4 @@
-/* $XConsortium: cfbinit.c,v 1.7 94/04/17 20:29:53 dpw Exp kaleb $ */
+/* $XConsortium: cfbinit.c,v 1.8 94/11/02 16:00:47 kaleb Exp $ */
 /***********************************************************
 
 Copyright (c) 1991  X Consortium

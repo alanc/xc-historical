@@ -1,4 +1,4 @@
-/* $XConsortium: lbx.h,v 1.4 95/05/17 18:23:24 dpw Exp mor $ */
+/* $XConsortium: lbx.h,v 1.5 95/05/24 16:11:18 mor Exp $ */
 /*
  * $NCDOr$
  *

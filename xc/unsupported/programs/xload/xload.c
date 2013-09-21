@@ -1,4 +1,4 @@
-/* $XConsortium: xload.c,v 1.36 91/05/24 16:57:46 converse Exp $ */
+/* $XConsortium: xload.c,v 1.37 94/04/17 20:43:44 converse Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

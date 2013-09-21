@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: allcclrcll.m,v 1.11 93/02/23 18:15:07 rws Exp $
+ * $XConsortium: allcclrcll.m,v 1.12 94/04/17 21:03:46 rws Exp $
  */
 >>TITLE XAllocColorCells CH05
 Status

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: linktbl.c,v 1.1 94/01/29 16:06:56 rws Exp $ */
 #include  "xtest.h"
  
 extern struct linkinfo EXClsIM;

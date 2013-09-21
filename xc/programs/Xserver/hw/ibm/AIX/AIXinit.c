@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AIXinit.c,v 1.4 92/08/10 17:49:38 eswu Exp $
+ * $XConsortium: AIXinit.c,v 1.5 93/07/12 09:26:22 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

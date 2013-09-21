@@ -1,4 +1,4 @@
-/* $XConsortium: Functions.c,v 1.11 94/04/01 20:51:12 kaleb Exp $ */
+/* $XConsortium: Functions.c,v 1.12 94/04/17 20:14:05 kaleb Exp $ */
 
 /*
 

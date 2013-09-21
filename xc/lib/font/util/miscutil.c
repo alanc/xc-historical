@@ -1,4 +1,4 @@
-/* $XConsortium: miscutil.c,v 1.3 94/02/04 15:25:03 gildea Exp $ */
+/* $XConsortium: miscutil.c,v 1.4 94/04/17 20:17:36 gildea Exp $ */
 
 /*
 

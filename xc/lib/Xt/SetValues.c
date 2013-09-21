@@ -1,4 +1,4 @@
-/* $XConsortium: SetValues.c,v 1.21 94/04/17 20:14:45 kaleb Exp $ */
+/* $XConsortium: SetValues.c,v 1.22 94/05/11 16:03:28 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

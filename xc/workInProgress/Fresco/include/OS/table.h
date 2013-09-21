@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: table.h,v 1.3 94/06/03 21:41:56 matt Exp $ */
 
 /*
  * Copyright (c) 1987, 1988, 1989, 1990, 1991 Stanford University

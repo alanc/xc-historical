@@ -1,4 +1,4 @@
-/* $XConsortium: props.c,v 1.8 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: props.c,v 1.9 95/05/30 18:58:43 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

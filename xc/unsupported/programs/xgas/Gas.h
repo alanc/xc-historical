@@ -1,4 +1,4 @@
-/* $XConsortium: Gas.h,v 1.1 91/04/18 09:48:57 dave Exp $ */
+/* $XConsortium: Gas.h,v 1.2 94/04/17 20:45:25 dave Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

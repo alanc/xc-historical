@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-/* $XConsortium: mbufbf.c,v 1.4 94/02/23 15:52:25 dpw Exp $ */
+/* $XConsortium: mbufbf.c,v 1.5 94/04/17 20:32:53 dpw Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS

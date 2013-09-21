@@ -1,7 +1,7 @@
 #ifndef _PEX_H_
 #define _PEX_H_
 
-/* $XConsortium: PEX.h,v 1.7 92/08/26 15:16:05 mor Exp $ */
+/* $XConsortium: PEX.h,v 1.8 94/03/18 10:37:25 mor Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */

@@ -1,4 +1,4 @@
-/* $XConsortium: parse.c,v 1.1 94/01/29 15:55:34 rws Exp $ */
+/* $XConsortium: parse.c,v 1.2 94/04/17 21:01:47 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

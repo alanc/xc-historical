@@ -1,4 +1,4 @@
-/* "$XConsortium: XKBCvt.c,v 1.14 94/04/17 20:21:35 erik Exp gildea $"; */
+/* "$XConsortium: XKBCvt.c,v 1.15 95/06/08 23:20:39 gildea Exp $"; */
 /*
 
 Copyright (c) 1988, 1989  X Consortium

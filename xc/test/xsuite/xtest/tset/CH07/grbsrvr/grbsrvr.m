@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: grbsrvr.m,v 1.4 92/06/11 17:13:34 rws Exp $
+ * $XConsortium: grbsrvr.m,v 1.5 94/04/17 21:06:29 rws Exp $
  */
 >>TITLE XGrabServer CH07
 void

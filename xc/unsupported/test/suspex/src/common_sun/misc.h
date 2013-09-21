@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: misc.h,v 1.0 93/11/22 12:26:09 rws Exp $ */
 
 /*
         NOTICE TO USER: The source code in this file is copyrighted under

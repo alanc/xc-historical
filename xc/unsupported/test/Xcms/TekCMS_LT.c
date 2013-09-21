@@ -1,4 +1,4 @@
-/* $XConsortium: TekCMS_LT.c,v 1.8 92/06/28 11:27:02 rws Exp $ */
+/* $XConsortium: TekCMS_LT.c,v 1.9 93/08/20 15:51:10 rws Exp $ */
 
 /*
  * (c) Copyright 1990, Tektronix Inc.

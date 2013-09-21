@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cir_line.c,v 1.2 95/01/10 17:00:19 kaleb Exp kaleb $ */
+/* $XConsortium: cir_line.c,v 1.3 95/01/26 15:38:28 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_line.c,v 3.0 1994/12/25 12:35:06 dawes Exp $ */
 
 /*

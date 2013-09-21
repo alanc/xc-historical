@@ -1,4 +1,4 @@
-/* $XConsortium: SetCRects.c,v 11.21 93/01/04 17:27:31 rws Exp $ */
+/* $XConsortium: SetCRects.c,v 11.22 94/04/17 20:20:52 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

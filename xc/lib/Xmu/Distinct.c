@@ -1,4 +1,4 @@
-/* $XConsortium: Distinct.c,v 1.3 90/12/28 19:12:21 gildea Exp $ */
+/* $XConsortium: Distinct.c,v 1.4 94/04/17 20:15:59 gildea Exp $ */
 
 /*
 

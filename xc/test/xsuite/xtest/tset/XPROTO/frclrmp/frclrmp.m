@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: frclrmp.m,v 1.4 92/06/11 17:49:14 rws Exp $
+ * $XConsortium: frclrmp.m,v 1.5 94/04/17 21:11:22 rws Exp $
  */
 >>TITLE FreeColormap XPROTO
 >>SET startup protostartup

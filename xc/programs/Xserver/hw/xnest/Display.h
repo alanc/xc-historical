@@ -1,4 +1,4 @@
-/* $XConsortium: Display.h,v 1.1 93/07/12 15:28:07 rws Exp $ */
+/* $XConsortium: Display.h,v 1.2 94/02/06 17:51:43 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

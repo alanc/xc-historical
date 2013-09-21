@@ -1,4 +1,4 @@
-/* $XConsortium: XawI18n.c,v 1.5 94/04/02 15:57:40 kaleb Exp $ */
+/* $XConsortium: XawI18n.c,v 1.6 94/04/17 20:13:28 kaleb Exp $ */
 
 /* Copyright 1991 NCR Corporation - Dayton, Ohio, USA */
 

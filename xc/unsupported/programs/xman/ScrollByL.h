@@ -1,4 +1,4 @@
-/* $XConsortium: ScrollByL.h,v 1.6 91/07/12 15:49:38 dave Exp $ */
+/* $XConsortium: ScrollByL.h,v 1.7 94/04/17 20:43:48 dave Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

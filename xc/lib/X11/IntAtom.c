@@ -1,4 +1,4 @@
-/* $XConsortium: IntAtom.c,v 11.25 94/03/26 19:38:05 rws Exp $ */
+/* $XConsortium: IntAtom.c,v 11.26 94/04/17 20:20:02 rws Exp $ */
 /*
 
 Copyright (c) 1986, 1990  X Consortium

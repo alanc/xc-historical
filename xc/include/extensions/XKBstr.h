@@ -1,4 +1,4 @@
-/* $XConsortium: XKBstr.h,v 1.9 94/04/04 12:21:58 rws Exp $ */
+/* $XConsortium: XKBstr.h,v 1.10 94/04/08 02:57:04 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

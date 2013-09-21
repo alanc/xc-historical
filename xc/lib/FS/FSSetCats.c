@@ -1,4 +1,4 @@
-/* $XConsortium: FSSetCats.c,v 1.2 94/04/12 21:55:51 dpw Exp $ */
+/* $XConsortium: FSSetCats.c,v 1.3 94/04/17 20:15:19 dpw Exp $ */
 
 /* @(#)FSFlush.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;

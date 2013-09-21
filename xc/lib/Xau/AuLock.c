@@ -1,4 +1,4 @@
-/* $XConsortium: AuLock.c,v 1.14 94/03/05 12:32:30 rws Exp $ */
+/* $XConsortium: AuLock.c,v 1.15 94/04/17 20:15:43 rws Exp $ */
 
 /*
 

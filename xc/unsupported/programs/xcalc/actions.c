@@ -1,4 +1,4 @@
-/* $XConsortium: actions.c,v 1.8 91/03/22 18:27:15 converse Exp $ */
+/* $XConsortium: actions.c,v 1.9 94/04/17 20:43:30 converse Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

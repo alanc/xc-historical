@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ungrbpntr.m,v 1.5 93/07/05 13:41:20 rws Exp $
+ * $XConsortium: ungrbpntr.m,v 1.6 94/04/17 21:07:03 rws Exp $
  */
 >>TITLE XUngrabPointer CH07
 void

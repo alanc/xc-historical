@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: badvis.c,v 1.3 92/06/11 15:48:48 rws Exp $
+ * $XConsortium: badvis.c,v 1.4 94/04/17 21:00:33 rws Exp $
  */
 
 #include "xtest.h"

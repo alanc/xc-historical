@@ -1,4 +1,4 @@
-/* $XConsortium: CloseHook.h,v 1.6 93/08/16 14:32:56 rws Exp $ */
+/* $XConsortium: CloseHook.h,v 1.7 94/04/17 20:15:52 rws Exp $ */
 
 /* 
 

@@ -1,4 +1,4 @@
-/* $XConsortium: LabMxC.c,v 1.2 91/07/25 01:07:18 rws Exp $ */
+/* $XConsortium: LabMxC.c,v 1.3 93/09/07 21:31:29 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

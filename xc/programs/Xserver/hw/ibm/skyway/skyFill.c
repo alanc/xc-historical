@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyFill.c,v 1.2 91/12/11 21:40:47 eswu Exp $
+ * $XConsortium: skyFill.c,v 1.3 92/01/27 18:03:17 eswu Exp $
  *
  * Copyright IBM Corporation 1991 
  *

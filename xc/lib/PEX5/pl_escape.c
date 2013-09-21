@@ -1,4 +1,4 @@
-/* $XConsortium: pl_escape.c,v 1.9 94/03/30 16:49:58 rws Exp $ */
+/* $XConsortium: pl_escape.c,v 1.10 94/04/17 20:22:28 rws Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: saver.c,v 1.11 94/01/21 22:10:01 dpw Exp $
+ * $XConsortium: saver.c,v 1.12 94/04/17 20:59:36 dpw Exp $
  *
 Copyright (c) 1992  X Consortium
 

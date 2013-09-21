@@ -1,4 +1,4 @@
-/* $XConsortium: WidgetNode.c,v 1.4 90/12/19 18:16:32 converse Exp $ */
+/* $XConsortium: WidgetNode.c,v 1.5 94/04/17 20:16:23 converse Exp $ */
 
 /*
  

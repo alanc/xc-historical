@@ -1,4 +1,4 @@
-.\" $XConsortium: xditview.man,v 1.9 94/04/11 14:29:40 gildea Exp $
+.\" $XConsortium: xditview.man,v 1.10 94/04/17 20:43:37 gildea Exp $
 .TH XDITVIEW 1 "Release 6" "X Version 11"
 .SH NAME
 xditview \- display ditroff output

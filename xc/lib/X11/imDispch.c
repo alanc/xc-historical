@@ -1,4 +1,4 @@
-/* $XConsortium: imDispch.c,v 1.3 94/01/20 18:04:16 rws Exp $ */
+/* $XConsortium: imDispch.c,v 1.4 94/03/26 16:57:53 rws Exp $ */
 /******************************************************************
 
                 Copyright 1993, 1994 by FUJITSU LIMITED

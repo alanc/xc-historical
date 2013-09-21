@@ -1,4 +1,4 @@
-/* $XConsortium: Xcms.h,v 1.14 92/06/05 16:49:45 converse Exp $ */
+/* $XConsortium: Xcms.h,v 1.15 92/11/19 16:43:04 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

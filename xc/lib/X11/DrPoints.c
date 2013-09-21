@@ -1,4 +1,4 @@
-/* $XConsortium: DrPoints.c,v 1.16 92/12/30 11:30:23 rws Exp $ */
+/* $XConsortium: DrPoints.c,v 1.17 94/04/17 20:19:12 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

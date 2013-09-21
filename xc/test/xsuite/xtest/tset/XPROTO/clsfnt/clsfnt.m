@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: clsfnt.m,v 1.7 92/06/11 17:46:46 rws Exp $
+ * $XConsortium: clsfnt.m,v 1.8 94/04/17 21:11:03 rws Exp $
  */
 >>TITLE CloseFont XPROTO
 >>SET startup protostartup

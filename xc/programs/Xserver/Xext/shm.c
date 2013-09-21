@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
-/* $XConsortium: shm.c,v 1.24 94/11/02 16:01:56 kaleb Exp dpw $ */
+/* $XConsortium: shm.c,v 1.25 95/04/06 16:00:55 dpw Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>

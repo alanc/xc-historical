@@ -29,7 +29,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cfbteblt8.c,v 5.23 94/04/17 20:29:02 dpw Exp $ */
+/* $XConsortium: cfbteblt8.c,v 5.24 94/09/29 15:26:00 dpw Exp $ */
 
 #if PSZ == 8
 

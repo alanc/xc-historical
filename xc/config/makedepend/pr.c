@@ -1,4 +1,4 @@
-/* $XConsortium: pr.c,v 1.16 94/04/13 16:52:12 gildea Exp $ */
+/* $XConsortium: pr.c,v 1.17 94/04/17 20:10:38 gildea Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: maxsize.c,v 1.2 92/06/11 15:47:57 rws Exp $
+ * $XConsortium: maxsize.c,v 1.3 94/04/17 21:00:56 rws Exp $
  */
 
 #include	"Xlib.h"

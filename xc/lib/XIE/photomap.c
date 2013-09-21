@@ -1,4 +1,4 @@
-/* $XConsortium: photomap.c,v 1.5 94/03/30 16:42:21 rws Exp $ */
+/* $XConsortium: photomap.c,v 1.6 94/04/17 20:18:27 rws Exp $ */
 
 /*
 

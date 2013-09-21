@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.21 94/12/16 17:32:34 mor Exp mor $ */
+/* $XConsortium: globals.c,v 1.22 95/01/03 17:22:38 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAddSF.c,v 1.5 91/07/25 01:08:22 rws Exp $" */
+/* $XConsortium: AddSF.c,v 1.6 91/11/06 16:29:27 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

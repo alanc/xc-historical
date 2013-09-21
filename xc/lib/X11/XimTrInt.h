@@ -1,4 +1,4 @@
-/* $XConsortium: XimTrInt.h,v 1.3 94/02/03 17:50:29 mor Exp $ */
+/* $XConsortium: XimTrInt.h,v 1.4 94/03/26 16:57:07 rws Exp $ */
 /******************************************************************
 
               Copyright 1992 by Sun Microsystems, Inc.

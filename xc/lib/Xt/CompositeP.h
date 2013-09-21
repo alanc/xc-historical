@@ -1,4 +1,4 @@
-/* $XConsortium: CompositeP.h,v 1.16 94/02/10 17:47:21 converse Exp $ */
+/* $XConsortium: CompositeP.h,v 1.17 94/04/17 20:13:43 converse Exp $ */
 
 /***********************************************************
 

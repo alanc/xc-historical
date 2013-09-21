@@ -1,4 +1,4 @@
-/* $XConsortium: $ */
+/* $XConsortium: cirBlitMM.h,v 1.1 95/01/26 15:08:31 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitMM.h,v 3.3 1994/12/25 12:34:47 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */

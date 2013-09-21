@@ -1,4 +1,4 @@
-/* $XConsortium: XKBBind.c,v 1.7 94/04/02 10:46:17 erik Exp $ */
+/* $XConsortium: XKBBind.c,v 1.8 94/04/17 20:21:34 erik Exp $ */
 /*
 
 Copyright (c) 1985, 1987, 1994  X Consortium

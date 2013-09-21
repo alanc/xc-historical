@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.3 94/02/10 17:13:04 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 94/04/18 14:43:08 rws Exp $
 
 MakeTblDoc(ddx,ddx.tbl.ms)
 

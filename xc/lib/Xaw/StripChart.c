@@ -1,4 +1,4 @@
-/* $XConsortium: StripChart.c,v 1.24 94/01/31 10:54:50 kaleb Exp $ */
+/* $XConsortium: StripChart.c,v 1.25 94/04/17 20:12:56 kaleb Exp $ */
 
 /***********************************************************
 

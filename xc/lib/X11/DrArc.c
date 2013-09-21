@@ -1,4 +1,4 @@
-/* $XConsortium: DrArc.c,v 11.15 91/01/06 11:45:10 rws Exp $ */
+/* $XConsortium: DrArc.c,v 11.16 94/04/17 20:19:09 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

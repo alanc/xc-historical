@@ -1,4 +1,4 @@
-.\" $XConsortium: oclock.man,v 1.14 94/04/12 18:25:15 gildea Exp $
+.\" $XConsortium: oclock.man,v 1.15 94/04/17 20:37:58 gildea Exp $
 .\" Copyright (c) 1989  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining

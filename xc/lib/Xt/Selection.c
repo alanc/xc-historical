@@ -1,4 +1,4 @@
-/* $XConsortium: Selection.c,v 1.100 95/06/23 22:04:24 converse Exp $ */
+/* $XConsortium: Selection.c,v 1.100 95/06/23 22:36:25 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

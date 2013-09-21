@@ -1,4 +1,4 @@
-/* $XConsortium: atomcache.c,v 1.5 94/03/27 13:30:22 dpw Exp $ */
+/* $XConsortium: atomcache.c,v 1.6 95/05/17 18:26:41 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

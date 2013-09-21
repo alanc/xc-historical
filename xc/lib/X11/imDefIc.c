@@ -1,4 +1,4 @@
-/* $XConsortium: imDefIc.c,v 1.11 94/08/02 12:44:21 kaleb Exp kaleb $ */
+/* $XConsortium: imDefIc.c,v 1.12 95/02/22 22:13:59 kaleb Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.

@@ -1,4 +1,4 @@
-/* $XConsortium: QuExt.c,v 11.18 91/01/06 11:47:31 rws Exp $ */
+/* $XConsortium: QuExt.c,v 11.19 94/04/17 20:20:36 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

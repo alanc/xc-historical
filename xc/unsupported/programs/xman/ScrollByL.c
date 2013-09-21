@@ -1,4 +1,4 @@
-/* $XConsortium: ScrollByL.c,v 1.29 93/09/09 11:52:20 rws Exp $ */
+/* $XConsortium: ScrollByL.c,v 1.30 94/04/17 20:43:46 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

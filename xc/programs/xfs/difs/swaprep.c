@@ -1,4 +1,4 @@
-/* $XConsortium: swaprep.c,v 1.10 94/02/09 20:57:20 gildea Exp $ */
+/* $XConsortium: swaprep.c,v 1.11 94/04/17 19:56:19 gildea Exp $ */
 /*
  * font server reply swapping
  */

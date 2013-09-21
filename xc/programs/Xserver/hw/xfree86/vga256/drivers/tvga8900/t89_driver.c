@@ -1,4 +1,4 @@
-/* $XConsortium: t89_driver.c,v 1.3 95/01/06 20:58:58 kaleb Exp kaleb $ */
+/* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.6 1995/01/10 10:33:16 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.

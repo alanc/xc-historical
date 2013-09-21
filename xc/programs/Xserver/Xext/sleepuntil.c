@@ -1,5 +1,5 @@
 /*
- * $XConsortium: sleepuntil.c,v 1.4 94/04/01 17:42:02 dpw Exp $
+ * $XConsortium: sleepuntil.c,v 1.5 94/04/17 20:32:57 dpw Exp $
  *
 Copyright (c) 1992  X Consortium
 

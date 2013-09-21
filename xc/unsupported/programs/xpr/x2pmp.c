@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: x2pmp.c,v 1.12 91/07/18 12:00:06 rws Exp $
+ *	$XConsortium: x2pmp.c,v 1.13 91/07/25 17:56:32 rws Exp $
  */
 
 /* x2pmp.c: Translate xwd window dump format into PMP format for the

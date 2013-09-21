@@ -1,4 +1,4 @@
-/* $XConsortium: init.c,v 1.10 94/04/17 20:18:25 rws Exp mor $ */
+/* $XConsortium: init.c,v 1.11 95/04/28 18:01:11 mor Exp $ */
 
 /*
 

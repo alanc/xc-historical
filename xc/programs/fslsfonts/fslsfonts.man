@@ -1,4 +1,4 @@
-.\" $XConsortium: fslsfonts.man,v 1.5 94/04/12 18:10:46 gildea Exp $
+.\" $XConsortium: fslsfonts.man,v 1.6 94/04/17 20:38:30 gildea Exp $
 .\" Copyright 1991, Network Computing Devices, Inc
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" 

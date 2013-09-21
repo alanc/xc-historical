@@ -1,4 +1,4 @@
-/* $XConsortium: imRm.c,v 1.8 94/05/14 15:39:47 rws Exp kaleb $ */
+/* $XConsortium: imRm.c,v 1.9 94/09/01 18:44:49 kaleb Exp $ */
 /******************************************************************
 
 	  Copyright 1990, 1991, 1992,1993, 1994 by FUJITSU LIMITED

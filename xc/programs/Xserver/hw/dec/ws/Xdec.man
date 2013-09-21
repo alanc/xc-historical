@@ -1,4 +1,4 @@
-.\" $XConsortium: Xdec.man,v 1.5 94/04/13 18:42:36 gildea Exp $
+.\" $XConsortium: Xdec.man,v 1.6 94/04/17 20:29:52 gildea Exp $
 .\" Copyright 1991 Digital Equipment Corporation
 .\" Copyright (c) 1993  X Consortium
 .\" 

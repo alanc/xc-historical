@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: omronKMap.c,v 1.1 91/06/29 13:48:59 xguest Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 

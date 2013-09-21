@@ -1,4 +1,4 @@
-/* $XConsortium: miTriStrip.c,v 5.11 93/09/03 15:06:00 hersh Exp $ */
+/* $XConsortium: miTriStrip.c,v 5.12 94/04/17 20:37:22 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

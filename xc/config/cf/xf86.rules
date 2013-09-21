@@ -1,4 +1,4 @@
-XCOMM $XConsortium: xf86.rules,v 1.6 95/01/12 15:41:51 kaleb Exp kaleb $
+XCOMM $XConsortium: xf86.rules,v 1.7 95/01/25 16:34:39 kaleb Exp $
 
 /*
  * These rules are needed to build the Xfree86 X Servers

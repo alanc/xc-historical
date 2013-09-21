@@ -1,4 +1,4 @@
-/* $XConsortium: imLcGIc.c,v 1.2 94/01/20 18:04:51 rws Exp $ */
+/* $XConsortium: imLcGIc.c,v 1.3 94/03/26 17:00:30 rws Exp $ */
 /******************************************************************
 
                 Copyright 1992,1993, 1994 by FUJITSU LIMITED

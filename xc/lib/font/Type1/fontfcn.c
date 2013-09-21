@@ -1,4 +1,4 @@
-/* $XConsortium: fontfcn.c,v 1.9 93/08/24 18:48:54 gildea Exp $ */
+/* $XConsortium: fontfcn.c,v 1.10 94/02/06 16:07:23 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

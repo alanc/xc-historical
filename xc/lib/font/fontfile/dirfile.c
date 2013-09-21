@@ -1,4 +1,4 @@
-/* $XConsortium: dirfile.c,v 1.10 94/02/04 13:45:44 gildea Exp $ */
+/* $XConsortium: dirfile.c,v 1.11 94/04/17 20:17:01 gildea Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-/* $XConsortium: locking.c,v 1.35 94/03/30 19:06:24 rws Exp $ */
+/* $XConsortium: locking.c,v 1.36 94/04/17 20:22:13 rws Exp $ */
 /*
  
 Copyright (c) 1992  X Consortium

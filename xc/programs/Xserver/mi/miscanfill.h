@@ -1,4 +1,4 @@
-/* $XConsortium: miscanfill.h,v 1.4 94/04/12 17:25:27 dpw Exp $ */
+/* $XConsortium: miscanfill.h,v 1.5 94/04/17 20:27:50 dpw Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

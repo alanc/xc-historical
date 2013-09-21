@@ -1,4 +1,4 @@
-/* $XConsortium: miline.h,v 1.4 1994/07/28 14:22:39 dpw Exp dpw $ */
+/* $XConsortium: miline.h,v 1.5 94/07/29 11:54:51 dpw Exp $ */
 
 /*
 

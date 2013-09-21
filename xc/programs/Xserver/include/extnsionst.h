@@ -1,4 +1,4 @@
-/* $XConsortium: extnsionst.h,v 1.13 94/02/23 15:47:24 dpw Exp $ */
+/* $XConsortium: extnsionst.h,v 1.14 94/04/17 20:25:42 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

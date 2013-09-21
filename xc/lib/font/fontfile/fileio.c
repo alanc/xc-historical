@@ -1,4 +1,4 @@
-/* $XConsortium: fileio.c,v 1.3 93/09/17 18:26:44 gildea Exp $ */
+/* $XConsortium: fileio.c,v 1.4 94/04/17 20:17:04 gildea Exp $ */
 
 /*
 

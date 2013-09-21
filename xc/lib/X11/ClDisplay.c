@@ -1,4 +1,4 @@
-/* $XConsortium: ClDisplay.c,v 11.30 94/04/17 20:18:50 mor Exp gildea $ */
+/* $XConsortium: ClDisplay.c,v 11.31 95/06/05 19:03:09 gildea Exp $ */
 
 /*
 

@@ -27,7 +27,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: agxFArc.c,v 1.1 94/12/27 10:50:55 kaleb Exp kaleb $ */
+/* $XConsortium: agxFArc.c,v 1.2 95/01/12 19:38:51 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFArc.c,v 3.1 1994/11/22 02:37:19 dawes Exp $ */
 
 #include <math.h>

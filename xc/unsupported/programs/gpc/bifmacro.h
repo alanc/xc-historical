@@ -1,4 +1,4 @@
-/* $XConsortium: bifmacro.h,v 5.1 91/02/16 10:06:57 rws Exp $ */
+/* $XConsortium: bifmacro.h,v 5.2 91/07/10 08:27:25 rws Exp $ */
 
 /*
  */

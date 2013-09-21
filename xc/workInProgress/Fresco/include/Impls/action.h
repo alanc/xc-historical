@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: action.h,v 1.5 94/06/03 21:43:41 matt Exp $ */
 
 /*
  * Copyright (c) 1992-1993 Silicon Graphics, Inc.

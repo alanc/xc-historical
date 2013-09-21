@@ -34,7 +34,7 @@
 # make no representations about the suitability of this software for any
 # purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium: Makefile,v 1.5 92/06/11 15:38:53 rws Exp $
+# $XConsortium: Makefile,v 1.6 94/04/17 21:00:18 rws Exp $
 #
 
 CFILES=main.c sections.c files.c shortname.c error.c gccomps.c set.c \

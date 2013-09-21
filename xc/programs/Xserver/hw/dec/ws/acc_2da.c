@@ -1,4 +1,4 @@
-/* $XConsortium: acc_2da.c,v 1.2 91/07/08 11:16:17 keith Exp $ */
+/* $XConsortium: acc_2da.c,v 1.3 94/04/17 20:29:52 keith Exp $ */
 /***********************************************************
 
 Copyright (c) 1991  X Consortium

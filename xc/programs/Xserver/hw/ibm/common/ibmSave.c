@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmSave.c,v 1.2 91/07/16 13:09:55 jap Exp $
+ * $XConsortium: ibmSave.c,v 1.3 93/07/12 09:27:19 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

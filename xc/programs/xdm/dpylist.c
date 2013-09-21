@@ -1,4 +1,4 @@
-/* $XConsortium: dpylist.c,v 1.28 94/02/10 19:04:51 gildea Exp $ */
+/* $XConsortium: dpylist.c,v 1.29 94/04/17 20:03:37 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

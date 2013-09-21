@@ -1,4 +1,4 @@
-/* $XConsortium: ReconfWin.c,v 11.15 93/09/22 21:26:11 rws Exp $ */
+/* $XConsortium: ReconfWin.c,v 11.16 94/04/17 20:20:45 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

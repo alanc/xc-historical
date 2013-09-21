@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/04/01 17:54:31 dpw Exp $
 #include <Server.tmpl>
 
 SRCS1 =	sunAmInit.c \

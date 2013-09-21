@@ -1,4 +1,4 @@
-/* $XConsortium: Destroy.c,v 1.50 94/04/17 20:13:57 kaleb Exp $ */
+/* $XConsortium: Destroy.c,v 1.51 94/05/11 16:02:58 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

@@ -1,4 +1,4 @@
-/* $XConsortium: sm_auth.c,v 1.10 94/03/18 16:03:00 mor Exp $ */
+/* $XConsortium: sm_auth.c,v 1.11 94/04/17 20:16:53 mor Exp $ */
 
 /*
 

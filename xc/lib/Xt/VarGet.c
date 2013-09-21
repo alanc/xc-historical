@@ -1,4 +1,4 @@
-/* $XConsortium: VarGet.c,v 1.19 93/10/06 17:41:25 kaleb Exp $ */
+/* $XConsortium: VarGet.c,v 1.20 94/04/17 20:15:02 kaleb Exp $ */
 /*
 
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.

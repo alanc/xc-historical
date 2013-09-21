@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: bigreq.ms,v 1.10 94/04/11 23:09:28 rws Exp $
+.\" $XConsortium: bigreq.ms,v 1.11 94/04/17 20:06:09 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''

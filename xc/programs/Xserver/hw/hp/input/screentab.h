@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: screentab.h,v 1.4 95/01/24 23:31:56 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

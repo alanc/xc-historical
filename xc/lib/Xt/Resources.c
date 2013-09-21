@@ -1,4 +1,4 @@
-/* $XConsortium: Resources.c,v 1.120 94/04/17 20:14:40 converse Exp $ */
+/* $XConsortium: Resources.c,v 1.121 94/04/19 13:59:00 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

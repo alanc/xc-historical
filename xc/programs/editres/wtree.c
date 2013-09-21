@@ -1,5 +1,5 @@
 /*
- * $XConsortium: wtree.c,v 1.17 93/08/19 09:27:57 rws Exp $
+ * $XConsortium: wtree.c,v 1.18 94/04/17 20:38:59 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

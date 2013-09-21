@@ -1,4 +1,4 @@
-/* $XConsortium: fslibos.h,v 1.14 94/04/17 20:17:41 mor Exp $ */
+/* $XConsortium: fslibos.h,v 1.15 94/07/20 10:37:01 mor Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation

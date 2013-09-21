@@ -1,5 +1,5 @@
 /*
- * $XConsortium: os.cxx,v 1.11 94/08/17 19:01:30 matt Exp matt $
+ * $XConsortium: os.cxx,v 1.12 94/08/17 21:48:05 matt Exp $
  */
 
 /*

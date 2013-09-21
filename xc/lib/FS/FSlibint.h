@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibint.h,v 1.12 94/04/17 20:15:22 gildea Exp gildea $ */
+/* $XConsortium: FSlibint.h,v 1.13 95/06/08 23:20:39 gildea Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;

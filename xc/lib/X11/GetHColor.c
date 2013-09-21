@@ -1,4 +1,4 @@
-/* $XConsortium: GetHColor.c,v 11.11 91/01/06 11:45:58 rws Exp $ */
+/* $XConsortium: GetHColor.c,v 11.12 94/04/17 20:19:34 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

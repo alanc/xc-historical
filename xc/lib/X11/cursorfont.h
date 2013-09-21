@@ -1,4 +1,4 @@
-/* $XConsortium: cursorfont.h,v 1.3 94/04/12 21:36:16 rws Exp $ */
+/* $XConsortium: cursorfont.h,v 1.4 94/04/17 20:22:00 rws Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: phigserr.h,v 5.2 91/07/12 20:22:21 hersh Exp $ */
+/* $XConsortium: phigserr.h,v 5.3 94/04/17 20:41:52 hersh Exp $ */
 
 /***********************************************************
 

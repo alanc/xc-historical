@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: mfbfillarc.c,v 5.13 94/03/31 14:10:24 dpw Exp $ */
+/* $XConsortium: mfbfillarc.c,v 5.14 94/04/17 20:28:20 dpw Exp $ */
 
 #include "X.h"
 #include "Xprotostr.h"

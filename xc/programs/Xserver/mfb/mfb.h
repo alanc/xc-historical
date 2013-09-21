@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfb.h,v 5.30 94/03/31 14:09:53 dpw Exp $ */
+/* $XConsortium: mfb.h,v 5.31 94/04/17 20:28:15 dpw Exp $ */
 /* Monochrome Frame Buffer definitions 
    written by drewry, september 1986
 */

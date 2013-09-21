@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: stwmprtcls.m,v 1.6 92/06/11 17:32:09 rws Exp $
+ * $XConsortium: stwmprtcls.m,v 1.7 94/04/17 21:09:13 rws Exp $
  */
 >>TITLE XSetWMProtocols CH09
 Status

@@ -1,5 +1,5 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.230 95/06/08 21:08:14 gildea Exp kaleb $";
+static char *rid="$XConsortium: main.c,v 1.231 95/09/13 14:48:31 kaleb Exp $";
 #endif /* lint */
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xdisplay.cxx,v 1.6 94/05/09 17:42:26 matt Exp matt $
+ * $XConsortium: Xdisplay.cxx,v 1.7 94/09/01 18:45:46 matt Exp $
  */
 
 /*

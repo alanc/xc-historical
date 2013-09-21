@@ -1,4 +1,4 @@
-/* $XConsortium: jconfig.h,v 1.3 94/04/01 14:37:05 rws Exp $ */
+/* $XConsortium: jconfig.h,v 1.4 94/04/17 20:35:30 rws Exp $ */
 /* Module jconfig.h */
 
 /****************************************************************************

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: aixCursor.c,v 1.3 91/07/16 12:58:05 jap Exp $
+ * $XConsortium: aixCursor.c,v 1.4 94/02/23 15:54:59 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

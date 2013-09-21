@@ -1,4 +1,4 @@
-/* $XConsortium: fontnames.c,v 1.1 91/05/10 16:51:51 keith Exp $ */
+/* $XConsortium: fontnames.c,v 1.2 94/04/17 20:17:32 keith Exp $ */
 
 /*
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ungrbkybrd.m,v 1.8 93/07/05 13:40:30 rws Exp $
+ * $XConsortium: ungrbkybrd.m,v 1.9 94/04/17 21:06:57 rws Exp $
  */
 >>TITLE XUngrabKeyboard CH07
 void

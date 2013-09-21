@@ -8,7 +8,7 @@
 .\" suitability for any purpose of the information in this document.  It is 
 .\" provided \`\`as is'' without express or implied warranty.
 .\" 
-.\" $XConsortium: XAllDvEv.man,v 1.4 94/04/17 20:07:26 dpw Exp $
+.\" $XConsortium: XAllDvEv.man,v 1.5 94/06/04 17:32:07 rws Exp $
 .ds xL Programming With Xlib
 .TH XAllowDeviceEvents 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME

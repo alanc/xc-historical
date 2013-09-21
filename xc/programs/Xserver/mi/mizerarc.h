@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.h,v 5.12 94/02/23 15:50:31 dpw Exp $ */
+/* $XConsortium: mizerarc.h,v 5.13 94/04/17 20:28:04 dpw Exp $ */
 
 typedef struct {
     int x;

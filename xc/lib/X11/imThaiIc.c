@@ -1,4 +1,4 @@
-/* $XConsortium: imThaiIc.c,v 1.2 94/01/20 18:05:39 rws Exp $ */
+/* $XConsortium: imThaiIc.c,v 1.3 94/03/26 17:00:55 rws Exp $ */
 /******************************************************************
 
           Copyright 1992, 1993, 1994 by FUJITSU LIMITED

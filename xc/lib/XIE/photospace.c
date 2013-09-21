@@ -1,4 +1,4 @@
-/* $XConsortium: photospace.c,v 1.1 93/07/19 11:39:30 mor Exp $ */
+/* $XConsortium: photospace.c,v 1.2 94/04/17 20:18:27 mor Exp $ */
 
 /*
 

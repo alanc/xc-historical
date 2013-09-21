@@ -1,4 +1,4 @@
-/* $XConsortium: TextTr.c,v 1.19 94/04/17 20:13:16 kaleb Exp kaleb $ */
+/* $XConsortium: TextTr.c,v 1.20 95/06/14 15:07:27 kaleb Exp $ */
 
 /*
 

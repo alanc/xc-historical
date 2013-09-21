@@ -1,4 +1,4 @@
-/* $XConsortium: GetTime.c,v 1.4 94/04/12 17:26:51 dpw Exp $ */
+/* $XConsortium: GetTime.c,v 1.5 94/04/17 20:30:01 dpw Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

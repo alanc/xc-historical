@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xauth.c,v 1.17 89/12/07 10:39:55 rws Exp $
+ * $XConsortium: xauth.c,v 1.18 94/04/17 20:37:53 rws Exp $
  *
  * xauth - manipulate authorization file
  *

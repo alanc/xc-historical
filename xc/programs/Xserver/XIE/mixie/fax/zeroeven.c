@@ -1,4 +1,4 @@
-/* $XConsortium: zeroeven.c,v 1.3 94/01/12 20:11:23 rws Exp $ */
+/* $XConsortium: zeroeven.c,v 1.4 94/04/17 20:34:47 rws Exp $ */
 /**** module fax/zeroeven.c ****/
 /******************************************************************************
 

@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: swaprep.c,v 1.2 94/01/17 23:57:50 rob Exp $ */
+/* $XConsortium: swaprep.c,v 1.3 94/04/17 21:15:53 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

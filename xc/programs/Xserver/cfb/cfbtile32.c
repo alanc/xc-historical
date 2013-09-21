@@ -29,7 +29,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cfbtile32.c,v 1.7 94/02/23 15:51:28 dpw Exp $ */
+/* $XConsortium: cfbtile32.c,v 1.8 94/04/17 20:29:05 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

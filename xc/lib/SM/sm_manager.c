@@ -1,4 +1,4 @@
-/* $XConsortium: sm_manager.c,v 1.23 94/05/02 11:16:15 mor Exp $ */
+/* $XConsortium: sm_manager.c,v 1.24 94/05/11 17:33:44 mor Exp $ */
 
 /*
 

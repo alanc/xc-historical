@@ -1,4 +1,4 @@
-/* $XConsortium: pl_lut.h,v 1.3 93/09/23 14:39:49 mor Exp $ */
+/* $XConsortium: pl_lut.h,v 1.4 94/04/17 20:22:33 mor Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

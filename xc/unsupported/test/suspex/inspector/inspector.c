@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: inspector.c,v 1.0 93/11/22 12:08:58 rws Exp $ */
 
 /*
         NOTICE TO USER: The source code in this file is copyrighted under

@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: events.c,v 1.189 94/07/21 16:04:41 mor Exp $
+ * $XConsortium: events.c,v 1.190 94/07/21 17:46:35 mor Exp $
  *
  * twm event handling
  *

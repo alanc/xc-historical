@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: ptyx.h,v 1.62 1993/02/25 17:21:26 gildea Exp converse $
+ *	$XConsortium: ptyx.h,v 1.63 94/08/02 19:24:44 converse Exp $
  */
 
 /*

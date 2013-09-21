@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: rgb.h,v 1.1 94/03/17 11:35:55 dpw Exp $ */
+/* $XConsortium: rgb.h,v 1.2 94/04/17 21:16:52 dpw Exp $ */
 
 #ifndef RGB_H
 #define RGB_H

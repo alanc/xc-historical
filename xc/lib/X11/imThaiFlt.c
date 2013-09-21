@@ -1,4 +1,4 @@
-/* $XConsortium: imThaiFlt.c,v 1.7 94/01/20 18:05:33 rws Exp $ */
+/* $XConsortium: imThaiFlt.c,v 1.8 94/04/17 20:22:07 rws Exp $ */
 /***********************************************************
 
 Copyright (c) 1993  X Consortium

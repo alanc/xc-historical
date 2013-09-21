@@ -1,4 +1,4 @@
-/* $XConsortium: Error.h,v 1.4 91/07/22 23:45:54 converse Exp $ */
+/* $XConsortium: Error.h,v 1.5 94/04/17 20:16:06 converse Exp $ */
 
 /*
  

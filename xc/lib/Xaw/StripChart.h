@@ -1,4 +1,4 @@
-/* $XConsortium: StripChart.h,v 1.5 91/07/26 22:50:35 converse Exp $ */
+/* $XConsortium: StripChart.h,v 1.6 94/04/17 20:12:57 converse Exp $ */
 
 /***********************************************************
 

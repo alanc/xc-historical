@@ -1,4 +1,4 @@
-/* $XConsortium: CvtCache.c,v 1.7 93/08/16 14:34:14 rws Exp $ */
+/* $XConsortium: CvtCache.c,v 1.8 94/04/17 20:15:56 rws Exp $ */
 
 /*
  

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: checkgc.c,v 1.4 92/06/11 15:46:23 rws Exp $
+ * $XConsortium: checkgc.c,v 1.5 94/04/17 21:00:38 rws Exp $
  */
 #include "xtest.h"
 #include "Xlib.h"

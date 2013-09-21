@@ -1,4 +1,4 @@
-/* $XConsortium: beach_ball.c,v 5.7 91/11/19 11:14:11 hersh Exp $ */
+/* $XConsortium: beach_ball.c,v 5.8 94/04/17 20:44:12 hersh Exp $ */
 /***********************************************************
 
 Copyright (c) 1989,1990, 1991  X Consortium

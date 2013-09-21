@@ -1,4 +1,4 @@
-/* $XConsortium: FSSync.c,v 1.4 92/05/26 17:14:57 gildea Exp $ */
+/* $XConsortium: FSSync.c,v 1.5 94/04/17 20:15:19 gildea Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;

@@ -1,4 +1,4 @@
-/* $XConsortium: bsd_init.c,v 1.3 95/01/05 20:42:11 kaleb Exp kaleb $ */
+/* $XConsortium: bsd_init.c,v 1.4 95/01/16 13:17:57 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_init.c,v 3.2 1995/01/10 10:28:45 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>

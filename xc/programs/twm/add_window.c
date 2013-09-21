@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: add_window.c,v 1.163 94/10/04 19:59:13 mor Exp mor $
+ * $XConsortium: add_window.c,v 1.164 94/12/27 19:16:56 mor Exp $
  *
  * Add a new window, put the titlbar and other stuff around
  * the window

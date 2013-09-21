@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: qrybstsz.m,v 1.4 92/06/11 17:56:26 rws Exp $
+ * $XConsortium: qrybstsz.m,v 1.5 94/04/17 21:12:08 rws Exp $
  */
 >>TITLE QueryBestSize XPROTO
 >>SET startup protostartup

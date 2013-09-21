@@ -1,4 +1,4 @@
-/* $XConsortium: IntrinsicI.h,v 1.58 94/04/17 20:14:24 converse Exp kaleb $ */
+/* $XConsortium: IntrinsicI.h,v 1.59 94/10/10 18:57:48 kaleb Exp $ */
 
 /***********************************************************
 

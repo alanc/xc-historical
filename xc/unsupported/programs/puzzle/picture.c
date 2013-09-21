@@ -1,4 +1,4 @@
-/* $XConsortium: picture.c,v 1.6 91/07/18 16:29:01 rws Exp $ */
+/* $XConsortium: picture.c,v 1.7 91/08/21 11:48:53 rws Exp $ */
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
  *
  * Permission to use, copy, modify, and distribute this software and its

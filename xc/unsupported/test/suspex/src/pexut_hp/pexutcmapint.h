@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexutcmapint.h,v 1.0 93/11/22 12:23:54 rws Exp $ */
 
 #ifndef PEXUTCMAP_IH /* { */
 #define PEXUTCMAP_IH
@@ -28,9 +28,9 @@
 
 /******************************************************************************/
 /*                                                                            */
-/* $Source: /BE700/9.0/gtd/R903/rbuild/PEX5/head/RCS/pexutcmapint.h,v $                      	      */
-/* $Date: 93/05/06 16:49:21 $                                                 */
-/* $Revision: 500.1.200.2 $                                                   */
+/* $Source: /xsrc/xc/unsupported/test/suspex/src/pexut_hp/RCS/pexutcmapint.h,v $                      	      */
+/* $Date: 93/11/22 12:23:54 $                                                 */
+/* $Revision: 1.0 $                                                   */
 /*                                                                            */
 /* Description:                                                               */
 /*   Internal header file for PEXUt cmap/visual utilities,                    */

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rprntntfy.m,v 1.9 92/06/11 17:24:31 rws Exp $
+ * $XConsortium: rprntntfy.m,v 1.10 94/04/17 21:08:09 rws Exp $
  */
 >>TITLE ReparentNotify CH08
 >>EXTERN

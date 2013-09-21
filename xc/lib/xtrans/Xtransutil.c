@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransutil.c,v 1.18 94/10/18 15:57:42 mor Exp $ */
+/* $XConsortium: Xtransutil.c,v 1.19 95/02/10 17:54:09 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

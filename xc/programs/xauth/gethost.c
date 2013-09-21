@@ -1,5 +1,5 @@
 /*
- * $XConsortium: gethost.c,v 1.21 94/04/17 20:37:51 hersh Exp kaleb $
+ * $XConsortium: gethost.c,v 1.22 94/11/30 16:29:52 kaleb Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: lcUTF.c,v 1.5 93/09/25 10:41:22 rws Exp $ */
+/* $XConsortium: lcUTF.c,v 1.6 94/01/20 18:07:42 rws Exp $ */
 /******************************************************************
 
               Copyright 1993 by SunSoft, Inc.

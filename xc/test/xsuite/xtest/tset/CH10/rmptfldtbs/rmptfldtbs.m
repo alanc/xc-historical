@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rmptfldtbs.m,v 1.6 92/06/11 17:40:20 rws Exp $
+ * $XConsortium: rmptfldtbs.m,v 1.7 94/04/17 21:10:09 rws Exp $
  */
 >>TITLE XrmPutFileDatabase CH10
 void

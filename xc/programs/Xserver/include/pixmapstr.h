@@ -1,4 +1,4 @@
-/* $XConsortium: pixmapstr.h,v 5.5 94/03/18 12:25:49 dpw Exp $ */
+/* $XConsortium: pixmapstr.h,v 5.6 94/04/17 20:25:54 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

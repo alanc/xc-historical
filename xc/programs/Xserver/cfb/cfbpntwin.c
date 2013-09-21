@@ -1,4 +1,4 @@
-/* $XConsortium: cfbpntwin.c,v 5.17 93/12/13 17:22:20 dpw Exp $ */
+/* $XConsortium: cfbpntwin.c,v 5.18 94/04/17 20:28:57 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

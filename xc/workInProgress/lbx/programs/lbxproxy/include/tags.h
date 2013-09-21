@@ -1,4 +1,4 @@
-/* $XConsortium: tags.h,v 1.4 94/03/08 20:51:35 dpw Exp $ */
+/* $XConsortium: tags.h,v 1.5 95/05/17 18:23:24 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *

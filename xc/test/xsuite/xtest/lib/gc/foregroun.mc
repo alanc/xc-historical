@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: foregroun.mc,v 1.15 92/06/11 18:03:22 rws Exp $
+ * $XConsortium: foregroun.mc,v 1.16 94/04/17 21:14:43 rws Exp $
  */
 >>ASSERTION Good A
 The foregound component of the gc is used to determine the foreground

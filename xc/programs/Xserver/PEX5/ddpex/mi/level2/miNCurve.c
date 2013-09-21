@@ -1,4 +1,4 @@
-/* $XConsortium: miNCurve.c,v 5.2 91/05/01 14:43:51 hersh Exp $ */
+/* $XConsortium: miNCurve.c,v 5.3 94/04/17 20:37:10 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

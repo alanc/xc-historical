@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtsbimg.m,v 1.16 92/06/11 17:07:13 rws Exp $
+ * $XConsortium: gtsbimg.m,v 1.17 94/04/17 21:05:39 rws Exp $
  */
 >>TITLE XGetSubImage CH06
 XImage *

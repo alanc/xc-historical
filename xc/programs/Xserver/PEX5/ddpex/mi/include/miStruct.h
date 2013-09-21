@@ -1,4 +1,4 @@
-/* $XConsortium: miStruct.h,v 5.4 94/04/17 20:36:47 hersh Exp $ */
+/* $XConsortium: miStruct.h,v 5.5 94/07/11 11:17:31 hersh Exp $ */
 
 
 /***********************************************************

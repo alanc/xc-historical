@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlogo.c,v 1.19 94/04/02 17:01:57 converse Exp $
+ * $XConsortium: xlogo.c,v 1.20 94/04/17 20:24:10 converse Exp $
  *
 Copyright (c) 1989  X Consortium
 

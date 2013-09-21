@@ -1,4 +1,4 @@
-/* $XConsortium: bif_lex.c,v 5.4 91/10/21 14:32:54 eswu Exp $ */
+/* $XConsortium: bif_lex.c,v 5.5 94/04/17 20:44:17 eswu Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

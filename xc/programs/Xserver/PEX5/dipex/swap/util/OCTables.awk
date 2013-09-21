@@ -1,4 +1,4 @@
-# $XConsortium: OCTables.awk,v 5.1 91/02/16 09:57:01 rws Exp $
+# $XConsortium: OCTables.awk,v 5.2 94/04/17 20:36:37 rws Exp $
 ###########################################################################
 ## Copyright 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 ## 

@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:30:02 dpw Exp $
 #include <Server.tmpl>
 
 SRCS = xf86_Util.c xf86_IlHack.c

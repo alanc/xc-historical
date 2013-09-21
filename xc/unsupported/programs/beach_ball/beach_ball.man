@@ -1,4 +1,4 @@
-.\" $XConsortium: beach_ball.man,v 1.3 94/04/11 14:30:00 gildea Exp $
+.\" $XConsortium: beach_ball.man,v 1.4 94/04/17 20:44:12 gildea Exp $
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1

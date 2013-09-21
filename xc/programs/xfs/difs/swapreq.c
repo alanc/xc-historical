@@ -1,4 +1,4 @@
-/* $XConsortium: swapreq.c,v 1.6 92/11/18 21:30:11 gildea Exp $ */
+/* $XConsortium: swapreq.c,v 1.7 94/04/17 19:56:19 gildea Exp $ */
 /*
  * swapped requests
  */

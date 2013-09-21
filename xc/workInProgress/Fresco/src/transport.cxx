@@ -1,5 +1,5 @@
 /*
- * $XConsortium: transport.cxx,v 1.4 94/04/01 16:52:46 matt Exp matt $
+ * $XConsortium: transport.cxx,v 1.5 94/08/17 21:48:05 matt Exp $
  */
  
 /*

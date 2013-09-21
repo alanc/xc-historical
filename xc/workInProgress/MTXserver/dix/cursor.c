@@ -67,7 +67,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cursor.c,v 1.2 94/01/11 20:44:50 rob Exp $ */
+/* $XConsortium: cursor.c,v 1.3 94/04/17 21:15:40 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

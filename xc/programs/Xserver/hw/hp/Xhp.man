@@ -1,4 +1,4 @@
-.\" $XConsortium: Xhp.man,v 1.66 94/04/15 23:01:55 rws Exp $
+.\" $XConsortium: Xhp.man,v 1.2 95/01/24 19:51:14 gildea Exp $
 .\" Copyright (c) 1994  Hewlett-Packard Company
 .\" Copyright (c) 1994  X Consortium
 .\" 

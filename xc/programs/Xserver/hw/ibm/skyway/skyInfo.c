@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyInfo.c,v 1.3 91/07/16 13:15:33 jap Exp $
+ * $XConsortium: skyInfo.c,v 1.4 91/12/11 21:25:09 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

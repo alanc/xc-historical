@@ -1,4 +1,4 @@
-/* $XConsortium: Events.h,v 1.1 93/07/12 15:28:16 rws Exp $ */
+/* $XConsortium: Events.h,v 1.2 93/09/23 18:57:02 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

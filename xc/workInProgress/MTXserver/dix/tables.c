@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: tables.c,v 1.2 94/01/11 20:47:23 rob Exp $ */
+/* $XConsortium: tables.c,v 1.3 94/04/17 21:15:54 rob Exp $ */
 
 #ifndef XTHREADS
 extern int    ProcInitialConnection(), ProcEstablishConnection();

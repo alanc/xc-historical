@@ -1,4 +1,4 @@
-/* $XConsortium: lbxgfx.c,v 1.14 95/04/04 21:25:44 dpw Exp mor $ */
+/* $XConsortium: lbxgfx.c,v 1.15 95/05/30 19:59:09 mor Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: ArgList.c,v 1.20 91/02/05 16:57:51 gildea Exp $ */
+/* $XConsortium: ArgList.c,v 1.21 94/04/17 20:13:37 gildea Exp $ */
 
 /***********************************************************
 

@@ -1,4 +1,4 @@
-/* $XConsortium: plypt.c,v 1.1 95/01/26 15:29:18 kaleb Exp kaleb $ */
+/* $XConsortium: plypt.c,v 1.2 95/06/19 15:58:20 kaleb Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium

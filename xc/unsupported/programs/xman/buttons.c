@@ -1,4 +1,4 @@
-/* $XConsortium: buttons.c,v 1.32 91/09/03 17:41:59 dave Exp $ */
+/* $XConsortium: buttons.c,v 1.33 94/04/17 20:43:50 dave Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

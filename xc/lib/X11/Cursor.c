@@ -1,4 +1,4 @@
-/* $XConsortium: Cursor.c,v 11.14 91/01/06 11:45:02 rws Exp $ */
+/* $XConsortium: Cursor.c,v 11.15 94/04/17 20:19:03 rws Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

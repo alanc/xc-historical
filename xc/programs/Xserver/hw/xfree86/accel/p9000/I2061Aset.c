@@ -1,4 +1,4 @@
-/* $XConsortium: $ */
+/* $XConsortium: I2061Aset.c,v 1.1 95/01/26 15:27:33 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/I2061Aset.c,v 3.1 1994/09/07 15:50:42 dawes Exp $ */
 /* Id: ICD2061Aset.c,v 4.0 1994/05/28 01:24:17 nygren Exp */
 /* Based on the number 9 Inc code */

@@ -1,4 +1,4 @@
-/* $XConsortium: atom.c,v 1.5 94/04/12 22:00:42 dpw Exp $ */
+/* $XConsortium: atom.c,v 1.6 94/04/17 19:56:10 dpw Exp $ */
 /*
  * font server atom manipulations
  */

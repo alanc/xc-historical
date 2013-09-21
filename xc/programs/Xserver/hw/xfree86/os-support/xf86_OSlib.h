@@ -1,4 +1,4 @@
-/* $XConsortium: xf86_OSlib.h,v 1.6 95/01/06 20:58:14 kaleb Exp kaleb $ */
+/* $XConsortium: xf86_OSlib.h,v 1.7 95/01/16 13:17:55 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.12 1995/01/10 10:27:30 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany

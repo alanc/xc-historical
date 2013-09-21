@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AIX.h,v 1.2 91/07/16 12:54:51 jap Exp $
+ * $XConsortium: AIX.h,v 1.3 91/11/22 17:06:53 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

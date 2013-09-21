@@ -1,4 +1,4 @@
-/* $XConsortium: printhex.c,v 1.1 94/02/22 14:33:02 mor Exp $ */
+/* $XConsortium: printhex.c,v 1.2 94/04/17 21:15:17 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

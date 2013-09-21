@@ -1,4 +1,4 @@
-/* $XConsortium: StrToBmap.c,v 1.12 93/08/16 14:37:24 rws Exp $ */
+/* $XConsortium: StrToBmap.c,v 1.13 94/04/17 20:16:16 rws Exp $ */
 
 /*
 

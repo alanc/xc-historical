@@ -1,5 +1,5 @@
 /*
- * $XConsortium: parsedpy.c,v 1.8 93/09/20 18:00:15 hersh Exp $
+ * $XConsortium: parsedpy.c,v 1.9 94/04/17 20:37:51 hersh Exp $
  *
  * parse_displayname - utility routine for splitting up display name strings
  *

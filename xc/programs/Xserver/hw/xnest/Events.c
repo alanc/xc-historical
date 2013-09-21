@@ -1,4 +1,4 @@
-/* $XConsortium: Events.c,v 1.3 94/01/07 09:52:34 dpw Exp ray $ */
+/* $XConsortium: Events.c,v 1.4 95/07/10 17:42:22 ray Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

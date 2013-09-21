@@ -1,5 +1,5 @@
 /*
- * $XConsortium: grid.c,v 1.28 93/09/04 19:52:28 rws Exp $
+ * $XConsortium: grid.c,v 1.29 94/04/17 20:24:13 rws Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

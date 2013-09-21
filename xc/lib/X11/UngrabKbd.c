@@ -1,4 +1,4 @@
-/* $XConsortium: UngrabKbd.c,v 11.10 91/01/06 11:48:35 rws Exp $ */
+/* $XConsortium: UngrabKbd.c,v 11.11 94/04/17 20:21:22 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

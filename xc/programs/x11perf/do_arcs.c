@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: do_arcs.c,v 2.12 92/11/11 17:01:12 rws Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

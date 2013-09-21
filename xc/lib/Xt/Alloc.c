@@ -1,4 +1,4 @@
-/* $XConsortium: Alloc.c,v 1.54 94/04/17 20:13:36 kaleb Exp kaleb $ */
+/* $XConsortium: Alloc.c,v 1.55 94/10/10 18:57:48 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdata.h,v 1.3 94/03/08 20:42:32 dpw Exp mor $ */
+/* $XConsortium: lbxdata.h,v 1.4 95/05/02 19:37:25 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

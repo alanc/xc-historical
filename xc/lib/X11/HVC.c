@@ -1,4 +1,4 @@
-/* $XConsortium: HVC.c,v 1.12 92/08/17 09:40:28 rws Exp $ */
+/* $XConsortium: HVC.c,v 1.13 93/09/07 21:30:46 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

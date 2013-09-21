@@ -1,4 +1,4 @@
-/* $XConsortium: closure.h,v 1.2 93/08/24 18:49:57 gildea Exp $ */
+/* $XConsortium: closure.h,v 1.3 94/04/17 20:25:31 gildea Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

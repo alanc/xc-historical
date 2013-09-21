@@ -1,4 +1,4 @@
-/* $XConsortium: omXChar.c,v 1.2 94/01/20 18:08:33 rws Exp $ */
+/* $XConsortium: omXChar.c,v 1.3 94/02/06 15:10:11 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

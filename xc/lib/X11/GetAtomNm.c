@@ -1,4 +1,4 @@
-/* $XConsortium: GetAtomNm.c,v 11.22 94/04/17 20:19:29 rws Exp converse $ */
+/* $XConsortium: GetAtomNm.c,v 11.23 95/05/02 15:07:06 converse Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

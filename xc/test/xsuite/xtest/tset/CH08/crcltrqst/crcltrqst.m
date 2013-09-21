@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: crcltrqst.m,v 1.12 93/10/17 17:17:39 rws Exp $
+ * $XConsortium: crcltrqst.m,v 1.13 94/04/17 21:07:22 rws Exp $
  */
 >>TITLE CirculateRequest CH08
 >>EXTERN

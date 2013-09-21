@@ -1,4 +1,4 @@
-/* $XConsortium: keytypes.c,v 1.2 94/04/04 15:28:24 rws Exp $ */
+/* $XConsortium: keytypes.c,v 1.4 94/04/08 15:28:14 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

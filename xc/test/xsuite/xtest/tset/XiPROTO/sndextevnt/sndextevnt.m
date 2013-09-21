@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: sndextevnt.m,v 1.5 94/01/30 11:53:53 rws Exp $
+ * $XConsortium: sndextevnt.m,v 1.6 94/04/17 21:13:44 rws Exp $
  */
 >>TITLE SendExtensionEvent XIPROTO
 >>SET startup protostartup

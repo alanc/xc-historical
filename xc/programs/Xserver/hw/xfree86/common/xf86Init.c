@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xf86Init.c,v 1.7 95/01/10 14:42:18 kaleb Exp kaleb $
+ * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
  * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.14 1995/01/07 04:07:28 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

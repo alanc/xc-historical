@@ -1,4 +1,4 @@
-/* $XConsortium: $ */
+/* $XConsortium: mach64text.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64text.c,v 3.1 1994/12/05 03:45:48 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.

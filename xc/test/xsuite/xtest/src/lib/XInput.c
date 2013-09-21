@@ -11,7 +11,7 @@
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: XInput.c,v 1.4 94/04/17 21:00:30 rws Exp dpw $
+ * $XConsortium: XInput.c,v 1.5 94/09/06 19:40:10 dpw Exp $
  */
 #include <stdio.h>
 #include "extensions/XIproto.h"

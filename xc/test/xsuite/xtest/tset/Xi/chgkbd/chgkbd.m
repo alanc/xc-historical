@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chgkbd.m,v 1.8 94/04/17 21:12:46 rws Exp dpw $
+ * $XConsortium: chgkbd.m,v 1.9 94/09/06 20:50:19 dpw Exp $
  */
 >>TITLE XChangeKeyboardDevice XINPUT
 void

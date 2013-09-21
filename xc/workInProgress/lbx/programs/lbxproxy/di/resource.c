@@ -50,7 +50,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.7 95/05/22 18:06:44 mor Exp mor $ */
+/* $XConsortium: resource.c,v 1.8 95/05/24 16:14:13 mor Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *

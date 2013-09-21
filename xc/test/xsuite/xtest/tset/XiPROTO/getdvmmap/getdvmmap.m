@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: getdvmmap.m,v 1.8 94/01/30 11:52:44 rws Exp $
+ * $XConsortium: getdvmmap.m,v 1.9 94/04/17 21:13:53 rws Exp $
  */
 >>TITLE GetDeviceModifierMapping XIPROTO
 >>SET startup protostartup

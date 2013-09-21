@@ -34,7 +34,7 @@
 # make no representations about the suitability of this software for any
 # purpose.  It is provided "as is" without express or implied warranty.
 #
-# $XConsortium: Makefile,v 1.8 92/06/29 19:13:12 rws Exp $
+# $XConsortium: Makefile,v 1.9 94/04/17 21:08:24 rws Exp $
 #
 
 #

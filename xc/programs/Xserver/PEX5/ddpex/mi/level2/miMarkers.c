@@ -1,4 +1,4 @@
-/* $XConsortium: miMarkers.c,v 5.4 92/12/29 17:14:17 mor Exp $ */
+/* $XConsortium: miMarkers.c,v 5.5 94/04/17 20:37:09 mor Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

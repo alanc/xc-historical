@@ -30,7 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbblt.c,v 1.12 93/12/13 17:21:45 dpw Exp $ */
+/* $XConsortium: cfbblt.c,v 1.13 94/04/17 20:28:44 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"

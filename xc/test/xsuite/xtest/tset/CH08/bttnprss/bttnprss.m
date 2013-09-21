@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: bttnprss.m,v 1.12 92/06/11 17:18:17 rws Exp $
+ * $XConsortium: bttnprss.m,v 1.13 94/04/17 21:07:09 rws Exp $
  */
 >>TITLE ButtonPress CH08
 >>EXTERN

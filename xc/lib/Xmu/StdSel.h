@@ -1,4 +1,4 @@
-/* $XConsortium: StdSel.h,v 1.4 93/08/16 14:29:05 rws Exp $ */
+/* $XConsortium: StdSel.h,v 1.5 94/04/17 20:16:15 rws Exp $ */
 
 /*
  

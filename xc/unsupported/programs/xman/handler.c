@@ -1,4 +1,4 @@
-/* $XConsortium: handler.c,v 1.21 94/04/17 20:43:52 dave Exp gildea $ */
+/* $XConsortium: handler.c,v 1.22 94/12/16 21:36:53 gildea Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

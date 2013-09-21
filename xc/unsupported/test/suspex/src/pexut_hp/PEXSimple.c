@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: PEXSimple.c,v 1.0 93/11/22 12:23:03 rws Exp $ */
 
 /******************************************************************************/
 /*                                                                            */
@@ -25,9 +25,9 @@
 
 /******************************************************************************/
 /*                                                                            */
-/* $Source: /BE700/9.0/gtd/R903/wbuild/PEX5/utilities/RCS/PEXSimple.c,v $
-/* $Date: 93/03/17 13:47:12 $
-/* $Revision: 500.1.200.1 $
+/* $Source: /xsrc/xc/unsupported/test/suspex/src/pexut_hp/RCS/PEXSimple.c,v $
+/* $Date: 93/11/22 12:23:03 $
+/* $Revision: 1.0 $
 /*                                                                            */
 /* Description:                                                               */
 /*   The widget implementation file for the Xg/PEXSimple Motif widget         */

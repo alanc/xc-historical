@@ -1,4 +1,4 @@
-/* $XConsortium: Xaixlcint.h,v 1.2 94/01/20 18:02:13 rws Exp Kaleb $ */
+/* $XConsortium: Xaixlcint.h,v 1.3 95/04/07 19:22:34 kaleb Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993

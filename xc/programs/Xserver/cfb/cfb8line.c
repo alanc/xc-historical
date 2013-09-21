@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfb8line.c,v 1.29 94/07/28 14:38:16 dpw Exp $
+ * $XConsortium: cfb8line.c,v 1.30 95/01/03 15:28:30 dpw Exp $
  *
 Copyright (c) 1990  X Consortium
 

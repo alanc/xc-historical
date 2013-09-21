@@ -1,4 +1,4 @@
-/* $XConsortium: pexNs.c,v 5.2 92/12/01 17:17:57 hersh Exp $ */
+/* $XConsortium: pexNs.c,v 5.3 94/04/17 20:36:09 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

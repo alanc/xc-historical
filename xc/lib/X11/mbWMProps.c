@@ -1,4 +1,4 @@
-/* $XConsortium: mbWMProps.c,v 1.4 91/06/19 19:38:43 rws Exp $ */
+/* $XConsortium: mbWMProps.c,v 1.5 94/04/17 20:22:14 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

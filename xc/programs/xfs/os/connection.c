@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.31 95/03/04 12:43:22 kaleb Exp kaleb $ */
+/* $XConsortium: connection.c,v 1.32 95/04/05 19:58:18 kaleb Exp $ */
 /*
  * handles connections
  */

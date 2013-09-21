@@ -1,4 +1,4 @@
-/* $XConsortium: Vendor.c,v 1.43 91/07/23 16:10:30 converse Exp $ */
+/* $XConsortium: Vendor.c,v 1.44 94/04/17 20:15:04 converse Exp $ */
 
 /***********************************************************
 

@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: grbpntr.m,v 1.12 93/07/05 13:38:51 rws Exp $
+ * $XConsortium: grbpntr.m,v 1.13 94/04/17 21:06:24 rws Exp $
  */
 >>TITLE XGrabPointer CH07
 int

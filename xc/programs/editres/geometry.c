@@ -1,5 +1,5 @@
 /*
- * $XConsortium: geometry.c,v 1.15 93/04/22 14:12:08 dave Exp $
+ * $XConsortium: geometry.c,v 1.16 94/04/17 20:38:55 dave Exp $
  *
 Copyright (c) 1989  X Consortium
 

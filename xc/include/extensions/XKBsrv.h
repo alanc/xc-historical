@@ -1,4 +1,4 @@
-/* $XConsortium: XKBsrv.h,v 1.11 94/04/08 15:07:52 erik Exp dpw $ */
+/* $XConsortium: XKBsrv.h,v 1.12 94/08/16 13:43:17 dpw Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

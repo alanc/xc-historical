@@ -1,4 +1,4 @@
-/* $XConsortium: db_tools.c,v 5.2 91/04/03 09:40:13 rws Exp $ */
+/* $XConsortium: db_tools.c,v 5.3 94/04/17 20:44:33 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

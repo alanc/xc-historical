@@ -1,5 +1,5 @@
 /* 
- * $XConsortium: xset.c,v 1.69 95/05/12 16:36:37 mor Exp mor $ 
+ * $XConsortium: xset.c,v 1.70 95/05/12 17:22:03 mor Exp $ 
  */
 
 /*

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miinitext.c,v 1.32 94/04/17 20:27:38 rws Exp $ */
+/* $XConsortium: miinitext.c,v 1.33 95/06/10 01:27:14 dpw Exp $ */
 
 #include "misc.h"
 

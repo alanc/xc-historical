@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: btmppd.m,v 1.5 92/06/11 15:55:53 rws Exp $
+ * $XConsortium: btmppd.m,v 1.6 94/04/17 21:01:59 rws Exp $
  */
 >>SET   macro
 >>TITLE XBitmapPad CH02

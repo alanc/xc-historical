@@ -1,4 +1,4 @@
-/* $XConsortium: xkbSwap.c,v 1.2 94/04/01 18:48:02 erik Exp dpw $ */
+/* $XConsortium: xkbSwap.c,v 1.3 94/09/29 15:09:19 dpw Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

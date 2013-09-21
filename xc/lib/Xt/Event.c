@@ -1,4 +1,4 @@
-/* $XConsortium: Event.c,v 1.171 95/02/21 21:32:57 converse Exp gildea $ */
+/* $XConsortium: Event.c,v 1.172 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

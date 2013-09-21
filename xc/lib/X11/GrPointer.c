@@ -1,4 +1,4 @@
-/* $XConsortium: GrPointer.c,v 11.17 91/01/06 11:46:26 rws Exp $ */
+/* $XConsortium: GrPointer.c,v 11.18 94/04/17 20:19:49 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

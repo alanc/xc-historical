@@ -1,5 +1,5 @@
 /*
- * $XConsortium: aixEvents.c,v 1.5 93/09/05 15:55:37 rws Exp $
+ * $XConsortium: aixEvents.c,v 1.6 94/02/23 15:55:02 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: xedit.c,v 1.27 91/02/17 15:48:25 dave Exp $ */
+/* $XConsortium: xedit.c,v 1.28 94/03/26 17:06:28 rws Exp $ */
  
 /*
  *			  COPYRIGHT 1987

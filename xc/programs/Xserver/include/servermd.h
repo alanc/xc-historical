@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.73 95/01/09 20:56:43 kaleb Exp kaleb $ */
+/* $XConsortium: servermd.h,v 1.74 95/04/07 18:59:05 kaleb Exp $ */
 
 /*
  * Machine dependent values:

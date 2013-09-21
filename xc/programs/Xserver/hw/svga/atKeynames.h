@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: atKeynames.h,v 1.1 93/09/18 16:08:08 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.

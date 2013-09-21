@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: s3im.h,v 1.1 94/03/28 21:15:45 dpw Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 

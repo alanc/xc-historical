@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyReg.h,v 1.4 92/01/27 18:01:20 eswu Exp $
+ * $XConsortium: skyReg.h,v 1.5 94/02/06 17:47:06 rws Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

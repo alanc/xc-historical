@@ -1,4 +1,4 @@
-/* $XConsortium: CopyCmap.c,v 11.9 91/02/12 16:10:45 dave Exp $ */
+/* $XConsortium: CopyCmap.c,v 11.10 94/04/17 20:18:56 dave Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ali_driver.c,v 1.3 95/01/13 20:02:21 kaleb Exp kaleb $ 
+ * $XConsortium: ali_driver.c,v 1.4 95/01/16 13:18:01 kaleb Exp $ 
  * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.3 1995/01/10 10:30:21 dawes Exp $
  */
 

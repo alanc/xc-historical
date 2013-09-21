@@ -1,5 +1,5 @@
 /*
-* $XConsortium: PassivGraI.h,v 1.10 90/12/31 16:54:34 rws Exp $
+* $XConsortium: PassivGraI.h,v 1.11 94/04/17 20:14:33 rws Exp $
 */
 
 /********************************************************

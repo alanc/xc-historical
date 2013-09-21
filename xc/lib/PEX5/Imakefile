@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.16 93/09/09 10:41:46 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.17 94/03/27 15:53:01 rws Exp $
 
 #define DoNormalLib NormalLibPex
 #define DoSharedLib SharedLibPex

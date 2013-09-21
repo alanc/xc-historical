@@ -1,4 +1,4 @@
-/* $XConsortium: bsd_io.c,v 1.4 95/06/09 20:57:00 gildea Exp kaleb $ */
+/* $XConsortium: bsd_io.c,v 1.5 95/06/14 15:19:17 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.2 1995/01/10 10:28:47 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>

@@ -1,4 +1,4 @@
-/* $XConsortium: xnestPointer.h,v 1.1 93/06/23 16:23:56 dmatic Exp $ */
+/* $XConsortium: Pointer.h,v 1.1 93/07/12 15:28:44 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/04/08 17:47:31 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/04/11 16:44:19 rws Exp $
 #include <Server.tmpl>
 
    SRCS = xkb.c xkbUtils.c xkbEvents.c xkbAccessX.c xkbStubs.c xkbSwap.c \

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mach8bstor.c,v 1.1 94/03/28 21:10:21 dpw Exp $ */
 /*-
  * mach8bstore.c --
  *	Functions required by the backing-store implementation in MI.

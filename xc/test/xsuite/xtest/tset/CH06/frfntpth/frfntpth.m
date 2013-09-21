@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: frfntpth.m,v 1.6 92/06/11 17:06:41 rws Exp $
+ * $XConsortium: frfntpth.m,v 1.7 94/04/17 21:05:35 rws Exp $
  */
 >>TITLE XFreeFontPath CH06
 void

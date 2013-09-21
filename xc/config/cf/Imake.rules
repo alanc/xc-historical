@@ -1,6 +1,6 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules,v 1.200 95/02/21 21:36:15 gildea Exp gildea $
+XCOMM rules:  $XConsortium: Imake.rules,v 1.201 95/06/05 19:43:41 gildea Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY

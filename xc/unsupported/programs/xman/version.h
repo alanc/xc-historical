@@ -1,4 +1,4 @@
-/* $XConsortium: version.h,v 1.10 94/03/28 15:59:21 gildea Exp $ */
+/* $XConsortium: version.h,v 1.11 94/04/17 20:44:00 gildea Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ftest.c,v 1.3 92/04/08 17:23:57 keith Exp $
+ * $XConsortium: ftest.c,v 1.4 94/04/17 20:59:44 keith Exp $
  *
 Copyright (c) 1992  X Consortium
 

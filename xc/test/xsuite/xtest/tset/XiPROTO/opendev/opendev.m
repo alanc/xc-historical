@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: opendev.m,v 1.4 94/01/30 11:53:27 rws Exp $
+ * $XConsortium: opendev.m,v 1.5 94/04/17 21:13:26 rws Exp $
  */
 >>TITLE OpenDevice XIPROTO
 >>SET startup protostartup

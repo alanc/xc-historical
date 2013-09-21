@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: init.c,v 1.10 94/04/17 20:29:55 dpw Exp dpw $ */
+/* $XConsortium: init.c,v 1.11 94/12/05 23:14:26 dpw Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>

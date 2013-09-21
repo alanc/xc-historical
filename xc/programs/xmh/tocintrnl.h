@@ -1,4 +1,4 @@
-/* $XConsortium: tocintrnl.h,v 2.17 91/07/13 17:13:14 converse Exp $ */
+/* $XConsortium: tocintrnl.h,v 2.18 91/07/14 18:53:37 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

@@ -1,4 +1,4 @@
-/* $XConsortium: StColors.c,v 11.14 91/01/06 11:48:19 rws Exp $ */
+/* $XConsortium: StColors.c,v 11.15 94/04/17 20:21:10 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

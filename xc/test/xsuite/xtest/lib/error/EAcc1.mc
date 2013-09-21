@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: EAcc1.mc,v 1.4 92/06/11 18:04:55 rws Exp $
+ * $XConsortium: EAcc1.mc,v 1.5 94/04/17 21:14:50 rws Exp $
  */
 >>ASSERTION Bad A
 >>### Access grab

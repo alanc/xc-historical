@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: client.cxx,v 1.2 94/03/23 15:52:55 matt Exp $
  */
 
 #include "naming.h"

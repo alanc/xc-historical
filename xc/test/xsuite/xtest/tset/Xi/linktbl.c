@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: linktbl.c,v 1.1 94/01/30 10:41:23 rws Exp $
+ * $XConsortium: linktbl.c,v 1.2 94/04/17 21:12:40 rws Exp $
  */
 
 #include "xtest.h"

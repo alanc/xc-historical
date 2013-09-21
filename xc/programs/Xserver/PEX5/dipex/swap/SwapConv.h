@@ -1,4 +1,4 @@
-/* $XConsortium: SwapConv.h,v 5.2 91/12/30 18:23:59 hersh Exp $ */
+/* $XConsortium: SwapConv.h,v 5.3 94/04/17 20:36:23 hersh Exp $ */
 
 /***********************************************************
 

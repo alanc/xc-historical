@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/06/06 11:31:25 mor Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/07/06 16:26:46 mor Exp $
         DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) $(XLIB)
            SRCS = smproxy.c save.c

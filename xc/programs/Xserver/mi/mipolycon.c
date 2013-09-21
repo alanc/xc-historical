@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolycon.c,v 5.0 89/06/09 15:08:33 keith Exp $ */
+/* $XConsortium: mipolycon.c,v 5.1 94/04/17 20:27:43 keith Exp $ */
 #include "gcstruct.h"
 #include "pixmap.h"
 #include "miscanfill.h"

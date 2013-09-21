@@ -1,4 +1,4 @@
-/* $XConsortium: t1imager.h,v 1.4 91/10/10 11:19:33 rws Exp $ */
+/* $XConsortium: t1imager.h,v 1.5 92/03/20 14:36:05 keith Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

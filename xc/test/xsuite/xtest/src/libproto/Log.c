@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: Log.c,v 1.7 92/12/22 09:12:40 rws Exp $
+ * $XConsortium: Log.c,v 1.8 94/04/17 21:01:14 rws Exp $
  */
 /*
  * ***************************************************************************

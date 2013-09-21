@@ -1,4 +1,4 @@
-/* $XConsortium: bitmapfunc.c,v 1.7 94/02/04 17:07:13 gildea Exp $ */
+/* $XConsortium: bitmapfunc.c,v 1.8 94/04/17 20:17:12 gildea Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 93/11/06 15:17:16 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 94/01/12 20:44:41 rws Exp $
 
    SRCS = abort.c arith.c await.c band.c blend.c cache.c compare.c complex.c \
 	  constrain.c convolve.c creatdstry.c cvttoindex.c dither.c \

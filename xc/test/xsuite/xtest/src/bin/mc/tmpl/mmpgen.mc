@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: mmpgen.mc,v 1.2 92/06/11 19:34:24 rws Exp $
 #
 # Pixel generation makerules for generating the reference
 # known good image files.

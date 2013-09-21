@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mkfontdir.c,v 1.11 93/09/20 18:06:01 hersh Exp $ */
+/* $XConsortium: mkfontdir.c,v 1.12 94/04/17 20:38:47 hersh Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_

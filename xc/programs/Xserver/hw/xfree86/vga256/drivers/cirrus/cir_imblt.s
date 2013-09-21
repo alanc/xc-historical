@@ -1,4 +1,4 @@
-/* $XConsortium: cir_imblt.s,v 1.3 94/10/13 13:21:46 kaleb Exp kaleb $ */
+/* $XConsortium: cir_imblt.s,v 1.4 95/01/23 15:35:15 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_imblt.s,v 3.4 1995/01/21 07:18:08 dawes Exp $ */
 /*
  *

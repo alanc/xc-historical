@@ -1,5 +1,5 @@
 /*
- * $XConsortium: process.c,v 1.6 94/11/14 20:31:28 mor Exp gildea $
+ * $XConsortium: process.c,v 1.7 94/12/16 22:21:15 gildea Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

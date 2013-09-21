@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miglblt.c,v 5.8 94/02/23 15:50:08 dpw Exp $ */
+/* $XConsortium: miglblt.c,v 5.9 94/04/17 20:27:37 dpw Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"

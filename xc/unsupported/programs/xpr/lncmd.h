@@ -1,4 +1,4 @@
-/* $XConsortium: lncmd.h,v 10.7 91/01/06 12:16:34 rws Exp $ */
+/* $XConsortium: lncmd.h,v 10.8 94/04/17 20:44:03 rws Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium

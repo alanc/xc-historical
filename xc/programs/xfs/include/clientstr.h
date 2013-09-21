@@ -1,4 +1,4 @@
-/* $XConsortium: clientstr.h,v 1.6 94/04/12 21:59:18 dpw Exp $ */
+/* $XConsortium: clientstr.h,v 1.7 94/04/17 19:55:55 dpw Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 

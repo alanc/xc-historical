@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: t1snap.c,v 1.3 91/10/10 11:19:47 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: spint.h,v 1.9 94/02/07 15:24:14 gildea Exp $ */
+/* $XConsortium: spint.h,v 1.10 94/04/17 20:17:51 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation

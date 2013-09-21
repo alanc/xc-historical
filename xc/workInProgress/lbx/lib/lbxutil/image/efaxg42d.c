@@ -1,4 +1,4 @@
-/* $XConsortium: efaxg42d.c,v 1.3 94/11/29 19:14:14 mor Exp mor $ */
+/* $XConsortium: efaxg42d.c,v 1.4 95/01/17 18:15:58 mor Exp $ */
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.

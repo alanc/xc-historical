@@ -1,4 +1,4 @@
-/* $XConsortium: CirWinDn.c,v 11.8 91/01/06 11:44:36 rws Exp $ */
+/* $XConsortium: CirWinDn.c,v 11.9 94/04/17 20:18:49 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

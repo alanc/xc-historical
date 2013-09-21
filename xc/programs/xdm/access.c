@@ -1,5 +1,5 @@
 /*
- * $XConsortium: access.c,v 1.14 93/09/20 18:03:26 hersh Exp $
+ * $XConsortium: access.c,v 1.15 94/04/17 20:03:32 hersh Exp $
  *
 Copyright (c) 1990  X Consortium
 

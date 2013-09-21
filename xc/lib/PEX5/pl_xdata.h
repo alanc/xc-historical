@@ -1,4 +1,4 @@
-/* $XConsortium: pl_xdata.h,v 1.4 94/04/04 19:55:04 rws Exp $ */
+/* $XConsortium: pl_xdata.h,v 1.5 94/04/17 20:22:52 rws Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

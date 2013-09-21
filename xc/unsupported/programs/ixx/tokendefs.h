@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: tokendefs.h,v 1.1 94/04/01 15:36:36 matt Exp $
  */
 /*
  * Copyright (c) 1992-1994 Silicon Graphics, Inc.

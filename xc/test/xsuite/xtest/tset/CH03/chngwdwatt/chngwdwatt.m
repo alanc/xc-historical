@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chngwdwatt.m,v 1.16 92/06/11 16:03:25 rws Exp $
+ * $XConsortium: chngwdwatt.m,v 1.17 94/04/17 21:02:52 rws Exp $
  */
 >>TITLE XChangeWindowAttributes CH03
 void

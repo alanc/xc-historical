@@ -1,4 +1,4 @@
-/* $XConsortium: Xlcint.h,v 11.22 94/09/01 18:44:49 kaleb Exp kaleb $ */
+/* $XConsortium: Xlcint.h,v 11.23 94/09/02 18:55:25 kaleb Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

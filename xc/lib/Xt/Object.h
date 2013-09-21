@@ -1,4 +1,4 @@
-/* $XConsortium: Object.h,v 1.8 89/09/11 17:39:25 swick Exp $ */
+/* $XConsortium: Object.h,v 1.9 94/04/17 20:14:31 swick Exp $ */
 /* $oHeader: Object.h,v 1.2 88/08/18 15:55:32 asente Exp $ */
 /***********************************************************
 

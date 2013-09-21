@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.7 94/01/22 23:53:14 rob Exp $ */
+/* $XConsortium: resource.c,v 1.8 94/04/17 21:15:52 rob Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *

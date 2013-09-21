@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gcntxtfrmg.m,v 1.5 92/06/11 16:16:23 rws Exp $
+ * $XConsortium: gcntxtfrmg.m,v 1.6 94/04/17 21:03:57 rws Exp $
  */
 >>TITLE XGContextFromGC CH05
 GContext

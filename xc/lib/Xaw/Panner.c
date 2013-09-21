@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.c,v 1.51 95/01/05 19:42:51 kaleb Exp kaleb $
+ * $XConsortium: Panner.c,v 1.52 95/01/10 14:31:26 kaleb Exp $
  *
 Copyright (c) 1989, 1994  X Consortium
 

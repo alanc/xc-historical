@@ -1,4 +1,4 @@
-/* $XConsortium: ListExt.c,v 11.10 91/01/06 11:46:50 rws Exp $ */
+/* $XConsortium: ListExt.c,v 11.11 94/04/17 20:20:08 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

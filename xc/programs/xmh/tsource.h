@@ -1,4 +1,4 @@
-/* $XConsortium: tsource.h,v 1.2 91/07/23 18:38:31 converse Exp $ */
+/* $XConsortium: tsource.h,v 1.3 94/04/17 20:24:04 converse Exp $ */
 
 /***********************************************************
 

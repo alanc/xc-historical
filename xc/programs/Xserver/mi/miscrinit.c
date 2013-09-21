@@ -1,4 +1,4 @@
-/* $XConsortium: miscrinit.c,v 5.10 94/04/17 20:27:51 dpw Exp $ */
+/* $XConsortium: miscrinit.c,v 5.11 94/07/28 14:16:48 dpw Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

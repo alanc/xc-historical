@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: atrptoff.m,v 1.4 92/06/11 17:11:11 rws Exp $
+ * $XConsortium: atrptoff.m,v 1.5 94/04/17 21:06:07 rws Exp $
  */
 >>TITLE XAutoRepeatOff CH07
 void

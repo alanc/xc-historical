@@ -1,4 +1,4 @@
-/* $XConsortium: nextlclmod.c,v 1.1 94/01/29 15:56:06 rws Exp $ */
+/* $XConsortium: nextlclmod.c,v 1.2 94/04/17 21:01:45 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

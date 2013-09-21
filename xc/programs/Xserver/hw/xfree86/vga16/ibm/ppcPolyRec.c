@@ -1,4 +1,4 @@
-/* $XConsortium: ppcPolyRec.c,v 1.1 94/03/28 21:37:34 dpw Exp $ */
+/* $XConsortium: ppcPolyRec.c,v 1.2 94/04/17 20:31:55 dpw Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *

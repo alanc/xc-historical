@@ -1,4 +1,4 @@
-/* $XConsortium: cmsLkCol.c,v 1.13 93/09/07 21:33:01 rws Exp $ */
+/* $XConsortium: cmsLkCol.c,v 1.14 94/03/31 21:51:17 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.7 91/07/17 00:46:42 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.8 92/09/14 18:53:12 rws Exp $
 #if PatheticCpp
         CPPDEFS = -DPATHETICCPP
 #endif

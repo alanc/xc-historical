@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chngkybrdc.m,v 1.10 94/02/04 15:31:37 rws Exp $
+ * $XConsortium: chngkybrdc.m,v 1.11 94/04/17 21:06:11 rws Exp $
  */
 >>TITLE XChangeKeyboardControl CH07
 void

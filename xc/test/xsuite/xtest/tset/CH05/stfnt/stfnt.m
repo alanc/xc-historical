@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: stfnt.m,v 1.9 92/06/29 19:02:57 rws Exp $
+ * $XConsortium: stfnt.m,v 1.10 94/04/17 21:04:10 rws Exp $
  */
 >>TITLE XSetFont CH05
 char **

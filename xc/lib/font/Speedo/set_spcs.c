@@ -1,4 +1,4 @@
-/* $XConsortium: set_spcs.c,v 1.5 94/02/07 10:01:12 gildea Exp $ */
+/* $XConsortium: set_spcs.c,v 1.6 94/02/10 10:18:23 gildea Exp $ */
 
 /*
 

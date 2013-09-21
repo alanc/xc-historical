@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: EFon2.mc,v 1.5 92/06/11 18:06:10 rws Exp $
+ * $XConsortium: EFon2.mc,v 1.6 94/04/17 21:14:55 rws Exp $
  */
 >>ASSERTION Bad A
 >>### Font bad-fontable

@@ -1,4 +1,4 @@
-/* $XConsortium: pf.c,v 1.4 91/07/17 22:26:40 rws Exp $ */
+/* $XConsortium: pf.c,v 1.5 94/04/17 20:24:21 rws Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

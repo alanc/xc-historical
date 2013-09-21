@@ -1,4 +1,4 @@
-/* $XConsortium: StCols.c,v 1.7 91/05/13 23:29:57 rws Exp $" */
+/* $XConsortium: StCols.c,v 1.8 93/09/07 21:32:42 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

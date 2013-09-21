@@ -1,4 +1,4 @@
-/* $XConsortium: ConnDis.c,v 11.125 95/04/06 16:58:50 mor Exp mor $ */
+/* $XConsortium: ConnDis.c,v 11.126 95/04/25 14:47:17 mor Exp $ */
 /*
  
 Copyright (c) 1989  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xcutsel.c,v 1.18 93/09/20 17:58:56 hersh Exp $
+ * $XConsortium: xcutsel.c,v 1.19 94/04/17 20:25:13 hersh Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

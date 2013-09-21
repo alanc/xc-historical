@@ -1,4 +1,4 @@
-/* $XConsortium: netaddr.c,v 1.7 94/03/31 22:24:56 rws Exp $ */
+/* $XConsortium: netaddr.c,v 1.8 94/04/17 20:03:41 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

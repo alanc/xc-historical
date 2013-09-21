@@ -1,4 +1,4 @@
-.\" $XConsortium: fsinfo.man,v 1.5 94/04/12 18:06:34 gildea Exp $
+.\" $XConsortium: fsinfo.man,v 1.6 94/04/17 20:24:19 gildea Exp $
 .\" Copyright 1991, Network Computing Devices, Inc
 .\" Copyright (c) 1993  X Consortium
 .\" 

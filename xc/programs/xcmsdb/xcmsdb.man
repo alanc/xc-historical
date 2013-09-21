@@ -1,4 +1,4 @@
-.\" $XConsortium: xcmsdb.man,v 1.8 94/04/13 12:17:25 gildea Exp $
+.\" $XConsortium: xcmsdb.man,v 1.9 94/04/17 20:39:01 gildea Exp $
 .\" Copyright 1990, Tektronix Inc.
 .\" Copyright (c) 1993  X Consortium
 .\" 

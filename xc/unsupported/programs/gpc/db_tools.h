@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: db_tools.h,v 5.1 91/02/16 10:07:26 rws Exp $ */
 
 /*
  */

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: EyesP.h,v 1.8 89/07/21 13:49:00 jim Exp $
+* $XConsortium: EyesP.h,v 1.9 90/12/01 13:04:43 rws Exp $
 */
 
 #ifndef _EyesP_h

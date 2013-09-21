@@ -1,4 +1,4 @@
-/* $XConsortium: VisUtil.c,v 11.16 93/08/22 18:00:03 rws Exp $ */
+/* $XConsortium: VisUtil.c,v 11.17 94/04/17 20:21:27 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

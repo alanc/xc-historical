@@ -1,4 +1,4 @@
-/* $XConsortium: ScrResStr.c,v 1.2 91/02/04 09:30:59 rws Exp $ */
+/* $XConsortium: ScrResStr.c,v 1.3 94/04/17 20:20:50 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

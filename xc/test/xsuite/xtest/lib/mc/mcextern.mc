@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mcextern.mc,v 1.2 92/06/29 19:41:35 rws Exp $ */
 
 extern	Display	*Dsp;
 extern	Window	Win;

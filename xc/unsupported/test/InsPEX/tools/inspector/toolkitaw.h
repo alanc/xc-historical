@@ -1,4 +1,4 @@
-/* $XConsortium: toolkitaw.h,v 5.2 91/05/30 19:06:17 converse Exp $ */
+/* $XConsortium: toolkitaw.h,v 5.3 94/04/17 20:46:15 converse Exp $ */
 
 /*****************************************************************
 

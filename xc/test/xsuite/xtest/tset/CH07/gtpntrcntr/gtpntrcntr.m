@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtpntrcntr.m,v 1.3 92/06/11 17:14:15 rws Exp $
+ * $XConsortium: gtpntrcntr.m,v 1.4 94/04/17 21:06:34 rws Exp $
  */
 >>TITLE XGetPointerControl CH07
 void

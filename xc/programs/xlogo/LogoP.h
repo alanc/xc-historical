@@ -1,4 +1,4 @@
-/* $XConsortium: LogoP.h,v 1.10 93/09/18 20:06:06 rws Exp $ */
+/* $XConsortium: LogoP.h,v 1.11 94/04/17 20:24:09 rws Exp $ */
 /*
 
 Copyright (c) 1988, 1993  X Consortium

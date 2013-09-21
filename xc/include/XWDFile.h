@@ -1,4 +1,4 @@
-/* $XConsortium: XWDFile.h,v 1.16 94/01/21 22:12:27 dpw Exp $ */
+/* $XConsortium: XWDFile.h,v 1.17 94/04/17 20:10:49 dpw Exp $ */
 /*
 
 Copyright (c) 1985, 1986  X Consortium

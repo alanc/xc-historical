@@ -1,4 +1,4 @@
-/* $XConsortium: dispatch.c,v 5.67 94/11/02 15:58:49 kaleb Exp kaleb $ */
+/* $XConsortium: dispatch.c,v 5.68 95/04/07 18:59:08 kaleb Exp $ */
 /************************************************************
 
 Copyright (c) 1987, 1989  X Consortium

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ungrbsrvr.m,v 1.4 92/06/11 18:00:47 rws Exp $
+ * $XConsortium: ungrbsrvr.m,v 1.5 94/04/17 21:12:35 rws Exp $
  */
 >>TITLE UngrabServer XPROTO
 >>SET startup protostartup

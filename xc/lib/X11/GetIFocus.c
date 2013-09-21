@@ -1,4 +1,4 @@
-/* $XConsortium: GetIFocus.c,v 11.10 91/01/06 11:46:05 rws Exp $ */
+/* $XConsortium: GetIFocus.c,v 11.11 94/04/17 20:19:35 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

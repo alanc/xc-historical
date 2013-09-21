@@ -1,4 +1,4 @@
-/* $XConsortium: InitExt.c,v 11.31 93/09/15 18:09:08 rws Exp $ */
+/* $XConsortium: InitExt.c,v 11.32 94/04/17 20:20:00 rws Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

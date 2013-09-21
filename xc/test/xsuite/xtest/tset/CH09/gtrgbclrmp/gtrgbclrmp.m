@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtrgbclrmp.m,v 1.10 92/06/11 17:28:14 rws Exp $
+ * $XConsortium: gtrgbclrmp.m,v 1.11 94/04/17 21:08:41 rws Exp $
  */
 >>TITLE XGetRGBColormaps CH09
 Status

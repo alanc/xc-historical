@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: migc.h,v 1.3 94/04/17 20:27:37 dpw Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: dfltrtwdw.m,v 1.6 92/06/11 15:57:18 rws Exp $
+ * $XConsortium: dfltrtwdw.m,v 1.7 94/04/17 21:02:12 rws Exp $
  */
 >>SET   macro
 >>TITLE XDefaultRootWindow CH02

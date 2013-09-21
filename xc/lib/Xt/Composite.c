@@ -1,4 +1,4 @@
-/* $XConsortium: Composite.c,v 1.22 94/04/01 18:42:10 converse Exp $ */
+/* $XConsortium: Composite.c,v 1.23 94/04/17 20:13:41 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

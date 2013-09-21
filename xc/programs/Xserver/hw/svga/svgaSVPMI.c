@@ -1,4 +1,4 @@
-/* $XConsortium: svgaSVPMI.c,v 1.3 93/09/20 13:18:08 rws Exp $ */
+/* $XConsortium: svgaSVPMI.c,v 1.4 94/03/27 12:20:10 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.

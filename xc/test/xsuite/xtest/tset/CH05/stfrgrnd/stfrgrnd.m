@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: stfrgrnd.m,v 1.6 92/06/11 16:18:42 rws Exp $
+ * $XConsortium: stfrgrnd.m,v 1.7 94/04/17 21:04:11 rws Exp $
  */
 >>TITLE XSetForeground CH05
 void

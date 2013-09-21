@@ -1,4 +1,4 @@
-/* $XConsortium: RootWinP.h,v 1.2 93/09/04 19:55:38 rws Exp $ */
+/* $XConsortium: RootWinP.h,v 1.3 94/04/17 20:24:55 rws Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

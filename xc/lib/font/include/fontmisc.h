@@ -1,4 +1,4 @@
-/* $XConsortium: fontmisc.h,v 1.5 91/05/12 16:15:48 rws Exp $ */
+/* $XConsortium: fontmisc.h,v 1.6 94/04/17 20:17:29 rws Exp $ */
 
 /*
 

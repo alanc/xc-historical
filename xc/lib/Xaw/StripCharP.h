@@ -1,5 +1,5 @@
 /*
-* $XConsortium: StripCharP.h,v 1.4 90/10/22 14:38:15 converse Exp $
+* $XConsortium: StripCharP.h,v 1.5 94/04/17 20:12:55 converse Exp $
 */
 
 

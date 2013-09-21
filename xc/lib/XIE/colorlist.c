@@ -1,4 +1,4 @@
-/* $XConsortium: colorlist.c,v 1.5 94/04/17 20:18:19 rws Exp $ */
+/* $XConsortium: colorlist.c,v 1.6 94/05/06 15:10:34 mor Exp $ */
 
 /*
 

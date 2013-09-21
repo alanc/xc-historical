@@ -1,5 +1,5 @@
 /*
-** $XConsortium: tests.c,v 1.19 91/06/08 18:33:51 rws Exp $
+** $XConsortium: tests.c,v 1.20 91/06/08 18:57:07 rws Exp $
 **
 */
 

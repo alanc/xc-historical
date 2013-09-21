@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.31 94/06/03 17:21:13 mor Exp kaleb $ */
+/* $XConsortium: xdmcp.c,v 1.32 95/04/05 19:58:35 kaleb Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *

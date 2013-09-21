@@ -1,5 +1,5 @@
 /*
- * $XConsortium: draw.c,v 1.7 91/08/26 11:02:36 gildea Exp $
+ * $XConsortium: draw.c,v 1.8 94/04/17 20:43:35 gildea Exp $
  *
 Copyright (c) 1991  X Consortium
 

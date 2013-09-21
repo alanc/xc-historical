@@ -1,4 +1,4 @@
-/* $XConsortium: pl_oc_enc.c,v 1.10 93/09/23 14:39:52 mor Exp $ */
+/* $XConsortium: pl_oc_enc.c,v 1.11 94/04/17 20:22:37 mor Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

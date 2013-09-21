@@ -1,4 +1,4 @@
-.\" $XConsortium$
+.\" $XConsortium: bdf.ms,v 1.8 94/05/01 19:28:27 gildea Exp $
 \&
 .sp 1
 .ce 4

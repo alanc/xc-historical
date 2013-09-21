@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: menus.h,v 1.24 89/12/10 17:46:26 jim Exp $
+ * $XConsortium: menus.h,v 1.25 94/04/17 20:38:18 jim Exp $
  *
  * twm menus include file
  *

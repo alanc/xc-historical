@@ -1,4 +1,4 @@
-/* $XConsortium: comm.c,v 1.22 93/04/22 14:13:05 dave Exp $ */
+/* $XConsortium: comm.c,v 1.23 94/04/17 20:38:51 dave Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

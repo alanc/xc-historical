@@ -1,4 +1,4 @@
-/* $XConsortium: FreePix.c,v 11.7 91/01/06 11:45:49 rws Exp $ */
+/* $XConsortium: FreePix.c,v 11.8 94/04/17 20:19:27 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

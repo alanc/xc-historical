@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: mach32im.h,v 1.1 94/03/28 21:08:28 dpw Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *

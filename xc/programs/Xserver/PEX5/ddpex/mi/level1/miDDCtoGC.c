@@ -1,4 +1,4 @@
-/* $XConsortium: miDDCtoGC.c,v 5.5 93/09/03 15:00:20 hersh Exp $ */
+/* $XConsortium: miDDCtoGC.c,v 5.6 94/04/17 20:36:51 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

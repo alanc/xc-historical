@@ -1,4 +1,4 @@
-/* $XConsortium: process.c,v 1.48 94/04/17 20:37:52 gildea Exp gildea $ */
+/* $XConsortium: process.c,v 1.49 94/12/16 22:21:13 gildea Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

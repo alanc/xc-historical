@@ -1,4 +1,4 @@
-/* $XConsortium: mivalidate.h,v 1.2 93/10/12 11:42:13 dpw Exp $ */
+/* $XConsortium: mivalidate.h,v 1.3 94/04/17 20:27:57 dpw Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

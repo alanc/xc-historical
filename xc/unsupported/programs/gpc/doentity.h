@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: doentity.h,v 5.1 91/02/16 10:07:30 rws Exp $ */
 
 /*
  */

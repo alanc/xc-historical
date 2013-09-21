@@ -1,4 +1,4 @@
-/* $XConsortium: extensions.c,v 1.6 93/09/20 18:10:45 hersh Exp $ */
+/* $XConsortium: extensions.c,v 1.7 94/04/17 19:56:14 hersh Exp $ */
 /*
  * font server extensions
  */

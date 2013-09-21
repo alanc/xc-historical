@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ldfnt.m,v 1.8 92/06/11 17:07:22 rws Exp $
+ * $XConsortium: ldfnt.m,v 1.9 94/04/17 21:05:40 rws Exp $
  */
 >>TITLE XLoadFont CH06
 Font

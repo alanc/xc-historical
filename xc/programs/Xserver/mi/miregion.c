@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: miregion.c,v 1.59 94/01/12 18:05:57 dpw Exp $ */
+/* $XConsortium: miregion.c,v 1.60 94/04/17 20:27:49 dpw Exp $ */
 
 #include <stdio.h>
 #include "miscstruct.h"

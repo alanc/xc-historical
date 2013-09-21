@@ -1,5 +1,5 @@
 /*
- * $XConsortium: charproc.c,v 1.183 95/04/05 19:59:00 kaleb Exp kaleb $
+ * $XConsortium: charproc.c,v 1.184 95/08/24 20:50:56 kaleb Exp $
  */
 
 /*

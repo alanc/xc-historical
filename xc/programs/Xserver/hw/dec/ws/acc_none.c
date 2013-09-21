@@ -1,4 +1,4 @@
-/* $XConsortium: acc_none.c,v 1.3 92/08/22 15:39:08 rws Exp $ */
+/* $XConsortium: acc_none.c,v 1.4 94/04/17 20:29:53 rws Exp $ */
 /***********************************************************
 
 Copyright (c) 1991  X Consortium

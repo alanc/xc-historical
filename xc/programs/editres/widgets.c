@@ -1,5 +1,5 @@
 /*
- * $XConsortium: widgets.c,v 1.21 92/03/20 18:12:39 dave Exp $
+ * $XConsortium: widgets.c,v 1.22 94/04/17 20:38:58 dave Exp $
  *
 Copyright (c) 1989  X Consortium
 

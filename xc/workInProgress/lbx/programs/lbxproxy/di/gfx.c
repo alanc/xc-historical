@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.15 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: gfx.c,v 1.16 95/05/30 19:52:01 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

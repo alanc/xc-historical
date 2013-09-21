@@ -1,4 +1,4 @@
-/* $XConsortium: lndir.c,v 1.13 94/04/17 20:10:42 rws Exp kaleb $ */
+/* $XConsortium: lndir.c,v 1.14 95/01/09 20:08:20 kaleb Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: bbox.h,v 2.11 89/11/25 21:07:07 converse Exp $ */
+/* $XConsortium: bbox.h,v 2.12 91/07/10 19:34:09 converse Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

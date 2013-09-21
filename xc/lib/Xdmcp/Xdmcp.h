@@ -1,4 +1,4 @@
-/* $XConsortium: Xdmcp.h,v 1.8 91/07/23 22:28:07 keith Exp gildea $ */
+/* $XConsortium: Xdmcp.h,v 1.9 95/06/07 18:30:59 gildea Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *

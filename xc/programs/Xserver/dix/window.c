@@ -1,4 +1,4 @@
-/* $XConsortium: window.c,v 5.104 94/04/17 20:26:49 dpw Exp gildea $ */
+/* $XConsortium: window.c,v 5.105 94/09/02 23:32:00 gildea Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

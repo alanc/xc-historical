@@ -1,4 +1,4 @@
-/* $XConsortium: RdBitF.c,v 1.9 93/09/18 18:13:26 kaleb Exp $ */
+/* $XConsortium: RdBitF.c,v 1.10 94/04/17 20:16:13 kaleb Exp $ */
 
 /*
 

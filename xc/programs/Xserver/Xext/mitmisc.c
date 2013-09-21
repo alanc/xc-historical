@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: mitmisc.c,v 1.4 91/06/17 11:36:15 rws Exp $ */
+/* $XConsortium: mitmisc.c,v 1.5 94/04/17 20:32:54 rws Exp $ */
 
 #include "X.h"
 #include "Xproto.h"

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XScrnSaver.c,v 1.4 94/02/06 16:28:50 rws Exp $
+ * $XConsortium: XScrnSaver.c,v 1.5 94/04/17 20:59:35 rws Exp $
  *
 Copyright (c) 1992  X Consortium
 

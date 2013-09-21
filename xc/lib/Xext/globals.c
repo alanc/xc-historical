@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.4 94/04/17 20:22:58 rws Exp gildea $ */
+/* $XConsortium: globals.c,v 1.5 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: math.c,v 1.16 91/07/11 14:31:40 converse Exp $ 
+/* $XConsortium: math.c,v 1.17 91/07/25 17:51:34 rws Exp $ 
  *
  *  math.c  -  mathematics functions for a hand calculator under X
  *

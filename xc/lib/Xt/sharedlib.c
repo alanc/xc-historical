@@ -1,4 +1,4 @@
-/* $XConsortium: sharedlib.c,v 1.17 94/04/17 20:15:06 converse Exp converse $ */
+/* $XConsortium: sharedlib.c,v 1.18 95/03/30 19:00:57 converse Exp $ */
 
 /*
 

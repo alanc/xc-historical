@@ -1,4 +1,4 @@
-/* $XConsortium: sunIo.c,v 5.29 95/01/12 18:59:25 kaleb Exp kaleb $ */
+/* $XConsortium: sunIo.c,v 5.30 95/01/25 23:04:28 kaleb Exp $ */
 /*-
  * sunIo.c --
  *	Functions to handle input from the keyboard and mouse.

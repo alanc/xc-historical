@@ -1,4 +1,4 @@
-/* $XConsortium: compiler.h,v 1.2 93/09/19 09:41:53 rws Exp $ */
+/* $XConsortium: compiler.h,v 1.3 94/01/18 19:34:43 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.

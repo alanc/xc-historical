@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: icons.c,v 1.22 91/07/12 09:58:38 dave Exp $
+ * $XConsortium: icons.c,v 1.23 94/04/17 20:38:13 dave Exp $
  *
  * Icon releated routines
  *

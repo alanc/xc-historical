@@ -1,4 +1,4 @@
-/* $XConsortium: sunAmKbd.c,v 1.1 94/04/01 17:54:55 dpw Exp $ */
+/* $XConsortium: sunAmKbd.c,v 1.2 94/04/17 20:32:47 dpw Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: miRndrPick.c,v 1.10 93/09/03 15:07:35 hersh Exp $ */
+/* $XConsortium: miRndrPick.c,v 1.11 94/04/17 20:37:26 hersh Exp $ */
 
 /************************************************************
 

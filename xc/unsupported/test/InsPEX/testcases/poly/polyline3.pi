@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: polyline3.pi,v 5.1 91/02/16 10:00:35 rws Exp $
 ## polyline3 - test ppolyline with colors 0-7
 
 tbegintest("polyline3", "POLYLINE using colors 0-7");

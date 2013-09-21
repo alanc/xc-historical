@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ErrDes.c,v 11.53 94/04/17 20:19:14 kaleb Exp gildea $
+ * $XConsortium: ErrDes.c,v 11.54 95/06/08 23:20:39 gildea Exp $
  */
 
 /***********************************************************

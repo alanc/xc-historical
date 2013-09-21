@@ -1,4 +1,4 @@
-/* $XConsortium: verify.c,v 1.34 94/10/07 19:41:36 converse Exp gildea $ */
+/* $XConsortium: verify.c,v 1.35 95/07/07 21:54:42 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

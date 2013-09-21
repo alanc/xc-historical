@@ -1,4 +1,4 @@
-/* $XConsortium: maskbits.c,v 1.15 94/04/17 20:28:09 dpw Exp kaleb $ */
+/* $XConsortium: maskbits.c,v 1.16 95/04/07 18:59:14 kaleb Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /*
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: exps.m,v 1.10 92/12/21 14:17:16 rws Exp $
+ * $XConsortium: exps.m,v 1.11 94/04/17 21:07:34 rws Exp $
  */
 >>TITLE Expose CH08
 >>EXTERN

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolypnt.c,v 5.1 94/01/21 22:03:10 dpw Exp $ */
+/* $XConsortium: mipolypnt.c,v 5.2 94/04/17 20:27:44 dpw Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: listbufs.c,v 5.2 91/07/10 08:40:16 rws Exp $ */
+/* $XConsortium: listbufs.c,v 5.3 94/04/17 20:44:38 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: toc.h,v 2.12 91/07/14 18:53:30 converse Exp $
+ * $XConsortium: toc.h,v 2.13 91/07/17 12:28:29 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989

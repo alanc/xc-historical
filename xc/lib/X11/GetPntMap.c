@@ -1,4 +1,4 @@
-/* $XConsortium: GetPntMap.c,v 1.15 93/09/07 21:30:44 rws Exp $ */
+/* $XConsortium: GetPntMap.c,v 1.16 94/04/17 20:19:41 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

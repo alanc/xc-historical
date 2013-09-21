@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Menu.h,v 1.1 89/04/13 13:34:36 keith Exp $
+ * $XConsortium: Menu.h,v 1.2 89/07/21 14:22:10 jim Exp $
  */
 
 #ifndef _XtMenu_h

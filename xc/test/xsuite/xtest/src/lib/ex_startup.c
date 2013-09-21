@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ex_startup.c,v 1.9 92/06/11 15:49:23 rws Exp $
+ * $XConsortium: ex_startup.c,v 1.10 94/04/17 21:00:45 rws Exp $
  */
 
 #include "unistd.h"

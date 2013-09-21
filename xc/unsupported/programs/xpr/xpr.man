@@ -1,4 +1,4 @@
-.\" $XConsortium: xpr.man,v 1.21 94/04/11 14:29:53 gildea Exp $
+.\" $XConsortium: xpr.man,v 1.22 94/04/17 20:44:06 gildea Exp $
 .TH XPR 1 "Release 6" "X Version 11"
 .SH NAME
 xpr \- print an X window dump

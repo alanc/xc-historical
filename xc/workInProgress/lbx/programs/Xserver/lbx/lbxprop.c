@@ -1,4 +1,4 @@
-/* $XConsortium: lbxprop.c,v 1.7 94/12/01 20:29:09 mor Exp mor $ */
+/* $XConsortium: lbxprop.c,v 1.8 95/05/11 17:44:13 mor Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *

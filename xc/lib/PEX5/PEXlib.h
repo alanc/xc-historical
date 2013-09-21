@@ -1,7 +1,7 @@
 #ifndef _PEXLIB_H_
 #define _PEXLIB_H_
 
-/* $XConsortium: PEXlib.h,v 1.10 92/10/27 15:42:37 mor Exp $ */
+/* $XConsortium: PEXlib.h,v 1.11 94/04/01 18:46:54 rws Exp $ */
 
 /******************************************************************************/
 /*  Copyright 1987,1991 by Digital Equipment Corporation, Maynard, Mass.      */

@@ -1,4 +1,4 @@
-/* $XConsortium: fontstruct.h,v 1.15 94/03/14 17:48:21 gildea Exp $ */
+/* $XConsortium: fontstruct.h,v 1.16 94/04/17 20:11:08 gildea Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtdflt.m,v 1.17 92/07/01 11:37:17 rws Exp $
+ * $XConsortium: gtdflt.m,v 1.18 94/04/17 21:09:35 rws Exp $
  */
 >>#
 >># I have assumed POSIX here in all assertions which make reference to

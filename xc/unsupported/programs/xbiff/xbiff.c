@@ -1,4 +1,4 @@
-/* $XConsortium: xbiff.c,v 1.18 93/09/18 20:09:03 rws Exp $ */
+/* $XConsortium: xbiff.c,v 1.19 94/04/17 20:43:28 rws Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

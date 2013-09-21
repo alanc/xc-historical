@@ -1,4 +1,4 @@
-/* $XConsortium: brf_prt.h,v 5.4 91/06/17 19:52:08 rws Exp $ */
+/* $XConsortium: brf_prt.h,v 5.5 94/04/17 20:44:29 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

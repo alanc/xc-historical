@@ -1,4 +1,4 @@
-/* $XConsortium: FSlibos.h,v 1.21 94/04/17 20:15:22 dpw Exp $ */
+/* $XConsortium: FSlibos.h,v 1.22 94/07/20 10:38:02 mor Exp $ */
 
 /* @(#)FSlibos.h	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;

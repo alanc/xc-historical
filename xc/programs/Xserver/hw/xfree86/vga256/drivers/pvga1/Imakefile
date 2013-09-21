@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/10/05 13:54:47 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.2 94/10/13 13:26:38 kaleb Exp $
 XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/Imakefile,v 3.4 1994/09/22 15:52:01 dawes Exp $
 #include <Server.tmpl>
 

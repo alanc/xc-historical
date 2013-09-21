@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AIXext.h,v 1.5 93/07/12 09:26:19 dpw Exp $
+ * $XConsortium: AIXext.h,v 1.6 94/03/21 15:39:52 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

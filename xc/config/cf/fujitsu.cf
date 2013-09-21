@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: fujitsu.cf,v 1.4 94/09/01 21:05:53 kaleb Exp gildea $
+XCOMM platform:  $XConsortium: fujitsu.cf,v 1.5 95/06/19 02:56:37 gildea Exp $
 
 #ifdef SparcArchitecture
 

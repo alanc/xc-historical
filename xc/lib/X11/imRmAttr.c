@@ -1,4 +1,4 @@
-/* $XConsortium: imRmAttr.c,v 1.7 94/02/06 15:07:58 rws Exp $ */
+/* $XConsortium: imRmAttr.c,v 1.8 94/03/26 17:00:51 rws Exp $ */
 /******************************************************************
 
            Copyright 1992, 1993, 1994 by FUJITSU LIMITED

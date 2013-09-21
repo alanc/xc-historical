@@ -1,4 +1,4 @@
-/* $XConsortium: SetNrmHint.c,v 1.3 91/01/08 14:39:55 gildea Exp $ */
+/* $XConsortium: SetNrmHint.c,v 1.4 94/04/17 20:21:00 gildea Exp $ */
 
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca,

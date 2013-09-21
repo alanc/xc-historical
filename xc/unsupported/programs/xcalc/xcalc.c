@@ -1,4 +1,4 @@
-/* $XConsortium: xcalc.c,v 1.15 91/02/16 19:39:37 converse Exp $ */
+/* $XConsortium: xcalc.c,v 1.16 94/04/17 20:43:31 converse Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

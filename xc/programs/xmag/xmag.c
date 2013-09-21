@@ -1,4 +1,4 @@
-/* $XConsortium: xmag.c,v 1.28 93/09/04 19:55:40 rws Exp $ */
+/* $XConsortium: xmag.c,v 1.29 94/04/17 20:25:02 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

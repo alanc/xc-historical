@@ -1,4 +1,4 @@
-/* $XConsortium: fservestr.h,v 1.12 94/02/04 09:15:58 gildea Exp gildea $ */
+/* $XConsortium: fservestr.h,v 1.13 95/06/09 22:16:29 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *

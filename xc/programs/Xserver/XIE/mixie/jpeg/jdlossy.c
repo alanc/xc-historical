@@ -1,4 +1,4 @@
-/* $XConsortium: jdlossy.c,v 1.3 94/01/12 20:19:17 rws Exp $ */
+/* $XConsortium: jdlossy.c,v 1.4 94/04/17 20:35:35 rws Exp $ */
 /* Module jdlossy.c */
 
 /****************************************************************************

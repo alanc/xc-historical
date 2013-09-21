@@ -27,7 +27,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mizerarc.c,v 5.35 94/01/21 22:03:31 dpw Exp $ */
+/* $XConsortium: mizerarc.c,v 5.36 94/04/17 20:28:04 dpw Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"

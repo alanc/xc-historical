@@ -1,4 +1,4 @@
-/* $XConsortium: VarCreate.c,v 1.31 94/06/07 11:17:18 kaleb Exp converse $ */
+/* $XConsortium: VarCreate.c,v 1.32 95/06/07 19:12:49 converse Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.2 91/07/17 16:03:16 gildea Exp $
 all: color.PS
 
 color.PS:

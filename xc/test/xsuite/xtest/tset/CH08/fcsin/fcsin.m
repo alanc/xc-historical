@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: fcsin.m,v 1.11 92/06/11 17:21:02 rws Exp $
+ * $XConsortium: fcsin.m,v 1.12 94/04/17 21:07:36 rws Exp $
  */
 >>TITLE FocusIn CH08
 >>SET startup focusstartup

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: regid.c,v 1.14 92/06/11 15:45:17 rws Exp $
+ * $XConsortium: regid.c,v 1.15 94/04/17 21:01:02 rws Exp $
  */
 
 #include	"stdlib.h"

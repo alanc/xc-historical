@@ -1,7 +1,7 @@
 /*
  * authorization hooks for the server
  *
- * $XConsortium: auth.c,v 1.2 94/03/08 20:52:54 dpw Exp $
+ * $XConsortium: auth.c,v 1.3 94/04/17 21:17:11 dpw Exp $
  *
 Copyright (c) 1994  X Consortium
 

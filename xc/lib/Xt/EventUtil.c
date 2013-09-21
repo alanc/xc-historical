@@ -1,4 +1,4 @@
-/* $XConsortium: EventUtil.c,v 1.11 93/10/06 17:20:19 kaleb Exp $ */
+/* $XConsortium: EventUtil.c,v 1.12 94/04/17 20:14:04 kaleb Exp $ */
 
 /********************************************************
 

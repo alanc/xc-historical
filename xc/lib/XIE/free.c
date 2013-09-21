@@ -1,4 +1,4 @@
-/* $XConsortium: free.c,v 1.2 93/10/28 15:17:52 mor Exp $ */
+/* $XConsortium: free.c,v 1.3 94/04/17 20:18:23 mor Exp $ */
 
 /*
 

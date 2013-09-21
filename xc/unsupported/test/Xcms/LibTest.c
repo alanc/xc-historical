@@ -1,4 +1,4 @@
-/* $XConsortium: LibTest.c,v 1.6 92/06/28 11:26:34 rws Exp $ */
+/* $XConsortium: LibTest.c,v 1.7 94/04/17 20:53:59 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: XTest.c,v 1.14 93/08/19 09:10:40 rws Exp $ */
+/* $XConsortium: XTest.c,v 1.15 94/04/17 20:17:54 rws Exp $ */
 /*
 Copyright 1990, 1991 by UniSoft Group Limited
 */

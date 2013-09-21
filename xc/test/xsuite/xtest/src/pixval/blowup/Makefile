@@ -12,7 +12,7 @@
 #  make no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium$
+# $XConsortium: Makefile,v 1.6 92/06/11 15:54:44 rws Exp $
 #
 CFILES=ajax.c vblowup_c.c
 OFILES=ajax.o vblowup_c.o

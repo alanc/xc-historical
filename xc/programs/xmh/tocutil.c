@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocutil.c,v 2.59 94/12/01 17:15:50 kaleb Exp swick $
+ * $XConsortium: tocutil.c,v 2.60 95/01/09 16:52:53 swick Exp $
  *
  *
  *			COPYRIGHT 1987, 1989

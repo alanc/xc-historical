@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: cir_inline.h,v 1.1 94/03/28 21:49:47 dpw Exp $ */
 
 /* Some inline assembler functions. */
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: widgets.cxx,v 1.3 94/04/01 16:48:21 matt Exp matt $
+ * $XConsortium: widgets.cxx,v 1.4 94/09/01 18:45:46 matt Exp $
  */
 
 /*

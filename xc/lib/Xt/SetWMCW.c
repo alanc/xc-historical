@@ -1,4 +1,4 @@
-/* $XConsortium: SetWMCW.c,v 1.8 94/04/01 20:52:38 kaleb Exp $ */
+/* $XConsortium: SetWMCW.c,v 1.9 94/04/17 20:14:46 kaleb Exp $ */
 
 /*
  * Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.

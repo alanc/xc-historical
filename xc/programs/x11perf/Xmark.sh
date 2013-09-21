@@ -1,5 +1,5 @@
 #! /bin/sh
-#$XConsortium: Xmark.sh,v 1.5 93/04/23 18:28:44 rws Exp gildea $
+#$XConsortium: Xmark.sh,v 1.6 94/12/09 22:52:57 gildea Exp $
 #XPC Header: Xmark,v 1.15 93/04/12 10:10:07 hmgr Exp
 #
 ############################################################

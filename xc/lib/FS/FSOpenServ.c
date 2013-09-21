@@ -1,4 +1,4 @@
-/* $XConsortium: FSOpenServ.c,v 1.5 94/04/12 21:55:45 dpw Exp $ */
+/* $XConsortium: FSOpenServ.c,v 1.6 94/04/17 20:15:16 dpw Exp $ */
 
 /* @(#)FSOpenServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;

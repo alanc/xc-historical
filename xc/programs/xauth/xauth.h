@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xauth.h,v 1.13 94/04/17 20:37:53 rws Exp kaleb $
+ * $XConsortium: xauth.h,v 1.14 94/11/16 21:51:31 kaleb Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

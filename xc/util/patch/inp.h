@@ -1,5 +1,5 @@
 /* oldHeader: inp.h,v 2.0 86/09/17 15:37:25 lwall Exp $
- * $XConsortium$
+ * $XConsortium: inp.h,v 2.1 94/09/09 20:04:28 gildea Exp $
  *
  * Revision 2.0  86/09/17  15:37:25  lwall
  * Baseline for netwide release.

@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.2 91/07/17 16:03:22 gildea Exp $
 SRCS = vis.nr
 REFS = vis.refs
 REFER = refer

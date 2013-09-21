@@ -1,4 +1,4 @@
-/* $XConsortium: imConv.c,v 1.5 94/03/26 16:57:36 rws Exp $ */
+/* $XConsortium: imConv.c,v 1.6 94/07/06 14:46:46 kaleb Exp $ */
 /******************************************************************
 
               Copyright 1991, 1992 by Fuji Xerox Co.,Ltd.

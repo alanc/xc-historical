@@ -1,4 +1,4 @@
-/* $XConsortium: DisplayQue.h,v 1.6 93/08/16 14:35:16 rws Exp $ */
+/* $XConsortium: DisplayQue.h,v 1.7 94/04/17 20:15:59 rws Exp $ */
 
 /*
 

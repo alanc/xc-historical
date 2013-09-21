@@ -1,4 +1,4 @@
-/* $XConsortium: TMgrab.c,v 1.11 93/10/06 17:38:49 kaleb Exp $ */
+/* $XConsortium: TMgrab.c,v 1.12.1.1 95/07/14 19:13:24 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -231,7 +231,7 @@ void _XtRegisterGrabs(widget)
     Widget widget;
 {
     XtTranslations 	xlations = widget->core.tm.translations;
-    TMComplexStateTree 	*stateTreePtr;
+    TMStateTree 	stateTree;
     unsigned int 	count;
     TMShortCard		i;
     TMBindData   	bindData = (TMBindData) widget->core.tm.proc_table;
@@ -245,14 +245,15 @@ void _XtRegisterGrabs(widget)
     /* when you find one, do a grab on the triggering event */
     
     if (xlations == NULL) return;
-    stateTreePtr = (TMComplexStateTree *) xlations->stateTreeTbl;
-    if (*stateTreePtr == NULL) return;
-    for (i = 0; i < xlations->numStateTrees; i++, stateTreePtr++) {
+    stateTree = xlations->stateTreeTbl[0];
+    if (stateTree == NULL) return;
+    for (i = 0; i < xlations->numStateTrees; i++) {
+	stateTree = xlations->stateTreeTbl[i];
 	if (bindData->simple.isComplex) 
 	  procs = TMGetComplexBindEntry(bindData, i)->procs;
 	else 
 	  procs = TMGetSimpleBindEntry(bindData, i)->procs;
-	for (count=0; count < (*stateTreePtr)->numQuarks; count++) {
+	for (count=0; count < stateTree->complex.numQuarks; count++) {
 	    GrabActionRec* grabP;
 	    DoGrabRec      doGrab;
 
@@ -267,7 +268,7 @@ void _XtRegisterGrabs(widget)
 		    doGrab.widget = widget;
 		    doGrab.grabP = grabP;
 		    doGrab.count = count;
-		    _XtTraverseStateTree((TMStateTree)*stateTreePtr,
+		    _XtTraverseStateTree(stateTree,
 					 DoGrab,
 					 (XtPointer)&doGrab);
 		}

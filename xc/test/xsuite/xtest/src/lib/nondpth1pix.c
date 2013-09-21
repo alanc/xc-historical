@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: nondpth1pix.c,v 1.2 92/06/11 15:46:30 rws Exp $
+ * $XConsortium: nondpth1pix.c,v 1.3 94/04/17 21:00:57 rws Exp $
  */
 /*
  * Return a pixmap of depth other than 1 if such is supported,

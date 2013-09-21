@@ -1,4 +1,4 @@
-/* $XConsortium: PropAlloc.c,v 1.5 91/02/01 16:33:26 gildea Exp $ */
+/* $XConsortium: PropAlloc.c,v 1.6 94/04/17 20:20:30 gildea Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: XomGeneric.h,v 1.1 93/09/17 13:32:19 rws Exp $ */
+/* $XConsortium: XomGeneric.h,v 1.2 94/01/20 18:03:32 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

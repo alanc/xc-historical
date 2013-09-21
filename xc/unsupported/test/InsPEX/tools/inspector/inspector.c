@@ -1,4 +1,4 @@
-/* $XConsortium: inspector.c,v 5.2 91/05/29 18:13:57 hersh Exp $ */
+/* $XConsortium: inspector.c,v 5.3 94/04/17 20:46:12 hersh Exp $ */
 
 /*****************************************************************
 

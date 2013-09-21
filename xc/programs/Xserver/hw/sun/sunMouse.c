@@ -1,4 +1,4 @@
-/* $XConsortium: sunMouse.c,v 5.22 94/10/17 14:16:02 kaleb Exp kaleb $ */
+/* $XConsortium: sunMouse.c,v 5.23 95/01/16 20:05:22 kaleb Exp $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *

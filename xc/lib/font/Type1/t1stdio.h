@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: t1stdio.h,v 1.4 91/10/10 11:19:49 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: restart.h,v 1.3 94/07/26 14:13:02 mor Exp mor $ */
+/* $XConsortium: restart.h,v 1.4 94/11/14 15:32:28 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: xkbio.h,v 1.1 94/04/02 17:08:55 erik Exp $ */
+/* $XConsortium: xkbfile.h,v 1.1 94/04/08 15:48:50 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

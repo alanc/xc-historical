@@ -1,4 +1,4 @@
-/* $XConsortium: mach64orect.c,v 1.1 94/12/14 15:04:34 kaleb Exp kaleb $ */
+/* $XConsortium: mach64orect.c,v 1.2 95/01/16 13:16:34 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64orect.c,v 3.1 1995/01/15 10:31:12 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

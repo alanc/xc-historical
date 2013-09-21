@@ -1,4 +1,4 @@
-/* $XConsortium: pvgapntwin.c,v 1.3 94/10/13 13:26:38 kaleb Exp kaleb $ */
+/* $XConsortium: pvgapntwin.c,v 1.4 95/01/16 13:18:24 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgapntwin.c,v 3.1 1995/01/14 10:49:03 dawes Exp $ */
 /***********************************************************
 

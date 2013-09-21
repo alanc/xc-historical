@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: polyline1.pi,v 5.1 91/02/16 10:00:34 rws Exp $
 ## polyline1 - test /*WARNING: parameters changed */ ppolyline with all default attributes, and different
 ## numbers of points: 0, 1, 2, 3, and 10
 

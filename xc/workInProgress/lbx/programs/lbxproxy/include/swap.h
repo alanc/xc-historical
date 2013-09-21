@@ -1,5 +1,5 @@
 /*
- * $XConsortium: swap.h,v 1.4 95/04/04 21:13:30 dpw Exp mor $
+ * $XConsortium: swap.h,v 1.6 95/05/17 18:23:24 dpw Exp $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *

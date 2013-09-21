@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.c,v 1.134 94/12/27 19:18:18 mor Exp mor $
+ * $XConsortium: twm.c,v 1.135 94/12/27 20:52:15 mor Exp $
  *
  * twm - "Tom's Window Manager"
  *

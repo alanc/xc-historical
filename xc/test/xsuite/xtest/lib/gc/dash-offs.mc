@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: dash-offs.mc,v 1.9 92/06/11 18:02:53 rws Exp $
+ * $XConsortium: dash-offs.mc,v 1.10 94/04/17 21:14:38 rws Exp $
  */
 >>EXTERN
 static	char dolist[] = {

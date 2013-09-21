@@ -1,4 +1,4 @@
-/* $XConsortium: XF86_S3.c,v 1.2 94/10/12 20:33:21 kaleb Exp kaleb $ */
+/* $XConsortium: XF86_S3.c,v 1.3 95/01/05 20:39:33 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_S3.c,v 3.7 1994/12/05 04:06:50 dawes Exp $ */
 #include "X.h"
 #include "os.h"

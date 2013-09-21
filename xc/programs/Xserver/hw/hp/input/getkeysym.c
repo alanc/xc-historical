@@ -1,4 +1,4 @@
-/* $XConsortium: getkeysym.c,v 1.6 94/05/28 15:50:21 dpw Exp $ */
+/* $XConsortium: getkeysym.c,v 1.7 95/01/24 02:45:23 dpw Exp $ */
 /*
 
 Copyright (c) 1986, 1987 by Hewlett-Packard Company

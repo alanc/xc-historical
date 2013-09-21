@@ -1,4 +1,4 @@
-/* $XConsortium: Converters.c,v 1.100 95/05/30 21:34:41 converse Exp gildea $ */
+/* $XConsortium: Converters.c,v 1.101 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

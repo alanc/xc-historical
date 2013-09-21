@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.11 94/04/17 20:39:17 rws Exp kaleb $ */
+/* $XConsortium: events.c,v 1.12 95/04/05 19:59:08 kaleb Exp $ */
 /**** module events.c ****/
 /******************************************************************************
 

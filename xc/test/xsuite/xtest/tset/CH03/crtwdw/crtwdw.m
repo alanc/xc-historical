@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: crtwdw.m,v 1.11 94/02/04 15:17:25 rws Exp $
+ * $XConsortium: crtwdw.m,v 1.12 94/04/17 21:03:02 rws Exp $
  */
 >>TITLE XCreateWindow CH03
 Window

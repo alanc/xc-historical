@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: VTparse.h,v 1.5 91/01/06 12:47:08 rws Exp $
+ *	$XConsortium: VTparse.h,v 1.6 92/09/15 15:28:31 gildea Exp $
  */
 
 /*

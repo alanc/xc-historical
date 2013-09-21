@@ -1,4 +1,4 @@
-/* $XConsortium: macIIKbd.c,v 1.23 94/02/23 15:55:35 dpw Exp $ */
+/* $XConsortium: macIIKbd.c,v 1.24 94/04/17 20:29:29 dpw Exp $ */
 /*****************************************************************************
 Copyright 1988-1993 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved

@@ -1,4 +1,4 @@
-/* $XConsortium: xcmiscstr.h,v 1.3 94/03/25 16:38:23 dpw Exp $ */
+/* $XConsortium: xcmiscstr.h,v 1.4 94/04/17 20:11:28 dpw Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

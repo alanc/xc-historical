@@ -1,4 +1,4 @@
-/* $XConsortium: Login.h,v 1.8 89/07/25 17:58:57 keith Exp $ */
+/* $XConsortium: Login.h,v 1.9 94/04/17 20:03:53 keith Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

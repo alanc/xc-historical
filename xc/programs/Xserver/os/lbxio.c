@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: lbxio.c,v 1.3 95/04/05 19:58:34 kaleb Exp mor $ */
+/* $XConsortium: lbxio.c,v 1.4 95/05/30 18:29:59 mor Exp $ */
 /*****************************************************************
  * i/o functions
  *

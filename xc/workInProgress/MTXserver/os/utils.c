@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.7 94/03/28 18:32:18 gildea Exp $ */
+/* $XConsortium: utils.c,v 1.8 94/04/17 21:16:01 gildea Exp $ */
 #include "Xos.h"
 #include <stdio.h>
 #include "misc.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: QuKeybd.c,v 11.12 93/09/07 21:32:29 rws Exp $ */
+/* $XConsortium: QuKeybd.c,v 11.13 94/04/17 20:20:36 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

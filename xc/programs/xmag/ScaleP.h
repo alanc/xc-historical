@@ -1,4 +1,4 @@
-/* $XConsortium: ScaleP.h,v 1.2 91/03/11 18:50:54 dave Exp $ */
+/* $XConsortium: ScaleP.h,v 1.3 94/04/17 20:25:00 dave Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

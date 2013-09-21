@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: XlibOpaque.c,v 1.11 93/12/22 17:33:43 rws Exp $
+ * $XConsortium: XlibOpaque.c,v 1.12 94/04/17 21:01:36 rws Exp $
  */
 /*
  * ***************************************************************************

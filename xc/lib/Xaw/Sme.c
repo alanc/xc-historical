@@ -1,4 +1,4 @@
-/* $XConsortium: Sme.c,v 1.11 94/01/31 10:53:55 kaleb Exp $ */
+/* $XConsortium: Sme.c,v 1.12 94/04/17 20:12:48 kaleb Exp $ */
 
 /*
 Copyright (c) 1989, 1994  X Consortium

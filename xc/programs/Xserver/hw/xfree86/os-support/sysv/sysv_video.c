@@ -1,4 +1,4 @@
-/* $XConsortium: sysv_video.c,v 1.1 94/03/28 21:33:15 dpw Exp Kaleb $ */
+/* $XConsortium: sysv_video.c,v 1.2 95/03/01 16:11:01 kaleb Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>

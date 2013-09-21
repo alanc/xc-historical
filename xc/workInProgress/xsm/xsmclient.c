@@ -1,4 +1,4 @@
-/* $XConsortium: xsmclient.c,v 1.19 94/04/17 21:15:21 mor Exp $ */
+/* $XConsortium: xsmclient.c,v 1.20 94/05/20 12:25:42 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

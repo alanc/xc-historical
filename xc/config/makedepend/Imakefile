@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.21 94/02/04 21:39:02 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.22 94/03/29 15:54:05 gildea Exp $
 
     SRCS = include.c main.c parse.c pr.c cppsetup.c ifparser.c 
     OBJS = include.o main.o parse.o pr.o cppsetup.o ifparser.o 

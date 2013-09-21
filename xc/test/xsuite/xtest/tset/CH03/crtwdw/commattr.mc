@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: commattr.mc,v 1.19 92/07/07 09:32:04 rws Exp $
+ * $XConsortium: commattr.mc,v 1.20 94/04/17 21:03:01 rws Exp $
  */
 >>EXTERN
 

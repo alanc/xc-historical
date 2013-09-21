@@ -1,4 +1,4 @@
-/* $XConsortium: computils.c,v 5.4 91/07/24 18:43:05 hersh Exp $ */
+/* $XConsortium: computils.c,v 5.5 94/04/17 20:46:29 hersh Exp $ */
 
 /*****************************************************************
 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lcFile.c,v 1.1 94/01/20 17:56:55 rws Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993

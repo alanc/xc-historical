@@ -1,4 +1,4 @@
-/* $XConsortium: ListP.h,v 1.13 94/01/31 10:48:25 kaleb Exp $ */
+/* $XConsortium: ListP.h,v 1.14 94/04/17 20:12:17 kaleb Exp $ */
 
 /*
 Copyright (c) 1989, 1994  X Consortium

@@ -1,4 +1,4 @@
-! $XConsortium$
+! $XConsortium: XConsole.ad,v 1.3 94/02/09 19:44:01 gildea Exp $
 *allowShellResize:		true
 XConsole.translations:		#override\
 	<MapNotify>:		Deiconified()	\n\

@@ -1,4 +1,4 @@
-/* $XConsortium: stubs.c,v 1.5 94/03/27 13:53:51 dpw Exp mor $ */
+/* $XConsortium: tables.c,v 1.8 94/12/01 20:47:07 mor Exp $ */
 /*
  * $NCDOr$
  * $NCDId: @(#)tables.c,v 1.18 1994/11/18 20:38:46 lemke Exp $

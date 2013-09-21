@@ -1,4 +1,4 @@
-/* $XConsortium: main.cxx,v 1.6 94/06/03 21:41:05 matt Exp matt $ */
+/* $XConsortium: main.cxx,v 1.7 94/09/23 13:38:28 matt Exp $ */
 
 /*
  * Copyright (c) 1992-1993 Silicon Graphics, Inc.

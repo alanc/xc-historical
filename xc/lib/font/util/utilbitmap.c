@@ -1,4 +1,4 @@
-/* $XConsortium: utilbitmap.c,v 1.2 94/02/07 16:06:59 gildea Exp $ */
+/* $XConsortium: utilbitmap.c,v 1.3 94/04/17 20:17:38 gildea Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-/* $XConsortium: fontinfo.c,v 1.12 93/09/23 14:45:25 gildea Exp $ */
+/* $XConsortium: fontinfo.c,v 1.13 94/04/17 19:56:15 gildea Exp $ */
 /*
  * font data query
  */

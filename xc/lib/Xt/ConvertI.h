@@ -1,4 +1,4 @@
-/* $XConsortium: ConvertI.h,v 1.16 93/10/22 10:59:00 kaleb Exp $ */
+/* $XConsortium: ConvertI.h,v 1.17 94/04/17 20:13:49 kaleb Exp $ */
 
 /***********************************************************
 

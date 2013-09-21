@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: rndr_targets.c,v 1.0 93/11/22 12:53:20 rws Exp $ */
 
 /*
         NOTICE TO USER: The source code in this file is copyrighted under

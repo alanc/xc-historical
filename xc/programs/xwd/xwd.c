@@ -1,4 +1,4 @@
-/* $XConsortium: xwd.c,v 1.61 93/09/29 17:49:06 rws Exp $ */
+/* $XConsortium: xwd.c,v 1.62 94/04/17 20:23:57 rws Exp $ */
 
 /*
 

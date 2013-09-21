@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mifpolycon.c,v 5.3 89/07/28 12:13:45 rws Exp $ */
+/* $XConsortium: mifpolycon.c,v 5.4 94/04/17 20:27:36 rws Exp $ */
 #include <math.h>
 #include "X.h"
 #include "gcstruct.h"

@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: sndextevnt.m,v 1.21 94/02/21 18:19:55 rws Exp $
+ * $XConsortium: sndextevnt.m,v 1.22 94/04/17 21:12:54 rws Exp $
  */
 >>TITLE XSendExtensionEvent XINPUT
 Status

@@ -1,4 +1,4 @@
-/* $XConsortium: brf_phead.c,v 5.4 91/10/21 14:33:01 eswu Exp $ */
+/* $XConsortium: brf_phead.c,v 5.5 94/04/17 20:44:29 eswu Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

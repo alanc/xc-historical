@@ -1,4 +1,4 @@
-/* $XConsortium: shapetest.c,v 1.4 91/01/24 15:14:58 gildea Exp $ */
+/* $XConsortium: shapetest.c,v 1.5 94/04/17 20:46:03 gildea Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

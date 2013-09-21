@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: dixutils.c,v 1.2 94/01/11 20:45:52 rob Exp $ */
+/* $XConsortium: dixutils.c,v 1.3 94/04/17 21:15:46 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

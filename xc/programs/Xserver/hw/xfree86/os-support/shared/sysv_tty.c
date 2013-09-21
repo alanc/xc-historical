@@ -1,4 +1,4 @@
-/* $XConsortium: sysv_tty.c,v 1.2 94/10/12 20:50:05 kaleb Exp kaleb $ */
+/* $XConsortium: sysv_tty.c,v 1.3 95/01/05 22:40:58 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sysv_tty.c,v 3.2 1994/10/23 13:00:06 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany

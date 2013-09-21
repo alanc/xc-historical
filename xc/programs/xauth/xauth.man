@@ -1,4 +1,4 @@
-.\" $XConsortium: xauth.man,v 1.11 94/04/12 18:00:03 gildea Exp $
+.\" $XConsortium: xauth.man,v 1.12 94/04/17 20:37:54 gildea Exp $
 .\" Copyright (c) 1993  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining

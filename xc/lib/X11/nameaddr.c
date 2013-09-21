@@ -1,4 +1,4 @@
-/* $XConsortium: nameaddr.c,v 1.6 93/09/26 13:58:25 rws Exp $ */
+/* $XConsortium: nameaddr.c,v 1.7 94/04/17 20:22:16 rws Exp $ */
 /*	nameaddr.c - included by Xstreams.c			*/
 /*	Used for System V Release 4.0 networking code		*/
 

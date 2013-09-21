@@ -1,4 +1,4 @@
-/* $XConsortium: bigreqstr.h,v 1.3 92/11/07 16:57:34 rws Exp $ */
+/* $XConsortium: bigreqstr.h,v 1.4 94/04/17 20:11:19 rws Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

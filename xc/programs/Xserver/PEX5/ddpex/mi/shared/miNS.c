@@ -1,4 +1,4 @@
-/* $XConsortium: miNS.c,v 5.2 91/11/15 19:39:51 hersh Exp $ */
+/* $XConsortium: miNS.c,v 5.3 94/04/17 20:37:45 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

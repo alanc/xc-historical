@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronIo.c,v 1.1 91/06/29 13:48:58 xguest Exp kaleb $
+ * $XConsortium: omronIo.c,v 1.2 95/04/05 19:58:42 kaleb Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 

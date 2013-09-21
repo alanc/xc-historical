@@ -1,4 +1,4 @@
-/* $XConsortium: locking.h,v 1.14 94/03/19 19:53:47 gildea Exp $ */
+/* $XConsortium: locking.h,v 1.15 94/04/17 20:22:14 gildea Exp $ */
 /* 
 
 Copyright (c) 1992  X Consortium

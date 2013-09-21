@@ -1,4 +1,4 @@
-/* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
+/* $XConsortium: ncr_bank.s,v 1.2 94/03/29 11:05:12 dpw Exp $ */
 /*
  * Copyright 1992,1993 NCR Corporation, Inc.
  *

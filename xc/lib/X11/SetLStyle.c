@@ -1,4 +1,4 @@
-/* $XConsortium: SetLStyle.c,v 11.11 91/01/06 11:48:05 rws Exp $ */
+/* $XConsortium: SetLStyle.c,v 11.12 94/04/17 20:20:59 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

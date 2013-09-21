@@ -1,4 +1,4 @@
-/* $XConsortium: xkbrefresh.c,v 1.2 93/09/28 23:51:55 rws Exp $ */
+/* $XConsortium: xkbrefresh.c,v 1.3 94/04/01 18:50:16 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

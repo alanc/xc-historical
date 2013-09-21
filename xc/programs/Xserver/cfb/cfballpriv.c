@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfballpriv.c,v 1.4 93/12/13 17:21:41 dpw Exp $
+ * $XConsortium: cfballpriv.c,v 1.5 94/04/17 20:28:42 dpw Exp $
  *
 Copyright (c) 1991  X Consortium
 

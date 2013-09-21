@@ -1,4 +1,4 @@
-/* $XConsortium: events.c,v 1.5 94/04/18 00:09:24 rws Exp mor $ */
+/* $XConsortium: events.c,v 1.6 94/12/19 16:57:13 mor Exp $ */
 
 /*
 

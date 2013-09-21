@@ -1,4 +1,4 @@
-/* $XConsortium: s3scrin.c,v 1.3 94/10/12 20:07:37 kaleb Exp kaleb $ */
+/* $XConsortium: s3scrin.c,v 1.4 95/01/16 20:07:23 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.4 1994/09/24 15:12:54 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.

@@ -1,4 +1,4 @@
-/* $XConsortium: ppcPixmap.c,v 1.1 94/03/28 21:37:09 dpw Exp $ */
+/* $XConsortium: ppcPixmap.c,v 1.2 94/04/17 20:31:53 dpw Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *

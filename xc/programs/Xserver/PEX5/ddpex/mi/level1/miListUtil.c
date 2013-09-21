@@ -1,4 +1,4 @@
-/* $XConsortium: miListUtil.c,v 5.2 93/09/03 15:00:25 hersh Exp $ */
+/* $XConsortium: miListUtil.c,v 5.3 94/04/17 20:36:52 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

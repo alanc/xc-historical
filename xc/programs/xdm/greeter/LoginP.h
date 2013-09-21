@@ -1,4 +1,4 @@
-/* $XConsortium: LoginP.h,v 1.6 89/07/21 13:43:57 jim Exp $ */
+/* $XConsortium: LoginP.h,v 1.7 94/04/17 20:03:54 jim Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

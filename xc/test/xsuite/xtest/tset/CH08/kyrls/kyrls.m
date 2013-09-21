@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: kyrls.m,v 1.13 92/07/06 19:59:05 rws Exp $
+ * $XConsortium: kyrls.m,v 1.14 94/04/17 21:07:48 rws Exp $
  */
 >>TITLE KeyRelease CH08
 >>EXTERN

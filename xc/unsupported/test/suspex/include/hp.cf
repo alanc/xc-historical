@@ -3,7 +3,10 @@
  */
 /*
  * HISTORY
- * $Log: hp.cf,v $
+ * $Log:	hp.cf,v $
+Revision 1.48  93/11/22  12:08:14  rws
+initial external version
+
  * Revision 1.1  1992/11/06  01:55:34  ptuite
  * Automated AdditionThis fixes TR number 0
  *
@@ -16,7 +19,7 @@
  * 
  * $EndLog$
  */
-XCOMM platform:  $XConsortium: hp.cf,v 1.48 91/12/18 09:43:08 rws Exp $
+XCOMM platform:  $XConsortium: hp.cf,v 1.48 93/11/22 12:08:14 rws Exp $
 
 #define OSName                 HP-UX 9.0
 XCOMM operating system:  OSName

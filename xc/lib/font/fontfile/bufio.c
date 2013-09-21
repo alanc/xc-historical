@@ -1,4 +1,4 @@
-/* $XConsortium: bufio.c,v 1.7 93/09/20 15:56:35 gildea Exp $ */
+/* $XConsortium: bufio.c,v 1.8 94/04/17 20:17:00 gildea Exp $ */
 
 /*
 

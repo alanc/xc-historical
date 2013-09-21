@@ -1,4 +1,4 @@
-/* $XConsortium: Xtranstli.c,v 1.21 94/06/02 10:54:50 mor Exp $ */
+/* $XConsortium: Xtranstli.c,v 1.22 94/06/07 11:38:54 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: fFillSet.s,v 1.1 94/10/05 13:50:07 kaleb Exp $ */
+/* $XConsortium: fFillSet.s,v 1.3 94/10/13 13:16:19 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fFillSet.s,v 3.1 1994/09/08 14:40:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

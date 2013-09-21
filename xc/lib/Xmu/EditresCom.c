@@ -1,4 +1,4 @@
-/* $XConsortium: EditresCom.c,v 1.32 93/09/22 21:08:55 rws Exp $ */
+/* $XConsortium: EditresCom.c,v 1.33 94/04/17 20:16:05 rws Exp $ */
 
 /*
 

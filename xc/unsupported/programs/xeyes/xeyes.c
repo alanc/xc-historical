@@ -1,4 +1,4 @@
-/* $XConsortium: xeyes.c,v 1.15 91/07/18 16:46:26 rws Exp $ */
+/* $XConsortium: xeyes.c,v 1.16 94/04/17 20:45:23 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

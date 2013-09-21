@@ -1,5 +1,5 @@
 /*
- * $XConsortium: bbox.c,v 2.34 91/07/05 18:22:39 converse Exp $
+ * $XConsortium: bbox.c,v 2.35 91/07/10 19:34:59 converse Exp $
  *
  *
  *			COPYRIGHT 1987, 1989

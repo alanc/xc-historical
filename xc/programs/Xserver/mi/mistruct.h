@@ -1,4 +1,4 @@
-/* $XConsortium: mistruct.h,v 1.2 88/09/06 15:48:57 jim Exp $ */
+/* $XConsortium: mistruct.h,v 1.3 94/04/17 20:27:56 jim Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

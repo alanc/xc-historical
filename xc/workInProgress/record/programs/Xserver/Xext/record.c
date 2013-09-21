@@ -1,4 +1,4 @@
-/* $XConsortium: record.c,v 1.14 94/03/25 15:46:06 dpw Exp $ */
+/* $XConsortium: record.c,v 1.15 94/04/17 21:17:29 dpw Exp $ */
 /***************************************************************************
 Copyright (c) 1988  X Consortium
 

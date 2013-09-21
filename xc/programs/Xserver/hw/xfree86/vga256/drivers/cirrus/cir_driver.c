@@ -1,4 +1,4 @@
-/* $XConsortium: cir_driver.c,v 1.5 95/01/16 13:18:07 kaleb Exp kaleb $ */
+/* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.31 1995/01/21 07:18:04 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp

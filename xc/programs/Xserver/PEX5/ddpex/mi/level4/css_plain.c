@@ -1,4 +1,4 @@
-/* $XConsortium: css_plain.c,v 5.4 91/12/26 18:15:31 hersh Exp $ */
+/* $XConsortium: css_plain.c,v 5.5 94/04/17 20:37:28 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

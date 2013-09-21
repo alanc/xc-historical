@@ -1,4 +1,4 @@
-/* $XConsortium: lcCharSet.c,v 1.2 94/01/20 18:06:19 rws Exp kaleb $ */
+/* $XConsortium: lcCharSet.c,v 1.3 95/02/22 22:02:59 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

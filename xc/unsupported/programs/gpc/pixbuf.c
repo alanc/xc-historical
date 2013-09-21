@@ -1,4 +1,4 @@
-/* $XConsortium: pixbuf.c,v 5.1 91/02/16 10:07:50 rws Exp $ */
+/* $XConsortium: pixbuf.c,v 5.2 94/04/17 20:44:43 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

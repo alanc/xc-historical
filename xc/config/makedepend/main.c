@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.83 94/04/17 20:10:36 gildea Exp kaleb $ */
+/* $XConsortium: main.c,v 1.84 94/11/30 16:10:44 kaleb Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

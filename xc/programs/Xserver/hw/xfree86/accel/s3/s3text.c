@@ -1,4 +1,4 @@
-/* $XConsortium: s3text.c,v 1.1 94/10/05 13:32:36 kaleb Exp $ */
+/* $XConsortium: s3text.c,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.7 1994/09/08 14:26:54 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.

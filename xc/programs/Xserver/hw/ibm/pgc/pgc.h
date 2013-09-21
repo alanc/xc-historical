@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: pgc.h,v 1.2 91/07/16 13:11:40 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

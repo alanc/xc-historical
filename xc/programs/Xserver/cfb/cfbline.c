@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.23 94/04/17 20:28:53 dpw Exp $ */
+/* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"

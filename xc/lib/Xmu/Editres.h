@@ -1,4 +1,4 @@
-/* $XConsortium: Editres.h,v 1.2 94/04/12 17:36:57 dpw Exp $ */
+/* $XConsortium: Editres.h,v 1.3 94/04/17 20:16:04 dpw Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-/* $XConsortium: XlibInt.c,v 11.230 94/11/29 00:06:42 gildea Exp kaleb $ */
+/* $XConsortium: XlibInt.c,v 11.231 95/04/05 19:57:47 kaleb Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium

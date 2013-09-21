@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.cf,v 1.39 94/11/04 00:35:43 kaleb Exp kaleb $
+XCOMM platform:  $XConsortium: Win32.cf,v 1.40 94/12/12 22:47:48 kaleb Exp $
 
 #define OSName			Microsoft Windows NT 3.5
 XCOMM operating system:  OSName

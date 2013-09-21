@@ -1,4 +1,4 @@
-/* $XConsortium: Keyboard.c,v 1.36 95/06/15 20:20:33 converse Exp $ */
+/* $XConsortium: Keyboard.c,v 1.36 95/06/15 20:32:00 converse Exp $ */
 
 /********************************************************
 

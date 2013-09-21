@@ -1,4 +1,4 @@
-/* $XConsortium: button.c,v 1.68 93/09/20 17:42:33 hersh Exp $ */
+/* $XConsortium: button.c,v 1.69 94/04/02 12:41:50 gildea Exp $ */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
  *

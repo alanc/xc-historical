@@ -1,4 +1,4 @@
-/* $XConsortium: Template.c,v 1.4 91/02/17 16:18:42 converse Exp $ */
+/* $XConsortium: Template.c,v 1.5 94/04/17 20:12:58 converse Exp $ */
 
 /*
 

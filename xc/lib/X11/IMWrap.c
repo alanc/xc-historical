@@ -1,5 +1,5 @@
 /*
- * $XConsortium: IMWrap.c,v 11.10 94/04/17 20:19:55 rws Exp kaleb $
+ * $XConsortium: IMWrap.c,v 11.11 94/09/01 18:40:04 kaleb Exp $
  */
 
 /*

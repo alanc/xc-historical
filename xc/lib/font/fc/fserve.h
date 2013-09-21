@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.h,v 1.6 91/06/21 18:15:47 keith Exp $ */
+/* $XConsortium: fserve.h,v 1.7 93/08/24 18:49:12 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *

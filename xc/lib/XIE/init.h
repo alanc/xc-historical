@@ -1,4 +1,4 @@
-/* $XConsortium: init.h,v 1.2 93/09/23 11:43:38 mor Exp $ */
+/* $XConsortium: init.h,v 1.3 94/04/17 20:18:25 mor Exp $ */
 
 /*
 

@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XConsortium: cursor.c,v 1.43 93/07/12 09:23:49 dpw Exp $ */
+/* $XConsortium: cursor.c,v 1.44 94/04/17 20:26:20 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

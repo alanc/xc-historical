@@ -1,4 +1,4 @@
-/* $XConsortium: miclipn.c,v 5.0 90/09/24 09:41:16 rws Exp $ */
+/* $XConsortium: miclipn.c,v 5.1 94/04/17 20:27:26 rws Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 95/04/07 19:42:59 kaleb Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 95/05/17 18:25:37 dpw Exp $
 
 #include <Server.tmpl>
 

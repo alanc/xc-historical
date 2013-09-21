@@ -1,4 +1,4 @@
-/* $XConsortium: Scale.c,v 1.19 94/11/30 16:36:25 kaleb Exp kaleb $ */
+/* $XConsortium: Scale.c,v 1.20 95/01/05 19:49:01 kaleb Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

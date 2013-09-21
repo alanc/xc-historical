@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: pkifevnt.m,v 1.8 92/06/11 17:23:58 rws Exp $
+ * $XConsortium: pkifevnt.m,v 1.9 94/04/17 21:08:01 rws Exp $
  */
 >>TITLE XPeekIfEvent CH08
 void

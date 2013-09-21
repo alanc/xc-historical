@@ -1,4 +1,4 @@
-/* $XConsortium: xkbparse.y,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: xkbparse.y,v 1.3 94/04/08 15:30:22 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

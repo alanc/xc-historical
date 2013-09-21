@@ -1,4 +1,4 @@
-/* $XConsortium: ModMap.c,v 11.13 93/09/07 21:32:03 rws Exp $ */
+/* $XConsortium: ModMap.c,v 11.14 94/04/17 20:20:18 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

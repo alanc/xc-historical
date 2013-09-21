@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.15 94/03/06 18:20:27 dpw Exp $ */
+/* $XConsortium: cfbbresd.c,v 1.16 94/04/17 20:28:45 dpw Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cfb.h"

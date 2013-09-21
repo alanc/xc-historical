@@ -1,4 +1,4 @@
-.\" $XConsortium: xmessage.man,v 1.7 94/07/28 21:34:07 gildea Exp gildea $
+.\" $XConsortium: xmessage.man,v 1.8 95/03/08 22:28:48 gildea Exp $
 .TH XMESSAGE 1 "26 July 1994" "X Version 11"
 .SH NAME
 xmessage \- display a message or query in a window (X-based /bin/echo)

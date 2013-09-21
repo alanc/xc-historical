@@ -1,4 +1,4 @@
-.\" $XConsortium: library.ms,v 1.13 94/04/27 20:45:22 gildea Exp $
+.\" $XConsortium: library.ms,v 1.14 94/04/28 15:24:33 gildea Exp $
 .\" Input Extension
 .EH ''''
 .OH ''''

@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: conflict.h,v 1.2 94/01/11 20:54:44 rob Exp $ */
+/* $XConsortium: conflict.h,v 1.1 94/03/17 11:35:13 dpw Exp $ */
 
 #ifndef CONFLICT_H
 #define CONFLICT_H

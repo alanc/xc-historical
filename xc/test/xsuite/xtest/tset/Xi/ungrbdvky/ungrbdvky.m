@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ungrbdvky.m,v 1.7 94/01/30 12:12:02 rws Exp $
+ * $XConsortium: ungrbdvky.m,v 1.8 94/04/17 21:12:50 rws Exp $
  */
 >>TITLE XUngrabDeviceKey XINPUT
 void

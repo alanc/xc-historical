@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: config.c,v 1.25 94/01/29 16:01:19 rws Exp $
+ * $XConsortium: config.c,v 1.26 94/04/17 21:00:40 rws Exp $
  */
 
 #include	"stdlib.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: UpdMapHint.c,v 1.1 89/09/22 12:07:37 jim Exp $ */
+/* $XConsortium: UpdMapHint.c,v 1.2 94/04/17 20:16:21 jim Exp $ */
 
 /*
 

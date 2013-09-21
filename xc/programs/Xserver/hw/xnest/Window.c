@@ -1,4 +1,4 @@
-/* $XConsortium: Window.c,v 1.5 94/02/16 11:53:17 rws Exp ray $ */
+/* $XConsortium: Window.c,v 1.6 95/07/10 17:42:22 ray Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

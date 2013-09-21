@@ -1,4 +1,4 @@
-# $XConsortium: Makefile,v 1.1 94/01/29 16:02:08 rws Exp $
+# $XConsortium: Makefile,v 1.2 94/04/17 21:14:12 rws Exp $
 #
 # Copyright (c) 1990, 1991  X Consortium
 # 

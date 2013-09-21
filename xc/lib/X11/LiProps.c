@@ -1,4 +1,4 @@
-/* $XConsortium: LiProps.c,v 11.20 91/01/06 11:46:49 rws Exp $ */
+/* $XConsortium: LiProps.c,v 11.21 94/04/17 20:20:07 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

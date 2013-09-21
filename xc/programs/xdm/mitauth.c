@@ -1,4 +1,4 @@
-/* $XConsortium: mitauth.c,v 1.11 94/01/09 18:07:19 gildea Exp $ */
+/* $XConsortium: mitauth.c,v 1.12 94/04/17 20:03:40 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

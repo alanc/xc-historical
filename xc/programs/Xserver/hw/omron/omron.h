@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omron.h,v 1.3 94/02/04 19:37:26 dpw Exp kaleb $
+ * $XConsortium: omron.h,v 1.4 95/04/05 19:58:44 kaleb Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 

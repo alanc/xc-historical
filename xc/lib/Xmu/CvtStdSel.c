@@ -1,4 +1,4 @@
-/* $XConsortium: CvtStdSel.c,v 1.28 94/01/19 11:49:25 gildea Exp $ */
+/* $XConsortium: CvtStdSel.c,v 1.29 94/04/17 20:15:57 gildea Exp $ */
 
 /*
  

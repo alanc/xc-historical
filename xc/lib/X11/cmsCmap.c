@@ -1,4 +1,4 @@
-/* $XConsortium: cmsCmap.c,v 1.16 93/09/07 21:32:52 rws Exp converse $ */
+/* $XConsortium: cmsCmap.c,v 1.17 95/04/27 18:28:37 converse Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

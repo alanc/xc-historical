@@ -1,4 +1,4 @@
-/* $XConsortium: type1.c,v 1.6 92/07/07 17:14:52 gildea Exp $ */
+/* $XConsortium: type1.c,v 1.7 94/02/07 15:30:22 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991

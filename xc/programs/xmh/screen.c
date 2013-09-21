@@ -1,5 +1,5 @@
 /*
- * $XConsortium: screen.c,v 2.64 94/08/29 19:47:11 swick Exp swick $
+ * $XConsortium: screen.c,v 2.65 95/01/06 16:39:19 swick Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989

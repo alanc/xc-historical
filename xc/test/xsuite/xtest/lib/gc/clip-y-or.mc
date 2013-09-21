@@ -36,5 +36,5 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: clip-y-or.mc,v 1.1 92/06/11 18:02:39 rws Exp $
+ * $XConsortium: clip-y-or.mc,v 1.2 94/04/17 21:14:37 rws Exp $
  */

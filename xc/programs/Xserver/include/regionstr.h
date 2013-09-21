@@ -1,4 +1,4 @@
-/* $XConsortium: regionstr.h,v 1.7 94/01/12 17:59:40 dpw Exp $ */
+/* $XConsortium: regionstr.h,v 1.8 94/04/17 20:26:01 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

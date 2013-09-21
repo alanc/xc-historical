@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: plane-mas.mc,v 1.9 92/06/11 18:04:11 rws Exp $
+ * $XConsortium: plane-mas.mc,v 1.10 94/04/17 21:14:47 rws Exp $
  */
 >>EXTERN
 #define	PLANEFG	0x55555555

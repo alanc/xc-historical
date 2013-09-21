@@ -1,4 +1,4 @@
-/* $XConsortium: FSWrap.c,v 11.11 94/03/29 22:51:03 rws Exp $ */
+/* $XConsortium: FSWrap.c,v 11.12 94/04/17 20:19:17 rws Exp $ */
 
 /*
  * Copyright 1991 by the Open Software Foundation

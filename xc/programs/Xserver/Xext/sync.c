@@ -1,4 +1,4 @@
-/* $XConsortium: sync.c,v 1.9 94/03/31 09:23:30 dpw Exp $ */
+/* $XConsortium: sync.c,v 1.10 94/04/17 20:32:58 dpw Exp $ */
 /*
 
 Copyright (c) 1991, 1993  X Consortium

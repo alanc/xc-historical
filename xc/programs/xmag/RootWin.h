@@ -1,4 +1,4 @@
-/* $XConsortium: RootWin.h,v 1.1 90/12/06 20:40:52 dave Exp $ */
+/* $XConsortium: RootWin.h,v 1.2 94/04/17 20:24:53 dave Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: hyperScreen.c,v 1.1 94/08/16 15:45:33 rek Exp $ */
+/* $XConsortium: hyperScrn.c,v 1.1 95/01/25 16:14:36 gildea Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.

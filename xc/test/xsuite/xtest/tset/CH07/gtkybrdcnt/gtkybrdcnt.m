@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtkybrdcnt.m,v 1.3 92/06/11 17:13:50 rws Exp $
+ * $XConsortium: gtkybrdcnt.m,v 1.4 94/04/17 21:06:31 rws Exp $
  */
 >>TITLE XGetKeyboardControl CH07
 void

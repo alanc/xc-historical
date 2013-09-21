@@ -1,4 +1,4 @@
-/* $XConsortium: Logo.c,v 1.29 94/01/10 15:42:50 kaleb Exp $ */
+/* $XConsortium: Logo.c,v 1.30 94/04/17 20:24:08 kaleb Exp $ */
 /*
 
 Copyright (c) 1988, 1994  X Consortium

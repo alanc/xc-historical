@@ -1,4 +1,4 @@
-/* $XConsortium: Xdbeproto.h,v 1.1 95/05/25 17:29:33 dpw Exp dpw $ */
+/* $XConsortium: midbe.h,v 1.2 95/06/07 20:19:57 dpw Exp $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -27,7 +27,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization from the Hewlett-Packard Company.
  * 
- * $Header: midbe.h,v 55.1 95/03/10 15:33:45 todd Exp $
+ * $Header: /x/programs/Xserver/dbe/RCS/midbe.h,v 1.2 95/06/07 20:19:57 dpw Exp $
  *
  *     Header file for users of machine-independent DBE code
  *

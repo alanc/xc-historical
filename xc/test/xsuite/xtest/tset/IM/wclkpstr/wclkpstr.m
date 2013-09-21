@@ -1,4 +1,4 @@
-/* $XConsortium: wclkpstr.m,v 1.2 94/01/30 13:06:45 rws Exp $ */
+/* $XConsortium: wclkpstr.m,v 1.3 94/04/17 21:14:10 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: FetchName.c,v 11.25 91/02/01 16:34:12 gildea Exp $ */
+/* $XConsortium: FetchName.c,v 11.26 94/04/17 20:19:17 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

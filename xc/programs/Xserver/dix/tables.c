@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: tables.c,v 1.24 93/09/28 01:27:05 gildea Exp $ */
+/* $XConsortium: tables.c,v 1.25 94/04/17 20:26:46 gildea Exp $ */
 
 extern int    ProcInitialConnection(), ProcEstablishConnection();
 

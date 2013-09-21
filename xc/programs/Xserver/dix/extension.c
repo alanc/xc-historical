@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: extension.c,v 1.54 94/12/02 16:30:12 mor Exp $ */
+/* $XConsortium: extension.c,v 1.55 95/02/27 16:43:20 dpw Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

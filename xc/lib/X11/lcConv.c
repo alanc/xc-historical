@@ -1,4 +1,4 @@
-/* $XConsortium: lcConv.c,v 1.5 94/03/29 22:51:51 rws Exp kaleb $ */
+/* $XConsortium: lcConv.c,v 1.6 94/12/12 22:18:21 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

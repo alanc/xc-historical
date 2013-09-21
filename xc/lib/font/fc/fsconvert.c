@@ -1,4 +1,4 @@
-/* $XConsortium: fsconvert.c,v 1.16 93/09/20 15:56:45 gildea Exp $ */
+/* $XConsortium: fsconvert.c,v 1.17 94/02/14 17:47:35 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *

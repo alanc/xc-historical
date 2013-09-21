@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 ********************************************************/
 /* GJA -- Took mfb code and modified it. */
 
-/* $XConsortium: mfbzerarc.c,v 5.10 94/03/28 21:35:13 dpw Exp $ */
+/* $XConsortium: mfbzerarc.c,v 5.11 94/04/17 20:31:45 dpw Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"

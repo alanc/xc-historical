@@ -35,7 +35,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtslctevnt.m,v 1.6 94/01/30 12:10:41 rws Exp $
+ * $XConsortium: gtslctevnt.m,v 1.7 94/04/17 21:13:02 rws Exp $
  */
 
 >>TITLE XGetSelectedExtensionEvents XINPUT

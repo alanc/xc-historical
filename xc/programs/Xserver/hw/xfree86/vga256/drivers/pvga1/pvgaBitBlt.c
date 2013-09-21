@@ -1,4 +1,4 @@
-/* $XConsortium: pvgaBitBlt.c,v 1.3 95/01/16 13:18:22 kaleb Exp kaleb $ */
+/* $XConsortium: pvgaBitBlt.c,v 1.4 95/01/23 15:35:19 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgaBitBlt.c,v 3.2 1995/01/18 11:00:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

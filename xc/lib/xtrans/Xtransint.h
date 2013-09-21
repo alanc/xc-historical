@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransint.h,v 1.23 95/06/06 21:27:45 kaleb Exp kaleb $ */
+/* $XConsortium: Xtransint.h,v 1.24 95/06/06 22:18:18 kaleb Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

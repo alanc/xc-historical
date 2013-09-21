@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: utils.c,v 1.11 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: utils.c,v 1.12 95/05/30 18:37:40 mor Exp $ */
 /* $NCDId: @(#)utils.c,v 1.8 1994/11/16 02:27:25 lemke Exp $ */
 
 #include "lbx.h"

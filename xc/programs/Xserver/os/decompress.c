@@ -1,4 +1,4 @@
-/* $XConsortium: decompress.c,v 1.4 94/04/12 17:24:20 dpw Exp $ */
+/* $XConsortium: decompress.c,v 1.5 94/04/17 20:26:57 dpw Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

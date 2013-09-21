@@ -30,7 +30,7 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef _SHMSTR_H_
 #define _SHMSTR_H_
 
-/* $XConsortium: shmstr.h,v 1.8 94/02/04 20:23:08 rws Exp $ */
+/* $XConsortium: shmstr.h,v 1.9 94/04/17 20:11:25 rws Exp $ */
 
 #include "XShm.h"
 

@@ -1,4 +1,4 @@
-/* $XConsortium: Drawing.h,v 1.10 91/07/22 23:45:48 converse Exp $ */
+/* $XConsortium: Drawing.h,v 1.11 94/04/17 20:16:03 converse Exp $ */
 
 /*
  

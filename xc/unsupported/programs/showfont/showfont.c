@@ -1,4 +1,4 @@
-/* $XConsortium: showfont.c,v 1.12 93/07/16 10:49:46 gildea Exp $ */
+/* $XConsortium: showfont.c,v 1.13 94/04/17 20:44:07 gildea Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation and the

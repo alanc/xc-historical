@@ -1,4 +1,4 @@
-/* $XConsortium: Bitmap.c,v 1.46 94/03/27 13:33:44 rws Exp $ */
+/* $XConsortium: Bitmap.c,v 1.47 94/04/17 20:23:39 rws Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

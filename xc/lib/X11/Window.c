@@ -1,4 +1,4 @@
-/* $XConsortium: Window.c,v 11.17 93/09/22 21:26:42 rws Exp $ */
+/* $XConsortium: Window.c,v 11.18 94/04/17 20:21:31 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

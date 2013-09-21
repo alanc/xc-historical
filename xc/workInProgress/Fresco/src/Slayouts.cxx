@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Slayouts.cxx,v 1.2 94/04/01 16:48:31 matt Exp $
  */
 
 /*

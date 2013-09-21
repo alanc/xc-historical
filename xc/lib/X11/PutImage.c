@@ -1,4 +1,4 @@
-/* $XConsortium: PutImage.c,v 11.70 94/04/17 20:20:31 kaleb Exp gildea $ */
+/* $XConsortium: PutImage.c,v 11.71 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

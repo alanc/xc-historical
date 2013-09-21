@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: mpntfy.m,v 1.9 93/12/20 18:43:16 rws Exp $
+ * $XConsortium: mpntfy.m,v 1.10 94/04/17 21:07:51 rws Exp $
  */
 >>TITLE MapNotify CH08
 >>EXTERN

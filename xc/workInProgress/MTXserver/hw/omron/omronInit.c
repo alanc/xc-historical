@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronInit.c,v 1.3 94/01/05 18:49:07 rob Exp $
+ * $XConsortium: omronInit.c,v 1.4 94/01/11 20:47:41 rob Exp $
  * Copyright 1992, 1993 Data General Corporation;
  * Copyright 1991, 1992, 1993 OMRON Corporation  
  *

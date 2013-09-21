@@ -1,4 +1,4 @@
-/* $XConsortium: copyright.h,v 1.14 95/04/13 16:08:25 dpw Exp $ */
+/* $XConsortium: os.h,v 1.1 95/05/16 20:35:49 dpw Exp $ */
 
 /*
 

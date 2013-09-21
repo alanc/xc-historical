@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: stslctnown.m,v 1.9 93/07/05 13:28:10 rws Exp $
+ * $XConsortium: stslctnown.m,v 1.10 94/04/17 21:03:38 rws Exp $
  */
 >>TITLE XSetSelectionOwner CH04
 void

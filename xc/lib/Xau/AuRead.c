@@ -1,4 +1,4 @@
-/* $XConsortium: AuRead.c,v 1.6 94/04/17 20:15:44 gildea Exp gildea $ */
+/* $XConsortium: AuRead.c,v 1.7 95/07/10 21:18:07 gildea Exp $ */
 
 /*
 

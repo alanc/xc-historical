@@ -1,4 +1,4 @@
-/* $XConsortium: cvttoindex.c,v 1.9 94/02/13 12:03:31 rws Exp $ */
+/* $XConsortium: cvttoindex.c,v 1.10 94/04/17 20:39:13 rws Exp $ */
 
 /**** module cvttoindex.c ****/
 /******************************************************************************

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: Xnest.h,v 1.1 95/07/10 17:43:42 ray Exp $ */
 /*
 
 Copyright (c) 1995  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: iface.c,v 1.2 91/05/11 09:49:30 rws Exp $ */
+/* $XConsortium: iface.c,v 1.3 94/04/17 20:17:44 rws Exp $ */
 
 /*
 

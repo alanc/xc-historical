@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sysv_io.c,v 1.1 94/03/28 21:33:09 dpw Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>

@@ -1,4 +1,4 @@
-/* $XConsortium: AuGetBest.c,v 1.7 94/10/03 21:01:14 mor Exp mor $ */
+/* $XConsortium: AuGetBest.c,v 1.8 94/10/04 14:19:00 mor Exp $ */
 
 /*
 

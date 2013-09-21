@@ -1,4 +1,4 @@
-/* $XConsortium: pl_convert.h,v 1.2 93/09/23 12:41:57 mor Exp $ */
+/* $XConsortium: pl_convert.h,v 1.3 94/04/17 20:22:28 mor Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

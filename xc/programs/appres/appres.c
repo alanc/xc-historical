@@ -1,5 +1,5 @@
 /*
- * $XConsortium: appres.c,v 1.11 91/07/13 21:49:16 rws Exp $
+ * $XConsortium: appres.c,v 1.12 94/04/17 20:38:41 rws Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

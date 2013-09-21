@@ -1,5 +1,5 @@
 /*
-* $XConsortium: VendorP.h,v 1.20 89/10/04 12:22:55 swick Exp $
+* $XConsortium: VendorP.h,v 1.21 94/04/17 20:15:05 swick Exp $
 * $oHeader: VendorP.h,v 1.2 88/08/18 15:56:48 asente Exp $
 */
 

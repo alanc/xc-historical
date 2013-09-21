@@ -1,4 +1,4 @@
-/* $XConsortium: k5auth.c,v 1.8 94/04/17 20:27:02 gildea Exp mor $ */
+/* $XConsortium: k5auth.c,v 1.9 95/04/06 16:10:29 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: makeform.c,v 1.5 94/07/26 20:39:38 gildea Exp gildea $ */
+/* $XConsortium: makeform.c,v 1.6 95/01/04 16:28:51 gildea Exp $ */
 /*
 
 Copyright (c) 1988, 1991  X Consortium

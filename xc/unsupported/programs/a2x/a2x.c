@@ -1,4 +1,4 @@
-/* $XConsortium: a2x.c,v 1.131 94/09/03 15:44:04 rws Exp rws $ */
+/* $XConsortium: a2x.c,v 1.132 94/10/30 21:50:44 rws Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

@@ -27,7 +27,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: cfbmskbits.c,v 4.12 94/04/17 20:28:54 dpw Exp $ */
+/* $XConsortium: cfbmskbits.c,v 4.13 94/07/28 12:30:41 dpw Exp $ */
 
 /*
  * ==========================================================================

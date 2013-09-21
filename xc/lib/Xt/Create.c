@@ -1,4 +1,4 @@
-/* $XConsortium: Create.c,v 1.104 94/04/02 11:20:41 converse Exp $ */
+/* $XConsortium: Create.c,v 1.105 94/04/17 20:13:54 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -1,4 +1,4 @@
-/* $XConsortium: TMkey.c,v 1.29 95/06/22 15:08:31 kaleb Exp $ */
+/* $XConsortium: TMkey.c,v 1.29 95/06/22 15:39:05 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************

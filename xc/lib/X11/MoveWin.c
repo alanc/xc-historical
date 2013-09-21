@@ -1,4 +1,4 @@
-/* $XConsortium: MoveWin.c,v 11.11 93/10/25 19:09:03 rws Exp $ */
+/* $XConsortium: MoveWin.c,v 11.12 94/04/17 20:20:19 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

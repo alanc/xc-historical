@@ -1,4 +1,4 @@
-/* $XConsortium: QuColors.c,v 11.20 91/01/06 11:47:29 rws Exp $ */
+/* $XConsortium: QuColors.c,v 11.21 94/04/17 20:20:34 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

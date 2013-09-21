@@ -1,4 +1,4 @@
-/* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
+/* $XConsortium: BUSmemcpy.s,v 1.2 94/03/29 10:25:10 dpw Exp $ */
 /******************************************************************************
                         Copyright 1993 by Glenn G. Lai
 

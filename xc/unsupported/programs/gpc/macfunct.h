@@ -1,4 +1,4 @@
-/* $XConsortium: macfunct.h,v 5.2 91/02/16 10:07:41 rws Exp $ */
+/* $XConsortium: macfunct.h,v 5.3 94/04/17 20:44:39 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

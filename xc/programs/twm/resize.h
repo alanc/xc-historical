@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: resize.h,v 1.7 90/03/23 11:42:32 jim Exp $
+ * $XConsortium: resize.h,v 1.8 94/04/17 20:38:21 jim Exp $
  *
  * resize function externs
  *

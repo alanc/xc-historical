@@ -27,7 +27,7 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.17 94/04/17 20:27:33 keith Exp kaleb $ */
+/* $XConsortium: mifillarc.c,v 5.18 95/01/10 20:59:49 kaleb Exp $ */
 
 #include <math.h>
 #include "X.h"

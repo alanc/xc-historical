@@ -1,4 +1,4 @@
-/* $XConsortium: RestackWs.c,v 1.12 93/10/25 19:09:06 rws Exp $ */
+/* $XConsortium: RestackWs.c,v 1.13 94/04/17 20:20:48 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

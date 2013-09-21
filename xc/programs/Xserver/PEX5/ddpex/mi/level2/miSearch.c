@@ -1,4 +1,4 @@
-/* $XConsortium: miSearch.c,v 5.5 93/09/03 15:06:38 hersh Exp $ */
+/* $XConsortium: miSearch.c,v 5.6 94/04/17 20:37:18 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

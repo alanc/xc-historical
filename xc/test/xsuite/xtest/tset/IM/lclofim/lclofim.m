@@ -1,4 +1,4 @@
-/* $XConsortium: lclofim.m,v 1.1 94/01/29 16:06:41 rws Exp $ */
+/* $XConsortium: lclofim.m,v 1.2 94/04/17 21:13:58 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

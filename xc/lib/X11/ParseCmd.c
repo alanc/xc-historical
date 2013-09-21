@@ -1,4 +1,4 @@
-/* $XConsortium: ParseCmd.c,v 1.24 91/05/08 09:48:53 gildea Exp $ */
+/* $XConsortium: ParseCmd.c,v 1.25 94/04/17 20:20:22 gildea Exp $ */
 
 /***********************************************************
 

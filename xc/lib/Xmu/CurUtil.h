@@ -1,4 +1,4 @@
-/* $XConsortium: CurUtil.h,v 1.3 91/07/22 23:45:39 converse Exp $ */
+/* $XConsortium: CurUtil.h,v 1.4 94/04/17 20:15:54 converse Exp $ */
 
 /*
  

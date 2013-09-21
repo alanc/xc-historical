@@ -1,4 +1,4 @@
-/* $XConsortium: PEXproto.h,v 1.8 94/03/18 10:37:34 mor Exp $ */
+/* $XConsortium: PEXproto.h,v 1.9 94/04/17 20:22:25 mor Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

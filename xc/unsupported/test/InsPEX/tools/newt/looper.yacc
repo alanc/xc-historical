@@ -1,5 +1,5 @@
 
-/* $XConsortium: looper.yacc,v 5.4 91/11/26 14:42:32 hersh Exp $ */
+/* $XConsortium: looper.yacc,v 5.5 94/04/17 20:46:22 hersh Exp $ */
 
 /*****************************************************************
 

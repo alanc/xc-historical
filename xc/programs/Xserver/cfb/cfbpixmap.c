@@ -1,4 +1,4 @@
-/* $XConsortium: cfbpixmap.c,v 5.13 94/03/11 17:13:21 dpw Exp $ */
+/* $XConsortium: cfbpixmap.c,v 5.14 94/04/17 20:28:56 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

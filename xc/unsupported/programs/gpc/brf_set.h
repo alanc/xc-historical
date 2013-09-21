@@ -1,4 +1,4 @@
-/* $XConsortium: brf_set.h,v 5.1 91/02/16 10:07:18 rws Exp $ */
+/* $XConsortium: brf_set.h,v 5.2 91/10/21 14:33:04 eswu Exp $ */
 
 /*
  */

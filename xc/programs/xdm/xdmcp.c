@@ -1,4 +1,4 @@
-/* $XConsortium: xdmcp.c,v 1.14 94/04/17 20:03:50 gildea Exp converse $ */
+/* $XConsortium: xdmcp.c,v 1.15 94/09/19 20:16:38 converse Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

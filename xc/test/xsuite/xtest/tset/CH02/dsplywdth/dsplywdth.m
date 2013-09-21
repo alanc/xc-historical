@@ -35,7 +35,7 @@ in this Software without prior written authorization from the X Consortium.
  * purpose.  It is provided "as is" without express or implied warranty.
 ';
 
- * $XConsortium: dsplywdth.m,v 1.5 92/06/11 15:59:10 rws Exp $
+ * $XConsortium: dsplywdth.m,v 1.6 94/04/17 21:02:23 rws Exp $
  */
 >>SET   macro
 >>TITLE XDisplayWidth CH02

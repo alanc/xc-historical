@@ -1,4 +1,4 @@
-/* $XConsortium: DelProp.c,v 11.6 91/01/06 11:45:05 rws Exp $ */
+/* $XConsortium: DelProp.c,v 11.7 94/04/17 20:19:04 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

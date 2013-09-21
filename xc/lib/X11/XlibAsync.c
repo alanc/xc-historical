@@ -1,4 +1,4 @@
-/* $XConsortium: XlibAsync.c,v 1.5 93/09/21 22:59:20 rws Exp $ */
+/* $XConsortium: XlibAsync.c,v 1.6 94/04/17 20:21:45 rws Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

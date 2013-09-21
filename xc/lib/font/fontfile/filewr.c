@@ -1,4 +1,4 @@
-/* $XConsortium: filewr.c,v 1.3 93/09/17 18:26:45 gildea Exp $ */
+/* $XConsortium: filewr.c,v 1.4 94/04/17 20:17:05 gildea Exp $ */
 
 /*
 

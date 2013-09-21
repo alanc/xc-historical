@@ -1,5 +1,5 @@
 /*
- * $XConsortium: miwideline.c,v 1.3 94/01/11 20:50:09 rob Exp $
+ * $XConsortium: miwideline.c,v 1.4 94/04/17 21:16:11 rob Exp $
 Copyright (c) 1988  X Consortium
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

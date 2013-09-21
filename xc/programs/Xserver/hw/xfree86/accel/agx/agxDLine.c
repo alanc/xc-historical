@@ -1,4 +1,4 @@
-/* $XConsortium: agxDLine.c,v 1.1 94/12/27 10:49:51 kaleb Exp kaleb $ */
+/* $XConsortium: agxDLine.c,v 1.2 95/01/06 20:56:48 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDLine.c,v 3.1 1994/12/25 12:19:12 dawes Exp $ */
 /*
 

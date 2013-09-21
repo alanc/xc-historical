@@ -1,4 +1,4 @@
-/* $XConsortium: wire.c,v 1.12 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: wire.c,v 1.13 95/05/30 18:55:28 mor Exp $ */
 /*
  * $NCDOr: wire.c,v 1.1 1994/10/18 17:43:32 keithp Exp keithp $
  * $NCDId: @(#)wire.c,v 1.44 1994/11/18 20:39:50 lemke Exp $

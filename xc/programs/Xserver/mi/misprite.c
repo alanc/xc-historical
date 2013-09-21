@@ -4,7 +4,7 @@
  * machine independent software sprite routines
  */
 
-/* $XConsortium: misprite.c,v 5.46 94/03/28 10:52:44 dpw Exp $ */
+/* $XConsortium: misprite.c,v 5.47 94/04/17 20:27:53 dpw Exp $ */
 
 /*
 

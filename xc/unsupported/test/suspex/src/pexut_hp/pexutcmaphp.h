@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexutcmaphp.h,v 1.0 93/11/22 12:23:42 rws Exp $ */
 
 #ifndef PEXUTCMAP_HP_IH /* { */
 #define PEXUTCMAP_HP_IH
@@ -28,9 +28,9 @@
 
 /******************************************************************************/
 /*                                                                            */
-/* $Source: /BE700/9.0/gtd/R903/wbuild/PEX5/head/RCS/pexutcmaphp.h,v $                      	      */
-/* $Date: 93/03/17 14:14:27 $                                                 */
-/* $Revision: 500.1.200.1 $                                                   */
+/* $Source: /xsrc/xc/unsupported/test/suspex/src/pexut_hp/RCS/pexutcmaphp.h,v $                      	      */
+/* $Date: 93/11/22 12:23:42 $                                                 */
+/* $Revision: 1.0 $                                                   */
 /*                                                                            */
 /* Description:                                                               */
 /*   Internal header file of Hewlett-Packard-specific functionality           */

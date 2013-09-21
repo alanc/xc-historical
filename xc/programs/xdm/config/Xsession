@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XConsortium: Xsession,v 1.8 92/08/20 16:56:51 gildea Exp $
+# $XConsortium: Xsession,v 1.9 92/08/29 16:24:57 gildea Exp $
 
 # redirect errors to a file in user's home directory if we can
 for errfile in "$HOME/.xsession-errors" "${TMPDIR-/tmp}/xses-$USER" "/tmp/xses-$USER"

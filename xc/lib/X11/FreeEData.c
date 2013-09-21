@@ -1,4 +1,4 @@
-/* $XConsortium: FreeEData.c,v 11.14 93/11/05 11:12:55 kaleb Exp $ */
+/* $XConsortium: FreeEData.c,v 11.15 94/04/17 20:19:26 kaleb Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

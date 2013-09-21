@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: scrncnt.m,v 1.8 92/06/11 16:02:00 rws Exp $
+ * $XConsortium: scrncnt.m,v 1.9 94/04/17 21:02:43 rws Exp $
  */
 >>SET   macro
 >>TITLE XScreenCount CH02

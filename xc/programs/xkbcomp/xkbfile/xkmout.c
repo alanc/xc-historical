@@ -1,4 +1,4 @@
-/* $XConsortium: xkmout.c,v 1.4 93/09/28 20:16:45 rws Exp $ */
+/* $XConsortium: xkmout.c,v 1.1 94/04/08 15:50:38 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.c,v 1.36 94/03/18 11:01:01 mor Exp kaleb $ */
+/* $XConsortium: fsio.c,v 1.37 95/04/05 19:58:13 kaleb Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *

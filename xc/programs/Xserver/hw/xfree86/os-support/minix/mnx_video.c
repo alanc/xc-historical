@@ -1,4 +1,4 @@
-/* $XConsortium: mnx_video.c,v 1.1 94/10/05 13:42:17 kaleb Exp $ */
+/* $XConsortium: mnx_video.c,v 1.2 94/10/12 20:47:58 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_video.c,v 3.0 1994/05/08 05:23:51 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands

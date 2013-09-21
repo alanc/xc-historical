@@ -1,4 +1,4 @@
-/* $XConsortium: Cursor.c,v 1.3 94/03/31 17:49:09 dpw Exp ray $ */
+/* $XConsortium: Cursor.c,v 1.4 95/07/10 17:42:22 ray Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

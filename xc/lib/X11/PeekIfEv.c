@@ -1,4 +1,4 @@
-/* $XConsortium: PeekIfEv.c,v 11.15 93/11/05 11:13:06 kaleb Exp $ */
+/* $XConsortium: PeekIfEv.c,v 11.16 94/04/17 20:20:24 kaleb Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

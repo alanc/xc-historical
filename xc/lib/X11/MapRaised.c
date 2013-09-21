@@ -1,4 +1,4 @@
-/* $XConsortium: MapRaised.c,v 1.9 91/01/06 11:46:57 rws Exp $ */
+/* $XConsortium: MapRaised.c,v 1.10 94/04/17 20:20:15 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

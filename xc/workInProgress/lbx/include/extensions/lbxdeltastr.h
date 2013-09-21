@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdeltastr.h,v 1.2 95/03/16 18:25:34 mor Exp $ */
+/* $XConsortium: lbxdeltastr.h,v 1.4 95/03/21 19:57:46 mor Exp $ */
 /*
  * $NCDId: @(#)lbxdeltastr.h,v 1.1 1993/12/22 22:23:09 dct Exp $
  *

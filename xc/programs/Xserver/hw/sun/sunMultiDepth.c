@@ -1,4 +1,4 @@
-/* $XConsortium: sunMultiDepth.c,v 1.1 94/02/07 08:54:54 dpw Exp $ */
+/* $XConsortium: sunMultiDepth.c,v 1.2 94/04/17 20:29:48 dpw Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

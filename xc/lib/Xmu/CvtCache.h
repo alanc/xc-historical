@@ -1,4 +1,4 @@
-/* $XConsortium: CvtCache.h,v 1.6 91/07/22 23:45:42 converse Exp $ */
+/* $XConsortium: CvtCache.h,v 1.7 94/04/17 20:15:56 converse Exp $ */
 
 /*
  

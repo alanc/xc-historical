@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: tpstartup.c,v 1.8 92/06/11 15:45:31 rws Exp $
+ * $XConsortium: tpstartup.c,v 1.9 94/04/17 21:01:07 rws Exp $
  */
 
 #include	"xtest.h"

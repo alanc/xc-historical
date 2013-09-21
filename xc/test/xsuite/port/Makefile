@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: Makefile,v 1.1 92/06/11 15:29:09 rws Exp $
 
 
 CFILES = getcwd.c putenv.c strspn.c strtok.c waitpid.c signals.c \

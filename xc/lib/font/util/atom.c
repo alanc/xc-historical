@@ -1,4 +1,4 @@
-/* $XConsortium: atom.c,v 1.3 94/03/19 11:17:48 gildea Exp $ */
+/* $XConsortium: atom.c,v 1.4 94/04/17 20:17:31 gildea Exp $ */
 
 /*
 

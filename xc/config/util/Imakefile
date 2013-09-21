@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.8 94/03/29 15:54:11 gildea Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.9 95/05/05 17:42:43 kaleb Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif

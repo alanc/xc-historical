@@ -1,4 +1,4 @@
-/* $XConsortium: RegstFlt.c,v 1.11 91/06/05 09:17:42 rws Exp $ */
+/* $XConsortium: RegstFlt.c,v 1.12 94/04/17 20:20:47 rws Exp $ */
 
  /*
   * Copyright 1990, 1991 by OMRON Corporation

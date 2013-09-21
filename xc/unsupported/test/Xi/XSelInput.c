@@ -1,4 +1,4 @@
-/* $XConsortium: XSelInput.c,v 1.1 91/02/18 10:25:26 rws Exp $ */
+/* $XConsortium: XSelInput.c,v 1.2 91/02/20 09:17:58 rws Exp $ */
 /************************************************************************
  *
  * XSelInput.c   - Test case for XSelectInput function.

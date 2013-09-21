@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: Sviewers.cxx,v 1.2 94/04/01 16:48:34 matt Exp $
  */
 
 /*

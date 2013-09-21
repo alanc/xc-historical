@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Events.c,v 1.12 95/03/14 21:22:15 kaleb Exp kaleb $ */
+/* $XConsortium: xf86Events.c,v 1.13 95/04/05 19:58:45 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.8 1995/01/11 03:50:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

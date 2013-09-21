@@ -51,7 +51,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbteblt8.c,v 1.5 94/01/23 02:04:04 rob Exp $ */
+/* $XConsortium: cfbteblt8.c,v 1.6 94/04/17 21:16:27 rob Exp $ */
 
 #if PSZ == 8
 

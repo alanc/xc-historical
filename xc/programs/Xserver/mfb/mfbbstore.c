@@ -1,4 +1,4 @@
-/* $XConsortium: mfbbstore.c,v 5.6 94/01/12 18:04:41 dpw Exp $ */
+/* $XConsortium: mfbbstore.c,v 5.7 94/04/17 20:28:18 dpw Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /*
 

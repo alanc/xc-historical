@@ -1,4 +1,4 @@
-/* $XConsortium: xkbbell.c,v 1.2 93/09/28 23:51:29 rws Exp $ */
+/* $XConsortium: xkbbell.c,v 1.4 94/04/01 18:50:07 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

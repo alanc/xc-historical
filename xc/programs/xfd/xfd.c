@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xfd.c,v 1.32 93/09/04 19:51:41 rws Exp $
+ * $XConsortium: xfd.c,v 1.33 94/04/17 20:24:15 rws Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

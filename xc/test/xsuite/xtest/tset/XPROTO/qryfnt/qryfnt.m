@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: qryfnt.m,v 1.7 92/06/11 17:57:00 rws Exp $
+ * $XConsortium: qryfnt.m,v 1.8 94/04/17 21:12:10 rws Exp $
  */
 >>TITLE QueryFont XPROTO
 >>SET startup protostartup

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ShowSup.c,v 1.7 93/12/22 17:03:56 rws Exp $
+ * $XConsortium: ShowSup.c,v 1.8 94/04/17 21:01:32 rws Exp $
  */
 /*
  * ***************************************************************************

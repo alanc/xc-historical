@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: lkpstr.m,v 1.10 92/06/11 17:37:34 rws Exp $
+ * $XConsortium: lkpstr.m,v 1.11 94/04/17 21:09:51 rws Exp $
  */
 >>TITLE XLookupString CH10
 int

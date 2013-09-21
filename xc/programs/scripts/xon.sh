@@ -1,5 +1,5 @@
 #!/bin/sh
-# $XConsortium: xon.sh,v 1.9 94/10/04 20:37:58 mor Exp gildea $
+# $XConsortium: xon.sh,v 1.10 94/12/09 22:53:55 gildea Exp $
 # start up xterm (or any other X command) on the specified host
 # Usage: xon host [arguments] [command]
 case $# in

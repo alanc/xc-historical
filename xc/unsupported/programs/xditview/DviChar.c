@@ -1,4 +1,4 @@
-/* $XConsortium: DviChar.c,v 1.6 91/07/26 00:40:10 keith Exp $ */
+/* $XConsortium: DviChar.c,v 1.7 91/07/31 00:39:31 keith Exp $ */
 
 /*
  * DviChar.c

@@ -1,4 +1,4 @@
-/* $XConsortium: ChGC.c,v 11.10 91/01/06 11:44:19 rws Exp $ */
+/* $XConsortium: ChGC.c,v 11.11 94/04/17 20:18:41 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

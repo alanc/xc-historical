@@ -1,5 +1,5 @@
 /*
- * $XConsortium: RR.c,v 1.2 91/01/23 22:14:13 gildea Exp $
+ * $XConsortium: RR.c,v 1.3 94/04/17 20:16:41 gildea Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

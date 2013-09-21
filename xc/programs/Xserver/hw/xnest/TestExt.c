@@ -1,4 +1,4 @@
-/* $XConsortium: TestExt.c,v 1.2 93/09/23 18:57:14 rws Exp dpw $ */
+/* $XConsortium: TestExt.c,v 1.3 94/10/28 20:47:10 dpw Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

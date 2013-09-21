@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.1 95/05/16 20:35:49 dpw Exp mor $ */
+/* $XConsortium: resource.h,v 1.2 95/05/24 16:11:18 mor Exp $ */
 
 /*
 

@@ -1,4 +1,4 @@
-/* $XConsortium: TekHVCWpAj.c,v 1.3 91/02/12 16:10:25 dave Exp $" */
+/* $XConsortium: HVCWpAj.c,v 1.4 91/05/13 22:48:45 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

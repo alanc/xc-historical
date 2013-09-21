@@ -1,4 +1,4 @@
-/* $XConsortium: sunKeyMap.c,v 4.23 95/06/22 18:09:59 kaleb Exp kaleb $ */
+/* $XConsortium: sunKeyMap.c,v 4.24 95/07/07 19:58:00 kaleb Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 

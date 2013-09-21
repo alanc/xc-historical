@@ -1,4 +1,4 @@
-/* $XConsortium: mbdrwstr.m,v 1.1 94/01/29 16:02:36 rws Exp $ */
+/* $XConsortium: mbdrwstr.m,v 1.2 94/04/17 21:14:16 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

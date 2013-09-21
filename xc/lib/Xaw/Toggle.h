@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Toggle.h,v 1.15 94/01/31 10:51:55 kaleb Exp $
+ * $XConsortium: Toggle.h,v 1.16 94/04/17 20:13:19 kaleb Exp $
  *
 Copyright (c) 1989, 1994  X Consortium
 

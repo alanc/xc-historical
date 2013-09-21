@@ -3,7 +3,7 @@
  *
  */
 
-/* $XConsortium: mipointrst.h,v 5.6 93/10/12 11:41:59 dpw Exp $ */
+/* $XConsortium: mipointrst.h,v 5.7 94/04/17 20:27:41 dpw Exp $ */
 
 /*
 

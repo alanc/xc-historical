@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Xthreads.h,v 1.18 95/04/07 19:22:33 kaleb Exp kaleb $
+ * $XConsortium: Xthreads.h,v 1.19 95/06/30 17:58:05 kaleb Exp $
  *
  * 
 Copyright (c) 1993  X Consortium

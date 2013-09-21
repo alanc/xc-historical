@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: regmach8.h,v 1.1 94/03/28 21:13:12 dpw Exp $ */
 /* REGMACH8.H
  *
  * Written by Jake Richter

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: Win32.rules,v 1.40 94/03/28 17:11:24 matt Exp kaleb $
+XCOMM platform:  $XConsortium: Win32.rules,v 1.41 94/12/12 22:48:38 kaleb Exp $
 
 #define HasSharedLibraries YES
 #define NeedLibInsideFlag YES

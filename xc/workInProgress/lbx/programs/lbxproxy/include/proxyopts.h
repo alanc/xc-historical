@@ -1,4 +1,4 @@
-/* $XConsortium: proxyopts.h,v 1.1 94/12/01 20:39:01 mor Exp $ */
+/* $XConsortium: proxyopts.h,v 1.2 95/05/17 18:23:24 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

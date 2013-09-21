@@ -1,4 +1,4 @@
-/* $XConsortium: xnestCursor.h,v 1.1 93/06/23 16:23:46 dmatic Exp $ */
+/* $XConsortium: Cursor.h,v 1.1 93/07/12 15:28:04 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

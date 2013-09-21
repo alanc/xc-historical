@@ -1,4 +1,4 @@
-/* $XConsortium: FSFtNames.c,v 1.4 94/02/03 11:04:55 gildea Exp $ */
+/* $XConsortium: FSFtNames.c,v 1.5 94/04/17 20:15:12 gildea Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;

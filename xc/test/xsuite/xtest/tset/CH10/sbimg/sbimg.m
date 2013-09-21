@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: sbimg.m,v 1.5 92/06/11 17:42:37 rws Exp $
+ * $XConsortium: sbimg.m,v 1.6 94/04/17 21:10:30 rws Exp $
  */
 >>TITLE XSubImage CH10
 XImage *

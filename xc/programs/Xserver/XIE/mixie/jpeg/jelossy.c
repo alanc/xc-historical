@@ -1,4 +1,4 @@
-/* $XConsortium: jelossy.c,v 1.3 94/01/12 20:19:46 rws Exp $ */
+/* $XConsortium: jelossy.c,v 1.4 94/04/17 20:35:39 rws Exp $ */
 /* Module jelossy.c */
 
 /****************************************************************************

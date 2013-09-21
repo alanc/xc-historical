@@ -1,4 +1,4 @@
-/* $XConsortium: Xct.h,v 1.6 91/07/22 23:46:25 converse Exp $ */
+/* $XConsortium: Xct.h,v 1.7 94/04/17 20:16:26 converse Exp $ */
 
 /*
 

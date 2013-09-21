@@ -1,4 +1,4 @@
-/* $XConsortium: XHPlib.h,v 1.2 95/01/24 02:33:14 dpw Exp gildea $ */
+/* $XConsortium: XHPlib.h,v 1.3 95/01/24 23:40:16 gildea Exp $ */
 /************************************************************
 Copyright (c) 1992 by Hewlett-Packard Company, Palo Alto, California.
 

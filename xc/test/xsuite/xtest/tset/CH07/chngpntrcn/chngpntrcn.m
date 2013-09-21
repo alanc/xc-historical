@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chngpntrcn.m,v 1.5 92/06/11 17:11:58 rws Exp $
+ * $XConsortium: chngpntrcn.m,v 1.6 94/04/17 21:06:14 rws Exp $
  */
 >>TITLE XChangePointerControl CH07
 void

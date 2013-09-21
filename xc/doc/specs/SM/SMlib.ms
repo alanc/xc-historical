@@ -1,4 +1,4 @@
-.\" $XConsortium: SMlib.ms,v 1.11 94/04/17 18:46:31 rws Exp $
+.\" $XConsortium: SMlib.ms,v 1.12 94/04/18 13:51:14 rws Exp $
 .\" 
 .\" Use tbl, -ms, and macros.t
 .\" 

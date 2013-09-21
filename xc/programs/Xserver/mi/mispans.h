@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: mispans.h,v 5.2 93/10/12 11:42:07 dpw Exp $ */
+/* $XConsortium: mispans.h,v 5.3 94/04/17 20:27:52 dpw Exp $ */
 
 typedef struct {
     int         count;		/* number of spans		    */

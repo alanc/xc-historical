@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbmisc.c,v 5.3 93/09/13 09:31:13 dpw Exp $ */
+/* $XConsortium: mfbmisc.c,v 5.4 94/04/17 20:28:27 dpw Exp $ */
 #include "X.h"
 #include "misc.h"
 #include "cursor.h"

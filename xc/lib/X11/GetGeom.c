@@ -1,4 +1,4 @@
-/* $XConsortium: GetGeom.c,v 11.16 91/01/06 11:45:57 rws Exp $ */
+/* $XConsortium: GetGeom.c,v 11.17 94/04/17 20:19:33 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

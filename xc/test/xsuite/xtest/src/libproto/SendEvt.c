@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: SendEvt.c,v 1.2 92/06/11 15:51:37 rws Exp $
+ * $XConsortium: SendEvt.c,v 1.3 94/04/17 21:01:22 rws Exp $
  */
 /****************************************************************************
  * Copyright 1988 by Sequent Computer Systems, Inc., Portland, Oregon       *

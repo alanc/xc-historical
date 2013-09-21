@@ -1,4 +1,4 @@
-/* $XConsortium: StrToCurs.c,v 1.20 93/08/16 14:45:48 rws Exp $ */
+/* $XConsortium: StrToCurs.c,v 1.21 94/04/17 20:16:17 rws Exp $ */
 
 /*
 

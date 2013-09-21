@@ -1,4 +1,4 @@
-/* $XConsortium: UngrabBut.c,v 11.7 91/01/06 11:48:33 rws Exp $ */
+/* $XConsortium: UngrabBut.c,v 11.8 94/04/17 20:21:22 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

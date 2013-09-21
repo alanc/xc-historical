@@ -55,7 +55,7 @@ from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: twm.h,v 1.83 94/09/14 18:20:02 mor Exp mor $
+ * $XConsortium: twm.h,v 1.84 94/12/27 19:05:22 mor Exp $
  *
  * twm include file
  *

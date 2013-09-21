@@ -1,4 +1,4 @@
-/* $XConsortium: miRender.c,v 5.20 93/09/03 15:07:12 hersh Exp $ */
+/* $XConsortium: miRender.c,v 5.21 94/04/17 20:37:25 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

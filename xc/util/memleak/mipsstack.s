@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mipsstack.s,v 1.2 92/04/08 17:19:16 keith Exp $
+ * $XConsortium: mipsstack.s,v 1.3 94/04/17 20:59:45 keith Exp $
  *
 Copyright (c) 1992  X Consortium
 

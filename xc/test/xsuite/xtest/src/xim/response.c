@@ -1,4 +1,4 @@
-/* $XConsortium: response.c,v 1.1 94/01/29 15:56:00 rws Exp $ */
+/* $XConsortium: response.c,v 1.2 94/04/17 21:01:47 rws Exp $ */
 
 /*
 

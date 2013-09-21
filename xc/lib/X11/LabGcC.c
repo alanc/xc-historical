@@ -1,4 +1,4 @@
-/* $XConsortium: CIELabGcC.c,v 1.5 91/05/13 22:44:20 rws Exp $ */
+/* $XConsortium: LabGcC.c,v 1.1 91/07/24 23:26:14 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

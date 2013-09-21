@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ibmUtils.c,v 1.4 93/09/05 15:39:53 rws Exp $
+ * $XConsortium: ibmUtils.c,v 1.5 93/09/26 12:39:35 rws Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

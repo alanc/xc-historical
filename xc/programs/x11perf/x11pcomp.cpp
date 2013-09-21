@@ -16,7 +16,7 @@ XCOMM
 XCOMM Mark Moraes, University of Toronto <moraes@csri.toronto.edu>
 XCOMM Joel McCormack, DEC Western Research Lab <joel@decwrl.dec.com>
 XCOMM
-XCOMM $XConsortium$
+XCOMM $XConsortium: x11pcomp.cpp,v 1.6 91/08/22 11:43:57 rws Exp $
 
 PATH=LIBPATH:.:$PATH
 export PATH

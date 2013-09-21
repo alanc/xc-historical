@@ -1,4 +1,4 @@
-/* $XConsortium: DefCursor.c,v 11.8 91/01/06 11:45:04 rws Exp $ */
+/* $XConsortium: DefCursor.c,v 11.9 94/04/17 20:19:03 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

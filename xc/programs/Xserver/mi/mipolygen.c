@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolygen.c,v 5.1 93/10/12 11:42:02 dpw Exp $ */
+/* $XConsortium: mipolygen.c,v 5.2 94/04/17 20:27:43 dpw Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "miscanfill.h"

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: convex.cf,v 1.0 91/07/28 23:58:24 rws Exp $
+XCOMM platform:  $XConsortium: convex.cf,v 1.1 91/07/29 10:31:44 rws Exp $
 
 #define OSName            	ConvexOS V9.0
 XCOMM operating system:  OSName

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: unsquish.c,v 1.1 94/12/01 20:39:01 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

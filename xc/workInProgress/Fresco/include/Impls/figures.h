@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: figures.h,v 1.4 94/09/01 18:47:45 matt Exp $ */
 /*
  * Copyright (c) 1987-91 Stanford University
  * Copyright (c) 1991-94 Silicon Graphics, Inc.

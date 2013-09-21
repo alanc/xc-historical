@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: drwlns.m,v 1.11 92/06/11 16:35:38 rws Exp $
+ * $XConsortium: drwlns.m,v 1.12 94/04/17 21:04:55 rws Exp $
  */
 >>TITLE XDrawLines CH06
 void

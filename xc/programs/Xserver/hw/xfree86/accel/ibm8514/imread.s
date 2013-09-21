@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514imrd.s,v 1.2 94/03/29 09:37:41 dpw Exp $ */
+/* $XConsortium: imread.s,v 1.1 95/01/26 15:30:17 kaleb Exp $ */
 /******************************************************************************
 
 This is a assembly language version of the ibm8514ImageRead routine.

@@ -1,4 +1,4 @@
-/* $XConsortium: ResourceI.h,v 1.9 94/01/10 20:25:53 converse Exp $ */
+/* $XConsortium: ResourceI.h,v 1.10 94/04/17 20:14:39 converse Exp $ */
 
 /***********************************************************
 

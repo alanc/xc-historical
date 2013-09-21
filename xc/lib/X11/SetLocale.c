@@ -1,4 +1,4 @@
-/* $XConsortium: SetLocale.c,v 1.39 94/04/17 20:20:59 rws Exp kaleb $ */
+/* $XConsortium: SetLocale.c,v 1.40 94/11/21 18:23:20 kaleb Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,

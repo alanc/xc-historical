@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: hlhsr.c,v 1.0 93/11/22 12:53:26 rws Exp $ */
 
 /*
 	NOTICE TO USER: The source code in this file is copyrighted under

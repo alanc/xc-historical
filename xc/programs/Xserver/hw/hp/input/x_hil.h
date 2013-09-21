@@ -1,6 +1,6 @@
 #ifndef X_HIL_H
 #define X_HIL_H
-/* $XConsortium$ */
+/* $XConsortium: x_hil.h,v 1.4 95/01/24 23:29:42 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

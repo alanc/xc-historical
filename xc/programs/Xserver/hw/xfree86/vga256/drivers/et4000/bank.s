@@ -1,4 +1,4 @@
-/* $XConsortium: bank.s,v 1.3 94/10/13 13:24:00 kaleb Exp kaleb $ */
+/* $XConsortium: bank.s,v 1.4 95/01/16 13:18:13 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/bank.s,v 3.2 1995/01/10 10:31:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

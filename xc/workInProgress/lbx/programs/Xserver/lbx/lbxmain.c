@@ -1,4 +1,4 @@
-/* $XConsortium: lbxmain.c,v 1.20 95/05/11 17:44:13 mor Exp mor $ */
+/* $XConsortium: lbxmain.c,v 1.21 95/05/30 19:54:32 mor Exp $ */
 /*
  * $NCDId: @(#)lbxmain.c,v 1.61 1994/11/18 20:32:36 lemke Exp $
  * $NCDOr: lbxmain.c,v 1.4 1993/12/06 18:47:18 keithp Exp keithp $

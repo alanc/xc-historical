@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: cap-style.mc,v 1.17 92/06/29 19:21:06 rws Exp $
+ * $XConsortium: cap-style.mc,v 1.18 94/04/17 21:14:35 rws Exp $
  */
 >>ASSERTION Good A
 >># this first one was in line-style but doesn't apply to rectangle(s), but

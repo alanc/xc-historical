@@ -1,4 +1,4 @@
-/* $XConsortium: EventI.h,v 1.23 93/10/15 14:58:13 kaleb Exp $ */
+/* $XConsortium: EventI.h,v 1.24 94/04/17 20:14:03 kaleb Exp $ */
 /* $oHeader: EventI.h,v 1.3 88/08/24 09:21:11 asente Exp $ */
 
 /***********************************************************

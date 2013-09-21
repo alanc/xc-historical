@@ -1,4 +1,4 @@
-/* $XConsortium: miTraverse.c,v 5.5 92/11/17 17:34:39 hersh Exp $ */
+/* $XConsortium: miTraverse.c,v 5.6 94/04/17 20:37:34 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

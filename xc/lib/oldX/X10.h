@@ -1,4 +1,4 @@
-/* $XConsortium: X10.h,v 11.11 89/07/21 13:37:37 jim Exp $ */
+/* $XConsortium: X10.h,v 11.12 94/04/17 20:11:33 jim Exp $ */
 /* 
  * 
 Copyright (c) 1985, 1986, 1987  X Consortium

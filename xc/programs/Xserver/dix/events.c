@@ -47,7 +47,7 @@ SOFTWARE.
 ********************************************************/
 
 
-/* $XConsortium: events.c,v 5.75 94/04/17 20:26:33 frob Exp $ */
+/* $XConsortium: events.c,v 5.76 94/08/16 13:45:06 dpw Exp $ */
 
 #include "X.h"
 #include "misc.h"

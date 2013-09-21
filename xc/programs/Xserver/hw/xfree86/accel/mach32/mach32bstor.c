@@ -1,4 +1,4 @@
-/* $XConsortium: mach32bstor.c,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XConsortium: mach32bstor.c,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32bstor.c,v 3.1 1994/07/15 06:58:05 dawes Exp $ */
 /*-
  * mach32bstore.c --

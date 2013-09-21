@@ -1,4 +1,4 @@
-/* $XConsortium: XF86_Mono.c,v 1.1 94/10/05 13:34:15 kaleb Exp $ */
+/* $XConsortium: XF86_Mono.c,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_Mono.c,v 3.4 1994/09/07 15:51:42 dawes Exp $ */
 #include "X.h"
 #include "os.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: io.c,v 1.16 94/04/17 19:56:06 mor Exp kaleb $ */
+/* $XConsortium: io.c,v 1.17 95/04/05 19:58:20 kaleb Exp $ */
 /*
  * i/o functions
  */

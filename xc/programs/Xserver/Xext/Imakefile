@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 5.39 94/11/21 18:30:11 kaleb Exp dpw $
+XCOMM $XConsortium: Imakefile,v 5.40 95/05/18 21:18:53 dpw Exp $
 #include <Server.tmpl>
 
 #if HasShm

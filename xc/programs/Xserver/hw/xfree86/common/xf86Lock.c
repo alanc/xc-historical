@@ -1,4 +1,4 @@
-/* $XConsortium: xf86Lock.c,v 1.2 94/12/13 20:12:47 kaleb Exp $ */
+/* $XConsortium: xf86Lock.c,v 1.3 95/01/06 21:01:52 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Lock.c,v 3.1 1994/12/29 10:07:30 dawes Exp $ */
 
 /*

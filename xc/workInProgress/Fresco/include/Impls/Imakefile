@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.4 94/03/25 19:53:31 matt Exp $
+XCOMM $XConsortium: Imakefile,v 1.5 94/03/25 19:55:16 matt Exp $
 
 HEADERS = \
     Xdefs.h Xdisplay.h Xdrawing.h Xevent.h Xlib.h Xpainter.h Xraster.h \

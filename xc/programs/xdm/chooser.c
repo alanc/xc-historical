@@ -1,5 +1,5 @@
 /*
- * $XConsortium: chooser.c,v 1.21 94/11/21 18:33:11 kaleb Exp gildea $
+ * $XConsortium: chooser.c,v 1.22 95/06/08 23:20:39 gildea Exp $
  *
 Copyright (c) 1990  X Consortium
 

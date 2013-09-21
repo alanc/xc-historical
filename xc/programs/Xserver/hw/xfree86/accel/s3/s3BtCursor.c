@@ -1,4 +1,4 @@
-/* $XConsortium: s3BtCursor.c,v 1.3 95/01/06 20:57:17 kaleb Exp kaleb $ */
+/* $XConsortium: s3BtCursor.c,v 1.4 95/01/16 13:16:49 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.6 1995/01/12 12:03:06 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>

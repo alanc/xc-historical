@@ -1,4 +1,4 @@
-/* $XConsortium: property.h,v 1.4 93/09/20 16:52:51 dpw Exp $ */
+/* $XConsortium: property.h,v 1.5 94/04/17 20:25:55 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

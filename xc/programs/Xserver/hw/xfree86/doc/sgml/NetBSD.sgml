@@ -618,7 +618,7 @@ and many others.
 </itemize>
 
 <verb>
-$XConsortium: NetBSD.sgml,v 1.3 95/01/23 15:34:46 kaleb Exp kaleb $
+$XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
 $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.8 1995/01/27 10:31:27 dawes Exp $
 </verb>
 

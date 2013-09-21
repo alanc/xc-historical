@@ -1,6 +1,6 @@
 XCOMM!/bin/sh
 XCOMM
-XCOMM $XConsortium: mdepend.cpp,v 1.11 94/11/21 17:16:52 kaleb Exp gildea $
+XCOMM $XConsortium: mdepend.cpp,v 1.12 94/12/09 22:50:34 gildea Exp $
 XCOMM
 XCOMM	Do the equivalent of the 'makedepend' program, but do it right.
 XCOMM

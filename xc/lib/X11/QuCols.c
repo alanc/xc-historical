@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsQuCols.c,v 1.3 91/02/12 16:13:39 dave Exp $" */
+/* $XConsortium: QuCols.c,v 1.4 91/05/13 23:28:26 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

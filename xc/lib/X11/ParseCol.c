@@ -1,4 +1,4 @@
-/* $XConsortium: ParseCol.c,v 11.30 94/03/31 21:49:30 rws Exp $ */
+/* $XConsortium: ParseCol.c,v 11.31 94/04/17 20:20:22 rws Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium

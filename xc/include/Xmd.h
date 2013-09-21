@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 #ifndef XMD_H
 #define XMD_H 1
-/* $XConsortium: Xmd.h,v 1.48 95/04/07 18:59:03 kaleb Exp gildea $ */
+/* $XConsortium: Xmd.h,v 1.49 95/06/08 23:20:39 gildea Exp $ */
 /*
  *  Xmd.h: MACHINE DEPENDENT DECLARATIONS.
  */

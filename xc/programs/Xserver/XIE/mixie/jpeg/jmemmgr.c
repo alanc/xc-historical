@@ -1,4 +1,4 @@
-/* $XConsortium: jmemmgr.c,v 1.3 94/01/12 20:20:03 rws Exp $ */
+/* $XConsortium: jmemmgr.c,v 1.4 94/04/17 20:35:41 rws Exp $ */
 /* Module jmemmgr.c */
 
 /****************************************************************************

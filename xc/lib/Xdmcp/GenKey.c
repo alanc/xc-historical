@@ -1,5 +1,5 @@
 /*
- * $XConsortium: GenKey.c,v 1.5 94/02/06 15:57:29 rws Exp $
+ * $XConsortium: GenKey.c,v 1.6 94/04/17 20:16:36 rws Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  . purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: MakeXIReq.c,v 1.16 94/01/29 15:14:36 rws Exp $
+ * $XConsortium: MakeXIReq.c,v 1.17 94/04/17 21:01:15 rws Exp $
  */
 /*
  * ***************************************************************************
@@ -64,11 +64,11 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /*
- *	$Header: MakeXIReq.c,v 1.16 94/01/29 15:14:36 rws Exp $
+ *	$Header: /x/test/xsuite/xtest/src/libproto/RCS/MakeXIReq.c,v 1.17 94/04/17 21:01:15 rws Exp $
  */
 
 #ifndef lint
-static char rcsid[]="$Header: MakeXIReq.c,v 1.16 94/01/29 15:14:36 rws Exp $";
+static char rcsid[]="$Header: /x/test/xsuite/xtest/src/libproto/RCS/MakeXIReq.c,v 1.17 94/04/17 21:01:15 rws Exp $";
 #endif
 
 #include "DataMove.h"

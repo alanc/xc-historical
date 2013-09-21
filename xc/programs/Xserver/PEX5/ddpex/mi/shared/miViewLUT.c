@@ -1,4 +1,4 @@
-/* $XConsortium: miViewLUT.c,v 5.1 91/02/16 09:56:34 rws Exp $ */
+/* $XConsortium: miViewLUT.c,v 5.2 94/04/17 20:37:47 rws Exp $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium

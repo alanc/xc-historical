@@ -1,4 +1,4 @@
-/* $XConsortium: fstobdf.c,v 1.4 92/11/18 21:31:25 gildea Exp $ */
+/* $XConsortium: fstobdf.c,v 1.5 94/04/17 20:24:27 gildea Exp $ */
 /*
  
 Copyright (c) 1990  X Consortium

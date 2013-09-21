@@ -1,4 +1,4 @@
-/* $XConsortium: defs.h,v 1.24 91/02/13 16:08:07 converse Exp $ */
+/* $XConsortium: defs.h,v 1.25 94/04/17 20:43:50 converse Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

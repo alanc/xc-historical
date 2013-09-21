@@ -1,5 +1,5 @@
 /* oldHeader: EXTERN.h,v 2.0 86/09/17 15:35:37 lwall Exp $
- * $XConsortium$
+ * $XConsortium: EXTERN.h,v 2.1 94/09/09 20:04:44 gildea Exp $
  *
  * Revision 2.0  86/09/17  15:35:37  lwall
  * Baseline for netwide release.

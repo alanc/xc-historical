@@ -1,4 +1,4 @@
-/* $XConsortium: frfntst.m,v 1.1 94/01/29 16:03:37 rws Exp $ */
+/* $XConsortium: frfntst.m,v 1.2 94/04/17 21:14:21 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

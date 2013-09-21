@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: resize.c,v 1.33 95/04/07 18:59:30 kaleb Exp gildea $
+ *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
  */
 
 /*

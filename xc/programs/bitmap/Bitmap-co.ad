@@ -1,4 +1,4 @@
-! $XConsortium$
+! $XConsortium: Bitmap-co.ad,v 1.4 94/02/09 19:43:56 gildea Exp $
 ! The App-defaults file for Bitmap on a color screen.
 
 #include "Bitmap"

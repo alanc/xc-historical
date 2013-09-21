@@ -1,5 +1,5 @@
 /*
- * $XConsortium$
+ * $XConsortium: inits.cxx,v 1.3 94/04/01 16:48:00 matt Exp $
  */
 
 /*

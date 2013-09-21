@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xlsclients.c,v 1.6 90/12/18 15:01:56 gildea Exp $
+ * $XConsortium: xlsclients.c,v 1.7 94/04/17 20:38:32 gildea Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

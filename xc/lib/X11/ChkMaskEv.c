@@ -1,4 +1,4 @@
-/* $XConsortium: ChkMaskEv.c,v 11.25 94/04/17 20:18:46 gildea Exp gildea $ */
+/* $XConsortium: ChkMaskEv.c,v 11.26 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1985, 1987  X Consortium

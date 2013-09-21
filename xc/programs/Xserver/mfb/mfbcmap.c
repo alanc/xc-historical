@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbcmap.c,v 5.5 94/01/21 22:01:39 dpw Exp $ */
+/* $XConsortium: mfbcmap.c,v 5.6 94/04/17 20:28:19 dpw Exp $ */
 #include "X.h"
 #include "scrnintstr.h"
 #include "colormapst.h"

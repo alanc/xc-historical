@@ -1,4 +1,4 @@
-/* $XConsortium: unistd.h,v 1.1 92/06/11 15:30:04 rws Exp $ */
+/* $XConsortium: unistd.h,v 1.2 92/06/12 09:34:58 rws Exp $ */
 
 /* We want to see if we have to define ENOSYS.. */
 #include <errno.h>

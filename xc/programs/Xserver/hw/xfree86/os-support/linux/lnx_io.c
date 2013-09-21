@@ -1,4 +1,4 @@
-/* $XConsortium: lnx_io.c,v 1.1 94/03/28 21:28:56 dpw Exp kaleb $ */
+/* $XConsortium: lnx_io.c,v 1.2 95/06/14 15:19:17 kaleb Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>

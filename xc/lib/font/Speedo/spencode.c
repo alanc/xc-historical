@@ -1,4 +1,4 @@
-/* $XConsortium: spencode.c,v 1.5 92/09/17 12:00:19 gildea Exp $ */
+/* $XConsortium: spencode.c,v 1.6 94/04/17 20:17:46 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation

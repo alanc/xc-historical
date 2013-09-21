@@ -1,4 +1,4 @@
-/* $XConsortium: Dvi.c,v 1.20 92/02/11 01:27:12 keith Exp $ */
+/* $XConsortium: Dvi.c,v 1.21 94/04/17 20:43:34 keith Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

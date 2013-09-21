@@ -1,4 +1,4 @@
-/* $XConsortium: cmsInt.c,v 1.11 93/09/07 21:32:59 rws Exp $" */
+/* $XConsortium: cmsInt.c,v 1.12 94/04/17 20:21:58 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

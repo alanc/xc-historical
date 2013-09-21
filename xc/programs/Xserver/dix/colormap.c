@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.32 94/11/02 15:57:55 kaleb Exp dpw $ */
+/* $XConsortium: colormap.c,v 5.33 95/05/18 21:08:14 dpw Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS

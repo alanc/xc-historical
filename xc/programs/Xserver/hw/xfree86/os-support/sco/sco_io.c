@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sco_io.c,v 1.1 94/03/28 21:30:38 dpw Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>

@@ -1,4 +1,4 @@
-/* $XConsortium: LoadFont.c,v 11.11 91/01/06 11:46:51 rws Exp $ */
+/* $XConsortium: LoadFont.c,v 11.12 94/04/17 20:20:08 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

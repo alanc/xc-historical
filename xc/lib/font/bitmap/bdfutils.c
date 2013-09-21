@@ -1,4 +1,4 @@
-/* $XConsortium: bdfutils.c,v 1.10 94/03/12 18:20:12 gildea Exp $ */
+/* $XConsortium: bdfutils.c,v 1.11 94/04/17 20:17:10 gildea Exp $ */
 /************************************************************************
 Copyright 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

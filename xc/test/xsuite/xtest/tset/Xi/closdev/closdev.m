@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: closdev.m,v 1.9 94/02/21 18:03:54 rws Exp $
+ * $XConsortium: closdev.m,v 1.10 94/04/17 21:13:09 rws Exp $
  */
 
 >>TITLE XCloseDevice XINPUT

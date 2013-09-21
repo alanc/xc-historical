@@ -1,4 +1,4 @@
-/* $XConsortium: GCMisc.c,v 11.4 91/01/06 11:45:50 rws Exp $ */
+/* $XConsortium: GCMisc.c,v 11.5 94/04/17 20:19:28 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

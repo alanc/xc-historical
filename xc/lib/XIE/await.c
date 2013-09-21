@@ -1,4 +1,4 @@
-/* $XConsortium: await.c,v 1.1 93/07/19 11:39:12 mor Exp $ */
+/* $XConsortium: await.c,v 1.2 94/04/17 20:18:18 mor Exp $ */
 
 /*
 

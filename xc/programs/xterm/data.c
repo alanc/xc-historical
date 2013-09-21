@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.c,v 1.11 93/02/25 17:21:27 gildea Exp kaleb $
+ *	$XConsortium: data.c,v 1.12 95/04/05 19:58:47 kaleb Exp $
  */
 
 /*

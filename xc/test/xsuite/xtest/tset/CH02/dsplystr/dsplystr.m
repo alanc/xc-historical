@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: dsplystr.m,v 1.13 92/06/11 15:58:55 rws Exp $
+ * $XConsortium: dsplystr.m,v 1.14 94/04/17 21:02:22 rws Exp $
  */
 >>SET   macro
 >>TITLE XDisplayString CH02

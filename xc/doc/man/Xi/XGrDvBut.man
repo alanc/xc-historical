@@ -8,7 +8,7 @@
 .\" suitability for any purpose of the information in this document.  It is 
 .\" provided \`\`as is'' without express or implied warranty.
 .\" 
-.\" $XConsortium: XGrDvBut.man,v 1.5 94/04/17 20:07:35 dpw Exp $
+.\" $XConsortium: XGrDvBut.man,v 1.6 94/06/04 17:32:26 rws Exp $
 .ds xL Programming With Xlib
 .TH XGrabDeviceButton 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
 .SH NAME

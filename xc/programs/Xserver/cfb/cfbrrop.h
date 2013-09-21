@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbrrop.h,v 1.9 94/04/17 20:29:00 dpw Exp gildea $
+ * $XConsortium: cfbrrop.h,v 1.10 95/06/08 23:20:39 gildea Exp $
  *
 Copyright (c) 1989  X Consortium
 

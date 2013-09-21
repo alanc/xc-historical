@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: hghtmmofsc.m,v 1.5 92/06/11 15:59:40 rws Exp $
+ * $XConsortium: hghtmmofsc.m,v 1.6 94/04/17 21:02:26 rws Exp $
  */
 >>SET   macro
 >>TITLE XHeightMMOfScreen CH02

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.143 95/06/09 20:57:00 gildea Exp kaleb $
+XCOMM platform:  $XConsortium: sun.cf,v 1.144 95/06/16 20:09:26 kaleb Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture

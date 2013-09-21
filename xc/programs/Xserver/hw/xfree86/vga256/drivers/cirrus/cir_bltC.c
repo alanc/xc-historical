@@ -1,4 +1,4 @@
-/* $XConsortium: cir_bltC.c,v 1.4 95/01/05 20:47:57 kaleb Exp kaleb $ */
+/* $XConsortium: cir_bltC.c,v 1.5 95/01/23 15:35:09 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.6 1995/01/18 06:14:32 dawes Exp $ */
 /*
  

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: oclock.c,v 1.16 94/04/01 17:49:16 converse Exp $
+ * $XConsortium: oclock.c,v 1.17 94/04/17 20:37:58 converse Exp $
  *
 Copyright (c) 1989  X Consortium
 

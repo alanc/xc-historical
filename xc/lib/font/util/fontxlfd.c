@@ -1,4 +1,4 @@
-/* $XConsortium: fontxlfd.c,v 1.18 94/04/17 20:17:33 rws Exp $ */
+/* $XConsortium: fontxlfd.c,v 1.19 94/06/05 14:42:48 rws Exp $ */
 
 /*
 

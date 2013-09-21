@@ -1,4 +1,4 @@
-/* $XConsortium: BitEdit.c,v 1.27 94/03/27 13:35:52 rws Exp $ */
+/* $XConsortium: BitEdit.c,v 1.28 94/04/17 20:23:37 rws Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

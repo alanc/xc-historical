@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rstckwdws.m,v 1.7 92/06/11 16:09:34 rws Exp $
+ * $XConsortium: rstckwdws.m,v 1.8 94/04/17 21:03:15 rws Exp $
  */
 >>TITLE XRestackWindows CH03
 void

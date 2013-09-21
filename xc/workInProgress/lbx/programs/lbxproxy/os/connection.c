@@ -1,4 +1,4 @@
-/* $XConsortium: connection.c,v 1.7 95/04/05 17:30:54 kaleb Exp $ */
+/* $XConsortium: connection.c,v 1.8 95/05/17 18:25:37 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium

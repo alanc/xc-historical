@@ -1,4 +1,4 @@
-/* $XConsortium: XimintP.h,v 1.5 94/02/09 11:34:02 mor Exp $ */
+/* $XConsortium: XimintP.h,v 1.6 94/03/26 16:57:21 rws Exp $ */
 /******************************************************************
 
            Copyright 1991, 1992 by Sun Microsystems, Inc.

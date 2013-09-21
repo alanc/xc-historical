@@ -1,4 +1,4 @@
-/* $XConsortium: dregs.h,v 1.2 94/05/28 15:45:25 dpw Exp $ */
+/* $XConsortium: dregs.h,v 1.3 95/01/24 01:54:12 dpw Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.

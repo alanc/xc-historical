@@ -1,4 +1,4 @@
-/* $XConsortium: nxtfontset.c,v 1.1 94/01/29 15:56:26 rws Exp $ */
+/* $XConsortium: nxtfontset.c,v 1.2 94/04/17 21:01:46 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

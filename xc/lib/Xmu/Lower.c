@@ -1,4 +1,4 @@
-/* $XConsortium: Lower.c,v 1.6 91/01/05 17:38:12 converse Exp $ */
+/* $XConsortium: Lower.c,v 1.7 94/04/17 20:16:11 converse Exp $ */
 
 /* 
  

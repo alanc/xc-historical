@@ -1,4 +1,4 @@
-/* $XConsortium: xkbStubs.c,v 1.4 93/09/28 19:47:41 rws Exp $ */
+/* $XConsortium: xkbStubs.c,v 1.7 94/04/02 01:05:01 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

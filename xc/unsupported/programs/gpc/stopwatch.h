@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: stopwatch.h,v 5.1 91/02/16 10:07:53 rws Exp $ */
 
 /*
  */

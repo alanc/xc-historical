@@ -1,4 +1,4 @@
-/* $XConsortium: XlcGeneric.h,v 1.4 94/01/20 18:03:06 rws Exp $ */
+/* $XConsortium: XlcGeneric.h,v 1.5 94/03/29 22:51:13 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

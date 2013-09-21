@@ -1,5 +1,5 @@
 /*
- * $XConsortium: hftQueue.c,v 1.5 91/09/09 13:24:12 rws Exp $
+ * $XConsortium: hftQueue.c,v 1.6 91/11/22 17:07:06 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: acc_3d.c,v 1.2 91/07/08 11:16:19 keith Exp $ */
+/* $XConsortium: acc_3d.c,v 1.3 94/04/17 20:29:53 keith Exp $ */
 /***********************************************************
 
 Copyright (c) 1991  X Consortium

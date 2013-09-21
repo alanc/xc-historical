@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: makeimg.c,v 1.12 92/06/11 15:46:37 rws Exp $
+ * $XConsortium: makeimg.c,v 1.13 94/04/17 21:00:53 rws Exp $
  */
 
 #include	"stdlib.h"

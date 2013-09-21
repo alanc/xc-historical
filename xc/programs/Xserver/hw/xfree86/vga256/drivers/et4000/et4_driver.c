@@ -1,5 +1,5 @@
 /*
- * $XConsortium: et4_driver.c,v 1.5 95/01/06 20:58:50 kaleb Exp kaleb $
+ * $XConsortium: et4_driver.c,v 1.6 95/01/16 13:18:14 kaleb Exp $
  * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.8 1995/01/10 10:31:24 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

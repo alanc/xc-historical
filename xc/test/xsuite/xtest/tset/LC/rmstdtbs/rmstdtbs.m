@@ -1,4 +1,4 @@
-/* $XConsortium: rmstdtbs.m,v 1.2 94/04/17 21:14:23 rws Exp dpw $ */
+/* $XConsortium: rmstdtbs.m,v 1.3 94/12/05 15:02:50 dpw Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

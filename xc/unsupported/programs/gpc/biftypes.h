@@ -1,4 +1,4 @@
-/* $XConsortium: biftypes.h,v 5.3 91/02/17 12:08:00 rws Exp $ */
+/* $XConsortium: biftypes.h,v 5.4 94/04/17 20:44:23 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

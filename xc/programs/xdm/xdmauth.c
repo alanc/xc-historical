@@ -1,4 +1,4 @@
-/* $XConsortium: xdmauth.c,v 1.12 94/04/17 20:03:50 gildea Exp gildea $ */
+/* $XConsortium: xdmauth.c,v 1.13 95/07/10 21:18:07 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

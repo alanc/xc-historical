@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbply1rct.c,v 1.14 94/04/17 20:28:56 dpw Exp kaleb $
+ * $XConsortium: cfbply1rct.c,v 1.15 94/11/21 18:29:57 kaleb Exp $
  *
 Copyright (c) 1990  X Consortium
 

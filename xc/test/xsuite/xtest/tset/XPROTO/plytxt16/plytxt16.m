@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: plytxt16.m,v 1.9 92/06/11 17:55:58 rws Exp $
+ * $XConsortium: plytxt16.m,v 1.10 94/04/17 21:12:05 rws Exp $
  */
 >>TITLE PolyText16 XPROTO
 >>SET startup protostartup

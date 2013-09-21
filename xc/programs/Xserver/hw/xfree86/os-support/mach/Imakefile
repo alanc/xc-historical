@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:29:09 dpw Exp $
 #include <Server.tmpl>
 
 #if defined(OsfArchitecture)

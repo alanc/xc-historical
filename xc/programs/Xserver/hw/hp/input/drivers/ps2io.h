@@ -1,6 +1,6 @@
-/* $XConsortium: x_hil.c,v 8.142 94/04/17 20:30:15 dpw Exp $ */
+/* $XConsortium: ps2io.h,v 1.1 94/05/28 14:32:49 dpw Exp $ */
 /*
- * @(#)ps2io.h: $Revision: 1.3 $ $Date: 93/05/03 16:56:27 $
+ * @(#)ps2io.h: $Revision: 1.1 $ $Date: 94/12/15 09:22:14 $
  * $Locker:  $
  */
 

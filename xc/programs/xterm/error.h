@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: error.h,v 1.8 91/07/17 17:43:54 rws Exp $
+ *	$XConsortium: error.h,v 1.9 93/02/25 17:21:29 gildea Exp $
  */
 
 

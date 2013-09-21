@@ -1,4 +1,4 @@
-/* $XConsortium: MenuButtoP.h,v 1.7 91/09/23 11:25:56 converse Exp $
+/* $XConsortium: MenuButtoP.h,v 1.8 94/04/17 20:12:18 converse Exp $
  *
 Copyright (c) 1989  X Consortium
 

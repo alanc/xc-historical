@@ -36,5 +36,5 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: stipple.mc,v 1.1 92/06/11 18:04:18 rws Exp $
+ * $XConsortium: stipple.mc,v 1.2 94/04/17 21:14:47 rws Exp $
  */

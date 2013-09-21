@@ -1,4 +1,4 @@
-/* $XConsortium: XIElibint.h,v 1.7 94/04/17 20:18:17 rws Exp gildea $ */
+/* $XConsortium: XIElibint.h,v 1.8 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

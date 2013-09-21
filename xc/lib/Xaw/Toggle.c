@@ -1,4 +1,4 @@
-/* $XConsortium: Toggle.c,v 1.27 94/01/31 10:51:53 kaleb Exp $ */
+/* $XConsortium: Toggle.c,v 1.28 94/04/17 20:13:17 kaleb Exp $ */
 
 /*
 

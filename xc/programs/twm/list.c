@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: list.c,v 1.20 91/01/09 17:13:30 rws Exp $
+ * $XConsortium: list.c,v 1.21 94/04/17 20:38:15 rws Exp $
  *
  * TWM code to deal with the name lists for the NoTitle list and
  * the AutoRaise list

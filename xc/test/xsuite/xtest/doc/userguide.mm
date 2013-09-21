@@ -1,4 +1,4 @@
-.\" $XConsortium: userguide.mm,v 1.11 92/07/05 12:46:46 rws Exp dpw $
+.\" $XConsortium: userguide.mm,v 1.12 94/09/08 13:44:28 dpw Exp $
 '
 .ds dD User Guide for the X Test Suite
 .so 00.header

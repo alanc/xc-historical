@@ -1,5 +1,5 @@
 /*
- * $XConsortium: init.c,v 2.80 95/01/25 14:33:57 swick Exp swick $
+ * $XConsortium: init.c,v 2.81 95/01/25 14:56:39 swick Exp $
  *
  *
  *		        COPYRIGHT 1987, 1989

@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: gram.y,v 1.92 92/05/11 15:05:44 dave Exp $
+ * $XConsortium: gram.y,v 1.93 94/04/17 20:38:11 dave Exp $
  *
  * .twmrc command grammer
  *

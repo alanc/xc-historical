@@ -1,4 +1,4 @@
-/* $XConsortium: spglyph.c,v 1.16 94/02/07 15:24:15 gildea Exp $ */
+/* $XConsortium: spglyph.c,v 1.17 94/04/17 20:17:49 gildea Exp $ */
 /*
  * Copyright 1990, 1991 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation

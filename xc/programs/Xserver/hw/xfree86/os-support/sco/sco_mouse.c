@@ -1,4 +1,4 @@
-/* $XConsortium: sco_mouse.c,v 1.1 94/10/05 13:42:34 kaleb Exp $ */
+/* $XConsortium: sco_mouse.c,v 1.2 94/10/12 20:49:22 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.1 1994/09/23 10:25:16 dawes Exp $ */
 
 /******************************************************************************/

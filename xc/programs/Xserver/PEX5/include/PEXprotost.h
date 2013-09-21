@@ -1,4 +1,4 @@
-/* $XConsortium: PEXprotost.h,v 5.5 92/06/03 18:31:58 hersh Exp $ */
+/* $XConsortium: PEXprotost.h,v 5.6 94/04/17 20:35:52 hersh Exp $ */
 
 
 /***********************************************************

@@ -1,5 +1,5 @@
 /*
-* $XConsortium: TextP.h,v 1.53 94/04/17 20:13:08 kaleb Exp kaleb $
+* $XConsortium: TextP.h,v 1.54 95/06/14 15:07:27 kaleb Exp $
 */
 
 

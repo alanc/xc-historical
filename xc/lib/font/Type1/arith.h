@@ -1,4 +1,4 @@
-/* $XConsortium: arith.h,v 1.2 91/10/10 11:17:49 rws Exp $ */
+/* $XConsortium: arith.h,v 1.3 94/03/22 19:08:56 gildea Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991

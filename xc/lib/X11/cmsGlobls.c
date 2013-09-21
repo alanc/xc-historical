@@ -1,4 +1,4 @@
-/*$XConsortium: XcmsGlobls.c,v 1.9 92/06/11 16:24:55 converse Exp $ */
+/*$XConsortium: cmsGlobls.c,v 1.10 93/07/05 11:44:05 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

@@ -1,4 +1,4 @@
-/* $XConsortium: DefErrMsg.c,v 1.9 93/10/27 19:56:21 rws Exp $ */
+/* $XConsortium: DefErrMsg.c,v 1.10 94/04/17 20:15:57 rws Exp $ */
 
 /*
 

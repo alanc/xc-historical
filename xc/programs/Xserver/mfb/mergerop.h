@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mergerop.h,v 1.10 94/04/17 20:28:14 dpw Exp gildea $
+ * $XConsortium: mergerop.h,v 1.11 95/06/08 23:20:39 gildea Exp $
  *
 Copyright (c) 1989  X Consortium
 

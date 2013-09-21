@@ -1,4 +1,4 @@
-/* $XConsortium: pexutdbint.h,v 1.0 93/11/22 12:24:25 rws Exp $ */
+/* $XConsortium: pexutdbint.h,v 1.1 94/04/17 20:52:55 rws Exp $ */
 
 
 /******************************************************************************/
@@ -61,7 +61,7 @@ extern "C" {         /* for C++ V2.0 */
 */
 
 /*
- * $XConsortium: pexutdbint.h,v 1.0 93/11/22 12:24:25 rws Exp $
+ * $XConsortium: pexutdbint.h,v 1.1 94/04/17 20:52:55 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

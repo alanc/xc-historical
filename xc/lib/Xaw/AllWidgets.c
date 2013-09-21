@@ -1,4 +1,4 @@
-/* $XConsortium: AllWidgets.c,v 1.7 94/04/12 16:48:46 kaleb Exp $ */
+/* $XConsortium: AllWidgets.c,v 1.8 94/04/17 20:11:39 kaleb Exp $ */
 
 /*
 

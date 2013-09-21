@@ -1,4 +1,4 @@
-/* $XConsortium: CIELabWpAj.c,v 1.3 91/02/12 16:09:07 dave Exp $" */
+/* $XConsortium: LabWpAj.c,v 1.4 91/05/13 22:20:55 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

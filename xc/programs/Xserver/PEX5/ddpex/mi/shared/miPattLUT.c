@@ -1,4 +1,4 @@
-/* $XConsortium: miPattLUT.c,v 5.3 92/12/30 16:21:28 hersh Exp $ */
+/* $XConsortium: miPattLUT.c,v 5.4 94/04/17 20:37:46 hersh Exp $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium

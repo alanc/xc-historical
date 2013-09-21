@@ -1,4 +1,4 @@
-/* $XConsortium: s3.c,v 1.8 95/01/25 00:44:45 kaleb Exp Kaleb $ */
+/* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.69 1995/01/23 01:29:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

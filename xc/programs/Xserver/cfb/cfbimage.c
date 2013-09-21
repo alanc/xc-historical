@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.17 94/01/21 22:07:26 dpw Exp $ */
+/* $XConsortium: cfbimage.c,v 1.18 94/04/17 20:28:52 dpw Exp $ */
 
 #include "X.h"
 #include "windowstr.h"

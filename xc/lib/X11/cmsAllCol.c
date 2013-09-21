@@ -1,4 +1,4 @@
-/* $XConsortium: XcmsAllCol.c,v 1.4 91/02/12 16:12:24 dave Exp $" */
+/* $XConsortium: cmsAllCol.c,v 1.5 91/05/13 23:03:17 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

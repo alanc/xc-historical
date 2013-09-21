@@ -1,4 +1,4 @@
-/* $XConsortium: mfbscrclse.c,v 1.7 89/07/18 20:05:04 rws Exp $ */
+/* $XConsortium: mfbscrclse.c,v 1.8 94/04/17 20:28:33 rws Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: do_blt.c,v 2.16 94/02/28 21:57:25 dpw Exp $ */
+/* $XConsortium: do_blt.c,v 2.17 94/03/17 20:23:46 dpw Exp $ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 

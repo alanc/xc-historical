@@ -1,5 +1,5 @@
 /*
-* $XConsortium: LabelP.h,v 1.28 94/01/31 10:48:21 kaleb Exp $
+* $XConsortium: LabelP.h,v 1.29 94/04/17 20:12:14 kaleb Exp $
 */
 
 

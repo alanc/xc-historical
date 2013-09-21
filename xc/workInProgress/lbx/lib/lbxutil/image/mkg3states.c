@@ -1,4 +1,4 @@
-/* $XConsortium: mkg3states.c,v 1.1 95/01/17 19:29:06 mor Exp mor $ */
+/* $XConsortium: mkg3states.c,v 1.2 95/01/17 20:29:41 mor Exp $ */
 /*
  * Copyright (c) 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.

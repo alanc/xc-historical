@@ -1,4 +1,4 @@
-/* $XConsortium: bdfread.c,v 1.21 94/03/17 16:38:59 gildea Exp $ */
+/* $XConsortium: bdfread.c,v 1.22 94/04/17 20:17:10 gildea Exp $ */
 
 /************************************************************************
 Copyright 1989 by Digital Equipment Corporation, Maynard, Massachusetts.

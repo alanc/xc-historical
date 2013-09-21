@@ -1,4 +1,4 @@
-/* $XConsortium: FreeGC.c,v 11.13 92/12/31 15:45:41 rws Exp $ */
+/* $XConsortium: FreeGC.c,v 11.14 94/04/17 20:19:27 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

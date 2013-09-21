@@ -1,4 +1,4 @@
-/* $XConsortium: Xpoll.h,v 1.1 94/12/13 22:00:02 kaleb Exp kaleb $ */
+/* $XConsortium: Xpoll.h,v 1.2 95/04/05 19:57:45 kaleb Exp $ */
 
 /*
 

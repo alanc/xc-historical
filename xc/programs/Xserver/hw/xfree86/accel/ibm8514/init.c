@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514init.c,v 1.1 94/03/28 21:05:21 dpw Exp $ */
+/* $XConsortium: init.c,v 1.1 95/01/26 15:30:17 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/init.c,v 3.1 1994/08/01 13:18:07 dawes Exp $ */
 /*
  * Written by Jake Richter

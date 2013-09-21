@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rmptrsrc.m,v 1.8 92/06/11 17:40:36 rws Exp $
+ * $XConsortium: rmptrsrc.m,v 1.9 94/04/17 21:10:12 rws Exp $
  */
 >>TITLE XrmPutResource CH10
 void

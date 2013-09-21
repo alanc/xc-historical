@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: nextvinf.c,v 1.9 92/07/02 17:56:19 rws Exp $
+ * $XConsortium: nextvinf.c,v 1.10 94/04/17 21:00:57 rws Exp $
  */
 
 /*

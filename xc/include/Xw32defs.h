@@ -1,4 +1,4 @@
-/* $XConsortium: Xw32defs.h,v 1.3 93/08/16 15:40:31 rws Exp $ */
+/* $XConsortium: Xw32defs.h,v 1.4 94/02/25 18:50:11 rws Exp $ */
 
 #ifndef _XW32DEFS_H
 #define  _XW32DEFS_H

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyCmap.c,v 1.2 91/07/16 13:13:47 jap Exp $ 
+ * $XConsortium: skyCmap.c,v 1.3 91/12/11 21:23:39 eswu Exp $ 
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *

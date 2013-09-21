@@ -1,4 +1,4 @@
-/* $XConsortium: sunAmMouse.c,v 1.1 94/04/01 17:55:01 dpw Exp $ */
+/* $XConsortium: sunAmMouse.c,v 1.2 94/04/17 20:32:48 dpw Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California

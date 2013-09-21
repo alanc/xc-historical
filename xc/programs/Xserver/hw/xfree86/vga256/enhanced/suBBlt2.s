@@ -1,4 +1,4 @@
-/* $XConsortium: suBitBlt2.s,v 1.2 94/03/29 11:19:16 dpw Exp $ */
+/* $XConsortium: suBBlt2.s,v 1.1 95/01/26 15:07:11 kaleb Exp $ */
 /*******************************************************************************
 			Copyright 1992 by Glenn G. Lai 
 

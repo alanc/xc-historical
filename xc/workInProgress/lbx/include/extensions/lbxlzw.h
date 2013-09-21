@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: lbxlzw.h,v 1.4 94/12/01 20:07:54 mor Exp $ */
 /*
  * $NCDId: @(#)lzw.h,v 1.2 1994/01/17 20:59:50 dct Exp $
  *

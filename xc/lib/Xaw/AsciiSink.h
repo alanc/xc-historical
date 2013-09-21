@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiSink.h,v 1.8 94/01/31 10:47:59 kaleb Exp $
+ * $XConsortium: AsciiSink.h,v 1.9 94/04/17 20:11:43 kaleb Exp $
  */
 
 /***********************************************************

@@ -1,4 +1,4 @@
-/* $XConsortium: dm.c,v 1.70 94/04/17 20:03:36 gildea Exp gildea $ */
+/* $XConsortium: dm.c,v 1.71 95/07/10 21:18:07 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

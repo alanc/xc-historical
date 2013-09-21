@@ -1,4 +1,4 @@
-/* $XConsortium: ShapeWidg.c,v 1.5 90/12/20 11:01:29 converse Exp $ */
+/* $XConsortium: ShapeWidg.c,v 1.6 94/04/17 20:16:13 converse Exp $ */
 
 /* 
  

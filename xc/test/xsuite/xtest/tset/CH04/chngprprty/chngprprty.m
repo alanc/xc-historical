@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chngprprty.m,v 1.12 92/06/11 16:12:23 rws Exp $
+ * $XConsortium: chngprprty.m,v 1.13 94/04/17 21:03:27 rws Exp $
  */
 >>TITLE XChangeProperty CH04
 void

@@ -1,4 +1,4 @@
-/* $XConsortium: spprtslcl.m,v 1.1 94/01/29 16:01:55 rws Exp $ */
+/* $XConsortium: spprtslcl.m,v 1.2 94/04/17 21:14:13 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

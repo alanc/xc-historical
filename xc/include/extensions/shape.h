@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: shape.h,v 1.16 91/10/05 14:13:18 rws Exp $ */
+/* $XConsortium: shape.h,v 1.17 94/04/17 20:11:23 rws Exp $ */
 
 #ifndef _SHAPE_H_
 #define _SHAPE_H_

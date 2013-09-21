@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtwmszhnts.m,v 1.8 92/06/11 17:29:29 rws Exp $
+ * $XConsortium: gtwmszhnts.m,v 1.9 94/04/17 21:08:50 rws Exp $
  */
 >>TITLE XGetWMSizeHints CH09
 Status

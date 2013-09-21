@@ -1,4 +1,4 @@
-/* $XConsortium: svgaColor.c,v 1.3 93/09/20 12:06:02 rws Exp $ */
+/* $XConsortium: svgaColor.c,v 1.4 94/03/19 17:26:54 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.

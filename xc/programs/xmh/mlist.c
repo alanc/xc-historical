@@ -1,4 +1,4 @@
-/* $XConsortium: mlist.c,v 2.9 89/07/21 18:56:29 converse Exp $" */
+/* $XConsortium: mlist.c,v 2.10 91/01/06 21:08:51 rws Exp $" */
 
 /*
  *			  COPYRIGHT 1987

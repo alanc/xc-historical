@@ -1,4 +1,4 @@
-/* $XConsortium: XKBlibint.h,v 1.4 93/09/28 19:48:51 rws Exp $ */
+/* $XConsortium: XKBlibint.h,v 1.6 94/04/01 18:44:18 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

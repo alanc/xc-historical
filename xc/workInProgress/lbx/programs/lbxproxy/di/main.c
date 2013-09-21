@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.8 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: main.c,v 1.9 95/05/24 16:14:13 mor Exp $ */
 /*
  * $NCDOr$
  * $NCDId: @(#)main.c,v 1.17 1994/11/16 02:27:55 lemke Exp $

@@ -1,4 +1,4 @@
-/* $XConsortium: help.c,v 1.9 91/07/01 14:05:09 dave Exp $ */
+/* $XConsortium: help.c,v 1.10 94/04/17 20:43:53 dave Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

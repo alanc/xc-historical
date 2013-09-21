@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ClientMng.c,v 1.9 92/06/11 15:50:03 rws Exp $
+ * $XConsortium: ClientMng.c,v 1.10 94/04/17 21:01:11 rws Exp $
  */
 /*
  * ***************************************************************************

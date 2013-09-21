@@ -1,4 +1,4 @@
-/* $XConsortium: validate.h,v 1.1 94/03/17 11:36:07 dpw Exp $ */
+/* $XConsortium: validate.h,v 1.2 94/04/17 21:16:55 dpw Exp $ */
 
 /*
 

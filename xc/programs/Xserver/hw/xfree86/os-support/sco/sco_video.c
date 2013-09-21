@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sco_video.c,v 1.1 94/03/28 21:30:50 dpw Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>

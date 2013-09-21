@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: bifparse.h,v 5.1 91/02/16 10:07:01 rws Exp $ */
 
 
 typedef union 	{

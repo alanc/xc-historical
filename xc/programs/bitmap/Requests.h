@@ -1,4 +1,4 @@
-/* $XConsortium: Requests.h,v 1.6 93/08/19 09:25:39 rws Exp $ */
+/* $XConsortium: Requests.h,v 1.7 94/04/17 20:23:46 rws Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

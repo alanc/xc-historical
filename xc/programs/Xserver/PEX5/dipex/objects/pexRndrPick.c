@@ -1,4 +1,4 @@
-/* $XConsortium: pexRndrPick.c,v 1.8 92/12/14 16:17:44 hersh Exp $ */
+/* $XConsortium: pexRndrPick.c,v 1.9 94/04/17 20:36:13 hersh Exp $ */
 
 /************************************************************
 

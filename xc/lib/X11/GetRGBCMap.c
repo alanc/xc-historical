@@ -1,4 +1,4 @@
-/* $XConsortium: GetRGBCMap.c,v 1.5 91/01/08 14:39:37 gildea Exp $ */
+/* $XConsortium: GetRGBCMap.c,v 1.6 94/04/17 20:19:42 gildea Exp $ */
 
 /*
 

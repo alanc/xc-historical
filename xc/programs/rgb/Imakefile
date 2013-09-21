@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.30 94/05/14 16:36:45 rws Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.31 94/12/08 02:28:20 kaleb Exp $
 
 #if UseRgbTxt
    RGB_DEFINES = -DUSE_RGB_TXT

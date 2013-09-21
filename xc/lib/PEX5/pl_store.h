@@ -1,4 +1,4 @@
-/* $XConsortium: pl_store.h,v 1.3 94/04/17 20:22:46 mor Exp gildea $ */
+/* $XConsortium: pl_store.h,v 1.4 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1992  X Consortium

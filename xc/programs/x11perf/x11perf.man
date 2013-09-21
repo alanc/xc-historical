@@ -1,4 +1,4 @@
-.\" $XConsortium: x11perf.man,v 1.23 94/04/12 19:01:57 dpw Exp $
+.\" $XConsortium: x11perf.man,v 1.24 94/04/17 20:38:40 dpw Exp $
 .\" Copyright 1988, 1989 Digital Equipment Corporation.
 .\" Copyright (c) 1989, 1994  X Consortium
 .\" 

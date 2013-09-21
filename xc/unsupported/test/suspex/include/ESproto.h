@@ -1,4 +1,4 @@
-/* $XConsortium: ESproto.h,v 3.1 93/11/22 12:06:47 rws Exp $ */
+/* $XConsortium: ESproto.h,v 3.2 94/04/17 20:53:50 rws Exp $ */
 
 /*
  * Copyright (c) 1992 by Sun Microsystems, Inc.

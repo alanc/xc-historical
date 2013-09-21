@@ -1,4 +1,4 @@
-/* $XConsortium: Dialog.c,v 1.10 91/07/24 15:46:20 converse Exp $ */
+/* $XConsortium: Dialog.c,v 1.11 94/04/17 20:23:42 converse Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

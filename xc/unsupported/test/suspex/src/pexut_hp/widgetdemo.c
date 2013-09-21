@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: widgetdemo.c,v 1.0 93/11/22 12:24:31 rws Exp $ */
 
 #include <stdio.h>
 #include <Xm/Xm.h>

@@ -1,4 +1,4 @@
-/* $XConsortium: GetNrmHint.c,v 1.6 91/02/01 16:32:58 gildea Exp $ */
+/* $XConsortium: GetNrmHint.c,v 1.7 94/04/17 20:19:38 gildea Exp $ */
 /***********************************************************
 Copyright 1988 by Wyse Technology, Inc., San Jose, Ca,
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,

@@ -1,4 +1,4 @@
-/* $XConsortium: curves.c,v 1.3 91/10/10 11:17:56 rws Exp $ */
+/* $XConsortium: curves.c,v 1.4 92/07/07 17:14:55 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991              */
 /* All Rights Reserved                                               */
  

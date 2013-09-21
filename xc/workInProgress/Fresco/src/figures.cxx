@@ -1,5 +1,5 @@
 /*
- * $XConsortium: figures.cxx,v 1.4 94/04/07 11:29:32 matt Exp matt $
+ * $XConsortium: figures.cxx,v 1.5 94/09/01 18:40:21 matt Exp $
  */
 
 /*

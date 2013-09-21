@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: SC11412.h,v 1.1 94/03/28 21:25:22 dpw Exp $ */
 
 /* Norbert Distler ndistler@physik.tu-muenchen.de */
 

@@ -1,4 +1,4 @@
-/* $XConsortium: KeyBind.c,v 11.79 94/04/17 20:20:03 erik Exp $ */
+/* $XConsortium: KeyBind.c,v 11.80 94/06/05 17:02:01 rws Exp $ */
 /* 
 
 Copyright (c) 1985, 1987,  X Consortium

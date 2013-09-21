@@ -1,4 +1,4 @@
-/* $XConsortium: mbdrwimgst.m,v 1.1 94/01/29 16:04:19 rws Exp $ */
+/* $XConsortium: mbdrwimgst.m,v 1.2 94/04/17 21:14:25 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

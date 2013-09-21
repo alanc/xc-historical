@@ -25,7 +25,7 @@
  *
  */
 
-/* $XConsortium: $ */
+/* $XConsortium: I128.c,v 1.3 95/06/19 20:04:38 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/I128.c,v 3.2 1994/12/25 12:18:05 dawes Exp $ */
 
 #include "Probe.h"

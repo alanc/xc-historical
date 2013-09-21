@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: Xstlib.h,v 1.14 94/01/29 15:04:17 rws Exp $
+ * $XConsortium: Xstlib.h,v 1.15 94/04/17 21:00:03 rws Exp $
  */
 /*
  * ***************************************************************************

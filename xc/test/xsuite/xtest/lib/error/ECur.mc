@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ECur.mc,v 1.8 92/06/11 18:05:50 rws Exp $
+ * $XConsortium: ECur.mc,v 1.9 94/04/17 21:14:54 rws Exp $
  */
 >>ASSERTION Bad A
 >>### Cursor

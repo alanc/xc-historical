@@ -1,5 +1,5 @@
 STARTFONT 2.1
-COMMENT $XConsortium$
+COMMENT $XConsortium: xtfont0.bdf,v 1.2 92/06/30 17:23:42 rws Exp $
 COMMENT xtfont0 - font to test special cases.
 FONT xtfont0
 SIZE 13 100 100

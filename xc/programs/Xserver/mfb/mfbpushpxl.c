@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpushpxl.c,v 5.5 94/01/12 18:05:25 dpw Exp $ */
+/* $XConsortium: mfbpushpxl.c,v 5.6 94/04/17 20:28:31 dpw Exp $ */
 
 #include "X.h"
 #include "gcstruct.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: GetResList.c,v 1.6 93/10/06 17:20:25 kaleb Exp $ */
+/* $XConsortium: GetResList.c,v 1.7 94/04/17 20:14:08 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

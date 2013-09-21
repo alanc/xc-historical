@@ -1,4 +1,4 @@
-/* $XConsortium: vendor.h,v 1.11 93/09/13 19:25:17 rws Exp $ */
+/* $XConsortium: vendor.h,v 1.12 94/04/17 20:44:00 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ibm.cf,v 1.54 95/03/17 20:53:33 gildea Exp kaleb $
+XCOMM platform:  $XConsortium: ibm.cf,v 1.55 95/04/07 19:22:30 kaleb Exp kaleb $
 
 #ifdef RsArchitecture
 #ifndef OSName
@@ -103,7 +103,7 @@ baseobj.Osuf:	basedep.CCsuf						@@\
 #if OSMajorVersion >= 4
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_ISW_FUNCS
 #define CcCmd c89		/* full conforming ANSI C w/ ANSI headers */
- _NULLCMD_ = @ echo
+#define AvoidNullMakeCommand	YES
 #else
 #define XibmServer 		YES
 #define ibmIncludeSKYWAY	YES

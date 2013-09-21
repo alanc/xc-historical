@@ -1,4 +1,4 @@
-/* $XConsortium: lcEuc.c,v 1.9 94/03/29 22:51:55 rws Exp kaleb $ */
+/* $XConsortium: lcEuc.c,v 1.10 95/06/26 20:41:49 kaleb Exp $ */
 /******************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED

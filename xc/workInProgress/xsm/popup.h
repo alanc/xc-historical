@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: popup.h,v 1.1 94/12/27 17:59:58 mor Exp $ */
 
 /*
 

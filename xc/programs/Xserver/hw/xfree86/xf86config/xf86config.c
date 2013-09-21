@@ -1,4 +1,4 @@
-/* $XConsortium: $ */
+/* $XConsortium: xf86config.c,v 1.5 95/06/19 19:36:09 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.8 1995/01/23 01:33:09 dawes Exp $ */
 
 /*

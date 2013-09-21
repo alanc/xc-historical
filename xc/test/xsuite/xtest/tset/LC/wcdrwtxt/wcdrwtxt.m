@@ -1,4 +1,4 @@
-/* $XConsortium: wcdrwtxt.m,v 1.1 94/01/29 16:05:19 rws Exp $ */
+/* $XConsortium: wcdrwtxt.m,v 1.2 94/04/17 21:14:28 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: util.c,v 2.44 94/03/30 19:55:04 gildea Exp gildea $
+ * $XConsortium: util.c,v 2.45 94/11/28 23:43:16 gildea Exp $
  *
  *
  *			  COPYRIGHT 1987

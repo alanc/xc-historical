@@ -1,5 +1,5 @@
 /*
- * $XConsortium: tocfuncs.c,v 2.38 91/07/17 21:28:33 converse Exp $
+ * $XConsortium: tocfuncs.c,v 2.39 92/04/08 12:19:21 rws Exp $
  *
  *
  *			COPYRIGHT 1987, 1989

@@ -1,4 +1,4 @@
-/* $XConsortium: imLcFlt.c,v 1.3 94/03/26 17:00:28 rws Exp $ */
+/* $XConsortium: imLcFlt.c,v 1.4 94/07/06 14:46:56 kaleb Exp $ */
 /******************************************************************
 
               Copyright 1992 by Fuji Xerox Co., Ltd.

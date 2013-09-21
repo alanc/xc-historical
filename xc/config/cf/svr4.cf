@@ -1,4 +1,4 @@
-XCOMM $XConsortium: svr4.cf,v 1.13 95/06/09 20:57:00 gildea Exp kaleb $
+XCOMM $XConsortium: svr4.cf,v 1.14 95/06/30 18:21:43 kaleb Exp $
 /*
  * A default OS name
  */

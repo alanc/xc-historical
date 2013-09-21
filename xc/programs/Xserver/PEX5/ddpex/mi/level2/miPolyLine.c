@@ -1,4 +1,4 @@
-/* $XConsortium: miPolyLine.c,v 5.4 92/12/29 17:12:53 mor Exp $ */
+/* $XConsortium: miPolyLine.c,v 5.5 94/04/17 20:37:16 mor Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

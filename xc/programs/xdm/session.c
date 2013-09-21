@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.74 94/10/17 18:26:13 converse Exp gildea $ */
+/* $XConsortium: session.c,v 1.75 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: miwideline.c,v 1.56 94/04/17 20:27:59 dpw Exp $ */
+/* $XConsortium: miwideline.c,v 1.57 94/07/25 13:45:31 kaleb Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

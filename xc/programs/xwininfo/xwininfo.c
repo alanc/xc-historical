@@ -1,4 +1,4 @@
-/* $XConsortium: xwininfo.c,v 1.54 94/03/27 15:35:16 rws Exp $ */
+/* $XConsortium: xwininfo.c,v 1.55 94/04/17 20:24:40 rws Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

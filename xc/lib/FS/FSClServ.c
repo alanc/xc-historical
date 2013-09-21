@@ -1,4 +1,4 @@
-/* $XConsortium: FSClServ.c,v 1.4 94/04/12 21:53:23 dpw Exp $ */
+/* $XConsortium: FSClServ.c,v 1.5 94/04/17 20:15:09 dpw Exp $ */
 
 /* @(#)FSClServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;

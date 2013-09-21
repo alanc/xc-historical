@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: cnvrtslctn.m,v 1.6 93/07/05 13:27:16 rws Exp $
+ * $XConsortium: cnvrtslctn.m,v 1.7 94/04/17 21:03:28 rws Exp $
  */
 >>TITLE XConvertSelection CH04
 void

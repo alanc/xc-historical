@@ -1,4 +1,4 @@
-/* $XConsortium: miPck1Prim.c,v 5.2 93/01/25 16:26:11 hersh Exp $ */
+/* $XConsortium: miPck1Prim.c,v 5.3 94/04/17 20:36:53 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

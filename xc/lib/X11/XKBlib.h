@@ -1,4 +1,4 @@
-/* $XConsortium: XKBlib.h,v 1.7 94/04/08 02:57:42 erik Exp $ */
+/* $XConsortium: XKBlib.h,v 1.8 94/04/08 15:11:49 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

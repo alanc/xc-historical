@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipple68k.s,v 1.2 91/12/19 14:17:34 keith Exp $
+ * $XConsortium: stipple68k.s,v 1.3 94/04/17 20:29:09 keith Exp $
  *
 Copyright (c) 1990  X Consortium
 

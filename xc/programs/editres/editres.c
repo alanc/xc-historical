@@ -1,5 +1,5 @@
 /*
- * $XConsortium: editres.c,v 1.17 93/08/19 09:26:38 rws Exp $
+ * $XConsortium: editres.c,v 1.18 94/04/17 20:38:52 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

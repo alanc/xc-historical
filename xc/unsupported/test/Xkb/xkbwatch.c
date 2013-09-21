@@ -1,4 +1,4 @@
-/* $XConsortium: xkbwatch.c,v 1.2 93/09/28 23:52:14 rws Exp $ */
+/* $XConsortium: xkbwatch.c,v 1.4 94/04/01 18:50:21 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

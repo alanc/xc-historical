@@ -1,5 +1,5 @@
 /*
- * $XConsortium: pick.c,v 2.44 91/07/05 18:58:25 converse Exp $
+ * $XConsortium: pick.c,v 2.45 91/07/17 21:26:54 converse Exp $
  *
  *
  *			  COPYRIGHT 1987

@@ -1,4 +1,4 @@
-/* $XConsortium: GetImage.c,v 11.29 94/04/17 20:19:36 rws Exp gildea $ */
+/* $XConsortium: GetImage.c,v 11.30 95/06/07 20:39:54 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

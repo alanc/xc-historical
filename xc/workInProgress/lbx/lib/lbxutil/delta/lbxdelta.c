@@ -1,6 +1,6 @@
 /*
  * $NCDId: @(#)lbxdelta.c,v 1.2 1994/01/22 02:23:40 dct Exp $
- * $XConsortium: lbxdelta.c,v 1.4 94/03/27 12:05:47 dpw Exp mor $
+ * $XConsortium: lbxdelta.c,v 1.5 95/05/30 18:26:59 mor Exp $
  * Copyright 1993 Network Computing Devices
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

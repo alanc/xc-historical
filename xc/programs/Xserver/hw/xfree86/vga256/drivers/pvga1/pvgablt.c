@@ -1,4 +1,4 @@
-/* $XConsortium: pvgablt.c,v 1.5 95/01/16 13:18:23 kaleb Exp kaleb $ */
+/* $XConsortium: pvgablt.c,v 1.6 95/01/23 15:35:20 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvgablt.c,v 3.2 1995/01/19 05:25:20 dawes Exp $ */
 /*
  * cfb copy area

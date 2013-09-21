@@ -1,4 +1,4 @@
-/* $XConsortium: session.c,v 1.18 95/01/04 22:28:37 mor Exp Kaleb $ */
+/* $XConsortium: session.c,v 1.19 95/04/07 19:22:37 kaleb Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium

@@ -1,4 +1,4 @@
-# $XConsortium: tet_scen,v 1.5 94/01/30 12:23:44 rws Exp $
+# $XConsortium: tet_scen,v 1.6 94/01/30 12:32:15 rws Exp $
 #
 # This scenario can build or run all tests in sections 2 to 10 of the
 # X11R4 Xlib specifications and touch tests for the X Protocol (version 11).

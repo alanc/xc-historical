@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipushpxl.c,v 5.4 93/09/20 20:24:25 dpw Exp $ */
+/* $XConsortium: mipushpxl.c,v 5.5 94/04/17 20:27:47 dpw Exp $ */
 #include "X.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"

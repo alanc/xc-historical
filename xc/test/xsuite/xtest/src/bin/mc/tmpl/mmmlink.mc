@@ -1,4 +1,4 @@
-# $XConsortium: mmmlink.mc,v 1.2 92/06/11 19:34:20 rws Exp $
+# $XConsortium: mmmlink.mc,v 1.3 94/01/29 16:24:16 rws Exp $
 # A version of the test that can be combined with all the other tests for
 # the macro version of the function.
 #

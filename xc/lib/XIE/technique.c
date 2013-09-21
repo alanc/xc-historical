@@ -1,4 +1,4 @@
-/* $XConsortium: technique.c,v 1.6 94/03/09 15:02:44 mor Exp $ */
+/* $XConsortium: technique.c,v 1.7 94/04/17 20:18:28 mor Exp $ */
 
 /*
 

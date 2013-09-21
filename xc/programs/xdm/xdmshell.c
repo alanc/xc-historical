@@ -1,4 +1,4 @@
-/* $XConsortium: xdmshell.c,v 1.15 94/11/28 23:32:58 gildea Exp kaleb $ */
+/* $XConsortium: xdmshell.c,v 1.16 95/01/05 20:57:57 kaleb Exp $ */
 /*
  * xdmshell - simple program for running xdm from login
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: GetMoEv.c,v 11.20 91/01/06 11:46:11 rws Exp $ */
+/* $XConsortium: GetMoEv.c,v 11.21 94/04/17 20:19:37 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: Color.c,v 1.4 94/03/31 17:48:44 dpw Exp ray $ */
+/* $XConsortium: Color.c,v 1.5 95/07/10 17:42:22 ray Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

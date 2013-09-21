@@ -1,4 +1,4 @@
-/* $XConsortium: ppcFillRct.c,v 1.2 94/04/17 20:31:48 dpw Exp kaleb $ */
+/* $XConsortium: ppcFillRct.c,v 1.3 95/06/19 20:15:26 kaleb Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 

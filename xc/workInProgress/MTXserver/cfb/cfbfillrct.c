@@ -50,7 +50,7 @@ OF THIS SOFTWARE.
 
 */
 
-/* $XConsortium: cfbfillrct.c,v 1.4 94/01/11 20:42:43 rob Exp $ */
+/* $XConsortium: cfbfillrct.c,v 1.5 94/04/17 21:16:21 rob Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

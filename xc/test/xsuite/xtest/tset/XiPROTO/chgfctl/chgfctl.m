@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chgfctl.m,v 1.4 94/01/30 11:52:26 rws Exp $
+ * $XConsortium: chgfctl.m,v 1.5 94/04/17 21:13:42 rws Exp $
  */
 >>TITLE ChangeFeedbackControl XIPROTO
 >>SET startup protostartup

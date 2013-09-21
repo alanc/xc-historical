@@ -1,4 +1,4 @@
-/* $XConsortium: GetKCnt.c,v 11.14 91/01/06 11:46:09 rws Exp $ */
+/* $XConsortium: GetKCnt.c,v 11.15 94/04/17 20:19:36 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

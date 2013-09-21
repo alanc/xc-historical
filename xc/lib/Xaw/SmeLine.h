@@ -1,5 +1,5 @@
 /*
- * $XConsortium: SmeLine.h,v 1.3 89/12/11 15:20:19 kit Exp $
+ * $XConsortium: SmeLine.h,v 1.4 94/04/17 20:12:53 kit Exp $
  *
 Copyright (c) 1989  X Consortium
 

@@ -1,4 +1,4 @@
-/* $XConsortium: GetHost.c,v 1.6 94/03/29 15:25:19 rws Exp $ */
+/* $XConsortium: GetHost.c,v 1.7 94/04/17 20:16:07 rws Exp $ */
 
 /*
 

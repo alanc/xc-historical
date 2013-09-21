@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chngpntrcn.m,v 1.4 92/06/11 17:46:09 rws Exp $
+ * $XConsortium: chngpntrcn.m,v 1.5 94/04/17 21:10:59 rws Exp $
  */
 >>TITLE ChangePointerControl XPROTO
 >>SET startup protostartup

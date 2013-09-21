@@ -426,4 +426,4 @@ void xf86OsMouseOption(int token, pointer lex_ptr)
 	 */
 }
 
-$XConsortium: $
+$XConsortium: README.OS-lib,v 1.2 95/06/19 18:20:06 kaleb Exp $

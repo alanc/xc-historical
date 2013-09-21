@@ -1,4 +1,4 @@
-/* $XConsortium: Pointer.c,v 1.1 93/07/12 15:28:43 rws Exp ray $ */
+/* $XConsortium: Pointer.c,v 1.2 95/07/10 17:42:22 ray Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

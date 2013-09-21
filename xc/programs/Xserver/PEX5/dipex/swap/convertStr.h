@@ -1,4 +1,4 @@
-/* $XConsortium: convertStr.h,v 5.3 92/08/12 15:46:12 hersh Exp $ */
+/* $XConsortium: convertStr.h,v 5.4 94/04/17 20:36:31 hersh Exp $ */
 
 /***********************************************************
 

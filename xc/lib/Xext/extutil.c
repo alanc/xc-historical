@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.c,v 1.17 94/03/07 21:58:56 rws Exp $
+ * $XConsortium: extutil.c,v 1.18 94/04/17 20:22:58 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

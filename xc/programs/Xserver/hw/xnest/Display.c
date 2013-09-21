@@ -1,4 +1,4 @@
-/* $XConsortium: Display.c,v 1.2 94/02/06 17:51:11 rws Exp ray $ */
+/* $XConsortium: Display.c,v 1.3 95/07/10 17:42:22 ray Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

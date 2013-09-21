@@ -1,4 +1,4 @@
-/* $XConsortium: Constraint.c,v 1.14 93/10/06 17:00:59 kaleb Exp $ */
+/* $XConsortium: Constraint.c,v 1.15 94/04/17 20:13:45 kaleb Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts

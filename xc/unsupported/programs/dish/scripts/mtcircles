@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: mtcircles,v 1.2 94/04/01 16:33:18 matt Exp $
 #  This dish script draws two circles that change their sizes
 #
 #  Bugs:    1) Can't make tcl share one procedure (zoomer).

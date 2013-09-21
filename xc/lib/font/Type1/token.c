@@ -1,4 +1,4 @@
-/* $XConsortium: token.c,v 1.2 91/10/10 11:19:55 rws Exp $ */
+/* $XConsortium: token.c,v 1.3 94/02/04 17:07:17 gildea Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ValListMng.c,v 1.9 93/12/24 10:30:45 rws Exp $
+ * $XConsortium: ValListMng.c,v 1.10 94/04/17 21:01:34 rws Exp $
  */
 /*
  *	Purpose:  routines to edit value lists in requests

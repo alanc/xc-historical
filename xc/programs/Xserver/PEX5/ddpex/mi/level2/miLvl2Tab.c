@@ -1,4 +1,4 @@
-/* $XConsortium: miLvl2Tab.c,v 5.4 92/08/12 15:32:49 hersh Exp $ */
+/* $XConsortium: miLvl2Tab.c,v 5.5 94/04/17 20:37:08 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

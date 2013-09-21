@@ -1,4 +1,4 @@
-/* $XConsortium: main.c,v 1.18 94/03/28 15:31:56 gildea Exp $ */
+/* $XConsortium: main.c,v 1.19 94/03/28 18:34:05 gildea Exp $ */
 
 /* Puzzle - (C) Copyright 1987, 1988 Don Bennett.
  *

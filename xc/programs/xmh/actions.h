@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.h,v 1.9 91/07/17 21:20:49 converse Exp $
+ * $XConsortium: actions.h,v 1.10 94/04/17 20:24:00 converse Exp $
  *
 Copyright (c) 1989  X Consortium
 

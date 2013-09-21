@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronKbd.c,v 1.4 94/04/01 18:49:22 erik Exp dpw $
+ * $XConsortium: omronKbd.c,v 1.5 94/08/16 13:49:40 dpw Exp $
  *
  * Copyright 1991 by OMRON Corporation
  * 

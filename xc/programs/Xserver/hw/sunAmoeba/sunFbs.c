@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunFbs.c,v 1.6 94/04/01 17:55:30 dpw Exp $ */
+/* $XConsortium: sunFbs.c,v 1.7 94/04/17 20:32:50 dpw Exp $ */
 
 /*
 Copyright (c) 1990, 1993  X Consortium

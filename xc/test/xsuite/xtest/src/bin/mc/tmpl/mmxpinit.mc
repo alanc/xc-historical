@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: mmxpinit.mc,v 1.2 92/06/11 19:34:29 rws Exp $
 #
 # X Protocol tests.
 #

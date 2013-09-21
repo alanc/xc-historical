@@ -1,4 +1,4 @@
-/* $XConsortium: mijpeg.c,v 1.3 94/01/12 20:12:31 rws Exp $ */
+/* $XConsortium: mijpeg.c,v 1.4 94/04/17 20:34:54 rws Exp $ */
 /**** module mijpeg.c ****/
 /******************************************************************************
 Copyright (c) 1993, 1994  X Consortium

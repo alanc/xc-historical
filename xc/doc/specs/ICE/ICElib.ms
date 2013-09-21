@@ -1,4 +1,4 @@
-.\" $XConsortium: ICElib.ms,v 1.17 94/04/17 18:36:27 rws Exp $
+.\" $XConsortium: ICElib.ms,v 1.18 94/04/18 13:46:34 rws Exp $
 .\" 
 .\" Use tbl, -ms, and macros.t
 .\" 

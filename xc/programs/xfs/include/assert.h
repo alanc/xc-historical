@@ -1,4 +1,4 @@
-/* $XConsortium: assert.h,v 1.3 94/04/12 21:59:12 dpw Exp $ */
+/* $XConsortium: assert.h,v 1.4 94/04/17 19:55:52 dpw Exp $ */
 /* 
 Copyright (c) 1987  X Consortium
 

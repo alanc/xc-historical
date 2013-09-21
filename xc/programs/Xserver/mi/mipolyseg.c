@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipolyseg.c,v 5.0 89/06/09 15:08:39 keith Exp $ */
+/* $XConsortium: mipolyseg.c,v 5.1 94/04/17 20:27:45 keith Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "miscstruct.h"

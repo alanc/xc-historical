@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.h,v 5.8 95/01/10 20:59:49 kaleb Exp dpw $ */
+/* $XConsortium: mifillarc.h,v 5.9 95/01/11 16:19:24 dpw Exp $ */
 
 #define FULLCIRCLE (360 * 64)
 

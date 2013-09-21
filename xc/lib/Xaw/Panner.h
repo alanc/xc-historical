@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Panner.h,v 1.21 91/05/04 18:59:17 rws Exp $
+ * $XConsortium: Panner.h,v 1.22 94/04/17 20:12:32 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: utils.c,v 1.21 93/09/20 18:06:32 hersh Exp $
+ * $XConsortium: utils.c,v 1.22 94/04/17 20:38:57 hersh Exp $
  *
 Copyright (c) 1989  X Consortium
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: frclrmp.m,v 1.8 92/06/11 16:15:53 rws Exp $
+ * $XConsortium: frclrmp.m,v 1.9 94/04/17 21:03:54 rws Exp $
  */
 >>TITLE XFreeColormap CH05
 void

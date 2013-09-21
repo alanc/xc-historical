@@ -1,4 +1,4 @@
-/* $XConsortium: nextlocale.c,v 1.1 94/01/29 15:55:27 rws Exp $ */
+/* $XConsortium: nextlocale.c,v 1.2 94/04/17 21:01:46 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyBitBlt.c,v 1.5 93/09/13 09:38:22 dpw Exp $
+ * $XConsortium: skyBitBlt.c,v 1.6 94/04/17 20:29:20 dpw Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *

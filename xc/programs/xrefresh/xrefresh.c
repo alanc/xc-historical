@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /*
- * $XConsortium: xrefresh.c,v 1.13 90/12/13 08:26:33 rws Exp $
+ * $XConsortium: xrefresh.c,v 1.14 94/04/17 20:24:48 rws Exp $
  *
  * Kitchen sink version, useful for clearing small areas and flashing the 
  * screen.

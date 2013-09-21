@@ -1,4 +1,4 @@
-/* $XConsortium: SetPMask.c,v 11.9 91/01/06 11:48:06 rws Exp $ */
+/* $XConsortium: SetPMask.c,v 11.10 94/04/17 20:21:01 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

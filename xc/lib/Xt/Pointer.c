@@ -1,4 +1,4 @@
-/* $XConsortium: Pointer.c,v 1.4 91/08/21 16:39:18 converse Exp $ */
+/* $XConsortium: Pointer.c,v 1.5 94/04/17 20:14:34 converse Exp $ */
 
 /********************************************************
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: allcicnsz.m,v 1.4 92/06/11 17:27:00 rws Exp $
+ * $XConsortium: allcicnsz.m,v 1.5 94/04/17 21:08:27 rws Exp $
  */
 >>TITLE XAllocIconSize CH09
 XIconSize	*XAllocIconSize()

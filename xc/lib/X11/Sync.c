@@ -1,4 +1,4 @@
-/* $XConsortium: Sync.c,v 11.16 93/01/28 13:17:00 gildea Exp $ */
+/* $XConsortium: Sync.c,v 11.17 94/04/17 20:21:15 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: sunAmScreen.c,v 1.1 94/04/01 17:55:13 dpw Exp $ */
 /*
  * Copyright 1993 Vrije Universiteit, The Netherlands
  *

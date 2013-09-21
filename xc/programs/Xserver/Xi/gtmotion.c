@@ -1,4 +1,4 @@
-/* $XConsortium: gtmotion.c,v 1.14 93/07/08 15:39:02 rws Exp $ */ /*ALLOC-FIX*/
+/* $XConsortium: gtmotion.c,v 1.15 94/04/17 20:33:15 rws Exp $ */ /*ALLOC-FIX*/
 
 /************************************************************
 

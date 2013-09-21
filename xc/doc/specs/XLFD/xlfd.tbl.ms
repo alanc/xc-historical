@@ -1,5 +1,5 @@
 .\" Use tbl and -ms and macros.t	-*- Nroff -*-
-.\" $XConsortium: xlfd.tbl.ms,v 1.41 94/04/18 12:44:36 gildea Exp $
+.\" $XConsortium: xlfd.tbl.ms,v 1.42 94/04/18 14:02:59 gildea Exp $
 .nr sM 4		\" section on Matrix Transformations
 .nr sS 5		\" section on Scalable fonts
 .nr sP 6		\" section on Polymorphic font support

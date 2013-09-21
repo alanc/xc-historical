@@ -26,7 +26,7 @@
  *
  */
 
-/* $XConsortium: $ */
+/* $XConsortium: OS_Os2.c,v 1.1 95/01/06 20:47:15 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Os2.c,v 3.0 1994/12/17 09:58:09 dawes Exp $ */
 
 

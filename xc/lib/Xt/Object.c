@@ -1,4 +1,4 @@
-/* $XConsortium: Object.c,v 1.25 94/04/01 18:41:27 converse Exp $ */
+/* $XConsortium: Object.c,v 1.26 94/04/17 20:14:30 converse Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,

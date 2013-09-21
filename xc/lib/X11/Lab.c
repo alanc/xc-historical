@@ -1,4 +1,4 @@
-/* $XConsortium: Lab.c,v 1.10 92/06/11 16:26:15 converse Exp $ */
+/* $XConsortium: Lab.c,v 1.11 93/09/07 21:31:18 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

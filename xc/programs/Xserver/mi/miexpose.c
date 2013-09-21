@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: miexpose.c,v 5.19 94/01/21 22:03:29 dpw Exp $ */
+/* $XConsortium: miexpose.c,v 5.20 94/04/17 20:27:32 dpw Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS

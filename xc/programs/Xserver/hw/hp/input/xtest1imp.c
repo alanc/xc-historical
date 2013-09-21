@@ -1,4 +1,4 @@
-/* $XConsortium: xtest1imp.c,v 1.2 94/04/17 20:30:19 rws Exp $ */
+/* $XConsortium: xtest1imp.c,v 1.3 95/01/24 02:59:30 dpw Exp $ */
 /*
  *	File: xtest1dd.c
  *

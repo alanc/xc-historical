@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: imgtxt16.m,v 1.9 92/06/11 17:52:36 rws Exp $
+ * $XConsortium: imgtxt16.m,v 1.10 94/04/17 21:11:42 rws Exp $
  */
 >>TITLE ImageText16 XPROTO
 >>SET startup protostartup

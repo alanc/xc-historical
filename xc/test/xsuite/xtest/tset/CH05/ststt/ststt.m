@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ststt.m,v 1.8 92/06/11 16:19:54 rws Exp $
+ * $XConsortium: ststt.m,v 1.9 94/04/17 21:04:22 rws Exp $
  */
 >>TITLE XSetState CH05
 void

@@ -1,4 +1,4 @@
-/* $XConsortium: imofic.m,v 1.1 94/01/29 16:07:23 rws Exp $ */
+/* $XConsortium: imofic.m,v 1.2 94/04/17 21:14:01 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

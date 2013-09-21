@@ -1,5 +1,5 @@
 /*
- * $XConsortium: ScrollbarP.h,v 1.2 90/04/11 17:33:53 jim Exp $
+ * $XConsortium: ScrollbarP.h,v 1.3 94/04/17 20:12:42 jim Exp $
  */
 
 

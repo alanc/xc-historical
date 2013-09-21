@@ -1,4 +1,4 @@
-/* $XConsortium: man.c,v 1.29 91/07/30 22:03:20 rws Exp $ */
+/* $XConsortium: man.c,v 1.30 94/04/17 20:43:56 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

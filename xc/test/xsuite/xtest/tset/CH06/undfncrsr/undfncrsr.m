@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: undfncrsr.m,v 1.11 92/06/11 17:10:02 rws Exp $
+ * $XConsortium: undfncrsr.m,v 1.12 94/04/17 21:05:57 rws Exp $
  */
 >>TITLE XUndefineCursor CH06
 void

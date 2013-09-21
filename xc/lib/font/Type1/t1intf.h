@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: t1intf.h,v 1.2 91/10/10 11:19:39 rws Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

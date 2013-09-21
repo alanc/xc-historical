@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbhrzvert.c,v 1.7 93/12/13 17:22:05 dpw Exp $ */
+/* $XConsortium: cfbhrzvert.c,v 1.8 94/04/17 20:28:51 dpw Exp $ */
 #include "X.h"
 
 #include "gc.h"

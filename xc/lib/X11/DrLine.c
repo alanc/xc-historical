@@ -1,4 +1,4 @@
-/* $XConsortium: DrLine.c,v 11.15 91/01/06 11:45:13 rws Exp $ */
+/* $XConsortium: DrLine.c,v 11.16 94/04/17 20:19:10 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

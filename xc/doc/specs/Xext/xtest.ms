@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: xtest.ms,v 1.8 94/04/11 23:11:14 rws Exp $
+.\" $XConsortium: xtest.ms,v 1.9 94/04/17 20:06:14 rws Exp $
 .de lP
 .ne 8
 .LP

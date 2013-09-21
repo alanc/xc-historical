@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xstdcmap.c,v 1.9 93/09/20 18:05:07 hersh Exp $
+ * $XConsortium: xstdcmap.c,v 1.10 94/04/17 20:38:44 hersh Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

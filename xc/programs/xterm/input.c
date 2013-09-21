@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: input.c,v 1.17 92/03/20 17:43:06 gildea Exp $
+ *	$XConsortium: input.c,v 1.18 94/05/14 15:53:34 gildea Exp $
  */
 
 /*

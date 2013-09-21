@@ -1,4 +1,4 @@
-/* $XConsortium: s3blt.c,v 1.4 94/11/01 10:29:09 kaleb Exp kaleb $ */
+/* $XConsortium: s3blt.c,v 1.5 94/12/27 11:29:42 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.8 1994/11/26 12:44:47 dawes Exp $ */
 /*
 

@@ -1,5 +1,5 @@
 /* oldHeader: version.c,v 2.0 86/09/17 15:40:11 lwall Exp $
- * $XConsortium$
+ * $XConsortium: version.c,v 2.1 94/09/09 20:04:28 gildea Exp $
  *
  * Revision 2.0  86/09/17  15:40:11  lwall
  * Baseline for netwide release.

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: pixval.h,v 1.15 92/06/30 18:01:18 rws Exp $
+ * $XConsortium: pixval.h,v 1.16 94/04/17 21:00:04 rws Exp $
  */
 #ifndef _PIX_VAL_
 #define _PIX_VAL_

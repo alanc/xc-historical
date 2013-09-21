@@ -1,4 +1,4 @@
-/* $XConsortium: GetValues.c,v 1.13 94/04/17 20:14:09 kaleb Exp $ */
+/* $XConsortium: GetValues.c,v 1.14 94/05/11 16:03:26 kaleb Exp $ */
 /*LINTLIBRARY*/
 
 /***********************************************************

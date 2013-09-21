@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514cmap.c,v 1.1 94/03/28 21:03:32 dpw Exp $ */
+/* $XConsortium: cmap.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *

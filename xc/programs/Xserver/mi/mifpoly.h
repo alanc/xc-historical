@@ -1,4 +1,4 @@
-/* $XConsortium: mifpoly.h,v 1.8 94/03/21 15:36:51 dpw Exp $ */
+/* $XConsortium: mifpoly.h,v 1.9 94/04/17 20:27:35 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

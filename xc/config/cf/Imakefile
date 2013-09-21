@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.31 94/03/31 11:36:57 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.33 95/06/16 20:08:22 kaleb Exp $
 
 #ifdef LocalConfigFiles
 LOCALFILES = LocalConfigFiles

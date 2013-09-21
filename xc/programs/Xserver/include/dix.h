@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: dix.h,v 1.83 94/12/02 19:16:33 mor Exp $ */
+/* $XConsortium: dix.h,v 1.84 95/03/03 01:54:22 dpw Exp $ */
 
 #ifndef DIX_H
 #define DIX_H

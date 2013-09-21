@@ -1,4 +1,4 @@
-/* $XConsortium: rgb.c,v 11.19 94/04/17 20:24:45 rws Exp gildea $ */
+/* $XConsortium: rgb.c,v 11.20 94/11/28 23:39:21 gildea Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium

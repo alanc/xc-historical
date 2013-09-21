@@ -1,4 +1,4 @@
-/* $XConsortium: xtwatch.c,v 1.7 94/04/17 21:15:22 mor Exp mor $ */
+/* $XConsortium: xtwatch.c,v 1.8 95/05/24 20:43:29 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

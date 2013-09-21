@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ts-x-orig.mc,v 1.5 92/06/11 18:04:39 rws Exp $
+ * $XConsortium: ts-x-orig.mc,v 1.6 94/04/17 21:14:49 rws Exp $
  */
 /*
  * The symbols stipple_* and tile_* that do not occur in this file

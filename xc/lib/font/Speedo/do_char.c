@@ -1,4 +1,4 @@
-/* $XConsortium: do_char.c,v 1.3 94/02/07 10:01:16 gildea Exp $ */
+/* $XConsortium: do_char.c,v 1.4 94/02/10 10:18:21 gildea Exp $ */
 
 /*
 

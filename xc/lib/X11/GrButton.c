@@ -1,4 +1,4 @@
-/* $XConsortium: GrButton.c,v 11.9 91/01/06 11:46:22 rws Exp $ */
+/* $XConsortium: GrButton.c,v 11.10 94/04/17 20:19:47 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

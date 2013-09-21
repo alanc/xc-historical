@@ -1,4 +1,4 @@
-/* $XConsortium: fontutil.c,v 1.9 94/02/23 15:46:04 dpw Exp $ */
+/* $XConsortium: fontutil.c,v 1.10 94/04/17 20:17:33 dpw Exp $ */
 
 /*
 

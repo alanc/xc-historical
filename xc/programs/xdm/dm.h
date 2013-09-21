@@ -1,4 +1,4 @@
-/* $XConsortium: dm.h,v 1.65 94/12/12 15:35:36 kaleb Exp gildea $ */
+/* $XConsortium: dm.h,v 1.66 95/07/10 21:18:07 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

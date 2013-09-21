@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.2 93/09/17 16:01:55 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.3 94/02/10 16:53:25 rws Exp $
 
 all::
 

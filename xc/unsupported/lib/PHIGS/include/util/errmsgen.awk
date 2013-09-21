@@ -1,5 +1,5 @@
 ##
-# $XConsortium: errmsgen.awk,v 5.3 91/03/26 14:46:05 rws Exp $
+# $XConsortium: errmsgen.awk,v 5.4 94/04/17 20:42:00 rws Exp $
 ##
 ## 
 ## Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.

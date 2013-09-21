@@ -9,7 +9,7 @@
 #define OSMajorVersion    4
 #define OSMinorVersion    50
 
-XCOMM platform:  $XConsortium: Mips.cf,v 1.13 93/10/13 15:30:15 rws Exp $
+XCOMM platform:  $XConsortium: Mips.cf,v 1.14 94/03/24 15:24:34 gildea Exp $
 XCOMM operating system:  OSName
 
 /***************************************************************************

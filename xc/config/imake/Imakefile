@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 94/03/29 15:53:59 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.6 94/03/29 16:21:51 matt Exp $
 
 DEPLIBS = 
 

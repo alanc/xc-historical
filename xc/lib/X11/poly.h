@@ -1,4 +1,4 @@
-/* $XConsortium: poly.h,v 1.3 91/03/08 13:44:31 rws Exp $ */
+/* $XConsortium: poly.h,v 1.4 94/04/17 20:22:19 rws Exp $ */
 /************************************************************************
 
 Copyright (c) 1987  X Consortium

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: stwmhnts.m,v 1.9 93/12/26 15:46:53 rws Exp $
+ * $XConsortium: stwmhnts.m,v 1.10 94/04/17 21:09:02 rws Exp $
  */
 >>TITLE XSetWMHints CH09
 

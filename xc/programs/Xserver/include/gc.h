@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: gc.h,v 1.58 94/03/18 12:25:42 dpw Exp $ */
+/* $XConsortium: gc.h,v 1.59 94/04/17 20:25:43 dpw Exp $ */
 
 #ifndef GC_H
 #define GC_H 

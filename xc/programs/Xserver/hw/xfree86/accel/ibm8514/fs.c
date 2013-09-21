@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514fs.c,v 1.2 94/04/17 20:30:33 dpw Exp $ */
+/* $XConsortium: fs.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/fs.c,v 3.1 1994/08/01 12:09:38 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.

@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: confS3.sh,v 1.1 94/03/28 21:13:24 dpw Exp $
 #!/bin/sh
 
 #

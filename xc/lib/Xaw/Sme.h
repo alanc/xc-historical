@@ -1,5 +1,5 @@
 /*
- * $XConsortium: Sme.h,v 1.5 94/01/31 10:53:57 kaleb Exp $
+ * $XConsortium: Sme.h,v 1.6 94/04/17 20:12:48 kaleb Exp $
  *
 Copyright (c) 1989, 1994  X Consortium
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: frclrs.m,v 1.14 94/03/06 19:27:31 rws Exp $
+ * $XConsortium: frclrs.m,v 1.15 94/04/17 21:03:55 rws Exp $
  */
 >>TITLE XFreeColors CH05
 void

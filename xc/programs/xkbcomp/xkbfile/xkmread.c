@@ -1,4 +1,4 @@
-/* $XConsortium: xkmread.c,v 1.1 94/04/08 15:51:02 erik Exp $ */
+/* $XConsortium: xkmread.c,v 1.2 94/04/09 12:41:41 rws Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

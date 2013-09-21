@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: IO_utils.c,v 1.1 94/03/28 21:30:58 dpw Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *

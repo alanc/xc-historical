@@ -1,4 +1,4 @@
-/* $XConsortium: tocutil.h,v 2.6 89/12/10 17:30:14 converse Exp swick $ */
+/* $XConsortium: tocutil.h,v 2.7 95/01/09 16:52:53 swick Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION

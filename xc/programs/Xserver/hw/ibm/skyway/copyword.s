@@ -1,5 +1,5 @@
 /*
- * $XConsortium: $
+ * $XConsortium: copyword.s,v 1.2 91/12/11 21:37:24 eswu Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *

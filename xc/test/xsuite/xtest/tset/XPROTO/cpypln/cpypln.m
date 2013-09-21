@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: cpypln.m,v 1.6 92/12/21 09:29:18 rws Exp $
+ * $XConsortium: cpypln.m,v 1.7 94/04/17 21:11:09 rws Exp $
  */
 >>TITLE CopyPlane XPROTO
 >>SET startup protostartup

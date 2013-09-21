@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rmdstrydtb.m,v 1.4 92/06/11 17:39:17 rws Exp $
+ * $XConsortium: rmdstrydtb.m,v 1.5 94/04/17 21:10:03 rws Exp $
  */
 >>TITLE XrmDestroyDatabase CH10
 void

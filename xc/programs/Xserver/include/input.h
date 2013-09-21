@@ -1,4 +1,4 @@
-/* $XConsortium: input.h,v 1.17 94/04/17 20:25:46 frob Exp $ */
+/* $XConsortium: input.h,v 1.18 94/08/16 13:44:42 dpw Exp $ */
 /************************************************************
 
 Copyright (c) 1987  X Consortium

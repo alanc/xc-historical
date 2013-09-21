@@ -1,4 +1,4 @@
-/* $XConsortium: svgaBank.c,v 1.7 93/10/12 11:26:35 dpw Exp $ */
+/* $XConsortium: svgaBank.c,v 1.8 94/01/07 09:53:07 dpw Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rclrcrsr.m,v 1.10 92/06/11 17:09:15 rws Exp $
+ * $XConsortium: rclrcrsr.m,v 1.11 94/04/17 21:05:49 rws Exp $
  */
 >>TITLE XRecolorCursor CH06
 void

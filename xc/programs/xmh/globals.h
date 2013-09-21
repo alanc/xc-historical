@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.38 91/07/17 21:23:56 converse Exp $
+ *  $XConsortium: globals.h,v 2.39 91/07/18 21:03:15 converse Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989

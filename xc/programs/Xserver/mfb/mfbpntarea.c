@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbpntarea.c,v 5.6 94/03/31 14:10:33 dpw Exp $ */
+/* $XConsortium: mfbpntarea.c,v 5.7 94/04/17 20:28:29 dpw Exp $ */
 #include "X.h"
 
 #include "windowstr.h"

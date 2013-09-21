@@ -1,4 +1,4 @@
-.\" $XConsortium: bitmap.man,v 1.15 94/04/12 17:58:06 gildea Exp $
+.\" $XConsortium: bitmap.man,v 1.16 94/04/17 20:23:48 gildea Exp $
 .\" Copyright (c) 1993  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining

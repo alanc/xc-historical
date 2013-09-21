@@ -1,4 +1,4 @@
-/* $XConsortium: FSSynchro.c,v 1.3 94/04/12 21:55:52 dpw Exp $ */
+/* $XConsortium: FSSynchro.c,v 1.4 94/04/17 20:15:20 dpw Exp $ */
 
 /* @(#)FSSynchro.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;

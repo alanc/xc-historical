@@ -1,4 +1,4 @@
-/* $XConsortium: hil_driver.c,v 1.1 95/01/25 13:45:20 dpw Exp gildea $ */
+/* $XConsortium: hil_driver.c,v 1.2 95/01/25 17:24:43 gildea Exp $ */
 /************************************************************
 
 Copyright (c) 1993 by Hewlett-Packard Company, Palo Alto, California

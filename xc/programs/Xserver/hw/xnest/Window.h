@@ -1,4 +1,4 @@
-/* $XConsortium: xnestWindow.h,v 1.1 93/06/23 16:23:59 dmatic Exp $ */
+/* $XConsortium: Window.h,v 1.1 93/07/12 15:28:58 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

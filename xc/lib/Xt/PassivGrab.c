@@ -1,4 +1,4 @@
-/* $XConsortium: PassivGrab.c,v 1.26 94/04/17 20:14:33 converse Exp converse $ */
+/* $XConsortium: PassivGrab.c,v 1.27 95/06/15 20:03:09 converse Exp $ */
 
 /********************************************************
 

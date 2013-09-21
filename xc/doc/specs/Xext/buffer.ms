@@ -1,4 +1,4 @@
-.\" $XConsortium: buffer.ms,v 1.1 94/04/12 13:50:16 dpw Exp $
+.\" $XConsortium: buffer.ms,v 1.2 94/04/17 20:06:09 dpw Exp $
 .TL
 Extending X for Double-Buffering, Multi-Buffering, and Stereo
 .AU

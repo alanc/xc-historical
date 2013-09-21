@@ -1,4 +1,4 @@
-/* $XConsortium: cards.c,v 1.3 95/01/23 15:35:22 kaleb Exp gildea $ */
+/* $XConsortium: cards.c,v 1.4 95/06/09 20:57:00 gildea Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/cards.c,v 3.2 1995/01/23 01:33:07 dawes Exp $ */
 
 /*

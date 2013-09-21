@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: DataMove.c,v 1.5 93/12/22 17:15:13 rws Exp $
+ * $XConsortium: DataMove.c,v 1.6 94/04/17 21:01:12 rws Exp $
  */
 /*
  * ***************************************************************************

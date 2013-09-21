@@ -1,5 +1,5 @@
 /*
- * $XConsortium: multibufst.h,v 1.15 94/04/17 20:11:22 dpw Exp gildea $
+ * $XConsortium: multibufst.h,v 1.16 95/06/08 23:20:39 gildea Exp $
  *
 Copyright (c) 1989  X Consortium
 

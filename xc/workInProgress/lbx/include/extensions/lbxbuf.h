@@ -1,4 +1,4 @@
-/* $XConsortium: lbxbuf.h,v 1.4 94/12/01 20:07:54 mor Exp gildea $ */
+/* $XConsortium: lbxbuf.h,v 1.5 95/01/23 21:25:52 gildea Exp $ */
 /*
  * Copyright 1988, 1989, 1990, 1994 Network Computing Devices, Inc.
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: convUtil.c,v 5.3 91/05/01 17:14:22 hersh Exp $ */
+/* $XConsortium: convUtil.c,v 5.4 94/04/17 20:36:30 hersh Exp $ */
 
 /***********************************************************
 

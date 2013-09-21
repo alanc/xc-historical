@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: rclrcrsr.m,v 1.4 92/06/11 17:57:47 rws Exp $
+ * $XConsortium: rclrcrsr.m,v 1.5 94/04/17 21:12:14 rws Exp $
  */
 >>TITLE RecolorCursor XPROTO
 >>SET startup protostartup

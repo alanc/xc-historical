@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.21 91/07/21 21:23:52 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.22 91/09/09 16:02:18 rws Exp $
 
 #ifdef XmanSearchPath
 XMANSYSPATH = XmanSearchPath

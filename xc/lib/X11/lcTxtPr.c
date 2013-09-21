@@ -1,4 +1,4 @@
-/* $XConsortium: lcTxtPr.c,v 1.4 95/06/02 23:03:24 converse Exp kaleb $ */
+/* $XConsortium: lcTxtPr.c,v 1.5 95/06/07 15:32:21 kaleb Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

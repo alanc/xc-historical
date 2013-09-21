@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyScrInit.c,v 1.5 92/01/27 18:03:20 eswu Exp $ 
+ * $XConsortium: skyScrInit.c,v 1.6 92/11/23 10:23:45 eswu Exp $ 
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991 
  *

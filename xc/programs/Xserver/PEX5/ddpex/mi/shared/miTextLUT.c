@@ -1,4 +1,4 @@
-/* $XConsortium: miTextLUT.c,v 5.1 91/02/16 09:56:33 rws Exp $ */
+/* $XConsortium: miTextLUT.c,v 5.2 94/04/17 20:37:46 rws Exp $ */
 
 /*
 

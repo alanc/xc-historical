@@ -1,6 +1,6 @@
 #ifndef HPKEYS_H
 #define HPKEYS_H
-/* $XConsortium: hpkeys.h,v 1.1 93/08/08 12:59:16 rws Exp $ */
+/* $XConsortium: hpkeys.h,v 1.2 94/04/17 20:30:14 rws Exp $ */
 /*
 
 Copyright (c) 1986, 1987  X Consortium

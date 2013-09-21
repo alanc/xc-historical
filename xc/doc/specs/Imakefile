@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.9 94/04/11 22:32:29 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.10 94/07/25 12:21:20 gildea Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags

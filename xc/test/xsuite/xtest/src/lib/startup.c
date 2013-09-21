@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: startup.c,v 1.28 94/01/29 15:05:31 rws Exp $
+ * $XConsortium: startup.c,v 1.29 94/04/17 21:01:06 rws Exp $
  */
 
 #include "stdio.h"

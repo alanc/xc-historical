@@ -1,4 +1,4 @@
-/* $XConsortium: xf86_ClkPr.c,v 1.2 94/10/12 20:38:44 kaleb Exp kaleb $ */
+/* $XConsortium: xf86_ClkPr.c,v 1.3 95/01/05 20:41:28 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_ClkPr.c,v 3.3 1994/11/26 12:45:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

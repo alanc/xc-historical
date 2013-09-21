@@ -1,5 +1,5 @@
 /*
- * $XConsortium: xconsole.c,v 1.20 94/11/30 16:35:44 kaleb Exp kaleb $
+ * $XConsortium: xconsole.c,v 1.21 95/01/05 21:04:06 kaleb Exp $
  *
 Copyright (c) 1990  X Consortium
 

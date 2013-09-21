@@ -1,4 +1,4 @@
-/* $XConsortium: XF86_Mach8.c,v 1.1 94/03/28 21:21:52 dpw Exp $ */
+/* $XConsortium: Mach8.c,v 1.1 95/01/26 15:26:42 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/common/Mach8.c,v 3.2 1994/09/07 15:51:41 dawes Exp $ */
 #include "X.h"
 #include "os.h"

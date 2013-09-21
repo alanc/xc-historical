@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: slctnclr.m,v 1.8 92/06/11 17:24:57 rws Exp $
+ * $XConsortium: slctnclr.m,v 1.9 94/04/17 21:08:12 rws Exp $
  */
 >>TITLE SelectionClear CH08
 >>ASSERTION Good A

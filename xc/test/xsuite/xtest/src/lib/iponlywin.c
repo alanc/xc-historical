@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: iponlywin.c,v 1.5 92/06/11 15:41:58 rws Exp $
+ * $XConsortium: iponlywin.c,v 1.6 94/04/17 21:00:49 rws Exp $
  */
 
 #include	"stdlib.h"

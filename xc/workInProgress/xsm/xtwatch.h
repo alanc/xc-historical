@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: xtwatch.h,v 1.1 94/07/08 14:06:58 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

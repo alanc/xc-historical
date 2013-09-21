@@ -1,4 +1,4 @@
-/* $XConsortium: fsio.h,v 1.11 93/08/24 18:49:17 gildea Exp $ */
+/* $XConsortium: fsio.h,v 1.12 94/01/31 12:02:17 mor Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: ximtest.h,v 1.3 94/04/12 21:39:20 rws Exp $ */
+/* $XConsortium: ximtest.h,v 1.4 94/04/17 21:00:04 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

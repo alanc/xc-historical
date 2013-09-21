@@ -1,4 +1,4 @@
-/* $XConsortium: FontInfo.c,v 11.21 91/01/29 08:40:25 rws Exp $ */
+/* $XConsortium: FontInfo.c,v 11.22 94/04/17 20:19:23 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

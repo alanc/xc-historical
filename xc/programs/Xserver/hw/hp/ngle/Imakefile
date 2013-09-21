@@ -1,4 +1,4 @@
-/* $XConsortium: Imakefile,v 1.5 95/01/24 01:52:09 dpw Exp gildea $ */
+/* $XConsortium: Imakefile,v 1.6 95/01/25 23:37:39 gildea Exp $ */
 #include <Server.tmpl>
 
 ORIG_SRCS =	nglescreen.c	\

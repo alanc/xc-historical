@@ -1,4 +1,4 @@
-/* $XConsortium: Threads.c,v 1.15 94/04/17 20:14:59 kaleb Exp $ */
+/* $XConsortium: Threads.c,v 1.16 95/06/06 21:00:38 kaleb Exp $ */
 
 /************************************************************
 Copyright 1993 by Sun Microsystems, Inc. Mountain View, CA.

@@ -1,4 +1,4 @@
-/* $XConsortium: vcrtnstdls.m,v 1.1 94/01/29 16:08:30 rws Exp $ */
+/* $XConsortium: vcrtnstdls.m,v 1.2 94/04/17 21:14:11 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

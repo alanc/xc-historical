@@ -1,5 +1,5 @@
 /*
- * $XConsortium: mieq.c,v 1.7 94/04/17 20:27:31 dpw Exp kaleb $
+ * $XConsortium: mieq.c,v 1.8 94/11/02 15:59:29 kaleb Exp $
  *
 Copyright (c) 1990  X Consortium
 

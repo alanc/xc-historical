@@ -1,4 +1,4 @@
-/* $XConsortium: def.h,v 1.24 94/04/13 16:58:43 gildea Exp $ */
+/* $XConsortium: def.h,v 1.25 94/04/17 20:10:33 gildea Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

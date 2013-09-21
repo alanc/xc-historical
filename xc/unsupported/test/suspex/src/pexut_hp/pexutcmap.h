@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexutcmap.h,v 1.0 93/11/22 12:23:29 rws Exp $ */
 
 #ifndef PEXUTCMAP_H /* { */
 #define PEXUTCMAP_H
@@ -28,9 +28,9 @@
 
 /******************************************************************************/
 /*                                                                            */
-/* $Source: /BE700/9.0/gtd/R903/wbuild/PEX5/head/RCS/pexutcmap.h,v $                     	      */
-/* $Date: 93/03/17 14:14:23 $                                                 */
-/* $Revision: 500.1.200.1 $                                                   */
+/* $Source: /xsrc/xc/unsupported/test/suspex/src/pexut_hp/RCS/pexutcmap.h,v $                     	      */
+/* $Date: 93/11/22 12:23:29 $                                                 */
+/* $Revision: 1.0 $                                                   */
 /*                                                                            */
 /* Description:                                                               */
 /*   Interface header file for PEXUt colormap/visual utilities.               */

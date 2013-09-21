@@ -1,4 +1,4 @@
-/* $XConsortium: k5encode.c,v 1.5 94/04/17 20:15:47 gildea Exp gildea $ */
+/* $XConsortium: k5encode.c,v 1.6 94/09/01 19:20:38 gildea Exp $ */
 
 /*
 

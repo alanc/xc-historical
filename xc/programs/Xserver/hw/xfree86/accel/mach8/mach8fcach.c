@@ -1,4 +1,4 @@
-/* $XConsortium: mach8fcach.c,v 1.1 94/10/05 13:31:46 kaleb Exp $ */
+/* $XConsortium: mach8fcach.c,v 1.2 94/10/12 20:01:59 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8fcach.c,v 3.2 1994/09/07 15:50:08 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.

@@ -1,4 +1,4 @@
-/* $XConsortium: access.c,v 1.75 94/11/21 18:27:47 kaleb Exp mor $ */
+/* $XConsortium: access.c,v 1.76 95/04/06 16:10:29 mor Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: folder.c,v 2.43 94/08/26 18:08:21 swick Exp swick $
+ * $XConsortium: folder.c,v 2.44 94/08/29 20:25:49 swick Exp $
  *
  *
  *		       COPYRIGHT 1987, 1989

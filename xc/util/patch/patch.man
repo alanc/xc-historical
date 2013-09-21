@@ -1,6 +1,6 @@
 .\" -*- nroff -*-
 .rn '' }`
-'\" $XConsortium$
+'\" $XConsortium: patch.man,v 1.2 94/09/09 20:04:28 gildea Exp $
 '\" 
 '\" Revision 2.0.1.2  88/06/22  20:47:18  lwall
 '\" patch12: now avoids Bell System Logo

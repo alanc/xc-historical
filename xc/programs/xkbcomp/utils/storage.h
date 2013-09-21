@@ -6,7 +6,7 @@
 _XFUNCPROTOBEGIN
 
   /*\
-   * $XConsortium: storage.h,v 1.1 94/04/02 17:11:18 erik Exp $
+   * $XConsortium: storage.h,v 1.2 94/04/04 15:31:30 rws Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION

@@ -1,4 +1,4 @@
-/* $XConsortium: GetWAttrs.c,v 11.25 92/10/19 18:50:14 rws Exp $ */
+/* $XConsortium: GetWAttrs.c,v 11.26 94/04/17 20:19:45 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

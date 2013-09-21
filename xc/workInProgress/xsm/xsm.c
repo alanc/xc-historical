@@ -1,4 +1,4 @@
-/* $XConsortium: xsm.c,v 1.75 95/01/03 17:23:56 mor Exp mor $ */
+/* $XConsortium: xsm.c,v 1.76 95/05/24 20:43:29 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

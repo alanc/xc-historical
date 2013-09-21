@@ -1,4 +1,4 @@
-/* $XConsortium: vgaGC.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XConsortium: vgaGC.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaGC.c,v 3.0 1994/05/04 15:03:46 dawes Exp $ */
 /*
 

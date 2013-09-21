@@ -1,4 +1,4 @@
-/* $XConsortium: XKB.c,v 1.11 94/02/05 18:13:51 rws Exp $ */
+/* $XConsortium: XKBRdBuf.c,v 1.2 94/04/02 14:31:36 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

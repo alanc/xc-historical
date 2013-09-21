@@ -1,4 +1,4 @@
-/* $XConsortium: SetPntMap.c,v 11.14 93/11/05 11:13:15 kaleb Exp $ */
+/* $XConsortium: SetPntMap.c,v 11.15 94/04/17 20:21:01 kaleb Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

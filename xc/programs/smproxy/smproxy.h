@@ -1,4 +1,4 @@
-/* $XConsortium: smproxy.h,v 1.6 94/11/30 16:17:13 mor Exp mor $ */
+/* $XConsortium: smproxy.h,v 1.7 94/12/27 18:47:54 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1994  X Consortium

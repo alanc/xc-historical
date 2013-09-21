@@ -1,4 +1,4 @@
-/* $XConsortium: WinEvent.c,v 11.22 94/04/17 20:21:30 kaleb Exp gildea $ */
+/* $XConsortium: WinEvent.c,v 11.23 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium

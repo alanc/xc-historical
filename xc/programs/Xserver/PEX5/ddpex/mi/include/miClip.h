@@ -1,4 +1,4 @@
-/* $XConsortium: miClip.h,v 5.2 93/09/03 14:56:56 hersh Exp $ */
+/* $XConsortium: miClip.h,v 5.3 94/04/17 20:36:40 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

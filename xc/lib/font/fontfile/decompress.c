@@ -1,4 +1,4 @@
-/* $XConsortium: decompress.c,v 1.5 94/04/12 18:55:00 gildea Exp $ */
+/* $XConsortium: decompress.c,v 1.6 94/04/17 20:17:00 gildea Exp $ */
 /*
  * Copyright (c) 1985, 1986 The Regents of the University of California.
  * All rights reserved.

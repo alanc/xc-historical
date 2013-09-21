@@ -1,5 +1,5 @@
 /*
- * $XConsortium: omronMouse.c,v 1.2 94/01/05 16:55:59 rob Exp $
+ * $XConsortium: omronMouse.c,v 1.3 94/01/11 20:48:51 rob Exp $
  *
  * Copyright 1992, 1993 Data General Corporation;
  * Copyright 1991, 1992, 1993 OMRON Corporation  

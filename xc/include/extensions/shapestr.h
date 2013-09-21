@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: shapestr.h,v 1.12 93/09/11 15:09:34 rws Exp $ */
+/* $XConsortium: shapestr.h,v 1.13 94/04/17 20:11:24 rws Exp $ */
 
 #ifndef _SHAPESTR_H_
 #define _SHAPESTR_H_

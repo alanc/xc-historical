@@ -1,5 +1,5 @@
 .\" Use -ms and macros.t
-.\" $XConsortium: shape.ms,v 1.15 94/04/17 20:06:12 rws Exp $
+.\" $XConsortium: shape.ms,v 1.16 94/04/17 23:53:33 rws Exp $
 .EH ''''
 .OH ''''
 .EF ''''

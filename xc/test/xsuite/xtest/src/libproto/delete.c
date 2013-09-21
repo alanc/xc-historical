@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: delete.c,v 1.1 92/06/11 15:54:36 rws Exp $
+ * $XConsortium: delete.c,v 1.2 94/04/17 21:01:39 rws Exp $
  */
 /*LINTLIBRARY*/
 

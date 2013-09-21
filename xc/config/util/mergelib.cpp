@@ -1,6 +1,6 @@
 XCOMM!/bin/sh
 XCOMM
-XCOMM $XConsortium: mergelib.cpp,v 1.3 91/08/22 11:08:08 rws Exp $
+XCOMM $XConsortium: mergelib.cpp,v 1.4 94/04/17 20:10:43 rws Exp $
 XCOMM 
 XCOMM Copyright (c) 1989  X Consortium
 XCOMM 

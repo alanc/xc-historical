@@ -1,4 +1,4 @@
-/* $XConsortium: auth.c,v 1.58 94/11/21 18:33:11 kaleb Exp gildea $ */
+/* $XConsortium: auth.c,v 1.59 95/07/10 21:18:07 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

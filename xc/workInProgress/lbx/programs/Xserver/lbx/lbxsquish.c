@@ -1,4 +1,4 @@
-/* $XConsortium: lbxsquish.c,v 1.1 95/03/02 18:23:55 mor Exp $ */
+/* $XConsortium: lbxsquish.c,v 1.2 95/03/21 20:01:56 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

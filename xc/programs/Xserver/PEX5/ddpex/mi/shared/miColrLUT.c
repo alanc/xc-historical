@@ -1,4 +1,4 @@
-/* $XConsortium: miColrLUT.c,v 5.1 91/02/16 09:56:23 rws Exp $ */
+/* $XConsortium: miColrLUT.c,v 5.2 94/04/17 20:37:38 rws Exp $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium

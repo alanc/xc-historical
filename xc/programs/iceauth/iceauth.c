@@ -1,5 +1,5 @@
 /*
- * $XConsortium: iceauth.c,v 1.1 93/12/30 11:58:20 mor Exp $
+ * $XConsortium: iceauth.c,v 1.2 94/04/17 20:39:54 mor Exp $
  *
  * xauth - manipulate authorization file
  *

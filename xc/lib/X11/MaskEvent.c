@@ -1,4 +1,4 @@
-/* $XConsortium: MaskEvent.c,v 11.25 94/04/17 20:20:17 kaleb Exp gildea $ */
+/* $XConsortium: MaskEvent.c,v 11.26 95/06/08 23:20:39 gildea Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

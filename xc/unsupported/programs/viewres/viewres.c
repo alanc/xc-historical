@@ -1,5 +1,5 @@
 /*
- * $XConsortium: viewres.c,v 1.73 93/02/24 10:15:14 converse Exp $
+ * $XConsortium: viewres.c,v 1.74 94/04/17 20:43:24 converse Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

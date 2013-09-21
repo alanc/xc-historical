@@ -1,4 +1,4 @@
-/* $XConsortium: WMProps.c,v 1.8 93/09/07 20:03:25 rws Exp $ */
+/* $XConsortium: WMProps.c,v 1.9 94/04/17 20:21:29 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988, 1993  X Consortium

@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.50 94/04/07 15:05:27 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.51 95/06/07 12:23:53 dpw Exp $
 #define DoNormalLib NormalLibXext
 #define DoSharedLib SharedLibXext
 #define DoDebugLib DebugLibXext

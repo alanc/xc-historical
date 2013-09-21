@@ -1,4 +1,4 @@
-/* $XConsortium: xnestKeyboard.h,v 1.1 93/06/23 16:23:54 dmatic Exp $ */
+/* $XConsortium: Keyboard.h,v 1.1 93/07/12 15:28:38 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

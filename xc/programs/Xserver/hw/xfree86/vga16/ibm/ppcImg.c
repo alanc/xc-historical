@@ -1,4 +1,4 @@
-/* $XConsortium: ppcImg.c,v 1.1 94/10/05 13:45:56 kaleb Exp $ */
+/* $XConsortium: ppcImg.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcImg.c,v 3.1 1994/05/31 08:12:22 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989

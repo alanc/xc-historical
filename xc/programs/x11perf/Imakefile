@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 2.30 93/08/24 18:48:22 rws Exp $
+XCOMM $XConsortium: Imakefile,v 2.31 93/09/04 19:58:26 rws Exp $
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
 #endif

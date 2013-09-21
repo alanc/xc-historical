@@ -1,4 +1,4 @@
-/* $XConsortium: SetFPath.c,v 11.15 93/09/07 21:32:40 rws Exp $ */
+/* $XConsortium: SetFPath.c,v 11.16 94/04/17 20:20:54 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: bitmaputil.c,v 1.5 94/02/07 14:34:44 gildea Exp $ */
+/* $XConsortium: bitmaputil.c,v 1.6 94/04/17 20:17:12 gildea Exp $ */
 
 /*
 

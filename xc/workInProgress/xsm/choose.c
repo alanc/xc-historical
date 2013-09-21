@@ -1,4 +1,4 @@
-/* $XConsortium: choose.c,v 1.23 95/01/26 20:08:41 mor Exp mor $ */
+/* $XConsortium: choose.c,v 1.24 95/05/24 20:43:29 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

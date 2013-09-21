@@ -1,4 +1,4 @@
-/* $XConsortium: assert.h,v 1.3 94/02/20 11:12:26 dpw Exp $ */
+/* $XConsortium: lbxtables.c,v 1.3 94/03/08 20:42:38 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *

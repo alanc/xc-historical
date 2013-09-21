@@ -1,4 +1,4 @@
-/* $XConsortium: miText.c,v 5.12 93/09/03 15:05:45 hersh Exp $ */
+/* $XConsortium: miText.c,v 5.13 94/04/17 20:37:19 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

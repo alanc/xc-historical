@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.66 95/04/07 20:33:29 kaleb Exp $ */
+/* $XConsortium: os.h,v 1.67 95/04/25 20:32:58 dpw Exp $ */
 
 #ifndef OS_H
 #define OS_H

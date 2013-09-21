@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: ncr.cf,v 1.20 95/05/05 17:42:07 kaleb Exp gildea $
+XCOMM platform:  $XConsortium: ncr.cf,v 1.21 95/06/09 20:57:00 gildea Exp $
 #define OSName			Unix System V Release 4/MP-RAS
 #define OSVendor		NCR
 XCOMM operating system:  OSName

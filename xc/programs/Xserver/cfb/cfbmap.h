@@ -1,5 +1,5 @@
 /*
- * $XConsortium: cfbmap.h,v 1.10 94/09/22 21:12:06 dpw Exp gildea $
+ * $XConsortium: cfbmap.h,v 1.11 95/06/08 23:20:39 gildea Exp $
  *
 Copyright (c) 1991  X Consortium
 

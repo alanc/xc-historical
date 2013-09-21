@@ -1,5 +1,5 @@
 .\" Contrib manifest  -*- Nroff -*-
-.\" $XConsortium: Manifest.ms,v 1.7 94/10/22 19:55:17 gildea Exp gildea $
+.\" $XConsortium: Manifest.ms,v 1.8 94/11/16 17:59:10 gildea Exp $
 .\" #! troff -ms
 .nr PS 11
 .if n \{

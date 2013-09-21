@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: micursor.c,v 1.9 89/07/18 20:33:02 rws Exp $ */
+/* $XConsortium: micursor.c,v 1.10 94/04/17 20:27:26 rws Exp $ */
 #include "scrnintstr.h"
 #include "cursor.h"
 #include "misc.h"

@@ -1,4 +1,4 @@
-/* $XConsortium: RepWindow.c,v 11.7 91/01/06 11:47:47 rws Exp $ */
+/* $XConsortium: RepWindow.c,v 11.8 94/04/17 20:20:48 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

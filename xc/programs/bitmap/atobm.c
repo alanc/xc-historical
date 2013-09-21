@@ -1,4 +1,4 @@
-/* $XConsortium: atobm.c,v 1.4 93/09/20 17:44:23 hersh Exp $ */
+/* $XConsortium: atobm.c,v 1.5 94/04/17 20:23:47 hersh Exp $ */
 /*
 
 Copyright (c) 1988, 1993  X Consortium

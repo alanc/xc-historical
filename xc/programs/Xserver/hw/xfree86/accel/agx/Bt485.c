@@ -1,4 +1,4 @@
-/* $XConsortium: $ */
+/* $XConsortium: Bt485.c,v 1.1 95/01/26 15:31:41 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt485.c,v 3.2 1995/01/26 02:16:46 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>

@@ -1,4 +1,4 @@
-/* $XConsortium: Initer.h,v 1.5 93/08/16 14:30:39 rws Exp $ */
+/* $XConsortium: Initer.h,v 1.6 94/04/17 20:16:09 rws Exp $ */
 
 /*
  

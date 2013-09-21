@@ -1,4 +1,4 @@
-/* $XConsortium: xieperf.c,v 1.37 94/03/28 18:31:18 gildea Exp $ */
+/* $XConsortium: xieperf.c,v 1.38 94/04/17 20:39:40 gildea Exp $ */
 
 /**** module xieperf.c ****/
 /****************************************************************************

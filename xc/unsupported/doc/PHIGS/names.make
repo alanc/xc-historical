@@ -1,5 +1,5 @@
 ##
-# $XConsortium: names.make,v 5.4 91/04/02 17:33:51 hersh Exp $
+# $XConsortium: names.make,v 5.5 94/04/17 20:54:06 hersh Exp $
 ##
 ## 
 ## Copyright (c) 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.

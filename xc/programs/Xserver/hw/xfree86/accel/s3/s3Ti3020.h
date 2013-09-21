@@ -1,4 +1,4 @@
-/* $XConsortium: s3Ti3020.h,v 1.4 95/01/23 15:33:58 kaleb Exp kaleb $ */
+/* $XConsortium: s3Ti3020.h,v 1.5 95/01/26 15:35:46 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3020.h,v 3.10 1995/01/26 02:18:20 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>

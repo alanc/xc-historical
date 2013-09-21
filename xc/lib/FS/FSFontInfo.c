@@ -1,4 +1,4 @@
-/* $XConsortium: FSFontInfo.c,v 1.6 93/09/29 16:47:53 rws Exp $ */
+/* $XConsortium: FSFontInfo.c,v 1.7 94/04/17 20:15:12 rws Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation

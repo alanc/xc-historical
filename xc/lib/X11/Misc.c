@@ -1,4 +1,4 @@
-/* $XConsortium: Misc.c,v 1.5 93/01/07 20:17:43 rws Exp $ */
+/* $XConsortium: Misc.c,v 1.6 94/04/17 20:20:17 rws Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

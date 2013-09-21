@@ -1,4 +1,4 @@
-/* $XConsortium: policy.c,v 1.11 93/09/20 18:03:14 hersh Exp $ */
+/* $XConsortium: policy.c,v 1.12 94/04/17 20:03:41 hersh Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

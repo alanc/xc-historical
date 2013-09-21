@@ -1,4 +1,4 @@
-/* $XConsortium: cfbcmap.c,v 4.18 94/02/09 11:23:49 dpw Exp $ */
+/* $XConsortium: cfbcmap.c,v 4.19 94/04/17 20:28:46 dpw Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 

@@ -1,4 +1,4 @@
-/* $XConsortium: bitsource.c,v 1.8 94/03/14 17:48:17 gildea Exp $ */
+/* $XConsortium: bitsource.c,v 1.9 94/04/17 20:16:59 gildea Exp $ */
 
 /*
 

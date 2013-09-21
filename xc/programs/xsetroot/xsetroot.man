@@ -1,4 +1,4 @@
-.\" $XConsortium: xsetroot.man,v 1.15 94/04/12 18:46:37 gildea Exp $
+.\" $XConsortium: xsetroot.man,v 1.16 94/04/17 20:24:35 gildea Exp $
 .\" Copyright (c) 1988  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining

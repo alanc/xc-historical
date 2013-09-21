@@ -1,4 +1,4 @@
-/* $XConsortium: DelCmap.c,v 1.1 89/05/19 14:37:16 converse Exp $ */
+/* $XConsortium: DelCmap.c,v 1.2 94/04/17 20:15:58 converse Exp $ */
 
 /* 
  

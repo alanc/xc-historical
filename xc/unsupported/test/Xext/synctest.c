@@ -1,4 +1,4 @@
-/* $XConsortium: synctest.c,v 1.0 93/09/13 19:25:17 rws Exp $ */
+/* $XConsortium: synctest.c,v 1.4 94/04/17 20:46:04 dpw Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -31,6 +31,9 @@ from the X Consortium.
 /*
  * HISTORY
  * $Log:	synctest.c,v $
+ * Revision 1.4  94/04/17  20:46:04  dpw
+ * new X Consortium copyright/permission
+ * 
  * Revision 1.3  93/09/29  19:12:42  dpw
  * added "couldn't find SERVERTIME system counter" error message
  * 

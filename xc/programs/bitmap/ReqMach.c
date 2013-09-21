@@ -1,4 +1,4 @@
-/* $XConsortium: ReqMach.c,v 1.13 93/09/20 17:44:18 hersh Exp $ */
+/* $XConsortium: ReqMach.c,v 1.14 94/04/17 20:23:45 hersh Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

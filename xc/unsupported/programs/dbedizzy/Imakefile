@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.14 94/03/30 12:10:30 gildea Exp $
+XCOMM $XConsortium: Imakefile,v 1.1 95/05/31 14:59:30 dpw Exp $
 
         DEFINES = ExtensionDefines
         DEPLIBS = $(DEPXLIB)

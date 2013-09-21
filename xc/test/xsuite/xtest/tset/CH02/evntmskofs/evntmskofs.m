@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: evntmskofs.m,v 1.4 92/06/11 15:59:33 rws Exp $
+ * $XConsortium: evntmskofs.m,v 1.5 94/04/17 21:02:25 rws Exp $
  */
 >>SET   macro
 >>TITLE XEventMaskOfScreen CH02

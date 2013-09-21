@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: lstfnts.m,v 1.11 92/06/11 17:07:51 rws Exp $
+ * $XConsortium: lstfnts.m,v 1.12 94/04/17 21:05:42 rws Exp $
  */
 >>TITLE XListFonts CH06
 char	**

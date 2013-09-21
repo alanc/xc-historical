@@ -1,4 +1,4 @@
-/* $XConsortium: imTrans.c,v 1.4 94/03/26 17:01:02 rws Exp kaleb $ */
+/* $XConsortium: imTrans.c,v 1.5 95/04/07 19:56:09 kaleb Exp $ */
 /******************************************************************
 
            Copyright 1992 by Sun Microsystems, Inc.

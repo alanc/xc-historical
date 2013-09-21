@@ -1,4 +1,4 @@
-/* $XConsortium: tags.c,v 1.6 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: tags.c,v 1.7 95/05/30 18:36:48 mor Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *

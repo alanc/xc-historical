@@ -2,7 +2,7 @@
 #define	UTILS_H 1
 
   /*\
-   * $XConsortium: utils.h,v 1.1 94/04/02 17:12:17 erik Exp $
+   * $XConsortium: utils.h,v 1.2 94/04/04 15:31:47 rws Exp $
    *
    *		              COPYRIGHT 1990
    *		        DIGITAL EQUIPMENT CORPORATION

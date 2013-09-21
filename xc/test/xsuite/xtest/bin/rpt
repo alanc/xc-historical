@@ -35,7 +35,7 @@
 #  makes no representations about the suitability of this software for any
 #  purpose.  It is provided "as is" without express or implied warranty.
 # 
-# $XConsortium: rpt,v 1.10 94/03/27 18:04:05 rws Exp $
+# $XConsortium: rpt,v 1.11 94/04/17 21:14:33 rws Exp $
 #
 
 # A simple report generator for development use

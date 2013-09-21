@@ -1,4 +1,4 @@
-/* $XConsortium: extension.h,v 1.7 94/02/23 15:47:22 dpw Exp $ */
+/* $XConsortium: extension.h,v 1.8 94/04/17 20:25:41 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

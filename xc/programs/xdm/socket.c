@@ -1,4 +1,4 @@
-/* $XConsortium: socket.c,v 1.33 94/03/31 17:58:05 gildea Exp $ */
+/* $XConsortium: socket.c,v 1.34 94/04/17 20:03:47 gildea Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

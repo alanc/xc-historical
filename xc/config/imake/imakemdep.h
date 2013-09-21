@@ -1,4 +1,4 @@
-/* $XConsortium: imakemdep.h,v 1.82 95/01/12 16:27:01 kaleb Exp kaleb $ */
+/* $XConsortium: imakemdep.h,v 1.83 95/04/07 19:47:46 kaleb Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

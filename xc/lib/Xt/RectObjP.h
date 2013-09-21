@@ -1,4 +1,4 @@
-/* $XConsortium: RectObjP.h,v 1.12 92/04/03 13:15:56 converse Exp $ */
+/* $XConsortium: RectObjP.h,v 1.13 94/04/17 20:14:38 converse Exp $ */
 /* $oHeader: RectObjP.h,v 1.2 88/08/18 15:55:52 asente Exp $ */
 /***********************************************************
 

@@ -1,4 +1,4 @@
-/* $XConsortium: FS.h,v 1.7 94/04/12 21:51:55 dpw Exp $ */
+/* $XConsortium: FS.h,v 1.8 94/04/17 20:11:05 dpw Exp $ */
 
 /*
  * Copyright 1990, 1991 Network Computing Devices;

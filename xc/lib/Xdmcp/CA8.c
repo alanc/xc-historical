@@ -1,5 +1,5 @@
 /*
- * $XConsortium: CA8.c,v 1.4 93/09/08 10:25:15 rws Exp $
+ * $XConsortium: CA8.c,v 1.5 94/04/17 20:16:31 rws Exp $
  *
  * 
 Copyright (c) 1989  X Consortium

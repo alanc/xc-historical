@@ -1,4 +1,4 @@
-/* $XConsortium: cir_blitter.h,v 1.1 94/03/28 21:48:17 dpw Exp $ */
+/* $XConsortium: cirBlitter.h,v 1.1 95/01/26 15:08:31 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitter.h,v 3.6 1995/01/04 04:42:18 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */

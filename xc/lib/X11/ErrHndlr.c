@@ -1,4 +1,4 @@
-/* $XConsortium: ErrHndlr.c,v 11.20 93/12/09 15:02:40 kaleb Exp $ */
+/* $XConsortium: ErrHndlr.c,v 11.21 94/04/17 20:19:15 kaleb Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

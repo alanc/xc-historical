@@ -54,7 +54,7 @@ has been removed.  Hopefully the past text-restoration problems are alleviated
 in XFree86 2.0.
 
 <verb>
-$XConsortium: tseng.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp kaleb $
+$XConsortium: tseng.sgml,v 1.2 95/01/23 15:34:58 kaleb Exp $
 $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.3 1995/01/21 10:44:40 dawes Exp $
 </verb>
 

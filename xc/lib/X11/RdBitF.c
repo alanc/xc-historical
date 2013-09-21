@@ -1,4 +1,4 @@
-/* $XConsortium: RdBitF.c,v 1.18 93/09/13 10:51:23 rws Exp $ */
+/* $XConsortium: RdBitF.c,v 1.19 94/04/17 20:20:42 rws Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: faData.c,v 1.0 93/11/22 12:49:35 rws Exp $ */
 
 /*
         NOTICE TO USER: The source code in this file is copyrighted under

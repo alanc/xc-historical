@@ -1,4 +1,4 @@
-/* $XConsortium: CCC.c,v 1.13 93/09/07 21:30:25 rws Exp $" */
+/* $XConsortium: CCC.c,v 1.14 94/04/17 20:18:36 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

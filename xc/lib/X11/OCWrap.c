@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: OCWrap.c,v 1.1 94/01/20 17:54:55 rws Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *

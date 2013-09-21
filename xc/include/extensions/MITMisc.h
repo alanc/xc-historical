@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /* RANDOM CRUFT! THIS HAS NO OFFICIAL X CONSORTIUM BLESSING */
 
-/* $XConsortium: MITMisc.h,v 1.4 91/07/12 10:06:43 rws Exp $ */
+/* $XConsortium: MITMisc.h,v 1.5 94/04/17 20:11:10 rws Exp $ */
 
 #ifndef _XMITMISC_H_
 #define _XMITMISC_H_

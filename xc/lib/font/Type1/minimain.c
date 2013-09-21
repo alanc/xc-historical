@@ -1,4 +1,4 @@
-/* $XConsortium: minimain.c,v 1.3 94/04/13 17:05:04 gildea Exp $ */
+/* $XConsortium: minimain.c,v 1.4 94/04/17 20:17:20 gildea Exp $ */
 
 /*
 

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: strclr.m,v 1.17 92/06/11 16:19:15 rws Exp $
+ * $XConsortium: strclr.m,v 1.18 94/04/17 21:04:14 rws Exp $
  */
 >>TITLE XStoreColor CH05
 void

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtgcvls.m,v 1.9 92/06/29 19:00:29 rws Exp $
+ * $XConsortium: gtgcvls.m,v 1.10 94/04/17 21:03:58 rws Exp $
  */
 >>TITLE XGetGCValues CH05
 Status

@@ -1,4 +1,4 @@
-/* $XConsortium: StdCmap.h,v 1.3 91/07/22 23:46:03 converse Exp $ */
+/* $XConsortium: StdCmap.h,v 1.4 94/04/17 20:16:15 converse Exp $ */
 
 /*
  

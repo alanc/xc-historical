@@ -1,4 +1,4 @@
-/* $XConsortium: out_blk.c,v 1.3 91/05/11 09:52:21 rws Exp $ */
+/* $XConsortium: out_blk.c,v 1.4 94/02/07 10:01:11 gildea Exp $ */
 
 /*
 

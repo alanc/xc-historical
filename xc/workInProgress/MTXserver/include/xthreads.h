@@ -28,7 +28,7 @@
  *
  ************************************************************************/
 
-/* $XConsortium: xthreads.h,v 1.6 94/01/22 22:52:55 rob Exp $ */
+/* $XConsortium: xthreads.h,v 1.1 94/03/17 11:36:12 dpw Exp $ */
 
 #ifndef XTHREADS_H
 #define XTHREADS_H

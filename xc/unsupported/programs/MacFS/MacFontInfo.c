@@ -1,4 +1,4 @@
-/* $XConsortium: MacFontInfo.c,v 1.0 94/01/01 00:00:00 rws Exp $ */
+/* $XConsortium: MacFontInfo.c,v 1.3 94/04/17 20:45:34 hersh Exp $ */
 /***********************************************************************
 Copyright 1991 by Apple Computer, Inc, Cupertino, California
 			All Rights Reserved

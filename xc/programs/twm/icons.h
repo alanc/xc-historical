@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: icons.h,v 1.4 89/07/18 17:16:24 jim Exp $
+ * $XConsortium: icons.h,v 1.5 94/04/17 20:38:14 jim Exp $
  *
  * Icon releated definitions
  *

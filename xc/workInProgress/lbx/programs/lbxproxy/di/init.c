@@ -23,7 +23,7 @@
  * Author:  Keith Packard, Network Computing Devices
  */
 
- /* $XConsortium: init.c,v 1.5 95/04/04 21:03:04 dpw Exp dpw $ */
+ /* $XConsortium: init.c,v 1.6 95/04/25 20:35:13 dpw Exp $ */
 
 /* Hook up to an X server and set up a multiplexing LBX encoded connection */
 

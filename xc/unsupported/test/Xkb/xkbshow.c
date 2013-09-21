@@ -1,4 +1,4 @@
-/* $XConsortium: xkbshow.c,v 1.2 93/09/28 23:52:06 rws Exp $ */
+/* $XConsortium: xkbshow.c,v 1.7 94/04/08 17:04:51 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

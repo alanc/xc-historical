@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: clear_z.c,v 1.0 93/11/22 12:53:32 rws Exp $ */
 
 /*
 	NOTICE TO USER: The source code in this file is copyrighted under

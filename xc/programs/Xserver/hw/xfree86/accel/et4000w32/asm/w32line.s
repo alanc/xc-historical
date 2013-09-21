@@ -1,4 +1,4 @@
-/* $XConsortium: $ */
+/* $XConsortium: w32line.s,v 1.2 95/06/19 17:45:13 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/w32line.s,v 3.0 1994/11/19 08:06:55 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai

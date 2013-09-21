@@ -1,4 +1,4 @@
-/* $XConsortium: chars.c,v 1.3 92/11/18 21:31:24 gildea Exp $ */
+/* $XConsortium: chars.c,v 1.4 94/04/17 20:24:26 gildea Exp $ */
 /*
  
 Copyright (c) 1990  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: man.h,v 1.30 94/04/17 20:43:57 dave Exp gildea $ */
+/* $XConsortium: man.h,v 1.31 94/12/16 21:36:53 gildea Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: cnfgrrqst.m,v 1.10 93/10/17 17:16:02 rws Exp $
+ * $XConsortium: cnfgrrqst.m,v 1.11 94/04/17 21:07:19 rws Exp $
  */
 >>TITLE ConfigureRequest CH08
 >>EXTERN

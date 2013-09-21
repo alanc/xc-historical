@@ -1,4 +1,4 @@
-/* $XConsortium: XKBUse.c,v 1.4 94/04/04 11:40:51 rws Exp $ */
+/* $XConsortium: XKBUse.c,v 1.5 94/04/08 02:57:29 erik Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

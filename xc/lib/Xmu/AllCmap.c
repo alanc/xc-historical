@@ -1,4 +1,4 @@
-/* $XConsortium: AllCmap.c,v 1.6 89/10/08 14:52:32 rws Exp $ */
+/* $XConsortium: AllCmap.c,v 1.7 94/04/17 20:15:48 rws Exp $ */
 
 /* 
  

@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: extension.c,v 1.2 94/01/11 20:46:02 rob Exp $ */
+/* $XConsortium: extension.c,v 1.3 94/04/17 21:15:49 rob Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

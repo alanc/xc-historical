@@ -1,5 +1,5 @@
 
-/* $XConsortium: datautils.h,v 5.2 91/07/24 18:41:32 hersh Exp $ */
+/* $XConsortium: datautils.h,v 5.3 94/04/17 20:46:32 hersh Exp $ */
 
 /*****************************************************************
 

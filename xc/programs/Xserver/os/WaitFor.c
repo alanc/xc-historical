@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.69 94/08/11 15:26:33 dpw Exp kaleb $ */
+/* $XConsortium: WaitFor.c,v 1.70 95/04/05 19:58:25 kaleb Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:

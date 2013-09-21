@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: mprqst.m,v 1.9 93/10/17 17:18:13 rws Exp $
+ * $XConsortium: mprqst.m,v 1.10 94/04/17 21:07:53 rws Exp $
  */
 >>TITLE MapRequest CH08
 >>EXTERN

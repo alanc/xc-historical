@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: bios_devmem.c,v 1.1 94/03/28 21:31:17 dpw Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: fllarc.m,v 1.5 92/06/11 16:58:21 rws Exp $
+ * $XConsortium: fllarc.m,v 1.6 94/04/17 21:05:22 rws Exp $
  */
 >>TITLE XFillArc CH06
 void

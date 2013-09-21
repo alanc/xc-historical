@@ -1,4 +1,4 @@
-/* $XConsortium: iconclosed.h,v 1.4 91/06/08 18:15:32 rws Exp $ */
+/* $XConsortium: iconclosed.h,v 1.5 94/04/17 20:43:55 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

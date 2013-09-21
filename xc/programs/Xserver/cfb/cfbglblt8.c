@@ -1,4 +1,4 @@
-/* $XConsortium: cfbglblt8.c,v 5.30 94/01/07 09:42:21 dpw Exp $ */
+/* $XConsortium: cfbglblt8.c,v 5.31 94/04/17 20:28:51 dpw Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

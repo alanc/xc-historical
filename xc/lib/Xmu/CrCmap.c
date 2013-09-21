@@ -1,4 +1,4 @@
-/* $XConsortium: CrCmap.c,v 1.5 92/11/24 14:40:47 rws Exp $ */
+/* $XConsortium: CrCmap.c,v 1.6 94/04/17 20:15:53 rws Exp $ */
 
 /* 
 

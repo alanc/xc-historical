@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.22 94/03/29 15:54:21 gildea Exp kaleb $
+XCOMM $XConsortium: Imakefile,v 1.23 94/11/21 18:22:20 kaleb Exp $
 #define DoNormalLib NormalLibXdmcp
 #define DoSharedLib SharedLibXdmcp
 #define DoDebugLib DebugLibXdmcp

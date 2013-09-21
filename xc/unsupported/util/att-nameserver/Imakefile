@@ -1,4 +1,4 @@
-XCOMM $XConsortium$
+XCOMM $XConsortium: Imakefile,v 1.6 91/07/17 16:08:48 gildea Exp $
 XCOMM ident	"@(#)nameserver:Imakefile	1.3"
 
 XCOMM Copyright 1988, 1989 AT&T, Inc.

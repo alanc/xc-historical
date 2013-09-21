@@ -1,4 +1,4 @@
-/* $XConsortium: regmach32.h,v 1.1 94/10/05 13:31:19 kaleb Exp $ */
+/* $XConsortium: regmach32.h,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/regmach32.h,v 3.2 1994/06/01 03:18:22 dawes Exp $ */
 /* regmach32.h
  *

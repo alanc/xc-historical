@@ -1,4 +1,4 @@
-/* $XConsortium: sharedlib.c,v 1.5 94/03/21 13:25:31 kaleb Exp $ */
+/* $XConsortium: sharedlib.c,v 1.6 94/04/17 20:13:34 kaleb Exp $ */
 /*
 
 Copyright (c) 1991, 1994  X Consortium

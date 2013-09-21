@@ -1,4 +1,4 @@
-/* $XConsortium: miSOFAS.c,v 5.3 93/09/03 15:06:18 hersh Exp $ */
+/* $XConsortium: miSOFAS.c,v 5.4 94/04/17 20:37:17 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

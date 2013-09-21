@@ -1,5 +1,5 @@
 
-/* $XConsortium: testutils.h,v 5.2 91/05/06 11:23:18 hersh Exp $ */
+/* $XConsortium: testutils.h,v 5.3 94/04/17 20:46:40 hersh Exp $ */
 
 /*****************************************************************
 

@@ -1,4 +1,4 @@
-/* $XConsortium: purgecolst.c,v 1.4 94/01/29 11:08:43 rws Exp $ */
+/* $XConsortium: purgecolst.c,v 1.5 94/04/17 20:39:29 rws Exp $ */
 
 /**** module purgecolst.c ****/
 /******************************************************************************

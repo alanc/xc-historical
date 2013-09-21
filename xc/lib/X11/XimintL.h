@@ -1,4 +1,4 @@
-/* $XConsortium: XimintL.h,v 1.5 94/03/29 22:51:11 rws Exp $ */
+/* $XConsortium: XimintL.h,v 1.6 94/07/06 14:46:45 kaleb Exp $ */
 /******************************************************************
 
           Copyright 1991, 1992, 1993, 1994 by FUJITSU LIMITED

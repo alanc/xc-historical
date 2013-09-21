@@ -1,4 +1,4 @@
-/* $XConsortium: globals.c,v 1.8 91/06/08 18:15:23 rws Exp $ */
+/* $XConsortium: globals.c,v 1.9 94/04/17 20:43:51 rws Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium

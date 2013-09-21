@@ -1,4 +1,4 @@
-/* $XConsortium: xcmsdb.c,v 1.11 94/02/07 23:21:58 rws Exp $ */
+/* $XConsortium: xcmsdb.c,v 1.12 94/02/07 23:29:38 rws Exp $ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.

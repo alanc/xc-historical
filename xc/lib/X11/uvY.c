@@ -1,4 +1,4 @@
-/* $XConsortium: uvY.c,v 1.9 92/06/11 16:26:27 converse Exp $ */
+/* $XConsortium: uvY.c,v 1.10 93/09/07 21:33:36 rws Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

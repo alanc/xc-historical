@@ -1,5 +1,5 @@
 /*
- * $XConsortium: AsciiText.h,v 1.17 94/01/31 10:50:24 kaleb Exp $ 
+ * $XConsortium: AsciiText.h,v 1.18 94/04/17 20:11:51 kaleb Exp $ 
  */
 
 /***********************************************************

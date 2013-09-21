@@ -1,4 +1,4 @@
-.\" $XConsortium: Xsun.man,v 1.23 94/04/17 20:29:32 gildea Exp $
+.\" $XConsortium: Xsun.man,v 1.24 94/06/06 14:13:56 kaleb Exp $
 .\" Copyright 1988 Sun Microsystems, Inc.
 .\" Copyright (c) 1993, 1994  X Consortium
 .\" 

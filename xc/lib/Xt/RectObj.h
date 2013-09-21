@@ -1,4 +1,4 @@
-/* $XConsortium: RectObj.h,v 1.8 89/09/11 17:39:45 swick Exp $ */
+/* $XConsortium: RectObj.h,v 1.9 94/04/17 20:14:37 swick Exp $ */
 /* $oHeader: RectObj.h,v 1.2 88/08/18 17:39:17 asente Exp $ */
 /***********************************************************
 

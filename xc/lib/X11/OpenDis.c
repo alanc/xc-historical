@@ -1,4 +1,4 @@
-/* $XConsortium: OpenDis.c,v 11.152 94/04/17 20:20:21 rws Exp gildea $ */
+/* $XConsortium: OpenDis.c,v 11.153 95/06/05 19:02:01 gildea Exp $ */
 /*
 
 Copyright (c) 1985, 1986  X Consortium

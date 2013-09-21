@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XMultibuf.c,v 1.30 94/03/29 10:52:36 rws Exp $
+ * $XConsortium: XMultibuf.c,v 1.31 94/04/17 20:22:54 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

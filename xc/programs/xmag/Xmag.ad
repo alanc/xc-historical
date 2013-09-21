@@ -1,4 +1,4 @@
-.\ "$XConsortium: Xmag.ad,v 1.13 92/05/19 09:42:10 dave Exp $
+.\ "$XConsortium: Xmag.ad,v 1.14 92/05/19 09:43:26 dave Exp $
 *Font: fixed
 *pane2*orientation: horizontal
 *pane2*showGrip: False

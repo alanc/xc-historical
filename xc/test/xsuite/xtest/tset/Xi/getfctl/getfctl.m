@@ -37,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: getfctl.m,v 1.6 94/04/17 21:12:55 rws Exp dpw $
+ * $XConsortium: getfctl.m,v 1.7 94/09/06 20:54:12 dpw Exp $
  */
 >>TITLE XGetFeedbackControl XINPUT
 XFeedbackState *

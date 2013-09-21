@@ -1,4 +1,4 @@
-/* $XConsortium: XPErrors.c,v 1.2 91/02/20 09:17:37 rws Exp $ */
+/* $XConsortium: XPErrors.c,v 1.3 94/02/21 10:40:32 rws Exp $ */
 /************************************************************************
  *
  * XProtoErrors.c - attempt to force all of the protocol errors defined

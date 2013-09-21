@@ -1,4 +1,4 @@
-/* $XConsortium: configstr.h,v 1.3 94/04/12 22:00:23 dpw Exp $ */
+/* $XConsortium: configstr.h,v 1.4 94/04/17 19:56:04 dpw Exp $ */
 /* 
 Copyright (c) 1987  X Consortium
 

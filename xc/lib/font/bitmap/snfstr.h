@@ -1,4 +1,4 @@
-/* $XConsortium: snfstr.h,v 1.4 93/09/26 10:07:51 rws Exp $ */
+/* $XConsortium: snfstr.h,v 1.5 94/04/17 20:17:17 rws Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 

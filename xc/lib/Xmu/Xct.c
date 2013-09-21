@@ -1,4 +1,4 @@
-/* $XConsortium: Xct.c,v 1.18 93/09/18 18:13:27 kaleb Exp $ */
+/* $XConsortium: Xct.c,v 1.19 94/04/17 20:16:25 kaleb Exp $ */
 
 /* 
 

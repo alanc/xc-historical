@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillrct.c,v 5.9 94/01/07 09:43:22 dpw Exp $ */
+/* $XConsortium: mfbfillrct.c,v 5.10 94/04/17 20:28:21 dpw Exp $ */
 #include "X.h"
 #include "Xprotostr.h"
 #include "pixmapstr.h"

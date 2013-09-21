@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: crtclrmp.m,v 1.12 92/06/11 16:15:27 rws Exp $
+ * $XConsortium: crtclrmp.m,v 1.13 94/04/17 21:03:52 rws Exp $
  */
 >>TITLE XCreateColormap CH05
 Colormap

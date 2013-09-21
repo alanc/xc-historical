@@ -1,4 +1,4 @@
-/* $XConsortium: xinit.c,v 11.60 94/12/12 15:57:46 kaleb Exp kaleb $ */
+/* $XConsortium: xinit.c,v 11.61 95/01/09 21:20:29 kaleb Exp $ */
 
 /*
 

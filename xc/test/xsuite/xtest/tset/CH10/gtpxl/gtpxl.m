@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtpxl.m,v 1.5 92/06/11 17:35:46 rws Exp $
+ * $XConsortium: gtpxl.m,v 1.6 94/04/17 21:09:36 rws Exp $
  */
 >>TITLE XGetPixel CH10
 unsigned long

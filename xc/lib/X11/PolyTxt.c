@@ -1,4 +1,4 @@
-/* $XConsortium: PolyTxt.c,v 11.22 93/11/05 11:30:21 kaleb Exp $ */
+/* $XConsortium: PolyTxt.c,v 11.23 94/04/17 20:20:28 kaleb Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

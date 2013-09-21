@@ -1,4 +1,4 @@
-/* $XConsortium: ChKeyCon.c,v 11.13 93/09/22 21:23:29 rws Exp $ */
+/* $XConsortium: ChKeyCon.c,v 11.14 94/04/17 20:18:41 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

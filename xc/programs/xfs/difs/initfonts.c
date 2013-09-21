@@ -1,4 +1,4 @@
-/* $XConsortium: initfonts.c,v 1.6 94/04/12 22:00:50 dpw Exp $ */
+/* $XConsortium: initfonts.c,v 1.7 94/04/17 19:56:17 dpw Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 

@@ -1,4 +1,4 @@
-/* $XConsortium: UNDEFINED.c,v 1.4 91/05/13 22:49:15 rws Exp $" */
+/* $XConsortium: UNDEFINED.c,v 1.5 91/07/25 01:10:56 rws Exp $" */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.

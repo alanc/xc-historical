@@ -1,4 +1,4 @@
-/* $XConsortium: miscstruct.h,v 5.4 94/02/16 11:51:26 dpw Exp $ */
+/* $XConsortium: miscstruct.h,v 5.5 94/04/17 20:25:50 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

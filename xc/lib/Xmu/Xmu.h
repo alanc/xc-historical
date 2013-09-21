@@ -1,4 +1,4 @@
-/* $XConsortium: Xmu.h,v 1.26 89/07/16 14:12:37 jim Exp $ */
+/* $XConsortium: Xmu.h,v 1.27 94/04/17 20:16:26 jim Exp $ */
 
 /* 
 

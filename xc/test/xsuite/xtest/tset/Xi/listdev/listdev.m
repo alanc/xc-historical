@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * make no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: listdev.m,v 1.7 94/04/17 21:12:47 rws Exp dpw $
+ * $XConsortium: listdev.m,v 1.8 94/09/06 20:50:52 dpw Exp $
  */
 
 >>TITLE XListInputDevices XINPUT

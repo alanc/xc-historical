@@ -1,4 +1,4 @@
-/* $XConsortium: globals.h,v 5.2 91/04/03 10:29:19 rws Exp $ */
+/* $XConsortium: globals.h,v 5.3 93/01/04 18:24:06 hersh Exp $ */
 
 /*
  */

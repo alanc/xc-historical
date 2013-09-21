@@ -1,5 +1,5 @@
 /*
- * $XConsortium: SimpleMenu.h,v 1.21 94/01/31 10:51:52 kaleb Exp $
+ * $XConsortium: SimpleMenu.h,v 1.22 94/04/17 20:12:47 kaleb Exp $
  *
 Copyright (c) 1989, 1994  X Consortium
 

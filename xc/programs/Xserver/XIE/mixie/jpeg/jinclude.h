@@ -1,4 +1,4 @@
-/* $XConsortium: jinclude.h,v 1.5 94/01/12 20:19:57 rws Exp $ */
+/* $XConsortium: jinclude.h,v 1.6 94/04/17 20:35:40 rws Exp $ */
 /* Module jinclude.h */
 
 /****************************************************************************

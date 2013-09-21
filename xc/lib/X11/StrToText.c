@@ -1,4 +1,4 @@
-/* $XConsortium: StrToText.c,v 1.4 91/01/08 14:40:18 gildea Exp $ */
+/* $XConsortium: StrToText.c,v 1.5 94/04/17 20:21:13 gildea Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: function.mc,v 1.11 92/06/11 18:03:31 rws Exp $
+ * $XConsortium: function.mc,v 1.12 94/04/17 21:14:44 rws Exp $
  */
 >>EXTERN
 

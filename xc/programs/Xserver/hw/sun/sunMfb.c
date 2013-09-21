@@ -1,5 +1,5 @@
 
-/* $XConsortium: sunMfb.c,v 1.4 94/04/17 20:29:46 kaleb Exp kaleb $ */
+/* $XConsortium: sunMfb.c,v 1.5 95/01/05 20:15:41 kaleb Exp $ */
 
 /*
 Copyright (c) 1990, 1993  X Consortium

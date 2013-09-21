@@ -1,4 +1,4 @@
-/* $XConsortium: xkbUtils.c,v 1.13 94/04/08 15:15:07 oops Exp $ */
+/* $XConsortium: xkbUtils.c,v 1.14 94/05/09 13:07:14 dpw Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

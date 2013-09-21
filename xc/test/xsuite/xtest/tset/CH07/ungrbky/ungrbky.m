@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: ungrbky.m,v 1.10 93/07/05 14:23:49 rws Exp $
+ * $XConsortium: ungrbky.m,v 1.11 94/04/17 21:06:56 rws Exp $
  */
 >>TITLE XUngrabKey CH07
 void

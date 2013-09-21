@@ -1,4 +1,4 @@
-/* $XConsortium: Xvarargs.h,v 1.3 91/03/26 08:34:47 rws Exp $ */
+/* $XConsortium: Xvarargs.h,v 1.4 94/04/17 20:21:57 rws Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987, 1988, 1989  X Consortium

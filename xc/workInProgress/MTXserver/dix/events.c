@@ -67,7 +67,7 @@ OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: events.c,v 1.5 94/01/22 23:49:22 rob Exp $ */
+/* $XConsortium: events.c,v 1.6 94/04/17 21:15:47 rob Exp $ */
 
 #include "X.h"
 #include "misc.h"

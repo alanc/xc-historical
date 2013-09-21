@@ -1,4 +1,4 @@
-/* $XConsortium: linearline.c,v 1.1 95/01/06 20:37:49 kaleb Exp kaleb $ */
+/* $XConsortium: linearline.c,v 1.2 95/01/16 13:18:10 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/linearline.c,v 3.2 1995/01/07 04:12:08 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project

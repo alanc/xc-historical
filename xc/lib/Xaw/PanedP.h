@@ -1,6 +1,6 @@
 /***********************************************************
 
-  $XConsortium: PanedP.h,v 1.5 91/05/09 20:58:23 gildea Exp $
+  $XConsortium: PanedP.h,v 1.6 94/04/17 20:12:30 gildea Exp $
 
 
 Copyright (c) 1987, 1988  X Consortium

@@ -1,4 +1,4 @@
-# $XConsortium$
+# $XConsortium: configvga2.sh,v 1.1 94/03/28 21:41:14 dpw Exp $
 #!/bin/sh
 
 #

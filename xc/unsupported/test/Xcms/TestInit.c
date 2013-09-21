@@ -1,4 +1,4 @@
-/* $XConsortium: TestInit.c,v 1.5 91/07/31 11:40:28 rws Exp $ */
+/* $XConsortium: TestInit.c,v 1.6 93/08/20 15:50:14 rws Exp $ */
 
 /*
  * (c) Copyright 1988, Tektronix Inc.

@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /**********************************************************************
  *
- * $XConsortium: list.h,v 1.12 90/09/14 14:54:42 converse Exp $
+ * $XConsortium: list.h,v 1.13 94/04/17 20:38:16 converse Exp $
  *
  * TWM list handling external definitions
  *

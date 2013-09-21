@@ -1,5 +1,5 @@
 #!/bin/sh 
-# $XConsortium: inspex.sh,v 5.6 91/07/08 18:12:04 hersh Exp $
+# $XConsortium: inspex.sh,v 5.7 94/04/17 20:46:07 hersh Exp $
 ###################################################################
 # Copyright (c) 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium.
 # 

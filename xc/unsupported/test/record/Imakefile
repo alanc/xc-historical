@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 2.31 94/01/29 17:46:32 rws Exp $
+XCOMM $XConsortium: Imakefile,v 2.32 94/01/30 14:16:13 rws Exp $
 
        INCLUDES = -I$(INCLUDESRC) -I$(EXTINCSRC)
            SRCS = xrecord.c XRecordTk.c 

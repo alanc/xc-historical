@@ -46,7 +46,7 @@ SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: resource.c,v 1.94 94/03/25 16:39:24 dpw Exp $ */
+/* $XConsortium: resource.c,v 1.95 94/04/17 20:26:43 dpw Exp $ */
 
 /*	Routines to manage various kinds of resources:
  *

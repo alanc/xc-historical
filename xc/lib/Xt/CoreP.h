@@ -1,5 +1,5 @@
 /*
-* $XConsortium: CoreP.h,v 1.16 89/10/04 12:22:50 swick Exp $
+* $XConsortium: CoreP.h,v 1.17 94/04/17 20:13:53 swick Exp $
 * $oHeader: CoreP.h,v 1.2 88/08/18 15:54:37 asente Exp $
 */
 

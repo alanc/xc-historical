@@ -6,7 +6,7 @@
  * mi versions of these routines exist.
  */
 
-/* $XConsortium: misprite.h,v 5.4 93/10/12 11:42:09 dpw Exp $ */
+/* $XConsortium: misprite.h,v 5.5 94/04/17 20:27:55 dpw Exp $ */
 
 /*
 

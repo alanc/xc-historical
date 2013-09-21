@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: macII.cf,v 1.46 94/04/02 16:27:41 kaleb Exp $
+XCOMM platform:  $XConsortium: macII.cf,v 1.47 94/07/05 11:09:07 kaleb Exp $
 
 #define OSName            A/UX 3.0.1
 #define OSMajorVersion    3

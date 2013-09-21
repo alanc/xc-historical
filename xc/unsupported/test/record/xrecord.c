@@ -1,4 +1,4 @@
-/* $XConsortium: xrecord.c,v 1.5 94/02/04 14:48:37 rws Exp $ */
+/* $XConsortium: xrecord.c,v 1.6 94/03/25 16:43:31 dpw Exp $ */
 /***************************************************************************
  * Copyright 1994 Network Computing Devices; 
  * Portions Copyright 1988 by Digital Equipment Corporation

@@ -1,4 +1,4 @@
-/* $XConsortium: SetState.c,v 11.11 91/01/06 11:48:13 rws Exp $ */
+/* $XConsortium: SetState.c,v 11.12 94/04/17 20:21:05 rws Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

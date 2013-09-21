@@ -1,4 +1,4 @@
-/* $XConsortium: miFillArea.c,v 5.9 93/09/03 15:05:42 hersh Exp $ */
+/* $XConsortium: miFillArea.c,v 5.10 94/04/17 20:37:05 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

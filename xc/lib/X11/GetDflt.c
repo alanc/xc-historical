@@ -1,4 +1,4 @@
-/* $XConsortium: GetDflt.c,v 1.33 94/04/17 20:19:31 kaleb Exp kaleb $ */
+/* $XConsortium: GetDflt.c,v 1.34 94/11/30 16:19:43 kaleb Exp $ */
 
 /***********************************************************
 

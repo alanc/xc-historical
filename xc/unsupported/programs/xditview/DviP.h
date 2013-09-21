@@ -1,5 +1,5 @@
 /*
- * $XConsortium: DviP.h,v 1.9 91/07/26 15:21:49 keith Exp $
+ * $XConsortium: DviP.h,v 1.10 92/02/11 01:27:15 keith Exp $
  */
 
 /* 

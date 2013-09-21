@@ -1,4 +1,4 @@
-/* $XConsortium: Xtransdnet.c,v 1.15 94/10/18 15:53:05 mor Exp mor $ */
+/* $XConsortium: Xtransdnet.c,v 1.16 95/02/10 17:54:09 mor Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium

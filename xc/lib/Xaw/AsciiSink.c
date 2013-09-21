@@ -1,4 +1,4 @@
-/* $XConsortium: AsciiSink.c,v 1.61 94/01/31 10:47:57 kaleb Exp $ */
+/* $XConsortium: AsciiSink.c,v 1.62 94/04/17 20:11:41 kaleb Exp $ */
 
 /***********************************************************
 

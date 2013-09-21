@@ -1,4 +1,4 @@
-/* $XConsortium: s3.h,v 1.8 95/01/27 14:45:24 kaleb Exp kaleb $ */
+/* $XConsortium: s3.h,v 1.9 95/03/13 16:57:23 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.h,v 3.18 1995/01/20 04:20:29 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.

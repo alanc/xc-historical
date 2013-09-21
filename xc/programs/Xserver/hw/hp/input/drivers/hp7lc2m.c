@@ -1,4 +1,4 @@
-/* $XConsortium: x_hil.c,v 8.142 94/04/17 20:30:15 dpw Exp $ */
+/* $XConsortium: hp7lc2m.c,v 1.1 94/05/28 14:32:48 dpw Exp $ */
 /************************************************************
 
 Copyright (c) 1992 by Hewlett-Packard Company, Palo Alto, California

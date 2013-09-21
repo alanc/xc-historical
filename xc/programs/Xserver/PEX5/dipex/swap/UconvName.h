@@ -1,4 +1,4 @@
-/* $XConsortium: UconvName.h,v 5.3 94/04/17 20:36:24 rws Exp gildea $ */
+/* $XConsortium: UconvName.h,v 5.4 95/06/09 22:14:34 gildea Exp $ */
 
 /***********************************************************
 

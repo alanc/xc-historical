@@ -1,4 +1,4 @@
-/* $XConsortium: AuGetAddr.c,v 1.12 93/08/16 11:58:31 rws Exp $ */
+/* $XConsortium: AuGetAddr.c,v 1.13 94/04/17 20:15:43 rws Exp $ */
 
 /*
 

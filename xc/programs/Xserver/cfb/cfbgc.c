@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 5.61 94/03/06 18:20:30 dpw Exp $ */
+/* $XConsortium: cfbgc.c,v 5.62 94/04/17 20:28:49 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

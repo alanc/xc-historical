@@ -1,4 +1,4 @@
-/* $XConsortium: SimpleMenu.c,v 1.43 94/01/31 10:51:50 kaleb Exp $ */
+/* $XConsortium: SimpleMenu.c,v 1.44 94/04/17 20:12:45 kaleb Exp $ */
 
 /*
 Copyright (c) 1989, 1994  X Consortium

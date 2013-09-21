@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: cpyar.m,v 1.7 92/06/11 16:20:58 rws Exp $
+ * $XConsortium: cpyar.m,v 1.8 94/04/17 21:04:29 rws Exp $
  */
 >>TITLE XCopyArea CH06
 void

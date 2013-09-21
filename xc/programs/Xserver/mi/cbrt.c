@@ -1,4 +1,4 @@
-/* $XConsortium: cbrt.c,v 1.1 94/04/12 17:25:08 dpw Exp $ */
+/* $XConsortium: cbrt.c,v 1.2 94/04/17 20:27:10 dpw Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium

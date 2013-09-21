@@ -1,4 +1,4 @@
-/* $XConsortium: StBytes.c,v 11.21 93/11/05 11:13:17 kaleb Exp $ */
+/* $XConsortium: StBytes.c,v 11.22 94/04/17 20:21:09 kaleb Exp $ */
 /*
 
 Copyright (c) 1986  X Consortium

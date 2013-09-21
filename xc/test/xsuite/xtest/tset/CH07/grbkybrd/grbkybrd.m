@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: grbkybrd.m,v 1.8 93/07/05 13:34:49 rws Exp $
+ * $XConsortium: grbkybrd.m,v 1.9 94/04/17 21:06:23 rws Exp $
  */
 >>TITLE XGrabKeyboard CH07
 int

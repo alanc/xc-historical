@@ -1,4 +1,4 @@
-/* $XConsortium: hpCursorUtils.c,v 1.2 94/04/17 20:30:05 rws Exp $ */
+/* $XConsortium: hpCursorUtils.c,v 1.3 95/01/24 01:43:05 dpw Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.

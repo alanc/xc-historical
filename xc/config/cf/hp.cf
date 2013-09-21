@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf,v 1.69 94/10/22 01:31:09 gildea Exp dpw $
+XCOMM platform:  $XConsortium: hp.cf,v 1.70 94/10/28 20:47:55 dpw Exp $
 
 #define OSName                 HP-UX 9.1
 XCOMM operating system:  OSName

@@ -1,4 +1,4 @@
-/* $XConsortium: css_ex_str.c,v 5.1 91/02/16 09:56:12 rws Exp $ */
+/* $XConsortium: css_ex_str.c,v 5.2 94/04/17 20:37:28 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

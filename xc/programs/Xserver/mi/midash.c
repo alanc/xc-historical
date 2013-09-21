@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: midash.c,v 5.4 93/09/21 08:55:00 dpw Exp $ */
+/* $XConsortium: midash.c,v 5.5 94/04/17 20:27:27 dpw Exp $ */
 #include "miscstruct.h"
 #include "mistruct.h"
 #include "mifpoly.h"

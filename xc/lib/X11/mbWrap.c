@@ -1,4 +1,4 @@
-/* $XConsortium: mbWrap.c,v 11.5 94/01/20 18:07:57 rws Exp $ */
+/* $XConsortium: mbWrap.c,v 11.6 94/04/17 20:22:15 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

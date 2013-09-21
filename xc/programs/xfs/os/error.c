@@ -1,4 +1,4 @@
-/* $XConsortium: error.c,v 1.8 94/02/09 16:48:01 gildea Exp $ */
+/* $XConsortium: error.c,v 1.9 94/04/17 19:56:05 gildea Exp $ */
 /*
  * error message handling
  */

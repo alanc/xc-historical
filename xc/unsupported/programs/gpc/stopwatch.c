@@ -1,4 +1,4 @@
-/* $XConsortium: stopwatch.c,v 5.3 91/10/21 14:33:08 eswu Exp $ */
+/* $XConsortium: stopwatch.c,v 5.4 94/04/17 20:44:44 eswu Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

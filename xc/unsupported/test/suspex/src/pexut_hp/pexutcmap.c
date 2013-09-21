@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: pexutcmap.c,v 1.0 93/11/22 12:23:22 rws Exp $ */
 
 /******************************************************************************/
 /*                                                                            */
@@ -25,9 +25,9 @@
 
 /******************************************************************************/
 /*                                                                            */
-/* $Source: /users/waitz/work/tmp/RCS/pexutcmap.c,v $                            */
-/* $Date: 93/04/01 13:31:17 $                                                 */
-/* $Revision: 1.3 $                                                   */
+/* $Source: /xsrc/xc/unsupported/test/suspex/src/pexut_hp/RCS/pexutcmap.c,v $                            */
+/* $Date: 93/11/22 12:23:22 $                                                 */
+/* $Revision: 1.0 $                                                   */
 /*                                                                            */
 /* Description:                                                               */
 /*   Main interface implementation file for PEXUt colormap/visual utilities.  */

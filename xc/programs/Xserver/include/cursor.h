@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cursor.h,v 1.21 94/02/23 15:47:03 dpw Exp $ */
+/* $XConsortium: cursor.h,v 1.22 94/04/17 20:25:34 dpw Exp $ */
 #ifndef CURSOR_H
 #define CURSOR_H 
 

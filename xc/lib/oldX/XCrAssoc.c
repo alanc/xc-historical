@@ -1,4 +1,4 @@
-/* $XConsortium: XCrAssoc.c,v 10.17 91/01/06 12:04:57 rws Exp $ */
+/* $XConsortium: XCrAssoc.c,v 10.18 94/04/17 20:11:34 rws Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium

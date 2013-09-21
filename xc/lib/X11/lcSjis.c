@@ -1,4 +1,4 @@
-/* $XConsortium: lcSjis.c,v 1.13 94/03/29 22:52:06 rws Exp kaleb $ */
+/* $XConsortium: lcSjis.c,v 1.14 95/06/26 20:41:49 kaleb Exp $ */
 /****************************************************************
 
         Copyright 1992, 1993 by FUJITSU LIMITED

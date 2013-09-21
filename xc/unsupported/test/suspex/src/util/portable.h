@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: portable.h,v 1.0 93/11/22 12:25:23 rws Exp $ */
 
 /*
         NOTICE TO USER: The source code in this file is copyrighted under

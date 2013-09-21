@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.5 93/11/01 10:23:07 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 93/11/06 15:55:34 rws Exp $
 XCOMM build device independent request objects
 #include <Server.tmpl>
 

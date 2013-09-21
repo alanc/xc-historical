@@ -1,4 +1,4 @@
-/* $XConsortium: xhost.c,v 11.62 94/04/17 20:23:18 rws Exp mor $ */
+/* $XConsortium: xhost.c,v 11.63 95/04/03 20:56:49 mor Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium

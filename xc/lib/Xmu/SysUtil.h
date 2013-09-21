@@ -1,4 +1,4 @@
-/* $XConsortium: SysUtil.h,v 1.3 91/07/22 23:46:12 converse Exp $ */
+/* $XConsortium: SysUtil.h,v 1.4 94/04/17 20:16:21 converse Exp $ */
 
 /*
 

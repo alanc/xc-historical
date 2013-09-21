@@ -46,7 +46,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: glyphcurs.c,v 5.14 94/02/23 15:48:24 dpw Exp $ */
+/* $XConsortium: glyphcurs.c,v 5.15 94/04/17 20:26:38 dpw Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

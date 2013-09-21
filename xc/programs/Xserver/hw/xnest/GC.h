@@ -1,4 +1,4 @@
-/* $XConsortium: xnestGC.h,v 1.1 93/06/23 16:23:50 dmatic Exp $ */
+/* $XConsortium: GC.h,v 1.1 93/07/12 15:28:24 rws Exp $ */
 /*
 
 Copyright 1993 by Davor Matic

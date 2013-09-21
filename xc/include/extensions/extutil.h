@@ -1,5 +1,5 @@
 /*
- * $XConsortium: extutil.h,v 1.14 94/09/15 21:03:30 dpw Exp kaleb $
+ * $XConsortium: extutil.h,v 1.15 94/10/07 15:36:33 kaleb Exp $
  *
 Copyright (c) 1989  X Consortium
 

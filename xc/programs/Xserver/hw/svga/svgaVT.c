@@ -1,4 +1,4 @@
-/* $XConsortium: svgaVT.c,v 1.2 93/09/18 18:18:01 rws Exp $ */
+/* $XConsortium: svgaVT.c,v 1.3 93/09/20 12:07:43 rws Exp $ */
 /*
  * Copyright 1990,91,92,93 by Thomas Roell, Germany.
  * Copyright 1991,92,93    by SGCS (Snitily Graphics Consulting Services), USA.

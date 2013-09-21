@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: vsbltyntfy.m,v 1.10 92/12/21 14:16:38 rws Exp $
+ * $XConsortium: vsbltyntfy.m,v 1.11 94/04/17 21:08:22 rws Exp $
  */
 >>TITLE VisibilityNotify CH08
 >>EXTERN

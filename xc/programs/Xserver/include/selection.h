@@ -1,4 +1,4 @@
-/* $XConsortium: selection.h,v 1.2 88/09/06 15:48:36 jim Exp $ */
+/* $XConsortium: selection.h,v 1.3 94/04/17 20:26:07 jim Exp $ */
 #ifndef SELECTION_H
 #define SELECTION_H 1
 

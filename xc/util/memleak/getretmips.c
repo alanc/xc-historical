@@ -1,5 +1,5 @@
 /*
- * $XConsortium: getretmips.c,v 1.3 92/04/08 14:31:46 keith Exp $
+ * $XConsortium: getretmips.c,v 1.4 94/04/17 20:59:44 keith Exp $
  *
 Copyright (c) 1992  X Consortium
 

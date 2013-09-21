@@ -1,4 +1,4 @@
-/* $XConsortium: xpr.c,v 1.58 94/04/17 20:44:05 rws Exp kaleb $ */
+/* $XConsortium: xpr.c,v 1.59 94/10/14 21:22:08 kaleb Exp $ */
 /*
 
 Copyright (c) 1985  X Consortium

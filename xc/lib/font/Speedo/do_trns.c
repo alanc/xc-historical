@@ -1,4 +1,4 @@
-/* $XConsortium: do_trns.c,v 1.3 94/02/07 10:01:09 gildea Exp $ */
+/* $XConsortium: do_trns.c,v 1.4 94/04/17 20:17:43 gildea Exp $ */
 
 /*
 

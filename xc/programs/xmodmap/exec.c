@@ -1,4 +1,4 @@
-/* $XConsortium: exec.c,v 1.12 91/07/18 10:25:57 rws Exp $ */
+/* $XConsortium: exec.c,v 1.13 94/04/17 20:24:20 rws Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

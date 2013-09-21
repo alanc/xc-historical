@@ -1,4 +1,4 @@
-/* $XConsortium: VisCmap.c,v 1.10 89/10/08 15:05:47 rws Exp $ */
+/* $XConsortium: VisCmap.c,v 1.11 94/04/17 20:16:22 rws Exp $ */
 
 /* 
 

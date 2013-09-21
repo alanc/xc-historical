@@ -1,4 +1,4 @@
-/* $XConsortium: TranslateI.h,v 1.47 93/09/28 11:20:45 kaleb Exp $ */
+/* $XConsortium: TranslateI.h,v 1.48.1.1 95/07/14 19:10:21 kaleb Exp $ */
 
 /***********************************************************
 
@@ -404,7 +404,7 @@ extern XtPointer _XtInitializeActionData(
 extern void _XtAddEventSeqToStateTree(
 #if NeedFunctionPrototypes
     EventSeqPtr		/* eventSeq */,
-    TMParseStateTree	/* stateTree */
+    TMStateTree		/* stateTree */
 #endif 
 );
 
@@ -538,7 +538,7 @@ extern TMShortCard _XtGetModifierIndex(
    
 extern TMShortCard _XtGetQuarkIndex(
 #if NeedFunctionPrototypes
-    TMParseStateTree	/* stateTreePtr */,
+    TMStateTree		/* stateTree */,
     XrmQuark		/* quark */
 #endif
 );
@@ -595,7 +595,7 @@ extern void _XtActionInitialize(
 
 extern TMStateTree _XtParseTreeToStateTree(
 #if NeedFunctionPrototypes
-    TMParseStateTree 	/* parseTree */
+    TMStateTree 	/* parseTree */
 #endif
 );
 

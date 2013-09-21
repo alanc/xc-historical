@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipsprc32.s,v 1.2 92/11/20 13:42:48 rws Exp $
+ * $XConsortium: stipsprc32.s,v 1.3 94/04/17 20:29:10 rws Exp $
  *
 Copyright (c) 1990  X Consortium
 

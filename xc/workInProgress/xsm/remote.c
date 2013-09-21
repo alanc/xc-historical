@@ -1,4 +1,4 @@
-/* $XConsortium: remote.c,v 1.14 94/12/30 18:36:32 mor Exp mor $ */
+/* $XConsortium: remote.c,v 1.15 95/01/03 17:26:52 mor Exp $ */
 /******************************************************************************
 
 Copyright (c) 1993  X Consortium

@@ -1,7 +1,7 @@
 /*
  * xrdb - X resource manager database utility
  *
- * $XConsortium: xrdb.c,v 11.75 94/03/27 14:42:02 rws Exp mor $
+ * $XConsortium: xrdb.c,v 11.76 95/05/12 18:36:46 mor Exp $
  */
 
 /*

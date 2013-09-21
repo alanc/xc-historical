@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: crcltwdw.m,v 1.6 92/12/21 09:23:41 rws Exp $
+ * $XConsortium: crcltwdw.m,v 1.7 94/04/17 21:11:09 rws Exp $
  */
 >>TITLE CirculateWindow XPROTO
 >>SET startup protostartup

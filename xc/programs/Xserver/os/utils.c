@@ -1,4 +1,4 @@
-/* $XConsortium: utils.c,v 1.147 94/08/16 14:03:23 dpw Exp kaleb $ */
+/* $XConsortium: utils.c,v 1.148 95/04/07 18:59:12 kaleb Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

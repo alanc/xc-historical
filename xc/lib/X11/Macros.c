@@ -1,4 +1,4 @@
-/* $XConsortium: Macros.c,v 11.27 93/09/29 18:19:16 rws Exp $ */
+/* $XConsortium: Macros.c,v 11.28 94/04/17 20:20:14 rws Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

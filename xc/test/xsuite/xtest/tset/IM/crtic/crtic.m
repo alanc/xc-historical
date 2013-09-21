@@ -1,4 +1,4 @@
-/* $XConsortium: crtic.m,v 1.1 94/01/29 16:07:17 rws Exp $ */
+/* $XConsortium: crtic.m,v 1.2 94/04/17 21:14:01 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

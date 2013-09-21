@@ -1,4 +1,4 @@
-/* $XConsortium: Xlocale.h,v 1.9 94/04/12 21:37:20 rws Exp $ */
+/* $XConsortium: Xlocale.h,v 1.10 94/04/17 20:21:51 rws Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

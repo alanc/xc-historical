@@ -1,4 +1,4 @@
-/* $XConsortium: keynames.h,v 1.2 91/07/08 11:16:28 keith Exp $ */
+/* $XConsortium: keynames.h,v 1.3 94/04/17 20:29:55 keith Exp $ */
 /***********************************************************
 
 Copyright (c) 1991  X Consortium

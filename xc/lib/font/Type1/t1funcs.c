@@ -1,4 +1,4 @@
-/* $XConsortium: t1funcs.c,v 1.19 94/04/17 20:17:22 dpw Exp $ */
+/* $XConsortium: t1funcs.c,v 1.20 94/07/25 13:50:03 kaleb Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *

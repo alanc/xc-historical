@@ -1,4 +1,4 @@
-.\" $XConsortium: ddx.tbl.ms,v 1.40 94/04/18 16:33:47 rws Exp $"
+.\" $XConsortium: ddx.tbl.ms,v 1.41 95/03/03 01:55:18 dpw Exp $"
 .EF 'Porting Layer Definition'- % -'April 8, 1994'
 .OF 'Porting Layer Definition'- % -'April 8, 1994'
 .EH '''

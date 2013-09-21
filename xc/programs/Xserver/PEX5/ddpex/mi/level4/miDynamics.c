@@ -1,4 +1,4 @@
-/* $XConsortium: miDynamics.c,v 5.2 92/12/30 16:44:38 hersh Exp $ */
+/* $XConsortium: miDynamics.c,v 5.3 94/04/17 20:37:31 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

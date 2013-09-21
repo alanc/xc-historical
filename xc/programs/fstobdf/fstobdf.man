@@ -1,4 +1,4 @@
-.\" $XConsortium: fstobdf.man,v 1.5 94/04/12 18:15:37 gildea Exp $
+.\" $XConsortium: fstobdf.man,v 1.6 94/04/17 20:24:27 gildea Exp $
 .\" Copyright 1990, Network Computing Devices
 .\" Copyright (c) 1990  X Consortium
 .\" 

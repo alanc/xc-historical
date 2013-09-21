@@ -1,4 +1,4 @@
-/* $XConsortium: Xdbeproto.h,v 1.1 95/05/25 17:29:33 dpw Exp dpw $ */
+/* $XConsortium: Xdbeproto.h,v 1.2 95/06/07 20:17:20 dpw Exp $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -27,7 +27,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization from the Hewlett-Packard Company.
  * 
- * $Header: Xdbeproto.h,v 1.1 95/04/06 04:31:50 yip Exp $
+ * $Header: /x/include/extensions/RCS/Xdbeproto.h,v 1.2 95/06/07 20:17:20 dpw Exp $
  *
  *     Header file for Xlib-related DBE
  *

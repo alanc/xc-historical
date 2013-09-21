@@ -1,4 +1,4 @@
-/* $XConsortium: lbxutil.c,v 1.9 95/05/17 18:26:41 dpw Exp mor $ */
+/* $XConsortium: lbxutil.c,v 1.10 95/05/30 18:59:31 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

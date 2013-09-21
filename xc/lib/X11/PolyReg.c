@@ -1,4 +1,4 @@
-/* $XConsortium: PolyReg.c,v 11.22 94/04/17 20:20:27 rws Exp converse $ */
+/* $XConsortium: PolyReg.c,v 11.23 94/11/17 21:59:37 converse Exp $ */
 /************************************************************************
 
 Copyright (c) 1987  X Consortium

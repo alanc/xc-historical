@@ -1,4 +1,4 @@
-/* $XConsortium: XHPproto.h,v 1.1 93/08/08 12:56:03 rws Exp $ */
+/* $XConsortium: XHPproto.h,v 1.2 95/01/24 01:46:26 dpw Exp $ */
 /*************************************************************************
  * 
  * (c)Copyright 1992 Hewlett-Packard Co.,  All Rights Reserved.

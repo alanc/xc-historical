@@ -1,4 +1,4 @@
-/* $XConsortium: resource.h,v 1.3 94/04/12 21:59:32 dpw Exp $ */
+/* $XConsortium: resource.h,v 1.4 94/04/17 19:56:00 dpw Exp $ */
 /* 
 Copyright (c) 1987  X Consortium
 

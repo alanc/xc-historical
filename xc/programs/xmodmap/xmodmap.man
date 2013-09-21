@@ -1,4 +1,4 @@
-.\" $XConsortium: xmodmap.man,v 1.23 94/04/14 15:09:31 dpw Exp $
+.\" $XConsortium: xmodmap.man,v 1.24 94/04/17 20:24:25 dpw Exp $
 .\" Copyright (c) 1988, 1989, 1990  X Consortium
 .\" Copyright 1987 Sun Microsystems, Inc.
 .\" 

@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: ppcScrn.h,v 1.1 94/03/28 21:38:11 dpw Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *

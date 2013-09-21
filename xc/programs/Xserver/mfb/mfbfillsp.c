@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbfillsp.c,v 5.12 94/03/31 14:08:31 dpw Exp $ */
+/* $XConsortium: mfbfillsp.c,v 5.13 94/04/17 20:28:21 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "gcstruct.h"

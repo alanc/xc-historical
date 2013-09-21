@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: maskbits.h,v 1.32 94/03/16 15:11:38 dpw Exp $ */
+/* $XConsortium: maskbits.h,v 1.33 94/04/17 20:28:13 dpw Exp $ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"

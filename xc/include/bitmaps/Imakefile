@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imakefile,v 1.30 94/02/10 16:46:02 rws Exp $
+XCOMM $XConsortium: Imakefile,v 1.31 94/03/29 15:54:29 gildea Exp $
 HEADERS = \
 	1x1 \
 	2x2 \

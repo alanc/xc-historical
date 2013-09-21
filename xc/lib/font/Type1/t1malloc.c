@@ -1,4 +1,4 @@
-/* $XConsortium: t1malloc.c,v 1.4 92/03/20 15:58:05 eswu Exp $ */
+/* $XConsortium: t1malloc.c,v 1.5 93/09/10 10:48:21 rws Exp $ */
 /* Copyright International Business Machines, Corp. 1991
  * All Rights Reserved
  * Copyright Lexmark International, Inc. 1991

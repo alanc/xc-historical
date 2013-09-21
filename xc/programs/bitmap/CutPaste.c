@@ -1,4 +1,4 @@
-/* $XConsortium: CutPaste.c,v 1.8 93/08/19 09:25:45 rws Exp $ */
+/* $XConsortium: CutPaste.c,v 1.9 94/04/17 20:23:41 rws Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

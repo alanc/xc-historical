@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: gtwmprtcls.m,v 1.6 92/06/11 17:29:21 rws Exp $
+ * $XConsortium: gtwmprtcls.m,v 1.7 94/04/17 21:08:49 rws Exp $
  */
 >>TITLE XGetWMProtocols CH09
 Status

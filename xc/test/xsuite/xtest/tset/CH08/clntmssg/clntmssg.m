@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: clntmssg.m,v 1.7 92/06/11 17:19:11 rws Exp $
+ * $XConsortium: clntmssg.m,v 1.8 94/04/17 21:07:17 rws Exp $
  */
 >>TITLE ClientMessage CH08
 >>ASSERTION Good A

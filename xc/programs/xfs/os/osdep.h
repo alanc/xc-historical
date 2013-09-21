@@ -1,4 +1,4 @@
-/* $XConsortium: osdep.h,v 1.8 94/04/12 22:00:24 dpw Exp $ */
+/* $XConsortium: osdep.h,v 1.9 94/04/17 19:56:07 dpw Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 

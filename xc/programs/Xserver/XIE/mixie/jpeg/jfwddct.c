@@ -1,4 +1,4 @@
-/* $XConsortium: jfwddct.c,v 1.3 94/01/12 20:19:51 rws Exp $ */
+/* $XConsortium: jfwddct.c,v 1.4 94/04/17 20:35:40 rws Exp $ */
 /* Module jfwddct.c */
 
 /****************************************************************************

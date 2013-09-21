@@ -1,5 +1,5 @@
 /*
- * $XConsortium: constype.c,v 1.5 92/11/18 14:10:04 rws Exp kaleb $
+ * $XConsortium: constype.c,v 1.6 95/01/05 20:01:06 kaleb Exp $
  * 
  * consoletype - utility to print out string identifying Sun console type
  *

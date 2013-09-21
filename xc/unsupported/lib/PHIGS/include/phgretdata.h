@@ -1,4 +1,4 @@
-/* $XConsortium: phgretdata.h,v 5.1 91/02/16 09:49:09 rws Exp $ */
+/* $XConsortium: phgretdata.h,v 5.2 94/04/17 20:41:48 rws Exp $ */
 
 /***********************************************************
 

@@ -1,4 +1,4 @@
-/* $XConsortium: sunAmProbe.c,v 1.1 94/04/01 17:55:07 dpw Exp $ */
+/* $XConsortium: sunAmProbe.c,v 1.2 94/04/17 20:32:48 dpw Exp $ */
 /*-
  * sunAmProbe.c:
  *	Amoeba implementation of functions to probe and map in the

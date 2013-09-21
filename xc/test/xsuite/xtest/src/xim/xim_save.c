@@ -1,4 +1,4 @@
-/* $XConsortium: xim_save.c,v 1.1 94/01/29 15:56:13 rws Exp $ */
+/* $XConsortium: xim_save.c,v 1.2 94/04/17 21:01:50 rws Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium

@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: sticnszs.m,v 1.6 93/12/26 15:30:31 rws Exp $
+ * $XConsortium: sticnszs.m,v 1.7 94/04/17 21:08:56 rws Exp $
  */
 >>TITLE XSetIconSizes CH09
 

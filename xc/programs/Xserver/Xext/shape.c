@@ -25,7 +25,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: shape.c,v 5.21 94/04/17 20:32:55 rws Exp dpw $ */
+/* $XConsortium: shape.c,v 5.22 94/09/22 20:58:37 dpw Exp $ */
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <stdio.h>

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.40 94/04/17 20:27:05 dpw Exp kaleb $ */
+/* $XConsortium: osdep.h,v 1.41 95/04/05 19:58:36 kaleb Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096

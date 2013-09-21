@@ -1,4 +1,4 @@
-/* $XConsortium: miReplace.c,v 5.4 94/04/17 20:37:17 rws Exp gildea $ */
+/* $XConsortium: miReplace.c,v 5.5 95/06/08 23:20:39 gildea Exp $ */
 
 /***********************************************************
 

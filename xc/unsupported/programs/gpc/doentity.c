@@ -1,4 +1,4 @@
-/* $XConsortium: doentity.c,v 5.2 91/08/23 16:45:39 rws Exp $ */
+/* $XConsortium: doentity.c,v 5.3 94/04/17 20:44:34 rws Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

@@ -1,5 +1,5 @@
 /*
- * $XConsortium: svpopup.c,v 1.16 93/04/22 14:12:58 dave Exp $
+ * $XConsortium: svpopup.c,v 1.17 94/04/17 21:45:21 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

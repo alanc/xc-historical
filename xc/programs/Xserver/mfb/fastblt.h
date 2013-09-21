@@ -1,4 +1,4 @@
-/* $XConsortium: fastblt.h,v 1.6 94/04/12 17:25:50 dpw Exp $ */
+/* $XConsortium: fastblt.h,v 1.7 94/04/17 20:28:07 dpw Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

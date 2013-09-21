@@ -1,4 +1,4 @@
-/* $XConsortium: misc.c,v 1.1 94/04/02 17:07:20 erik Exp $ */
+/* $XConsortium: misc.c,v 1.2 94/04/08 15:27:32 erik Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

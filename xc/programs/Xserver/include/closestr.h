@@ -1,4 +1,4 @@
-/* $XConsortium: closestr.h,v 1.9 94/04/17 20:25:29 dpw Exp $ */
+/* $XConsortium: closestr.h,v 1.10 95/05/19 19:18:55 dpw Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium

@@ -1,4 +1,4 @@
-/* $XConsortium: Initer.c,v 1.8 93/08/16 14:29:47 rws Exp $ */
+/* $XConsortium: Initer.c,v 1.9 94/04/17 20:16:09 rws Exp $ */
 
 /* 
  

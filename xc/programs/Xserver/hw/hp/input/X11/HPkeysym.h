@@ -1,4 +1,4 @@
-/* $XConsortium: HPkeysym.h,v 1.13 93/08/08 12:58:07 rws Exp $ */
+/* $XConsortium: HPkeysym.h,v 1.14 94/04/17 20:30:20 rws Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

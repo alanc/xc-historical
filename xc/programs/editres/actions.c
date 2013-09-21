@@ -1,5 +1,5 @@
 /*
- * $XConsortium: actions.c,v 1.14 93/08/19 09:24:56 rws Exp $
+ * $XConsortium: actions.c,v 1.15 94/04/17 20:38:50 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

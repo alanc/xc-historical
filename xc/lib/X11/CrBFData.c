@@ -1,4 +1,4 @@
-/* $XConsortium: CrBFData.c,v 1.11 91/12/18 19:34:42 rws Exp $ */
+/* $XConsortium: CrBFData.c,v 1.12 94/04/17 20:18:58 rws Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

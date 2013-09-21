@@ -1,4 +1,4 @@
-/* $XConsortium: miLightLUT.c,v 5.2 91/03/19 21:27:43 hersh Exp $ */
+/* $XConsortium: miLightLUT.c,v 5.3 94/04/17 20:37:43 hersh Exp $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium

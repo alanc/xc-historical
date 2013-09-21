@@ -23,7 +23,7 @@
  * Author:  Dale Tonogai, Network Computing Devices
  */
 
-/* $XConsortium: lzwio.c,v 1.3 94/02/20 10:33:04 dpw Exp $ */
+/* $XConsortium: lzwio.c,v 1.4 94/03/08 16:58:45 dpw Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>

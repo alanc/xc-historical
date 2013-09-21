@@ -1,4 +1,4 @@
-/* $XConsortium: file.c,v 1.15 91/02/13 19:13:21 rws Exp $ */
+/* $XConsortium: file.c,v 1.16 94/04/17 20:03:38 rws Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

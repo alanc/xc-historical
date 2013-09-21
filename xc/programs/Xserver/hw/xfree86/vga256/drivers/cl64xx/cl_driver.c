@@ -1,4 +1,4 @@
-/* $XConsortium: cl_driver.c,v 1.1 95/01/06 20:34:08 kaleb Exp kaleb $ */
+/* $XConsortium: cl_driver.c,v 1.2 95/01/16 13:18:11 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.3 1995/01/12 08:52:46 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>

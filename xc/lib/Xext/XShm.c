@@ -1,5 +1,5 @@
 /*
- * $XConsortium: XShm.c,v 1.15 92/04/22 16:04:26 rws Exp $
+ * $XConsortium: XShm.c,v 1.16 94/04/17 20:22:55 rws Exp $
  *
 Copyright (c) 1989  X Consortium
 

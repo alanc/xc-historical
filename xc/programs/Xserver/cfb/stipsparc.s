@@ -1,5 +1,5 @@
 /*
- * $XConsortium: stipsparc.s,v 1.8 92/11/20 13:41:30 rws Exp $
+ * $XConsortium: stipsparc.s,v 1.9 94/04/17 20:29:09 rws Exp $
  *
 Copyright (c) 1990  X Consortium
 

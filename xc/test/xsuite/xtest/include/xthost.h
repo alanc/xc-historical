@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: xthost.h,v 1.1 92/06/11 15:32:15 rws Exp $
+ * $XConsortium: xthost.h,v 1.2 94/04/17 21:00:06 rws Exp $
  */
 
 extern	XHostAddress	xthosts[];

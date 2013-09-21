@@ -1,4 +1,4 @@
-.\" $XConsortium: icccm.ms,v 1.18 94/04/16 18:30:53 rws Exp $
+.\" $XConsortium: icccm.ms,v 1.19 94/04/16 19:05:49 rws Exp $
 .\" Use tbl, eqn, -ms, and macros.t
 .\" @(#)icccm.ms	1.50	16 Apr 1994	14:13:55
 .EH ''''

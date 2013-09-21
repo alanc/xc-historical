@@ -1,4 +1,4 @@
-/* $XConsortium: CursorName.c,v 1.8 94/04/17 20:15:55 rws Exp gildea $ */
+/* $XConsortium: CursorName.c,v 1.9 95/06/08 23:20:39 gildea Exp $ */
 
 /*
  

@@ -1,4 +1,4 @@
-/* $XConsortium: types.h,v 1.1 92/06/11 15:30:25 rws Exp $ */
+/* $XConsortium: types.h,v 1.2 92/06/12 09:37:27 rws Exp $ */
 
 #ifndef _SYS_TYPES_H
 #define _SYS_TYPES_H

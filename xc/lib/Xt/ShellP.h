@@ -1,4 +1,4 @@
-/* $XConsortium: ShellP.h,v 1.40 94/04/13 17:51:35 converse Exp $ */
+/* $XConsortium: ShellP.h,v 1.41 94/04/17 20:14:50 converse Exp $ */
 
 /***********************************************************
 

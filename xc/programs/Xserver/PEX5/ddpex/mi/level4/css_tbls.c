@@ -1,4 +1,4 @@
-/* $XConsortium: css_tbls.c,v 5.3 92/08/12 15:32:12 hersh Exp $ */
+/* $XConsortium: css_tbls.c,v 5.4 94/04/17 20:37:31 hersh Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium

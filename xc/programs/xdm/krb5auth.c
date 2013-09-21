@@ -1,4 +1,4 @@
-/* $XConsortium: krb5auth.c,v 1.3 94/04/01 16:43:02 gildea Exp $ */
+/* $XConsortium: krb5auth.c,v 1.4 94/04/17 20:03:40 gildea Exp $ */
 /*
 
 Copyright (c) 1994  X Consortium

@@ -21,7 +21,7 @@ SOFTWARE.
 
 ************************************************************************/
 
-/* $XConsortium: dixfonts.c,v 1.54 95/05/19 19:18:17 dpw Exp dpw $ */
+/* $XConsortium: dixfonts.c,v 1.55 95/05/19 19:35:35 dpw Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"

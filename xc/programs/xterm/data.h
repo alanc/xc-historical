@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: data.h,v 1.10 93/02/25 17:21:28 gildea Exp kaleb $
+ *	$XConsortium: data.h,v 1.11 95/04/05 19:58:48 kaleb Exp $
  */
 /*
  * Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.

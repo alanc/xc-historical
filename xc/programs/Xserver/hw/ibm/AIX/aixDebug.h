@@ -1,5 +1,5 @@
 /*
- * $XConsortium: skyIO.c,v 1.1 91/05/10 09:09:03 jap Exp $
+ * $XConsortium: aixDebug.h,v 1.2 91/07/16 12:58:41 jap Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

@@ -1,4 +1,4 @@
-/* $XConsortium: ibm8514.c,v 1.5 95/01/16 13:16:28 kaleb Exp kaleb $ */
+/* $XConsortium: ibm8514.c,v 1.6 95/01/26 15:34:40 kaleb Exp $ */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.12 1995/01/26 02:17:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

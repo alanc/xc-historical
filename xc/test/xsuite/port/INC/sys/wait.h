@@ -1,4 +1,4 @@
-/* $XConsortium$ */
+/* $XConsortium: wait.h,v 1.1 92/06/11 15:30:32 rws Exp $ */
 #define WNOHANG		1
 #define WUNTRACED	2
 

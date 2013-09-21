@@ -53,7 +53,7 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: events.h,v 1.14 91/05/10 17:53:58 dave Exp $
+ * $XConsortium: events.h,v 1.15 94/04/17 20:38:09 dave Exp $
  *
  * twm event handler include file
  *

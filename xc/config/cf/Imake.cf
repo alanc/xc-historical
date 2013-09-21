@@ -1,4 +1,4 @@
-XCOMM $XConsortium: Imake.cf,v 1.18 94/12/08 02:34:19 kaleb Exp kaleb $
+XCOMM $XConsortium: Imake.cf,v 1.19 95/01/05 19:24:32 kaleb Exp $
 /*
  * To add support for another platform:
  * 

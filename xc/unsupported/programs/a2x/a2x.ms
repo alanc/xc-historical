@@ -1,5 +1,5 @@
 .\" Use -ms
-.\" $XConsortium: a2x.ms,v 1.49 94/10/01 22:13:03 rws Exp rws $
+.\" $XConsortium: a2x.ms,v 1.50 94/10/30 21:54:56 rws Exp $
 .de Ds
 .RS
 .nf

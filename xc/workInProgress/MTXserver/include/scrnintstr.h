@@ -1,4 +1,4 @@
-/* $XConsortium: scrnintstr.h,v 1.1 94/03/17 11:36:00 dpw Exp $ */
+/* $XConsortium: scrnintstr.h,v 1.2 94/04/17 21:16:53 dpw Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

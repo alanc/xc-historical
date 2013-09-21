@@ -1,5 +1,5 @@
 /*
- * $XConsortium: OSio.h,v 1.3 93/07/12 09:26:24 dpw Exp $
+ * $XConsortium: OSio.h,v 1.4 93/09/05 15:37:36 rws Exp $
  *
  * Copyright IBM Corporation 1987,1988,1989,1990,1991
  *

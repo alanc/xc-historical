@@ -34,7 +34,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: chngactvpn.m,v 1.7 93/07/05 13:33:36 rws Exp $
+ * $XConsortium: chngactvpn.m,v 1.8 94/04/17 21:06:10 rws Exp $
  */
 >>TITLE XChangeActivePointerGrab CH07
 void

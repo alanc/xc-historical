@@ -1,4 +1,4 @@
-/* $XConsortium: Scrollbar.c,v 1.71 94/01/31 10:51:34 kaleb Exp $ */
+/* $XConsortium: Scrollbar.c,v 1.72 94/04/17 20:12:40 kaleb Exp $ */
 
 /***********************************************************
 

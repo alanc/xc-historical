@@ -1,4 +1,4 @@
-# $XConsortium: polyline4.pi,v 5.1 91/02/16 10:00:36 rws Exp $
+# $XConsortium: polyline4.pi,v 5.2 91/11/26 14:49:53 hersh Exp $
 ## polyline4- test ppolyline with all combinations of widths and
 ## line types - based on polyline2, but ordering differently to
 ## work around bug.

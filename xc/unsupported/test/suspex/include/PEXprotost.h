@@ -1,4 +1,4 @@
-/* $XConsortium: PEXprotost.h,v 1.3 93/11/22 12:07:51 rws Exp $ */
+/* $XConsortium: PEXprotost.h,v 1.4 94/04/17 20:53:55 rws Exp $ */
 /*	@(#)PEXprotost.h 3.1 93/04/16 */
 /*
 

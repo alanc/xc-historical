@@ -1,4 +1,4 @@
-/* $XConsortium: base.h,v 1.7 94/08/17 21:48:05 matt Exp matt $ */
+/* $XConsortium: base.h,v 1.8 94/09/01 18:45:46 matt Exp $ */
 /*
  * Copyright (c) 1993 Silicon Graphics, Inc.
  * Copyright (c) 1993 Fujitsu, Ltd.

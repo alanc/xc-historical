@@ -67,7 +67,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: main.c,v 1.4 94/01/23 02:45:41 rob Exp $ */
+/* $XConsortium: main.c,v 1.5 94/04/17 21:15:50 rob Exp $ */
 
 #include "X.h"
 #include "Xproto.h"

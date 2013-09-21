@@ -1,4 +1,4 @@
-.\" $XConsortium: strings.mit,v 1.5 93/08/02 11:20:46 gildea Exp $
+.\" $XConsortium: strings.mit,v 1.6 94/02/10 20:04:17 converse Exp $
 .ds tk X Toolkit
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xI Intrinsics

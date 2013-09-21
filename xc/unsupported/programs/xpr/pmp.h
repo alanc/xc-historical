@@ -1,5 +1,5 @@
 /*
- *	$XConsortium: pmp.h,v 1.4 88/09/06 17:20:25 jim Exp $
+ *	$XConsortium: pmp.h,v 1.5 91/02/19 22:13:33 converse Exp $
  */
 
 /* Written by Jose' J. Capo' */

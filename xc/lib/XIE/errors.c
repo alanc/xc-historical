@@ -1,4 +1,4 @@
-/* $XConsortium: errors.c,v 1.4 94/04/17 20:18:22 rws Exp mor $ */
+/* $XConsortium: errors.c,v 1.5 95/04/28 18:01:11 mor Exp $ */
 
 /*
 

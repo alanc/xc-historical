@@ -36,7 +36,7 @@ in this Software without prior written authorization from the X Consortium.
  * makes no representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * $XConsortium: pndng.m,v 1.12 92/06/11 17:24:06 rws Exp $
+ * $XConsortium: pndng.m,v 1.13 94/04/17 21:08:06 rws Exp $
  */
 >>TITLE XPending CH08
 int

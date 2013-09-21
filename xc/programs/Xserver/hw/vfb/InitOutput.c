@@ -1,4 +1,4 @@
-/* $XConsortium: InitOutput.c,v 1.13 94/08/02 15:43:46 dpw Exp ray $ */
+/* $XConsortium: InitOutput.c,v 1.14 94/12/05 17:55:50 ray Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
